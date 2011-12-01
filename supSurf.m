@@ -1,8 +1,8 @@
-function [ f, j ] = supSurf( fig, fview, cl, input_args )
+function [ hFig, j ] = supSurf( hFig, mView, pBar, cl, input_args )
 %SUPSURF plots supSample as a surf
 %   Detailed explanation goes here
 
-%% Plot Design (To be implemented)
+%% Plot Design Notes (To be implemented)
 % Layers:
 %   Print Area: entire printing plane, origin at lead-operator (mm)
 %     Press Size (mm, to spec)
@@ -16,219 +16,629 @@ function [ f, j ] = supSurf( fig, fview, cl, input_args )
 %       Patch Origin X/Y (mm, calculated)
 %   Data Area: entire data plane, off-origin (mm)
 
-% Define the plane
-lX = [0 52]; %get(gca,'XLim');
-lY = [0 76]; %get(gca,'YLim');
+% Create and/or Capture Figure
 
-gX = [0 52]; 
-gY = [-4*1 4*20];
+%% Define format / style variables (Text, Line, Bar, Axes, Title, Label)
+defUnits      = 'normalized';
 
-if ~exist('fig','var')
-  fig = figure('Name', 'Spatial-Temporal Plot', 'units','pixels', ...
-    'Color', 'w', 'Renderer', 'zbuffer'); %OpenGL
-    %'Toolbar', 'none', 'WindowStyle', 'modal', 'MenuBar', 'none',  ...
-else
-    assignin('base', 'supCA', gca);
+defLineStyle    = '-';
+defLineWidth    = 1;
+
+defGridColor    = [1,1,1].*0.5;
+
+defTextFont   = 'Gill Sans';
+defBoldFont   = defTextFont;
+defBoldWeight = 'normal';
+defTextColor  = 'k';
+
+mTextFont     = {'FontName',   defTextFont};
+mTextColor    = {'Color', defTextColor};
+mBoldFont     = {'FontName',   defBoldFont}; %[mTextFont ' Bold']; %'Helvetica Bold'
+mBoldWeight   = {'FontWeight', defBoldWeight};
+
+mBarStyle     = {mBoldFont{:}, 'FontSize', 10, mBoldWeight{:}};
+mGridStyle    = {'GridLineStyle', '-', 'MinorGridLineStyle','-', ...
+                   'XColor',defGridColor, 'YColor',defGridColor, 'ZColor',defGridColor};
+mAxesStyle    = {mBoldFont{:}, 'FontSize', 12, mBoldWeight{:}, mGridStyle{:}};
+mGlobalStyle  = {'LineSmoothing','on'};
+mZoneStyle    = {'LineStyle',':', 'FaceColor', 'none', 'LineWidth', 0.25};
+
+mTitleStyle   = {mBoldFont{:}, 'FontSize', 16, mBoldWeight{:}, mTextColor{:}};
+mLabelStyle   = {mBoldFont{:}, 'FontSize', 14, mBoldWeight{:}, mTextColor{:}}; %...
+  %'Units', defUnits}; % 'VerticalAlignment','middle', 'HorizontalAlignment','center', 
+  
+mZReverse     = true;
+mPatchScatter = false;
+
+%% Define view variables (mView)
+if ~exist('mView','var'), mView = 1; end
+
+%% Get/Create figure handle
+try
+  hFig = hFig;
+catch exception
+  hFig = [];
 end
 
-if ~exist('fview','var'), fview = 1; end
+if isempty(hFig)
+    hFig = figure('name', 'SUP Plot', 'units', defUnits, ...
+    'Color', 'w', 'Renderer', 'OpenGL', 'Interruptible','on'); %OpenGL
+    %'Toolbar', 'none', 'WindowStyle', 'modal', 'MenuBar', 'none',  ...
+end
 
-% Load supSample values
-%supMatrix = evalin('base','supMatrix');
-supData = evalin('base','supData');
-supSample = evalin('base','supSample');
-cms = evalin('base','cms');
-supPatchSet = evalin('base','supPatchSet');
-supSheet = evalin('base','supSheet');
-%supPatchValue = evalin('base','supPatchValue');
-
-% Update supSample fields
-%xS    = supSample.sheetData;
-%xF    = supSample.dataFilter;
-xZ    = supSample.lstar;
-%xN    = supSample.lstarN;
-xR    = supSample.lstarR - 0.5;
-xC    = supSample.lstarC - 0.5;
-%xRef  = supSample.spectra;
-%xXYZ  = supSample.XYZ;
-%xLab  = supSample.Lab;
-%xRGB  = supSample.RGB;
-%xRGBi = supSample.imageRGB;
+%  assignin('base', 'supCA', gca);
+clf;
 
 
-
-% Interpolate using meshgrid & griddata
-[r,c]     = meshgrid(lX(1):lX(2),lY(1):lY(2));
-V         = TriScatteredInterp(xR(:), xC(:), xZ(:));
-u         = V(r,c);
-uM        = (u-min(u(:)))./(max(u(:))-min(u(:)));    
-
-% Plot using surf with contour 
-%surf(r,c,u,u);
-
-
-%assignin('base','supZData', u);
-%assignin('base','supZDataPoints', xZ);
-
-%colorData = repmat(interp1([0:1:100],[0:1:100],[0:1:numel(u)] )',1,3)
-zu = u(u >0);
-zm = mean(zu);
-%[zmin, zmax] = range(zu)
-zr = [min(zu) max(zu)];
-zrb = zr(2) - zr(1);
-
-zp = (u - zr(1))./(zrb*100);
-
-%min(zp), max(zp), 
-
-% size(zp), size(u),
-
-%colorData = repmat(zp,1,3);
-
-%surf(r,c,u,u,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
-%  'EdgeColor', 'none');
-
-%contour3(r,c,u)
-%contourf(r,c,u,'ZDataSource','supZData');
-%, 'CDataMapping', 'scaled', ...
-%  'EdgeColor', 'none');
-
+%% Prepare figure
 hold on;
 
-%colormap(jet);    
-daspect([1,1,0.125]);
+%% Get base variables (Data, Sample, CMS, PatchSet, Sheet, FileName)
+supData     = evalin('base','supData');
+supSample   = evalin('base','supSample');
+cms         = evalin('base','cms');
+supPatchSet = evalin('base','supPatchSet');
+supSheet    = evalin('base','supSheet');
+supFileName = evalin('base','supFileName');
 
-%zr = get(gca, 'ZLim');
-zb = max(abs([20 16] - 18));
-zs = 3; %max(2.5, zb + 0.5);
-zf = 2;
-if ~exist('zl', 'var') 
-  zl = [mean(zm)-zs mean(zm)+zs];
+%% Get sample data (xZ, xR, xC)
+xZ        = supSample.lstar;
+xR        = supSample.lstarR; % - 0.5;
+xC        = supSample.lstarC; % - 0.5;
+
+%% Interpolate using meshgrid & griddata
+xLims     = [1 size(supData.data,2)]; %get(gca,'XLim');
+yLims     = [1 size(supData.data,3)]; %get(gca,'YLim');
+
+[r,c]     = meshgrid(xLims(1):xLims(2),yLims(1):yLims(2));
+V         = TriScatteredInterp(xR(:), xC(:), xZ(:));
+u         = V(r,c);
+uM        = (u-min(u(:)))./(max(u(:))-min(u(:)));
+
+%% Reset z axis
+zValues   = u(u >0);
+zMean     = round(nanmean(zValues));
+zRange    = [min(zValues) max(zValues)];
+zOffset   = 5.0;
+zSnapStep = 2.0;
+
+zLims     = [zMean-zOffset zMean+zOffset];
+zLims     = round(zLims./zSnapStep).*zSnapStep;
+
+%% Reset the color map
+
+cExtent   = 5;
+cToneLims = [0.05 0.98];
+cToneRng  = max(cToneLims)-min(cToneLims);
+cToneStps = cExtent*2*2;
+
+cKeyColor = [0.5 1.0 0.5];
+
+% cMap      = [ 1.00  1.00  1.00      % Unscaled map
+%               0.85  0.85  0.85
+%               0.50  1.00  0.50      % cKeyColor
+%               0.25  0.25  0.25
+%               0.00  0.00  0.00  ];
+
+cMap      = [ 1.00  1.00  1.00      % Unscaled map
+              0.90  0.90  0.90
+              0.80  0.80  0.80
+              0.70  0.70  0.70
+              0.60  0.60  0.60              
+              0.50  1.00  0.50      % cKeyColor
+              0.40  0.40  0.40
+              0.30  0.30  0.30
+              0.20  0.20  0.20              
+              0.10  0.10  0.10
+              0.00  0.00  0.00  ];            
+
+cColors   = size(cMap,1);
+
+cMap      = cMap.*(cToneRng) + min(cToneLims);
+cMap      = flipud(cMap);
+
+[scx scy] = meshgrid(1:3,1:cColors/cToneStps:cColors);
+cMap = interp2(cMap,scx,scy);
+
+colormap(cMap);
+
+cLims     = [zMean-cExtent zMean+cExtent];
+cSize     = max(cLims) - min(cLims);
+
+set(gca,'CLimMode', 'Manual');
+set(gca,'CLim', cLims);
+
+%% Define Plane & Press offsets, tics, etc.
+daspect([1,1,0.25]);
+
+% aTic is the tic step
+% aTicLims is the range of tics (defaults to data lims)
+% aTics is the tick location vector
+% aLims is the range of a given axis (pads a tic step around data)
+% X/Y Ticks (default to the row/column of a patch)
+set(gca, 'LineWidth', defLineWidth);
+
+xTic      = 10;
+xTicLims  = xLims;
+xTics     = xTicLims(1):xTic:xTicLims(2);
+xLims     = xLims + [-xTic +xTic];
+
+yTic      = 4;
+yTicLims  = yLims;
+yTics     = yTicLims(1):yTic:yTicLims(2);
+yLims     = yLims + [-yTic +yTic];
+
+zTic      = 1;
+zTicLims  = zLims;
+zTics     = zTicLims(1):zTic:zTicLims(2);
+zLims     = zLims + [-zTic +zTic];
+
+xlim(xLims);
+ylim(yLims);
+zlim(zLims);
+set(gca, 'XTick', xTics-0.5);
+set(gca, 'YTick', yTics-0.5);
+set(gca, 'ZTick', zTics);
+
+set(gca, 'xTickLabel', xTics);
+set(gca, 'YTickLabel', yTics);
+
+set(gca, 'Clipping', 'off');
+
+% Offset & Draw to Print Plane
+
+planeLayer = 0;
+planeGap   = 0.02;
+
+try
+  columnPitch = supData.columnPitch;
+  rowPitch    = supData.rowPitch;
   
-  if ~exist('cl','var')
-    cl = zl + [1 -1];
-    set(gca,'CLim', cl);
-    set(gca,'CLimMode', 'Manual');   
+  axialShift  = supData.axialShift;
+  leadOffset  = supData.leadOffset;
+  
+  printWidth  = supData.printWidth;
+  printLength = supData.printLength;
+  
+  dataWidth   = yTicLims(2) .* columnPitch;
+  dataHeight  = xTicLims(2) .* rowPitch;
+  
+  dataLeft    = (printWidth-dataWidth)/2 + axialShift;
+  dataTop     = leadOffset;
+  
+  printLeft   = - dataLeft;
+  printTop    = - dataTop;
+  
+  planeInset  = 0; % 40
+  
+  planeWidth  = printWidth    + planeInset*2;
+  planeLength = printLength   + planeInset*2;
+  
+  planeLeft   = -dataLeft     - planeInset;
+  planeTop    = -dataTop      - planeInset;
+  
+  yLims       = ([0   planeWidth ] + planeLeft) ./ columnPitch;
+  xLims       = ([0   planeLength] + planeTop ) ./ rowPitch;
+  
+  BoxY        = [0 0; 0 1; 1 1; 1 0];
+  BoxX        = circshift(BoxY,-1); %[0 1; 1 1; 1 0; 0 0];
+  BoxZ        = [1 1; 1 1; 1 1; 1 1];
+  
+  if planeInset >0
+    planeBoxY   = (BoxY .* planeWidth  + planeLeft ) ./ columnPitch;
+    planeBoxX   = (BoxX .* planeLength + planeTop  ) ./ rowPitch;
+    planeBoxZ   = (BoxZ .* max(zLims)  - planeLayer);
+    
+    if mZReverse
+      planeBoxZ   = (BoxZ .* max(zLims)  - planeLayer);
+    else
+      planeBoxZ   = (BoxZ .* min(zLims)  + planeLayer);
+    end
+    
+    patch(planeBoxX,planeBoxY,planeBoxZ, [0.8 0.8 0.8],...
+                  'EdgeColor', 'none', mGlobalStyle {:}, 'LineWidth', defLineWidth);  %'FaceAlpha', 0.1,   
   end
-  %caxis(cl);
-  j = cl;
+  %planeBoxZ   = (BoxZ .* min(zLims));
   
-  zl = round(zl./zf).*zf;
+  planeLayer  = planeLayer + planeGap; 
+  printBoxY   = (BoxY .* printWidth  + printLeft ) ./ columnPitch;
+  printBoxX   = (BoxX .* printLength + printTop  ) ./ rowPitch;
+  %zMean);
+  %printBoxZ   = (BoxZ .* (min(zLims)+0.01))%zMean);
+
+  planeLayer  = planeLayer + planeGap;
+  patchBoxY   = (BoxY .* size(supData.data,3) ); %./ columnPitch
+  patchBoxX   = (BoxX .* size(supData.data,2) ); %./ rowPitch
+  
+  if mZReverse
+    printBoxZ   = (BoxZ .* (max(zLims) - planeLayer));
+    patchBoxZ   = (BoxZ .* (max(zLims) - planeLayer));%zMean);
+  else
+    printBoxZ   = (BoxZ .* (min(zLims) + planeLayer));
+    patchBoxZ   = (BoxZ .* (min(zLims) + planeLayer));%zMean);
+  end
+
+  patch(printBoxX,printBoxY,printBoxZ, [0.9 0.9 0.9], 'Tag', 'PressBox', ...
+                'EdgeColor', 'none', mGlobalStyle {:}, 'LineWidth', defLineWidth); %'FaceAlpha', 0.1, 
+  patch(patchBoxX,patchBoxY,patchBoxZ, [1.0 1.0 1.0], 'Tag', 'TargetBox', ...
+                'EdgeColor', [0.7 0.7 0.7], mGlobalStyle {:}, 'LineWidth', defLineWidth); %'FaceAlpha', 0.1, 
+  
+  ylim(yLims);
+  xlim(xLims);
+  
+  set(gca, 'xTickLabel', xTics .* rowPitch);
+  set(gca, 'YTickLabel', yTics .* columnPitch);  
+  
 end
-%zl = round([mean(zr)-5 mean(zr)+5]./3).*3
-xlim(gX);
-ylim(gY);
-zlim(zl);
 
-lRX = (lX(2)-lX(1))/5;
-lRY = 4;
-lRZ = 1; %0.25;
+%% Offset & Draw to InkZones
+try
+  inkZones = supData.inkZones;
 
-% lX = [1 76]; %get(gca,'XLim');
-% lY = [1 52]; %get(gca,'YLim');
+  pressZones = inkZones.range;
+  patchZones = inkZones.targetrange;
+  zoneRange = [ setdiff(pressZones(:),patchZones(:))' ...
+                intersect(pressZones(:),patchZones(:))'];  
 
-lX = lX(1):lRX:lX(2);
-lY = lY(1):lRY:lY(2);
-lZ = ones(numel(lX), numel(lY));
+  BoxY        = [0 0; 0 1; 1 1; 1 0];
+  BoxX        = circshift(BoxY,-1); %[0 1; 1 1; 1 0; 0 0];
+  BoxZ        = [1 1; 1 1; 1 1; 1 1];
+  
+  planeLayer  = planeLayer + planeGap;
+  
+  zoneWidth = inkZones.patches;
+  zoneBoxX  = printBoxX; %BoxX .* (xLims(2)-xLims(1)) + xLims(1);  
+  %zoneBoxZ  = BoxZ .* (max(zLims)-planeLayer);
+  zoneBoxZ  = BoxZ .* zMean;
+  % zoneBoxZ  = BoxZ .* (min(zLims)+0.03);
+  zoneShift = -min(inkZones.targetrange(:));
+  
+  for zone = zoneRange
+    zoneLeft  = zoneWidth * (zone+zoneShift);
+    zoneBoxY  = BoxY .* zoneWidth + zoneLeft;
+    
+    if any(patchZones(:)==zone) % Draw as Active
+      zoneStyle = {mZoneStyle{:}, 'EdgeColor', [0 0 0], mGlobalStyle{:} }; %, 'EdgeAlpha', 1.0}
+    else % Draw as Inactive
+      zoneStyle = {mZoneStyle{:}, 'EdgeColor', [0.5 0.5 0.5], mGlobalStyle{:}}; %, 'FaceAlpha', 0.1, 'EdgeAlpha', 0.1}
+    end
+    patch(zoneBoxX,zoneBoxY,zoneBoxZ, [0 0 0], zoneStyle{:});
+  end
+  
+  yTics     = min(zoneRange):2:max(zoneRange);
+  set(gca, 'YTick', ( yTics.*zoneWidth + zoneShift*zoneWidth) + zoneWidth/2.0 );
+  set(gca, 'YTickLabel', yTics);  
 
-[lX lY] = meshgrid(lX, lY);
+end
 
-%size (lX), size (lY), size (lZ)
+%% Optimize lims
+
+
+% xLims = xLims(1):xStep:xLims(2);
+% yLims = yLims(1):yStep:yLims(2);
+% zLims = ones(numel(xLims), numel(yLims));
+% 
+% [xLims yLims] = meshgrid(xLims, yLims);
 
 % Grid ticks
-tRX = 52.0 / 4.0;
-tX = gX(1):tRX:gX(2);
-set(gca, 'XTick', tX);
+% xTic      = size(supData.data,2) / 4.0;
+% xTics     = gX(1):xTic:gX(2);
+% set(gca, 'XTick', xTics);
 
-tRY = lRY;
-tY = gY(1):tRY:gY(2);
-%tYl = 2:2:gY(2)-gY(1);
-tYl = [1:gY(2)-gY(1)-1 []];
-%tYl(1:2:end) = [];
-set(gca, 'YTick', tY+2);
-set(gca, 'YTickLabel', tYl);
+% if strfind(supFileName,'sm74')>0
+%   yTic      = yStep;
+%   yTics     = gY(1)-4:yTic:gY(2)+4;
+% 
+% 
+%   yTicLabels = [1:gY(2)-gY(1)-1 []];
+%   set(gca, 'YTick', yTics + 2);
+%   set(gca, 'YTickLabel', yTicLabels);
+% end
+
 set(gca, 'YGrid', 'off');
 %set(gca, 'YMinorGrid', 'off');
 set(gca, 'YMinorTick', 'on');
 set(gca, 'Clipping', 'off');
-%tYlh = get(gca,'YTickLabel');
-%gtp = get(tYlh,'Position')
-%set(tYlh,'Position',get(tYlh,'Position') + 0.5) 
-set(gca,'ZDir','reverse');
 
-lLineStyle = '-';
 
-switch fview
-  case 1
-    view(-80, 25);  % lead-operator off-axis
-    set(gca,'Projection','perspective');
-    grid(gca, 'on');
-  case 2
-    set(gca,'ZDir','normal');
-    view(-90, 90);  % top on-axis
-    set(gca,'Projection','orthographic');
-    lLayers = [floor(zr(1)) ceil(zr(2))];
-    grid(gca, 'off');
-    xZC = ones(size(xZ)) .* zr(1)-10;
-    cba = colorbar('SouthOutside');
-    cbp = get(cba, 'Position');
-    cbp = [cbp(1) 0.15 cbp(3) 0.025];
-    set(cba,'Position', cbp);
-  case 3
-    view(-180, 0);  % driver on-axis
-    set(gca,'Projection','orthographic');
-    lLayers = floor(zr(1)):lRZ:ceil(zr(2));
-    grid(gca, 'on');
-  case 4
-    view(-90, 0);  % lead on-axis
-    set(gca,'Projection','orthographic');
-    lLayers = floor(zr(1)):lRZ:ceil(zr(2));
-    set(gca, 'YMinorGrid', 'on');    
-    grid(gca, 'on');
-end
+if mZReverse, set(gca,'ZDir','reverse'); end
 
-switch fview
+%% Reset Axes
+hAxes = gca;
+set(hAxes,'ActivePositionProperty','Position');
+set(hAxes,'Tag','Axes');
+set(hAxes,mAxesStyle{:});
+
+%% Reset mView options
+BarPositions  =	[	205	205	225	285	]; % cbov
+
+Views         =	[	 -80  25
+                   -90  90
+                  -180   0
+                   -90   0	];
+Projections = { 'perspective', 'orthographic', 'orthographic', 'orthographic'};
+
+Grids = {'on', 'off', 'on', 'on'};
+YMinorGrids = {'off', 'off', 'off', 'on'};
+
+XLabelAngles = [90, 90, 0, 0];
+
+
+view(Views(mView,:));
+set(hAxes,  'Projection', Projections{mView});
+
+grid(hAxes, Grids{mView});
+set(hAxes, 'YMinorGrid',  YMinorGrids{mView});
+
+rXLabel = XLabelAngles(mView);
+
+
+%% Surf Plots
+rOffset = -1;
+cOffset = -1;
+switch mView
   case 2
     %size xR, size xC, size xZ,
     %contourf(r, c, u, 'ZDataSource','supZData'); %, 'CDataMapping', 'scaled', ...
     %'EdgeColor', 'none');%(xZ>0),xC(xZ>0),xZ(xZ>0)); %,'ZDataSource','supZData');
     %, 'CDataMapping', 'scaled', ...
     %'EdgeColor', 'none',);
-    surf(r,c,u,u,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
-    'EdgeColor', 'none', 'CDataSource','supZData' );  
+    surf(r+rOffset,c+cOffset,u,u,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
+    'EdgeColor', 'none', 'CDataSource','supZData', mGlobalStyle{:}, 'LineWidth', defLineWidth);  
   otherwise
-    surf(r,c,u,u,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
-    'EdgeColor', 'none', 'CDataSource','supZData' );
+    surf(r+rOffset,c+cOffset,u,u,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
+    'EdgeColor', 'none', 'CDataSource','supZData', mGlobalStyle{:}, 'LineWidth', defLineWidth);
 end
 
-if exist('lLayers','var')
-  for l = lLayers %[floor(zr(1)) ceil(zr(2))]
-    surf(lX, lY, lZ'.* l , ...
-       'EdgeAlpha', 1, 'EdgeColor', 0.5 * [1 1 1], ...
-       'FaceAlpha', 1, 'FaceColor', 'none', ... %0.25 * [1 1 1], ...
-       'LineStyle', lLineStyle, 'LineWidth', 0.5, ...
-       'Marker', 'none' );
+%% Plot Scatter Block Map
+if mPatchScatter
+  if mZReverse
+    xZC = ones(size(xZ)) .* max(ZLim) - 10;
+  else
+    xZC = ones(size(xZ)) .* min(ZLim) + 10;
   end
-end
-
-if exist('xZC','var')
-  scatter3(xR(xZ>0),xC(xZ>0),xZC(xZ>0),25,[0 0 0], ...
+  scatter3(xR(xZ>0)+rOffset,xC(xZ>0)+cOffset,xZC(xZ>0),25,[0 0 0], ...
     'LineWidth', 0.25, 'Marker', 's'); %'filled', 
 end
 
-
-
-%set(gca,'XGrid','off','YGrid','off','ZGrid','on')
-%s=find(sheetSequance>=i,1,'first');
+%% Update labels & title
 s=supData.sheetIndex(supSheet);
-title(['Sample #' num2str(s)]);
-xlabel('Circumferential'); 
-ylabel('Axial');
-zlabel('L*');
+
+hTitle = title(['Sample #' num2str(s)], 'VerticalAlignment','bottom', 'HorizontalAlignment','left', 'Units',defUnits, mTitleStyle{:});
+% set(hTitle,'Units', defUnits);
+pTitle = get(hTitle,'Position');
+set(hTitle,'Position', [0 1.0]);
+updateTitle(hFig, hAxes, hTitle, [], mView);
+
+hXLabel = xlabel('Circumferential','Rotation',rXLabel, mLabelStyle{:}); 
+ylabel('Axial', mLabelStyle{:});
+zlabel('L*', mLabelStyle{:});
+  
+pXLabel = get(hXLabel,'Position');
+
+
+%% Reset Colorbar
+bBar  = []; % BarPositions(mView);
+
+
+hBar    = findobj(hFig, 'Type', 'Axes', 'Tag', 'Colorbar');
+if numel(hBar)>1, delete(hBar); hBar = []; end
+if isempty(hBar) 
+  hBar   = colorbar('North','XAxisLocation','top', mBarStyle {:}, 'LineWidth', defLineWidth + 0.5, 'ActivePositionProperty', 'Position', 'Position', [-1 -1 1 1]);
+end
+
+pBar  = updateBarPosition(hFig, hAxes, hTitle, hBar, mView, bBar);
+
+set(hFig,'ResizeFcn', @resizeFigure); %,hFig, hAxes, hTitle, hBar, mView, bBar));
+
+
+%% Store Plot Data
+vFig  = get(hFig,   'UserData');
+vAxes = get(hAxes,  'UserData');
+
+vAxes.mView = mView;
+
+set(hFig,   'UserData', vFig);
+set(hAxes,  'UserData', vAxes);
+
+%gridcolor(hAxes, mGridColor{:});
 
 hold off;
 
-f = fig;
+end
+
+function [output] = resizeFigure(src,evt)
+
+try
+  hFig    = gcf;
+  set(0,'CurrentFigure',hFig);
+
+  hAxes   = get(hFig,     'CurrentAxes');
+  hTitle  = get(hAxes,    'Title');
+  hBar    = findobj(hFig, 'Type', 'Axes', 'Tag', 'Colorbar');
+
+  vFig    = get(hFig,   'UserData');
+  vAxes   = get(hAxes,  'UserData');
+
+  mView   = vAxes.mView;
+  
+%   hXLabel = get(hAxes,'xticklabel')
+%   hYLabel = get(hAxes,'ylabel')
+%   hZLabel = get(hAxes,'zlabel')
+%   
+%   hTexts  = [hXLabel]; % hYLabel(:) hZLabel(:)];
+%   
+% %   set(0,'HideUndocumented','off')
+% %   %cds = get(hAxes,'Children');
+% %   for d = hTexts(1)
+% %     get(d)
+% %   end
+% %   set(0,'HideUndocumented','on')
+%     
+%   for iT = 1:numel(hTexts)
+%     hTexts(iT)
+%     set(hTexts, 'Color', 'k')
+%   end
+
+  try
+    pBar  = updateBarPosition(hFig, hAxes, hTitle, hBar, mView);
+  catch exception
+    warning('Could not update colorbar position');
+  end
+
+  set(hFig,   'UserData', vFig);
+  set(hAxes,  'UserData', vAxes);
+catch exception
+end
+end
+
+function [output] = updateTitle(hFig, hAxes, hTitle, hBar, fView, pbBar)
+  setPlotTitle(hAxes);
+end
+
+function [output] = setPlotTitle(hAxes)
+  supNameFormat   = '%s ';
+  supSheetFormat  = '- Sheet #%d ';
+  supPatchFormat  = '- %d%% ';
+
+  supTitleText    = '';
+
+  %% Format Data Set String
+  try
+    supName       = evalin('base','supFileName');
+    supNameText   = sprintf(supNameFormat,  supName);
+  catch Exception
+    supNameText   = sprintf(supNameFormat,  'Sample');
+  end
+
+  %% Format Sheet String
+   try
+    sheetIndex    = evalin('base','supData.sheetIndex');
+    supSheet      = evalin('base','supSheet');
+    supSheetIndex = sheetIndex(supSheet);
+    supSheetText  = sprintf(supSheetFormat, supSheetIndex);
+   catch
+    supSheetText  = sprintf(supSheetFormat, 0);
+   end
+
+  %% Format Patch String
+  try
+    supPatch      = evalin('base','supPatchValue');
+    supPatchText  = sprintf(supPatchFormat, supPatch);
+  catch
+    supPatchText  = '';
+  end
+
+  %% Figure out the axes handle
+  % try
+  %   mca = evalin('base', 'supCA');
+  % catch
+  %   mca = gca;
+  % end
+  
+  try
+    hAxes = findobj(hAxes,'Type','Axes');
+  catch exception
+    hAxes = gca;
+  end
+
+  % assignin('base', 'supCA', mca);
+
+  %% Update the title
+  supTitleText  = strtrim([supNameText supSheetText supPatchText]);
+  title(hAxes,supTitleText);
+
+end
+
+function pBar = updateBarPosition(hFig, hAxes, hTitle, hBar, fView, pbBar)
+% optimalColorbarBottom determines the best bottom position for color bar
+%   The optimal color bar bottom is based on figure height, style and
+%   whitespace in a given plot. The position must be determined after
+%   resetting the figure size, view, etc.
+
+% drawnow();
+
+%% Backup & Reset units to pixels
+uFig    = get(hFig,   'Units');
+set(        hFig,     'Units',  'pixels');
+
+uAxes   = get(hAxes,  'Units');
+set(        hAxes,    'Units',  'pixels');
+
+% apAxes  = get(hAxes,  'ActivePositionProperty');
+% set(        hAxes,    'ActivePositionProperty',  'position');
+
+uTitle  = get(hTitle, 'Units');
+set(        hTitle,   'Units',  'pixels');
+
+uBar    = get(hBar,   'Units');
+set(        hBar,     'Units',  'pixels');
+
+% figOuterPos = get(hFig,'OuterPosition')
+% figPos = get(hFig,'Position')
+% figEdge = figOuterPos - figPos
+% figScale = figPos(3:4)
+
+pBar        = get(hBar,   'Position');
+
+pFig        = get(hFig,   'Position'      );
+pFigOuter   = get(hFig,   'OuterPosition' );
+%pFigEdge    = pFigOuter - pFig;
+
+pAxes       = get(hAxes,  'Position');
+pAxesOuter  = get(hAxes,  'OuterPosition');
+%pAxesInset  = get(hAxes,  'TightInset');
+%pAxesEdge   = pAxesOuter - pAxes;
+
+%% Axes pixel position fix
+pAxesPx = pAxes;
+pAxesPx = get(hAxes,'PixelBounds');
+%getpixelposition(hAxes,hFig);%hgconvertunits(hFig,getpixelposition(hAxes,hFig),'pixel','normalized',hFig);
+
+try
+  pbBar = pbBar;
+catch exception
+  pbBar = pBar(2);
+end
+
+% set(0,'HideUndocumented','off')
+% cds = get(hAxes,'Children');
+% for d = 1:numel(cds)
+%   get(cds(d))
+% end
+% set(0,'HideUndocumented','on')
+
+pwAxesPx = pAxesPx(3) - pAxesPx(1);
+plAxesPx =  pAxesOuter(3) - pAxesPx(3);
+
+phAxesPx = pAxesPx(4) - pAxesPx(2);
+pbAxesPx =  pAxesOuter(4) - pAxesPx(4);
+
+pwBar = min(250, pwAxesPx/3);
+phBar = 10;
+plBar = plAxesPx + pwAxesPx - pwBar; %  pAxesPx(3); %ptLeft; %ptrAxes(1); % + pAxesPx(1); %pAxesPx(1) + pAxesPx(3) - pwBar; %+ pAxes(3)
+
+pBarStrategies  = {'TitleHigh'};
+pBarStrategy    = 'TitleHigh';
+
+switch lower(pBarStrategy)
+  case 'titlehigh'
+    
+    pTitle        = get(hTitle, 'Position');
+    pTitleExtent  = get(hTitle, 'Extent');
+    pbBar = pbAxesPx + phAxesPx + pTitleExtent(4)/2 - phBar/2;
+end
+
+pBar = [plBar pbBar pwBar phBar];
+set(hBar,'Position', pBar);
+%pBar = get(hBar, 'Position');
+
+%% Restore units to previous state
+set(hFig,     'Units', uFig   );
+set(hAxes,    'Units', uAxes  );
+% set(hAxes,    'ActivePositionProperty', apAxes  );
+set(hTitle,   'Units', uTitle );
+set(hBar,     'Units', uBar   );
 
 end
 

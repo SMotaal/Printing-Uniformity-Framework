@@ -1,7 +1,9 @@
+import Color.*;
+
 test          = 'supPatchMap2' %'supMatrixOrder'
 
 if ~exist('supRITSM74', 'var')
-  load('supRITSM74')
+  load(fullfile('resources', 'supRITSM74001.mat'));
 end
 
 supMatrix     = supRITSM74;

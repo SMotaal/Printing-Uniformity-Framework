@@ -63,14 +63,22 @@ function [ output_args ] = supAnimate( input_args )
 % % end
 
 %% Main Function
+persistent ghandle;
 
-t = timer('TimerFcn',@selectZData, 'Period', 0.5, ...
-  'ExecutionMode', 'fixedDelay' );
-output_args = t;
+hplot   = findobj('type','figure','name','SUP Plot');
+
+if isempty(hplot) % figure is closed, reopen it
+  supSurf;
+end
+
+delete(timerfind('name','timer-sup'));
+
+t = timer('name','timer-sup', 'TimerFcn',@selectZData, 'Period', 0.5, ...
+  'ExecutionMode', 'fixedDelay');
 
 start(t);
-input('Press return to stop execution', 's');
-stop(t);
+%input('Press return to stop execution', 's');
+%stop(t);
 
 end
 
@@ -86,6 +94,17 @@ end
 function out = selectZData(time, sheet)
 
   persistent thisSheet;
+  
+  hplot   = findobj('type','figure','name','SUP Plot');
+  
+  if isempty(hplot) % figure is closed, timer stops
+    stop(timerfind('name','timer-sup'));
+    delete(timerfind('name','timer-sup'));
+    return
+  end
+    
+  
+  haxis   = get(hplot,'CurrentAxes');
 
   supData = evalin('base','supData');
 
@@ -102,8 +121,6 @@ function out = selectZData(time, sheet)
       out = false;
     end
   end
-
-  %s;
 
   assignin('base', 'supCA', gca);
   mca = evalin('base', 'supCA');
