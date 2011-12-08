@@ -19,7 +19,7 @@ function [ output_args ] = supReadIsis( folder )
 
 %% File List Preparation
   if ~exist('folder','var')
-    folder    = fullfile(datadir,'uniprint','ritsm7401');
+    folder    = datadir('uniprint','ritsm7401');
   end
 
   files     = dir(fullfile(folder, '*.sref.txt'));

@@ -22,10 +22,10 @@ function [ output_args ] = supCreateMatrix( folder )
     folder  = 'ritsm7401'; %testing
   end
   
-  ticketFile = fullfile(datadir,'uniprint',[folder '.ticket.m']);
+  ticketFile = datadir('uniprint',[folder '.ticket.m']);
 
   [fileList sampleSections sampleCount sampleIndex] = supListDataFiles(folder);
-  folder  = fullfile(datadir, 'uniprint', folder);
+  folder  = datadir('uniprint', folder);
   
   t = parseTicket(ticketFile);
   

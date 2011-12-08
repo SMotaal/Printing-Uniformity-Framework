@@ -7,9 +7,9 @@
 %fullfile('uniprint',sid)
 
 clear all;
-  tic; supLoad(datadir(fullfile('uniprint','rithp5501')));   OutputVideos; clear all; toc;
-  tic; supLoad(datadir(fullfile('uniprint','ritsm7401')));   OutputVideos; clear all; toc;
-  tic; supLoad(datadir(fullfile('uniprint','ritsm7402a')));  OutputVideos; clear all; toc;
-  tic; supLoad(datadir(fullfile('uniprint','ritsm7402b')));  OutputVideos; clear all; toc;
-  tic; supLoad(datadir(fullfile('uniprint','rithp7k01')));   OutputVideos; clear all; toc;
-  tic; supLoad(datadir(fullfile('uniprint','ritsm7402c')));  OutputVideos; clear all; toc;
+  tic; supLoad(datadir('uniprint','rithp5501'));   OutputVideos; clear all; toc;
+  tic; supLoad(datadir('uniprint','ritsm7401'));   OutputVideos; clear all; toc;
+  tic; supLoad(datadir('uniprint','ritsm7402a'));  OutputVideos; clear all; toc;
+  tic; supLoad(datadir('uniprint','ritsm7402b'));  OutputVideos; clear all; toc;
+  tic; supLoad(datadir('uniprint','rithp7k01'));   OutputVideos; clear all; toc;
+  tic; supLoad(datadir('uniprint','ritsm7402c'));  OutputVideos; clear all; toc;
