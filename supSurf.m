@@ -82,21 +82,21 @@ supSheet    = evalin('base','supSheet');
 supFileName = evalin('base','supFileName');
 
 %% Get sample data (xZ, xR, xC)
-xZ        = supSample.lstar;
-xR        = supSample.lstarR; % - 0.5;
-xC        = supSample.lstarC; % - 0.5;
+dataSamples        = supSample.lstar;
+dataRows        = supSample.lstarR; % - 0.5;
+dataColumns        = supSample.lstarC; % - 0.5;
 
 %% Interpolate using meshgrid & griddata
 xLims     = [1 size(supData.data,2)]; %get(gca,'XLim');
 yLims     = [1 size(supData.data,3)]; %get(gca,'YLim');
 
 [r,c]     = meshgrid(xLims(1):xLims(2),yLims(1):yLims(2));
-V         = TriScatteredInterp(xR(:), xC(:), xZ(:));
-u         = V(r,c);
-uM        = (u-min(u(:)))./(max(u(:))-min(u(:)));
+V         = TriScatteredInterp(dataRows(:), dataColumns(:), dataSamples(:));
+dataMesh  = V(r,c);
+uM        = (dataMesh-min(dataMesh(:)))./(max(dataMesh(:))-min(dataMesh(:)));
 
 %% Reset z axis
-zValues   = u(u >0);
+zValues   = dataMesh(dataMesh >0);
 zMean     = round(nanmean(zValues));
 zRange    = [min(zValues) max(zValues)];
 zOffset   = 5.0;
@@ -378,26 +378,26 @@ rOffset = -1;
 cOffset = -1;
 switch mView
   case 2
-    %size xR, size xC, size xZ,
-    %contourf(r, c, u, 'ZDataSource','supZData'); %, 'CDataMapping', 'scaled', ...
-    %'EdgeColor', 'none');%(xZ>0),xC(xZ>0),xZ(xZ>0)); %,'ZDataSource','supZData');
+    %size dataRows, size dataColumns, size dataSamples,
+    %contourf(r, c, dataMesh, 'ZDataSource','supZData'); %, 'CDataMapping', 'scaled', ...
+    %'EdgeColor', 'none');%(dataSamples>0),dataColumns(dataSamples>0),dataSamples(dataSamples>0)); %,'ZDataSource','supZData');
     %, 'CDataMapping', 'scaled', ...
     %'EdgeColor', 'none',);
-    surf(r+rOffset,c+cOffset,u,u,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
+    surf(r+rOffset,c+cOffset,dataMesh,dataMesh,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
     'EdgeColor', 'none', 'CDataSource','supZData', mGlobalStyle{:}, 'LineWidth', defLineWidth);  
   otherwise
-    surf(r+rOffset,c+cOffset,u,u,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
+    surf(r+rOffset,c+cOffset,dataMesh,dataMesh,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
     'EdgeColor', 'none', 'CDataSource','supZData', mGlobalStyle{:}, 'LineWidth', defLineWidth);
 end
 
 %% Plot Scatter Block Map
 if mPatchScatter
   if mZReverse
-    xZC = ones(size(xZ)) .* max(ZLim) - 10;
+    xZC = ones(size(dataSamples)) .* max(ZLim) - 10;
   else
-    xZC = ones(size(xZ)) .* min(ZLim) + 10;
+    xZC = ones(size(dataSamples)) .* min(ZLim) + 10;
   end
-  scatter3(xR(xZ>0)+rOffset,xC(xZ>0)+cOffset,xZC(xZ>0),25,[0 0 0], ...
+  scatter3(dataRows(dataSamples>0)+rOffset,dataColumns(dataSamples>0)+cOffset,xZC(dataSamples>0),25,[0 0 0], ...
     'LineWidth', 0.25, 'Marker', 's'); %'filled', 
 end
 
