@@ -1,5 +1,7 @@
 close all;
 
+runlog(fullfile('output','testStats.log'),'optional');
+
 runlog('\n');
 
 default exportVideo false;
@@ -186,7 +188,7 @@ for f = 1:nFields
   fupdate = [plotType ' ' field ' ' int2str(f) ' / ' int2str(nFields)] ;
   runlog(repmat('\b',1,numel(fstring)));
   fstring = fupdate;
-  runlog(1,fstring);
+  runlog(fstring);
   
   surfData(f) = supMergeSurfs(statPlots, statMasks, field);
   
@@ -262,7 +264,7 @@ for f = 1:nFields
     fupdate = [plotType ' ' field ' ' int2str(f) ' / ' int2str(nFields) ' subset ' int2str(m) ' / ' int2str(nMasks)] ;
     runlog(repmat('\b',1,numel(fstring)));
     fstring = fupdate;
-    runlog(1, fstring);
+    runlog(fstring);
     
     
     tZ        = 101;
@@ -307,7 +309,7 @@ for f = 1:nFields
 end
 
 
-runlog(1, ['... OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
+runlog(['... OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
 
 dlim = [floor(nanmin(dLims(:)))-1 ceil(nanmax(dLims(:)))+1];
 clim = [floor(nanmin(cLims(:)))-1 ceil(nanmax(cLims(:)))+1];
@@ -426,7 +428,7 @@ for s = 1:nSheets
   
   fstring = fupdate;
   
-  runlog(1, fstring);
+  runlog(fstring);
   
   
   for f = 1:nFields
@@ -513,19 +515,19 @@ end
 runlog(repmat('\b',1,numel(fstring)));
 fstring = '';
 
-runlog(1, ['... OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
+runlog(['... OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
 
 % if (exportPng)
-%   
+%
 %   nFrames = numel(M);
 %   for m = 1:numel(M);
 %     fupdate = ['frame ' int2str(m) ' of ' int2str(nFrames)];
 %     runlog(repmat('\b',1,numel(fstring)));
 %     fstring = fupdate;
-%     runlog(1, fstring);
-%     
+%     runlog(fstring);
+%
 %     exporting.imagename = [exporting.name '-' sprintf('%03i',(m)) '.png'];
-%     
+%
 %     imwrite(frame2im(M(m)), fullfile(exporting.file, exporting.imagename),'png');
 %   end
 % end
@@ -547,7 +549,7 @@ if (exportVideo)
     fupdate = ['frame ' int2str(m) ' of ' int2str(nFrames)];
     runlog(repmat('\b',1,numel(fstring)));
     fstring = fupdate;
-    runlog(1, fstring);
+    runlog(fstring);
     
     writeVideo(mVideoWriter,M(m)); %runlog(['.']);
     

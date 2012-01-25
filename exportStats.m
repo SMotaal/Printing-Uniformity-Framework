@@ -3,11 +3,8 @@ clc;
 
 exporting.path = fullfile('output','statsVideo');
 exporting.diary = fullfile(exporting.path, 'exportStats.log');
-try
-  warning off MATLAB:DELETE:FileNotFound
-  delete(exporting.diary)
-end
-diary(exporting.diary);
+
+runlog(exporting.diary,'clear');
 
 runTimer = tic;
 
@@ -27,6 +24,6 @@ for source = {'rithp7k01', 'rithp5501', 'ritsm7402a','ritsm7402b','ritsm7402c'}
   end
 end
 
-fprintf(['\nExporting Complete \t\t' num2str(toc(runTimer)) '\t seconds\n']);
-diary off;
+runlog(['\nExporting Complete \t\t' num2str(toc(runTimer)) '\t seconds\n']);
+
 
