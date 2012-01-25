@@ -274,23 +274,23 @@ for f = 1:nFields
     try
       tEx = num2cell(get(hText(f,m),'Extent')); % [tl, tb, tw, th]
       [eL, eB, eW, eH] = deal(tEx{:});
-      when [eW>tW*1.25] set(hText(f,m),'VerticalAlignment', resolve(tEven,'top','bottom'));
-      when [eH>tH*1.25] set(hText(f,m),'HorizontalAlignment', resolve(tEven,'left','right'));
-%       if (eW>tW*1.25)
+      if (eW>tW*1.25)
+        set(hText(f,m),'VerticalAlignment', ...
+          resolve(rem(m,2)==1,'top','bottom'));
 %         if(rem(m,2)==1)
 %           set(hText(f,m),'VerticalAlignment','top');
 %         else
 %           set(hText(f,m),'VerticalAlignment','bottom');
 %         end
-%       end
-%       if (eH>tH*1.25)
-%                 
-% %         if(rem(m,2)==1)
-% %           set(hText(f,m),'HorizontalAlignment','left');
-% %         else
-% %           set(hText(f,m),'HorizontalAlignment','right');
-% %         end
-%       end
+      end
+      if (eH>tH*1.25)
+        set(hText(f,m),'HorizontalAlignment', resolve(,'left','right'));        
+        if(rem(m,2)==1)
+          set(hText(f,m),'HorizontalAlignment','left');
+        else
+          set(hText(f,m),'HorizontalAlignment','right');
+        end
+      end
     end
     
     

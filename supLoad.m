@@ -20,7 +20,7 @@ if isstr(supMatrix)
   
   assert(exist(supFilePath,'file')>0, ['Could not find the data file ' supFilePath]);
   
-  evalin('base','clear all');
+  evalin('base','clear sup*;');
   assignin('base','supFilePath',supFilePath);
   assignin('base','supFileName',filename);
   
@@ -42,7 +42,7 @@ end
 
 evalin('base', 'supCommon');
 
-if ~exist('supMatrix','var')
+if ~exist('supMatrix','var')  
   supMatrix = evalin('base','supMatrix');
 end
   
@@ -111,7 +111,7 @@ elseif isOldSchool
 
 end
 
-size(supData.data)
+% size(supData.data)
 
 %% Re-interp Reference Spectra
 reInterpCMS = 1;
