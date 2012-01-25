@@ -4,12 +4,14 @@ function [ output_args ] = when( expression, varargin )
 
 statement = '';
 for vin = varargin
-  statement = [statement ' ' char(vin)];
+  vt = strtrim(char(vin));
+  vt = regexprep(vt,'^"([^"]*)"$','''$1''');
+  statement = [statement ' ' vt];
 end
 statement = strtrim(statement);
 
 if ischar(expression)
-  expression = evalin('caller', expression);
+  expression = evalin('caller', expression)==1;
 end
 
 if islogical(expression)
