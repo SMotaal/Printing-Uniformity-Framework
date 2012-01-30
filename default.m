@@ -1,35 +1,12 @@
-function [ output_args ] = default( var, value, flag)
-%DEFAULT Summary of this function goes here
-%   Detailed explanation goes here
+function [ value ] = default( var, varargin) % , flag, space)
+%DEFAULT Sets specified variable to a default value if not already defined
 
-if evalin('caller',['~exist(''' var ''', ''var'')'])
+space = 'caller';
 
-  isstr = exist('flag', 'var') && strcmpi(flag,'str');
-  istrue = strcmpi(value,'true');
-  isfalse = strcmpi(value,'false');
-  isboolean = istrue || isfalse;
-
-  if ~isstr && istrue
-    value = true;
-  elseif  ~isstr && isfalse
-    value = false;
-  elseif ~isstr && ~istrue && ~isfalse
-    try
-      nvalue = str2num(value);
-      value = nvalue;
-      isnumber = true;
-    catch err
-      isnumber = false;
-    end
-  end
-  
-  if isstr || isboolean || isnumber % (strcmpi(flag,'str'))
-    assignin('caller', var, value);
-  else
-    evalin('caller',[var ' = ' value ';']);
-  end
+if evalin(space,['~exist(''' var ''', ''var'')'])
+  let('value', varargin{:});
+  assignin(space, var, value);
 end
-
 
 end
 

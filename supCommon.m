@@ -22,7 +22,7 @@ if ~exist('supSheet','var')
 end
 
 if ~exist('supPatchValue', 'var')
-  supPatchValue = 75; % 100, 75, 50, 25, 0 , -1 (slur)
+  supPatchValue = 100; % 100, 75, 50, 25, 0 , -1 (slur)
 end
 
 if ~exist ('supData','var')

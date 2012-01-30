@@ -48,8 +48,9 @@ end
   % set of all sheets, and each sheet is a summary of all the patches in the
   % sheet.
   
-  % plotStats.sheetMasks(1,:,:) = [ones(rows, columns)];
-  % plotStats.sheetStats = localStats(plotMatrix, plotStats.sheetMasks);
+  plotStats.sheetMasks(1,:,:) = [ones(rows, columns)];
+  plotStats.sheetStats = localStats(plotMatrix, plotStats.sheetMasks);
+  plotStats.sheetSurfs = surfData(plotStats.sheetStats, [], plotStats.sheetMasks, metrics);
   
   %% Localized Stats
   % Stats for arbitrary group of patches across all sheets. Locations are
