@@ -149,8 +149,8 @@ def.LineWidth    = 1;
 
 def.GridColor    = [1,1,1].*0.5;
 
-def.TextFont   = 'Gill Sans'; % 'Helvetica';
-def.BoldFont   = def.TextFont; %'Gill Sans Bold';  %'Helvetica Bold';
+def.TextFont   = 'Helvetica'; %'Gill Sans';
+def.BoldFont   = 'Helvetica Bold'; %defTextFont;
 def.BoldWeight = 'bold';
 def.TextColor  = 'k';
 
