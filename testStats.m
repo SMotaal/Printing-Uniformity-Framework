@@ -16,8 +16,9 @@ try
     supFilePath = datadir('uniprint',source);
     runName = whos('-file', supFilePath);
     runName = runName.name;
-    stepTimer = tic; runlog(['Loading ' runName ' uniformity data ...']);
+    stepTimer = tic; runlog(['Loading ' runName ' uniformity data ...']);    
     supLoad(supFilePath); click roundActions;
+    runlog(['\n' structTree(supMat.sourceTicket,2) '\n']);
     runlog([' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
     newPatchValue = 100;
     clear source;
@@ -54,17 +55,30 @@ default exportEps false;
 default plotType "region";  % 'z;one';  % 'axial';
 default plotMode "single";
 
+if (exists('exportAll'))
+  if ((exportAll==true))
+    exportVideo = true;
+    exportEps = false;
+    exportPng = true;
+  else
+    exportVideo = false;
+    exportEps = false;
+    exportPng = false;
+  end
+end
+
+
 clear plotting stats;
 
-isRegionMode = (strcmpi(plotMode,'regions'));
-if isRegionMode
+isCombinedMode = (strcmpi(plotMode,'regions'));
+if isCombinedMode
   plotTypes = {'region', 'axial', 'circumferential', 'sheet'};
   plotUnits = 'pixels';
   plotting.Specs = struct( ...
     'Dimensions',   {[0, 0],          [0,50],     [50, 0],    [50, 50]        }, ...
     'Offset',       {[0,0,-50,-50],   [],         [],         []              }, ...
     'Placement',    {[0,0],           [0,1],      [1,0],      [1,1]           }, ...
-    'ColorBar',     {[],              [],         [],         'SouthOutside'  }, ...
+    'ColorBar',     {'SouthOutside',              [],         [],         []  }, ...
     'Grid',         {'off',           'off',      'off',      'off'           });
 else
   plotTypes = {plotType};
@@ -147,12 +161,16 @@ def.Units      = 'normalized';
 def.LineStyle    = '-';
 def.LineWidth    = 1;
 
-def.GridColor    = [1,1,1].*0.5;
+def.GridColor    = [1,1,1].*0.3;
 
 def.TextFont   = 'Gill Sans'; % 'Helvetica';
 def.BoldFont   = def.TextFont; %'Gill Sans Bold';  %'Helvetica Bold';
 def.BoldWeight = 'bold';
 def.TextColor  = 'k';
+def.FontSize   = 12;
+% if (isExporting)
+%   def.FontSize   = 14;
+% end
 
 style.TextFont     = {'FontName',   def.TextFont};
 style.TextColor    = {'Color', def.TextColor};
@@ -160,28 +178,52 @@ style.BoldFont     = {'FontName',   def.BoldFont}; %[style.TextFont ' Bold']; %'
 style.BoldWeight   = {'FontWeight', def.BoldWeight};
 style.LabelAlignment = {'HorizontalAlignment','center','VerticalAlignment','middle'};
 
-style.TitleStyle   = {style.BoldFont{:}, 'FontSize', 12, style.BoldWeight{:}, style.TextColor{:}};
-style.LabelStyle   = {style.LabelAlignment{:}, style.BoldFont{:}, 'FontSize', 11, style.BoldWeight{:}, style.TextColor{:}}; %...
+style.TitleStyle   = {style.BoldFont{:}, 'FontSize', def.FontSize+4, style.TextColor{:}}; % style.BoldWeight{:},
+style.LabelStyle   = {style.LabelAlignment{:}, style.BoldFont{:}, 'FontSize', def.FontSize+3, style.TextColor{:}}; %...
 
-style.BarStyle     = {style.BoldFont{:}, 'FontSize', 10, style.BoldWeight{:}, 'Projection', 'Perspective'};
+style.PlotStyle  = {'LineSmoothing','on'};
+
+style.BarStyle     = {style.BoldFont{:}, 'FontSize', def.FontSize, style.BoldWeight{:}, 'Projection', 'orthographic', 'Box','off'};
 style.GridStyle    = {'GridLineStyle', ':', 'MinorGridLineStyle','-', ...
   'XColor',def.GridColor, 'YColor',def.GridColor, 'ZColor',def.GridColor};
-style.AxesStyle    = {style.BoldFont{:}, 'FontSize', 12, style.BoldWeight{:}, style.GridStyle{:}};
+style.AxesStyle    = {'Clipping', 'off', 'Color', [1 1 1] .* 0.95, 'Box', 'off', style.BoldFont{:}, 'FontSize', def.FontSize, style.GridStyle{:}};
 style.SurfStyle    = {'EdgeColor', 'none'};
-style.PlotStyle  = {'LineSmoothing','on'};
 style.ZoneStyle    = {'LineStyle',':', 'FaceColor', 'none', 'LineWidth', 0.25};
 
 exporting.Scale        = 1.25;
 exporting.Border = 20;
 
-if (~isExporting)
-  jFrame = get(handle(gcf),'JavaFrame');
-  jFrame.setMaximized(true);
-else
-  set(hFig,'position',[0 0 1600 1600]);
-end
+fields = {'RelativeMean', 'RelativePeakLimit', 'DeltaLimit'}; % , 'Mean'
+nSheets   = supStatPlots.sheets + 1;
+nFields   = numel(fields);
 
-fields = {'LowerLimit', 'UpperLimit', 'Mean', 'DeltaLimit'};
+
+fHightDiff = 0;
+if (~isExporting)
+%   jFrame = get(handle(gcf),'JavaFrame');
+%   jFrame.setMaximized(true);
+  drawnow;
+	pause(2);
+%   fPos = get(hFig,'Position');
+
+  fPos = get(hFig,'Position');
+  fOut = get(hFig,'OuterPosition');
+  fBorders = fOut - fPos;
+
+  sPos = get(0,'ScreenSize');
+  fWidth = sPos(3); %fPos(3);
+  fHeight = ceil(fWidth/nFields) + fHightDiff;
+  fTop = fBorders(2) + (sPos(4)-fHeight)/2;
+  fPos = [0 fTop fWidth fHeight];
+  fPos(4) = fHeight;
+else
+  fWidth = 1600;
+  fHeight = ceil(fWidth/nFields) + fHightDiff;
+  fPos = [0 0 fWidth fHeight];
+end
+set(hFig,'position',fPos);
+drawnow;
+pause(2);
 
 runName = supMat.sourceTicket.folder.name;
 
@@ -193,17 +235,14 @@ amin(1:numel(fields)) = 100;
 amax(1:numel(fields)) = 0;
 
 iX1 = 0; iX2 = 0; iY1 = 0; iY2 = 0;
-
-nSheets   = supStatPlots.sheets;
-nFields   = numel(fields);
 % nMasks    = size(statMasks,1);
 
 sheetIndex    = evalin('base','supData.sheetIndex');
-sheetMax = max(supData.sheetIndex(:));
+sheetMax = max(sheetIndex);
 
 if (isExporting)
   clear M;
-  M(1:sheetMax) = struct('cdata', [], 'colormap', []);
+  M(1:sheetMax+1) = struct('cdata', [], 'colormap', []);
 end
 
 
@@ -213,32 +252,67 @@ surfDataStruct = struct('fieldName', {}, ...
   'sheets', {},'masks', {},'rows', {},'columns', {}, ...
   'data', {},'dataMean', {},'dataStDev', {},'dataLimit', {},'dataRange', {}, ...
   'regionMean', {},'regionStDev', {},'regionCentres', {},'regionAreas', {}, ...
-  'regionMasks', {}, ...
-  'summaryData', {}, ...
-  'patchData', {});
+  'regionMasks', {}); %, ...
+%   'summaryData', {}, ...
+%   'patchData', {});
 
 tStrings = cell(nFields, nPlotTypes); %, nMasks, nSheets);
 
-hText = zeros(nFields, nPlotTypes);
+hText = zeros(nFields, nPlotTypes, 25);
+pText = zeros(nFields, nPlotTypes, 25, 2);
 hCB   = zeros(nFields, nPlotTypes);
 hAxes = zeros(nFields, nPlotTypes);
 hSurf = zeros(nFields, nPlotTypes);
+hPlots = zeros(nFields);
+hTitles = zeros(nFields);
 
 dLims = zeros(nFields, nPlotTypes, 2);
 cLims = zeros(nFields, nPlotTypes, 2);
 
 surfData = surfDataStruct;
 
+%% Prepare Colormap
+% cMap      = [ 1.00  1.00  1.00      % Unscaled map
+%               0.90  0.90  0.90
+%               0.80  0.80  0.80
+%               0.70  0.70  0.70
+%               0.60  0.60  0.60              
+%               0.50  1.00  0.50      % cKeyColor
+%               0.40  0.40  0.40
+%               0.30  0.30  0.30
+%               0.20  0.20  0.20              
+%               0.10  0.10  0.10
+%               0.00  0.00  0.00  ]; 
+            
+cMap    = [ 0.00  1.00  0.00
+            1.00  1.00  0.00
+            1.00  0.00  0.00];
+
+cMap    = [ 1.00  1.00  1.00
+            1.00  0.00  0.00];
+            
+cMap2   = vertcat(flipud(cMap), cMap(2:end, :));
+            
+
+cSteps  = size(cMap,1);
+cMap    = interp1(0:cSteps-1,cMap,0:(cSteps-1)/(64-1):cSteps-1);
+
+cSteps  = size(cMap2,1);
+cMap2   = interp1(0:cSteps-1,cMap2,0:(cSteps-1)/(64-1):cSteps-1);
+
+%% Create Subplots
+
 for f = 1:nFields
+  hPlots(f) = subaxis(1,nFields,f, 'Spacing', 0.03, 'Padding', 0, 'Margin', 0.03);%subplot(1,nFields,f);
+%   drawnow;
+
+%   set(hPlots(f),'Position',pPos);  
+  
   for p = 1:nPlotTypes %plotType = plotTypes
     plotType = plotTypes{p}; %char(plotType);
     isLastPlotType   = p==nPlotTypes; % strcmpi(plotType, plotTypes(end));
     
     nMasks    = size(stats.(plotType).Masks,1);
-    
-    try
-      plotSpecs = plotting.Specs(p);
-    end
     
     field = char(fields(f));
     
@@ -247,15 +321,17 @@ for f = 1:nFields
     fstring = fupdate;
     runlog(fstring);
     
-    surfData(f,p) = supMergeSurfs( stats.(plotType).Surfs, stats.(plotType).Masks, field);
+    mergedSurfs = supMergeSurfs( stats.(plotType).Surfs, stats.(plotType).Masks, field);
+    surfData(f,p) = mergedSurfs;
     
     fMean = nanmean(surfData(f,p).regionMean(:));
     fStd = nanmean(surfData(f,p).regionStDev(:));
     
     isDelta  = numel(field)>=5 && strcmpi(field(1:5),'Delta');
-    isMean   = strcmpi(field,'Mean');
+    isMean   = strcmpi(field,'Mean');  % ~isempty(regexpi(field,'mean'));
     isUpperLimit   = strcmpi(field,'UpperLimit');
     isLowerLimit   = strcmpi(field,'LowerLimit');
+    isRelative = ~isempty(regexpi(field,'relative'));
     
     isLabelField  = true;
     
@@ -264,66 +340,222 @@ for f = 1:nFields
     zLabel = ['zData' upper(plotType(1)) lower(plotType(2:end)) field];
     zData = surfData(f,p).data(:,:,1);
     
+    cmap = cMap2;
+    
     if(isDelta)
       dlim = [0 10];
-      clim = [0 10];
-      
-      dLims(f,p,:) = NaN;
-      cLims(f,p,:) = NaN;
-      
+      clim = [-10 10];
     elseif isMean || isUpperLimit || isLowerLimit
-      dlim        = surfData(f,p).dataRange;
-      clim        = surfData(f,p).dataRange;
-      
-      dLims(f,p,:)  = dlim;
-      cLims(f,p,:) 	= clim;
+      dlim = surfData(f,p).dataRange;
+      clim = dlim; % [min(dlim)-(diff(dlim)) max(dlim)]; 
+    elseif isRelative
+      dlim = [-5 +5];
+      clim = [-5 +5];
     else
       clear('clim', 'dlim');
     end
     
+    opt dLims(f,p,:)  = dlim;
+    opt cLims(f,p,:) 	= clim;
+    opt colormap(cmap);
+    
     eval([zLabel '=zData;']);
     
-    subplot(nPlotTypes,nFields,((p-1) * nFields) + f); ...
-      hold off;
+    %% Create the plot
     
-    hSurf(f,p) = surf(zData,'ZDataSource',zLabel, style.SurfStyle{:}); ...
-      hold on;
+    clear plotSpecs;
+    try
+      plotSpecs = plotting.Specs(p);
+    catch err
+      disp err;
+    end
+        
+    hold all;
     
-    hAxes(f,p) = gca;
+    if (p==1)
+      hSurf(f,p) = surf(zData,'ZDataSource',zLabel, style.SurfStyle{:});
+      hAxes(f,p) = gca;
+      
+      set(hAxes(f,p),style.AxesStyle{:});
+%       daspect([1 1 1]); % daspect([100 100 20]);
+      view([0, 90]);
+      
+      xlim([1 surfData(f,p).columns]);
+      ylim([1 surfData(f,p).rows]);
+      
+      drawnow;
+      pause(0.001);      
+      
+    else
+      pHandle = hAxes(f,p);
+      set(hFig,'CurrentAxes',pHandle);
+%       axes(pHandle);
+      if (numel(zData)>1)
+        hSurf(f,p) = surf(zData,'ZDataSource',zLabel, style.SurfStyle{:});
+      elseif numel(zData)==1
+%         hSurf(f,p) = surf([xlim, ylim, zData zData],'ZDataSource',zLabel, style.SurfStyle{:});
+        [pX pY pZ] = meshgrid(xlim, ylim, 1);
+        hSurf(f,p) = surf(pX,pY,pZ.*zData,style.SurfStyle{:});
+%         hSurf(f,p) = patch(patchX, patchY,zData,style.SurfStyle{:}); % 'ZDataSource',zLabel;
+      end
+    end
     
-    title([runName TAB field TAB int2str(supPatchValue) '%'  TAB int2str(1)], style.TitleStyle{:});
+    %     hSurf(f,p) = surf(zData,'ZDataSource',zLabel, style.SurfStyle{:}); ...
+    %       hold all;
+    paHandle = hAxes(f,p);
     
-    set(gca,style.AxesStyle{:});
-    daspect([100 100 20]);
-    view([0, 90]);
+    plotSpecs.secondarySize = [20 20];
+    plotSpecs.paddingSize = [10 10];
     
-    xlim([1 surfData(f,p).columns]);
-    ylim([1 surfData(f,p).rows]);
+    %% Optimize Dimensions
+%     if (nPlotTypes>1)
+      paUnits = get(paHandle, 'Units');
+      set(paHandle, 'Units', 'pixels');
+      
+      if (p==1) % 'Placement'
+        % Determine optimal plot dimensions
+        paPos   = get(hAxes(f,p), 'Position');
+        paOff   = paPos(1:2);
+        
+        paSlices = reshape([plotting.Specs(:).Placement],2,[])';
+        
+        paSlices = [any(paSlices(:,1)==0) && any(paSlices(:,1)~=0) ...
+          any(paSlices(:,2)==0) && any(paSlices(:,2)~=0)];
+        
+        paShrink = [plotSpecs.secondarySize + plotSpecs.paddingSize] .* paSlices;
+        
+        paPos2  = [paPos(1:2) paPos(3:4)];
+        
+        paRC = [surfData(f,p).columns surfData(f,p).rows];
+        
+        ratRC = paPos2(3:4)'./paRC(:);
+        
+        pUnits = get(hPlots(f),'Units');
+        set(hPlots(f),'Units','pixels');
+        pPos = get(hPlots(f),'Position');
+        set(hPlots(f),'Units',pUnits);
+                
+        % Row/Column Ratio
+        if (ratRC(1)>paRC(2))
+          paPos2(3) = paRC(1)*ratRC(2);
+        else
+          paPos2(4) = paRC(2)*ratRC(1);
+        end
+        
+        % Plot Fitting
+        ratPa = (pPos(4)-100)/paPos2(4);
+        if (ratPa<1.0)
+          paDim2 = paPos2(3:4).*ratPa;
+          paPos2(3:4) = paDim2;
+        end
+        
+        % Plot Centering
+        paPos2(1) = paOff(1)  +  0  + (pPos(3)-paPos2(3))/2;  % paPos2(1)*ratRC(1)/ratRC(2);
+        paPos2(2) = paOff(2)  + 25  + (pPos(4)-paPos2(4))/2; %(pPos(4)-paPos2(4))/2;  % paPos2(2)*ratRC(2)/ratRC(1);
+        
+        paPos  = paPos2;
+        
+        paPos3 = [paPos2(1:2) paPos2(3:4)-paShrink];
+        ratRC2 = paPos2(3:4) ./ paPos3(3:4);
+        paPos2 = paPos3;        
+        plotting.Specs(1).Position = paPos;
+        
+        set(paHandle, 'Position', paPos2);
+        
+        titleX = (max(xlim)-min(xlim))/2*ratRC2(1); titleY = (max(ylim)+1)*ratRC2(2); % set(hTitles(1), 'Position', [titleX titleY]);
+        titlePos = [pPos(3)/2 paPos2(4)+10+paShrink(2), 0];
+        titleString = [runName TAB field TAB int2str(supPatchValue) '%'  TAB int2str(1)]; style.TitleStyle{:};
+        titleStyle = {style.TitleStyle{:}, ... %'Units','Pixels', 'Position', titlePos, ...
+          'HorizontalAlignment','center','VerticalAlignment','bottom'};
+        hTitles(f) = text(titleX,titleY, titleString, titleStyle{:});
+
+        
+        % Determine optimal secondary plot dimensions
+        for p2 = 2:nPlotTypes
+          
+          p1pos = paPos2;
+          p2Place = plotting.Specs(p2).Placement;
+          p2Dim = plotSpecs.secondarySize;
+          p2Pad = plotSpecs.paddingSize;
+          p2Size = p2Dim.*p2Place + p1pos(3:4).*~p2Place;
+          p2Loc = p1pos(1:2) + ((p1pos(3:4)+p2Pad).*p2Place);
+          p2Pos = [p2Loc p2Size];
+          plotting.Specs(p2).Position = p2Pos;
+          
+          
+          axes('Units', 'pixels', 'Position', p2Pos, 'XTickLabel', [], 'YTickLabel', []);
+          hold all;
+          
+          hAxes(f,p2) = gca;
+          
+          if(p2Place(1)==1)
+            set(hAxes(f,p2),'YAxisLocation', 'right');
+          end          
+          
+          if(p2Place(2)==1)
+            set(hAxes(f,p2),'XAxisLocation', 'top');
+          end
+          
+%           daspect(hAxes(f,p2),[1 1 1]);
+          
+          set(hAxes(f,p2), 'Units', paUnits);
+          
+          set(hAxes(f,p2),style.AxesStyle{:});
+          view(hAxes(f,p2),[0, 90]);
+          
+          paRC = [surfData(f,p).columns surfData(f,p).rows];
+          paRC(p2Place==1) = 2;
+          
+          xlim(hAxes(f,p2),[1 paRC(1)]);
+          ylim(hAxes(f,p2),[1 paRC(2)]);
+ 
+        end     
+        
+      end
+      
+      set(paHandle, 'Units', paUnits);
+%     end
+    
+          drawnow;
+          pause(0.001);          
+%           [plotting.Specs(:).Position]         
+    set(hFig,'CurrentAxes',hAxes(f,p)); % axes(hAxes(f,p));
     
     opt zlim(dlim);
     opt caxis(clim);
     
-    colormap('Jet');
+%     colormap(cMap);
     
     try
-      cbSpec = plotting.Specs(p).ColorBar;
+      cbSpec = plotSpecs.ColorBar;
       
       if ~isempty(cbSpec)
         
         hCB(f,p) = colorbar(cbSpec, style.BarStyle {:}); %, 'LineWidth', def.LineWidth + 0.5);
         
+        try
+          xlim(hCB(f,p),dlim);
+        catch err
+          disp(err);
+        end
+        
         cbUnits = get(hCB(f,p),'Units');
         set(hCB(f,p),'Units','pixels');
         cbPos = get(hCB(f,p),'Position');
-        cbPos(2) = cbPos(2) - 40; ...
-          cbPos(4) = 5; ...
-          cbPos(3) = cbPos(3)-2;
+        cbExt = get(hCB(f,p),'OuterPosition');
+        opt cbPos(4) = 4; ...
+        opt cbPos(3) = paPos(3); %cbPos(3)-2;        
+        opt cbPos(1) = paPos(1); ...
+        opt cbPos(2) = cbPos(2) - 50; ...
         set(hCB(f,p),'Position', cbPos); ...
           set(hCB(f,p), 'Units', cbUnits);
+%         xlim(hCB(f,p))
       end
+    catch err
+      disp err;      
     end
     
-    opt grid(plotting.Specs(p).Grid);
+    opt grid(plotSpecs.Grid);
     
     for m = 1:nMasks
       
@@ -337,6 +569,16 @@ for f = 1:nFields
         tY          = surfData(f,p).regionCentres(m,2); ...
         tW          = surfData(f,p).regionAreas(m,1); ...
         tH          = surfData(f,p).regionAreas(m,2);
+      
+      if (tX>max(xlim))
+        tX = min(xlim) + (max(xlim)-min(xlim))/2;
+      end
+      
+      if (tY>max(ylim))
+        tY = min(ylim) + (max(ylim)-min(ylim))/2;
+      end
+      
+      pText(f,p,m,1:2) = [tX tY];
       
       hText(f,p,m)  = text(tX,tY,tZ,'##', style.LabelStyle{:});
       
@@ -353,13 +595,15 @@ for f = 1:nFields
           tStDev          = surfData(f,p).regionStDev(m,s);
           %           tV              = ['' int2str(tMean)];
           %           tV = strtrim(strrep(int2str(tMean),'NaN',''));
-          tStrings(f,p,m,s) = {strtrim(strrep(int2str(tMean),'NaN',''))};
+%           tStrings(f,p,m,s) = {strtrim(strrep(int2str(tMean),'NaN',''))};
+          tStrings(f,p,m,s) = {strtrim(strrep(sprintf('%2.1f',tMean),'NaN',''))};
         end
         
         set(hText(f,p,m),'String', char(tStrings(f,p,m,1)));
+      catch err
+        disp err;        
       end
-      
-      
+
     end
   end
   
@@ -403,16 +647,22 @@ for f = 1:nFields
   
 end
 
+drawnow;
+
+
 plotting.tStrings = tStrings;
 plotting.hText    = hText;
 plotting.hSurf    = hSurf;
 plotting.hAxes    = hAxes;
 plotting.hCB      = hCB;
+plotting.hPlots   = hPlots;
 plotting.dLims    = dLims;
 plotting.cLims    = cLims;
 plotting.surfData = surfData;
 
 runlog(['... OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
+
+% return;
 
 %% Optimize plot limits
 stepTimer = tic; runlog([TABS 'Optimizing plot limits ']);
@@ -428,67 +678,91 @@ for p = 1:nPlotTypes%plotType = plotTypes
 end
 
 dlim = [floor(nanmin(dLims(:)))-1 ceil(nanmax(dLims(:)))+1];
+% dlim = [0:100];
 clim = [floor(nanmin(cLims(:)))-1 ceil(nanmax(cLims(:)))+1];
 
 dMean = nanmean(dLims(:));
-clim = [round(dMean)-5 round(dMean)+5];
+clim = [round(dMean)-5-10 round(dMean)+5];
+cxlim = [round(dMean)-5 round(dMean)+5];
+
+% cxlim = [dlim] + [+1 -1];
 
 cform = makecform('srgb2xyz');
-cmaps = cell(nFields,1);
+% cmaps = cell(nFields,1);
+
+drawnow;
+
+cmap1     = colormap(cMap); %get(gcf,'Colormap');
+cmap1     = applycform(cmap1,cform);
+
+cmap2     = colormap(cMap2);
+cmap2     = applycform(cmap2,cform);
+
+cmap      = cmap2;
+
+% hAxes(1:end) = findobj(hFig,'type','axes');
 
 for f = 1:nFields
-  
+  subplot(hPlots(f)); hold all;
   for p = 1:nPlotTypes
+%     axes(hAxes(f,p));
     
     
     %% Set range for non-delta
     field = char(fields(f));
     
-    subplot(nPlotTypes,nFields,((p-1) * nFields) + f); ...
-      hold on;
+%     subplot(nPlotTypes,nFields,((p-1) * nFields) + f); ...
+%       hold all;
     
-    try
-      cmap      = get(gcf,'Colormap');
-      cmap      = applycform(cmap,cform);
-      cmaps{f,p}  = cmap;
-    catch err
-      disp(err);
-    end
+%     try
+%       cmaps{f,p}  = cmap;
+%     catch err
+%       disp(err);
+%     end
     
     
-    isMean   = strcmpi(field,'Mean');
+    isMean   = strcmpi(field,'Mean'); % ~isempty(regexpi(field,'mean'));
     isUpperLimit   = strcmpi(field,'UpperLimit');
     isLowerLimit   = strcmpi(field,'LowerLimit');
+    isRelative = ~isempty(regexpi(field,'relative'));
     
     if (isMean || isUpperLimit || isLowerLimit)
-      zlim(dlim);
-      caxis(clim);
+%       zlim(hAxes(f,p), dlim);
+%       caxis(hAxes(f,p),clim);
+      set(hAxes(f,p),'ZLim',dlim);
+      set(hAxes(f,p),'CLim',clim);
+      
+      if (hCB(f,p)>0)
+        set(hCB(f,p), 'XLim', cxlim);
+      end
     end
     
     try
-      cbLims = get(hCB(f,p), 'XLim');
-      
-      cbMin = floor(min(cbLims));
-      cbMax = ceil(max(cbLims));
-      cbDiff = cbMax-cbMin;
-      
-      cbTicks = get(hCB(f,p), 'XTick');
-      
-      if(cbDiff >= 8)
-        cbTicks = cbMin:2:cbMax;
-      elseif(cbDiff < 8 && cbDiff >= 4)
-        cbTicks = cbMin:1:cbMax;
-      elseif(cbDiff < 4 && cbDiff >= 2)
-        cbTicks = cbMin:0.5:cbMax;
-      elseif (cbDiff < 2)
-        cbTicks = cbMin:0.25:cbMax;
+      if (hCB(f,p)>0)
+        cbLims = get(hCB(f,p), 'XLim');
+        cbMin = floor(min(cbLims));
+        cbMax = ceil(max(cbLims));
+        cbDiff = cbMax-cbMin;
+
+        cbTicks = get(hCB(f,p), 'XTick');
+
+        if(cbDiff >= 8)
+          cbTicks = cbMin:2:cbMax;
+        elseif(cbDiff < 8 && cbDiff >= 4)
+          cbTicks = cbMin:1:cbMax;
+        elseif(cbDiff < 4 && cbDiff >= 2)
+          cbTicks = cbMin:0.5:cbMax;
+        elseif (cbDiff < 2)
+          cbTicks = cbMin:0.25:cbMax;
+        end
+
+        set(hCB(f,p), 'XTick', cbTicks);
       end
-      
-      set(hCB(f,p), 'XTick', cbTicks);
     catch err
-      %       disp(err);
+            disp(err);
     end
   end
+  drawnow;
   runlog(['.']);
 end
 runlog([' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
@@ -517,15 +791,15 @@ if (exportVideo || exportPng)
   
   runlog(['.']);
   
-  iY1 = max(iY1-exporting.Border,0);
-  iX1 = max(iX1-exporting.Border,0);
+  iY1 = max(iY1-exporting.Border,1);
+  iX1 = max(iX1-exporting.Border,1);
   iY2 = min(iY2+exporting.Border,size(img,1));
   iX2 = min(iX2+exporting.Border,size(img,2));
   runlog([' ' int2str(iX2-iX1) 'x' int2str(iY2-iY1) '/' num2str(exporting.Scale) ' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
 end
 
 if (isExporting)
-  exporting.path = fullfile(cd, 'output','statsVideo');
+  exporting.path = fullfile(cd, 'output',['statsVideo-' datestr(now, 'yymmdd')]);
   exporting.name = lower([runName '-' plotMode '-' int2str(supPatchValue)]);
   exporting.file = fullfile(exporting.path, exporting.name);
 end
@@ -534,6 +808,10 @@ if (exportPng || exportEps)
   warning off MATLAB:MKDIR:DirectoryExists;
   opt mkdir (exporting.file);
   warning on MATLAB:MKDIR:DirectoryExists;
+end
+
+if (exportPng)
+  htmlIndex = '';
 end
 
 
@@ -551,12 +829,18 @@ hCB  = plotting.hCB;
 % plotting.surfData = surfData;
 
 sIndex = 0;
-for s = 1:nSheets
+for s = [1:nSheets]
   
   fupdate = [int2str(s) ' / ' int2str(nSheets)] ;
   runlog(repmat('\b',1,numel(fstring)));
   fstring = fupdate;
   runlog(fstring);
+  
+  if (isnumeric(sIndex))
+    sName = int2str(sIndex+1);
+  else
+    sName = upper(sIndex);
+  end
   
   for p = 1:nPlotTypes
     plotType = plotTypes{p};
@@ -565,13 +849,27 @@ for s = 1:nSheets
     for f = 1:nFields
       field = char(fields(f));
       
-      subplot(nPlotTypes,nFields,((p-1) * nFields) + f); ...
-        hold on;
+      isRelative = ~isempty(regexpi(field,'relative'));
       
-      title([runName TAB field TAB int2str(supPatchValue) '%'  TAB int2str(sIndex+1)], style.TitleStyle{:});
+%       if (isRelative)
+%         cmap = cmap2;
+%       else
+%         cmap = cmap1;
+%       end
+
+      
+      subplot(hPlots(f)); %1,nFields,f); hold all; 
+      hold all;
+      
+%       subplot(nPlotTypes,nFields,((p-1) * nFields) + f); ...
+%         hold on;
+      if (p==1)
+        set(hTitles(f),'String', [runName TAB field TAB int2str(supPatchValue) '%'  TAB sName], style.TitleStyle{:});
+%         title([runName TAB field TAB int2str(supPatchValue) '%'  TAB int2str(sIndex+1)], style.TitleStyle{:});
+      end
       
       zData = surfData(f,p).data(:,:,s);
-      
+           
       clim = caxis;
       cmin = min(clim);
       cmax = max(clim);
@@ -580,9 +878,18 @@ for s = 1:nSheets
       zData(zData>cmax) = cmax;
       zData(zData<cmin) = cmin;
       
-      cmap = cmaps{f,p};
-      csteps = size(cmap,1);
+      if numel(zData)>1
+%         hSurf(f,p) = surf(zData,'ZDataSource',zLabel, style.SurfStyle{:});
+      elseif numel(zData)==1
+%         hSurf(f,p) = patch(xlim, ylim,zData,style.SurfStyle{:}); % 'ZDataSource',zLabel;
+        zcurr = get(hSurf(f,p),'ZData');
+        %[pX pY pZ] = meshgrid(xlim, ylim, 1);
+%         hSurf(f,p) = surf(pZ.*zData,style.SurfStyle{:});        
+        set(hSurf(f,p),'ZData', pZ.*zData);
+      end      
       
+%       cmap = cmaps{f,p};
+      csteps = size(cmap,1);
       cx = interp1([1 csteps], [cmin cmax],1:csteps);%cmin:cdiff/(csteps-1):cmax;
       
       zLabel = ['zData' upper(plotType(1)) lower(plotType(2:end)) field];
@@ -596,13 +903,18 @@ for s = 1:nSheets
         tPos = get(hText(f,p,m),'Position');
         tC = 'k';
         try
-          zX = tPos(2);       % surfData(f,p).regionCentres(m,1);
-          zY = tPos(1);       % surfData(f,p).regionCentres(m,2);
-          zV = floor(zData(zX,zY));
+          tV = floor(surfData(f,p).regionMean(m,s));
+          
+          zX = round(pText(f,p,m,2));        % surfData(f,p).regionCentres(m,1); % tPos(2)
+          zY = round(pText(f,p,m,1));       % surfData(f,p).regionCentres(m,2); % tPos(1)
+          
+          zV = tV; %floor(zData(zX,zY));
+
           zC = interp1(cx(:),cmap(:,1),zV);
-          when [zC<0.33] tC = "w";
-        catch err
-          disp(err);
+          zT = 0.33; % 0.33
+          when [zC<zT] tC = "w";
+         catch err
+           disp(err);
         end
         set(hText(f,p,m),'color', tC);
       end
@@ -617,34 +929,54 @@ for s = 1:nSheets
     imgSrc = print2array(hFig, exporting.Scale);
     imgSrc = imgSrc(iY1:iY2,iX1:iX2,:);
     img = imgSrc;
-    %     img = imfilter(img,imgf,'replicate');
-    img = imresize(img,1/exporting.Scale,'Dither',false);
-    frm = im2frame(img);  % img(iY1:iY2,iX1:iX2,:));
+
+    img = imresize(img,1/exporting.Scale,'Dither',true, 'Method', 'lanczos3'); %, 'Antialiasing', false);
+    frm = im2frame(img);
   end
   
   if (exportVideo)
-    for fIndex = sIndex+1:sheetIndex(s)
-      M(fIndex) = frm;
+    if (isnumeric(sIndex))
+      for fIndex = sIndex+1:sheetIndex(s)
+        M(fIndex) = frm;
+      end
+    else
+      M(numel(M)) = frm;
+    end
+  end
+  
+  if (exportPng | exportEps)
+    if (isnumeric(sIndex))    
+      exporting.imagename = [exporting.name '-' sprintf('%03i',sheetIndex(s)  )];
+    else
+      exporting.imagename = [exporting.name '-' sName];
     end
   end
   
   if (exportPng)
-    exporting.imagename = [exporting.name '-' sprintf('%03i',(sIndex+1))];
     imwrite(imgSrc, fullfile(exporting.file, [exporting.imagename '.png']),'png');
+    exporting.imagehtml = strcat('<img src="', [exporting.imagename '.png'], '" />', '<br />', '\n');
+    
+    if (isnumeric(sIndex))
+      htmlIndex = strcat(htmlIndex,exporting.imagehtml);
+    else
+      htmlIndex = strcat(exporting.imagehtml, htmlIndex);
+    end
   end
   
   if (exportEps)
-    exporting.imagename = [exporting.name '-' sprintf('%03i',(sIndex+1))];
     print2eps(fullfile(exporting.file,[exporting.imagename]),hFig); %, '-dpdf');
   end
   
   if (~isExporting)
     pause(0.001);
-    drawnow;
+%     drawnow;
   end
   
-  
-  sIndex=sheetIndex(s);
+  if (s>=numel(sheetIndex))
+    sIndex = 'sum';
+  else
+    sIndex=sheetIndex(s);
+  end
   
 end
 
@@ -653,20 +985,24 @@ fstring = '';
 
 runlog(['... OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
 
-% if (exportPng)
-%
-%   nFrames = numel(M);
-%   for m = 1:numel(M);
-%     fupdate = ['frame ' int2str(m) ' of ' int2str(nFrames)];
-%     runlog(repmat('\b',1,numel(fstring)));
-%     fstring = fupdate;
-%     runlog(fstring);
-%
-%     exporting.imagename = [exporting.name '-' sprintf('%03i',(m)) '.png'];
-%
-%     imwrite(frame2im(M(m)), fullfile(exporting.file, exporting.imagename),'png');
+
+
+if (exportPng)
+  stepTimer = tic; runlog([TABS 'Exporting HTML Index ...']);
+%   htmlIndex = '<html><body>\n';
+%   for s = 1:nSheets
+%     exporting.imagename = [exporting.name '-' sprintf('%03i',sheetIndex(s)  )];
+%     htmlIndex = strcat(htmlIndex,[exporting.imagename '.png'],'\n');
 %   end
-% end
+  htmlIndex = strcat('<html><body>\n', htmlIndex,'<html><body>');
+
+  % call fprintf to print the updated text strings
+  exporting.indexfile = fullfile(exporting.file, 'index.html');
+  fid = fopen(exporting.indexfile,'wt');
+  fprintf(fid, htmlIndex);
+  fclose(fid);
+  runlog([' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
+end
 
 if (exportVideo)
   stepTimer = tic; runlog([TABS 'Exporting ']); % int2str(nSheets) ' sheets / ' int2str(numel(M)) ' frames to ' exporting.aviName ' ']);
@@ -692,13 +1028,13 @@ if (exportVideo)
   end
   close(mVideoWriter);
   
-runlog(repmat('\b',1,numel(fstring)));
-
-runlog([int2str(nSheets) ' sheets / ' int2str(numel(M)) ' frames to ' exporting.name ' ']);
-
-
-runlog([' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
-
+  runlog(repmat('\b',1,numel(fstring)));
+  
+  runlog([int2str(nSheets) ' sheets / ' int2str(numel(M)) ' frames to ' exporting.name ' ']);
+  
+  
+  runlog([' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
+  
   if (ismac)
     stepTimer = tic; runlog([TABS 'Encoding QuickTime Movie ...']);
     avifile = fullfile(mVideoWriter.Path, mVideoWriter.Filename);
@@ -708,9 +1044,9 @@ runlog([' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
     end
     runlog([' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
   end
-
-
-close gcf;
+  
+  
+  close gcf;
 end
 
 runlog([TABS '>> ' runMode ' ' strPlotType ' Successful! \t\t' num2str(toc(roundTimer)) '\t seconds\n']);

@@ -15,11 +15,15 @@ function [ result ] = backspace( text )
 % end
 
 result = text;
+try
 while (~isempty(strfind(result,'\b')))
   i=strfind(result,'\b');
   try
     result = [result(1:i(1)-2) result(i(1)+2:end)];
   end
+end
+catch err
+  result = char(regexprep(cellstr(text),'(.)\\b',''));
 end
 
 end

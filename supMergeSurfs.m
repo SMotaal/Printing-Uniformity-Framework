@@ -24,9 +24,8 @@ regionStDev   = zeros(nMasks, nSheets);           % Sheet/Mask stdev data
 regionCentres = zeros(nMasks,2);                  % Mask X/Y coordinates
 regionAreas   = zeros(nMasks,2);                  % Mask W/H dimensions
 
-summaryData   = zeros(nRows, nColumns, nMasks);   % Summary/Mask data
-
-patchData     = zeros(nSheets, nRows, nColumns);  % Sheet/Patch data
+% summaryData   = zeros(nRows, nColumns, nMasks);   % Summary/Mask data
+% patchData     = zeros(nSheets, nRows, nColumns);  % Sheet/Patch data
 
 
 dataMean      = nanmean(data(:));
@@ -40,15 +39,18 @@ for m = 1:nMasks
   maskedData          = squeeze(data(m, :, :, :));         % MSRC Order
   dataIndex           = ~isnan(maskedData);
   zData(dataIndex)    = maskedData(dataIndex);        
-%   zData(~dataIndex)   = NaN;
   
   for s = 1:nSheets
-    regionData        = maskedData(s,:,:);
+    if (size(maskedData,1)==1)    
+      regionData        = maskedData(s);
+    else
+      regionData        = maskedData(s,:,:);
+    end
     regionMean(m,s)   = nanmean(regionData(:));
     regionStDev(m,s)  = nanstd(regionData(:));
   end
   
-  summaryData(:,:,m)  = nanmean(maskedData,1);
+%   summaryData(:,:,m)  = nanmean(maskedData,1);
   
   regionMask          = squeeze(statMasks(m,:,:));
   [mY1 mX1]           = ind2sub(size(regionMask),find(regionMask==1, 1, 'first'));
@@ -81,8 +83,8 @@ surfs.regionCentres = regionCentres;              % MX/Y
 surfs.regionAreas   = regionAreas;                % MW/H
 surfs.regionMasks   = permute(statMasks, [2 3 1]);% RCM
 
-surfs.summaryData   = summaryData;
-surfs.patchData     = patchData;
+% surfs.summaryData   = summaryData;
+% surfs.patchData     = patchData;
 
 
 end
