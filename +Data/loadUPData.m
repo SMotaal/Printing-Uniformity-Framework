@@ -4,16 +4,20 @@ function [ data ] = loadUPData( source )
   
 %   import Color.*;
 
-
-  data              = emptyStruct(...
-    'index', 'range', 'metrics', 'tables', ...
-    'sampling', 'colorimetry');
-  
-  source            = loadSource(source);
+ 
+  if ischar(source)
+    data              = emptyStruct(...
+      'index', 'range', 'metrics', 'tables', ...
+      'sampling', 'colorimetry');
     
-  data              = prepareData(source, data);
-  data.sampling     = processPatchSampling(data);
-  data.colorimetry  = processColorimetry(data);
+    source            = loadSource(source);
+    
+    data              = prepareData(source, data);
+    data.sampling     = processPatchSampling(data);
+    data.colorimetry  = processColorimetry(data);
+  else
+    data = source;
+  end
   
 end
 
@@ -37,7 +41,7 @@ function [ sampling ] = processPatchSampling( data )
     
 end
 
-function [ source ] = loadSource( source )
+function [ sourceStruct ] = loadSource( source )
   if ischar(source)
     
     sourcePath = source;
@@ -67,9 +71,26 @@ function [ source ] = loadSource( source )
       ' contains more than one variable. Uniformity data structures must be stored seperately.']);
     
     sourceName = sourceContents.name;
-    sourceData = load(sourcePath); %, sourceName);
-    source = sourceData.(sourceName);
+%     sourceData = load(sourcePath); %, sourceName);
+%     source = sourceData.(sourceName);
+    sourceData = getfield(load(sourcePath), sourceName);
     
+    
+    sourceFields = fieldnames(sourceData)';
+    
+    sourceStruct = emptyStruct('name', 'path', sourceFields{:});
+    
+    sourceStruct.('name') = sourceName;
+    sourceStruct.('path') = sourcePath;
+    
+    for field = sourceFields
+      sourceStruct.(char(field)) = sourceData.(char(field));
+    end
+    
+%     source = struct('name', sourceName, 'path', sourcePath, );
+
+  else
+    sourceStruct = source;
   end  
 end
 
@@ -77,7 +98,7 @@ function [ data ] = prepareData ( source, data )
 
     %% Process oldschool/newer supMatrix structure
 %   try
-%     isSupData   = isValid isstruct(source) && ...
+%     isSupData   = isVerified isstruct(source) && ...
 %       strcmpi(source.sourceTicket.subject, 'Print Uniformity Research Data');
 %     isSupForme  = isstruct(source) && ...
 %       strfind(lower(source.sourceTicket.testform.id), 'sup-');
@@ -86,8 +107,8 @@ function [ data ] = prepareData ( source, data )
 %     Warning('The structure of the data matrix does not conform to a known style.');
 %   end
   
-  newerStructure = (isValid('source.sourceTicket.subject', 'Print Uniformity Research Data') && ...
-    isValid('strcmpi(lower(source.sourceTicket.testform.id), ''sup-'')'));
+  newerStructure = (isVerified('source.sourceTicket.subject', 'Print Uniformity Research Data') && ...
+    isVerified('strcmpi(lower(source.sourceTicket.testform.id), ''sup-'')'));
   
   olderStructure = ~newerStructure && iscell(source) && ...
     all(size(source) == [1 2]) && strcmp(source{1,2}{1,2},'sheetNumber');
