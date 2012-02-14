@@ -29,7 +29,7 @@ function [ result ] = isValid( object, expectedClass, varargin )
       all(size(size(object)) == size(expectedSize));
   end
   
-  result = validClass && validSize;
+  result = validClass && (validSize || ischar(object));
   
   
 end

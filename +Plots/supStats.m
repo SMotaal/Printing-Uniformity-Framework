@@ -1,4 +1,4 @@
-function [ source parser ] = supStats( source, varargin )
+function [ source parser params ] = supStats( source, varargin )
   %SUPSTATS Summary of this function goes here
   %   Detailed explanation goes here
   
@@ -8,20 +8,22 @@ function [ source parser ] = supStats( source, varargin )
   options.plotMode    = {'display', 'user', 'export'};
   defaults.plotMode   = {'display'};
   
-  options.plotType    = {'sheet', 'axial', 'circumferential', 'region', 'zone', 'zoneband', 'regions', 'zones', 'pages'};
-  defaults.plotType   = {'regions'};
+  options.statMode    = {'sheet', 'axial', 'circumferential', 'region', 'zone', 'zoneband', 'regions', 'zones', 'pages'};
+  defaults.statMode   = {'regions'};
   
-  options.plot        = {options.plotMode{:},options.plotType{:}};
-  defaults.plot       = {defaults.plotMode{:},defaults.plotType{:}};
+  options.mode        = {options.plotMode{:},options.statMode{:}};
+  defaults.mode       = {defaults.plotMode{:},defaults.statMode{:}};
   
-  reparsingParams = strcmpi(class(source),'inputParser');
+  defaults.patchSet   = 100;
+  
+  reparsingParams     = any(strcmpi(class(source),{'inputParser','grasppeParser'}));
   
   if reparsingParams  % strcmpi(class(source),'inputParser')
     parser = source.createCopy;
     inputParams = source.Results;
     parser.parse(inputParams.dataSource, varargin{:});
   else
-    parser = inputParser;
+    parser = grasppeParser;
     
     %% Parameters: Data
     parser.addRequired('dataSource', @(x) ischar(x) | isstruct(x));
@@ -33,8 +35,8 @@ function [ source parser ] = supStats( source, varargin )
     parser.addOptional('export', defaults.export, ...
       @(x) stropt(x, options.export));
     
-    parser.addOptional('plot', defaults.plot, ...
-      @(x) stropt(x, options.plot));
+    parser.addOptional('mode', defaults.mode, ...
+      @(x) stropt(x, options.mode));
     
     parser.parse(source, varargin{:});
     inputParams = parser.Results;
@@ -48,14 +50,22 @@ function [ source parser ] = supStats( source, varargin )
       parser.addParamValue('exportMOV', false, @(x) isValid(x,'logical'));  ...
       parser.addParamValue('exportAVI', false, @(x) isValid(x,'logical'));
     
+    %% Parameters: Data Processing
+    parser.addParamValue('dataSourceName', [], @(x) isempty(x) || ischar(x));
+    parser.addParamValue('dataLoading',     false, @(x) isValid(x,'logical'));
+    
+    parser.addParamValue('dataSet', [], @(x) isempty(x) || isstruct(x));
+    parser.addParamValue('dataProcessing',  false, @(x) isValid(x,'logical'));
+    
+    
     %% Parameters: Plot
     parser.addParamValue('plotMode', defaults.plotMode, @(x)stropt(x, options.plotMode, 1));
-    parser.addParamValue('plotType', defaults.plotType, @(x)stropt(x, options.plotType));
+    parser.addParamValue('statMode', defaults.statMode, @(x)stropt(x, options.statMode));
     
     parser.addParamValue('plotSummary', true, @(x) isValid(x,'logical'));
     
     parser.parse(source, varargin{:});
-        
+    
   end
   
   
@@ -63,7 +73,7 @@ function [ source parser ] = supStats( source, varargin )
   params = parser.Results;
   
   params.export = inputParams.export;
-
+  
   params.exportPNG = stropt('png', params.export);
   params.exportEPS = stropt('eps', params.export);
   params.exportShots = params.exportPNG || params.exportEPS;
@@ -72,54 +82,78 @@ function [ source parser ] = supStats( source, varargin )
   params.exportAVI = stropt('avi', params.export);
   params.exportVideo = params.exportMOV || params.exportAVI;
   
+  
+  
+  %% Settings: Data Source
+  
+  params.dataLoading = false;
+  if ischar(params.dataSource)
+    if isempty(params.dataSourceName)
+      params.dataSourceName = params.dataSource;
+      params.dataLoading = true;
+    elseif ~strcmpi(params.dataSource, params.dataSourceName)
+      params.dataLoading = true;
+    end
+  end
+  
   params.dataSource = loadSource( params.dataSource );
+  
+  %% Settings: Data Processsing
+  
+  if (~isVerified('params.dataSet.patchSet', params.dataPatchSet))
+    if isempty(params.dataPatchSet)
+      params.dataPatchSet = defaults.patchSet;
+    end
+    
+    params.dataSet = struct( ...
+      'sourceName', params.dataSourceName, ...
+      'patchSet', params.dataPatchSet, ...
+      'patchFilter', prepareSetFilter(params.dataSource, params.dataPatchSet), ...
+      'data', [] ...
+      );
+  end
+  
+  if (isempty(params.dataSet.data) || params.dataLoading)
+    setCode = params.dataSet.patchSet;
+    if (setCode<0 && setCode > -100)
+      setCode = 200-setCode;
+    end
+    
+    setVariable = genvarname([params.dataSourceName num2str(setCode, '%03.0f') ]);
+    
+    setStruct = Data.dataSources(setVariable);
+        
+    if (isempty(setStruct))    
+      params.dataSet.data = Data.interpUPDataSet(params.dataSource, params.dataSet.patchFilter);
+      Data.dataSources(setVariable, params.dataSet.data, true);
+    else
+      params.dataSet.data = setStruct;
+    end
+    
+  end
+  
+  %% Settings: Plot
+  
+  
   
   %% End of Parameters/Settings Parsing
   parser.parse(params.dataSource, params);
-  params = parser.Results
+  params = parser.Results;
+  
+  
   
 end
 
 function [ source ] = loadSource( source )
   source = Data.loadUPData(source);
-  %   if (ischar(source))
-  %
-  %     if (exist(source, 'file')>0)
-  %       source = source;
-  %     else
-  %       source = datadir('uniprint',source);
-  %     end
-  %
-  %     try
-  %       contents = whos('-file', source);
-  %     catch err
-  %       error('UniPrint:Stats:Load:SourceNotFound', 'Source %s is not found.', source);
-  %     end
-  %
-  %     try
-  %       name        = contents.name;
-  %       source      = getfield(load(source), name);
-  % %       source      = source.(name);
-  %       source.name = contents.name;
-  %     catch err
-  %       disp(err);
-  %     end
-  %
-  %     assert(isVerified('source.sourceTicket.subject', 'Print Uniformity Research Data'), ...
-  %       'UniPrint:Stats:InvalidSourceStructure', 'Source structure is invalid.');
-  %
-  %
-  %     % %     assert( exist(source,'file')>0, ...
-  %     % %       'UniPrint:Stats:Load:SourceNotFound', 'Source %s is not found.', source);
-  %     %
-  %     %     runName = whos('-file', supFilePath);
-  %     %     runName = runName.name;
-  %     %     stepTimer = tic; runlog(['Loading ' runName ' uniformity data ...']);
-  %     %     supLoad(supFilePath); click roundActions;
-  %     %     runlog(['\n', structTree(supMat.sourceTicket,2), '\n']);
-  %     %     runlog([' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
-  %     %     newPatchValue = 100;
-  %     %     clear source;
+end
+
+function [ source ] = prepareUniformityData( source )
+  
+end
+
+function [ patchSet ] = prepareSetFilter( source, patchValue )
+  patchSet = source.sampling.PatchMap == patchValue;
 end
 
 

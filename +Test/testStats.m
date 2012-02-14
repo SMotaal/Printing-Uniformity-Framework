@@ -29,7 +29,7 @@ end
 
 isExporting = (exportVideo || exportEps || exportPng);
 
-%% Load & Interpolate Source Uniformity Data
+%% Load Source Uniformity Data
 when [~exists('supData') && ~exists('source')] source = "ritsm7402a";
 
 try
@@ -38,14 +38,10 @@ try
     runName = whos('-file', supFilePath);
     runName = runName.name;
     stepTimer = tic; runlog(['Loading ' runName ' uniformity data ...']);    
-    Data.supLoad(supFilePath); click roundActions;
-%     runlog('\n');
-%     runlog(structTree(supMat.sourceTicket,2,[],4),'format');
-%     runlog('\n');    
+    Data.supLoad(supFilePath); click roundActions;   
     runlog([' OK \t\t' num2str(toc(stepTimer)) '\t seconds\n']);
     mTree = structTree(supMat.sourceTicket,[],[],4);
     disp(mTree);
-%     runlog(mTree,'format');
     
     newPatchValue = 100;
     clear source;
@@ -55,6 +51,8 @@ try
 catch err
   warning('UPStats:UPMatrix', 'Invalid uniformity data structure.');
 end
+
+%% Prepare PatchSet Uniformity Data
 
 when [exists('newPatchValue')] clear supPatchSet;
 
