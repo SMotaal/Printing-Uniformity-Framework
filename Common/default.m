@@ -5,6 +5,23 @@ space = 'caller';
 
 if evalin(space,['~exist(''' var ''', ''var'') || isempty(' var ')'])
   let('value', varargin{:});
+  try
+    eValue = eval(value);
+    if (isnumeric(eValue) || islogical(eValue))
+      value = eValue;
+    end
+  end
+  if (numel(varargin)>1 && strcmpi(varargin{1},'='))
+%     try
+      value = evalin(space, [value ';']);
+%     catch
+%       try
+%         value = eval(value);
+%       end
+%     end
+  elseif (numel(varargin)==1 && strcmpi(varargin{1},'='))
+    value = [];
+  end
   assignin(space, var, value);
 end
 

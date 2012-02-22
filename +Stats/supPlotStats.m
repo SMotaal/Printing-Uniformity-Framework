@@ -6,18 +6,18 @@ function [ plotStats ] = supPlotStats( plotData, supData, plotStats )
 %regionROI(11,22,6,6)
 %return;
 
-if ~exist('plotSet','var')
+% if ~exist('plotSet','var')
   plotSets = fieldnames(plotData);
   plotSet = plotSets{1};
-end
+% end
 
-if ~exist('rowPitch', 'var')
+% if ~exist('rowPitch', 'var')
   rowPitch = supData.rowPitch;
-end
+% end
 
-if ~exist('columnPitch', 'var')
+% if ~exist('columnPitch', 'var')
   columnPitch = supData.columnPitch;
-end
+% end
 
 sheets = numel(plotData);
 sheetSize = size(plotData(1).(plotSet));
@@ -293,7 +293,7 @@ index = round(length./pitch);
 end
 
 function [length] = index2length(index, pitch)
-mm = round(index.*pitch);
+length = round(index.*pitch);
 end
 
 function [mm] = in2mm(in)

@@ -6,15 +6,20 @@ function [ data ] = loadUPData( source )
   
   
   if ischar(source)
-    data              = emptyStruct(...
-      'index', 'range', 'metrics', 'tables', ...
+    data              = emptyStruct('name', 'path', ...
+      'metadata', 'index', 'range', 'length', 'metrics', 'tables', ...
       'sampling', 'colorimetry');
     
     source            = loadSource(source);
     
+    data.name         = source.name;
+    data.path         = source.path;
+    
     data              = prepareData(source, data);
     data.sampling     = processPatchSampling(data);
     data.colorimetry  = processColorimetry(data);
+    
+    data              = Metrics.processUPMetrics(data);
   else
     data = source;
   end
@@ -28,29 +33,36 @@ function [ sampling ] = processPatchSampling( data )
     100    75   100     0;
     50   100    25   100;  ];
   
-  sampling.Repeats  = data.metrics.target.Size ./ size(sampling.PatchMap);
+  sampling.Repeats  = data.metrics.targetSize ./ size(sampling.PatchMap);
   
-  sampling.masks.Slur  = sampling.PatchMap  ==   -1;
-  sampling.masks.TV100 = sampling.PatchMap  ==  100;
-  sampling.masks.TV75  = sampling.PatchMap  ==   75;
-  sampling.masks.TV50  = sampling.PatchMap  ==   50;
-  sampling.masks.TV25  = sampling.PatchMap  ==   25;
-  sampling.masks.TV0   = sampling.PatchMap  ==    0;
+  sampling.masks.Slur     = sampling.PatchMap  ==   -1;
+  sampling.masks.TV100    = sampling.PatchMap  ==  100;
+  sampling.masks.TV75     = sampling.PatchMap  ==   75;
+  sampling.masks.TV50     = sampling.PatchMap  ==   50;
+  sampling.masks.TV25     = sampling.PatchMap  ==   25;
+  sampling.masks.TV0      = sampling.PatchMap  ==    0;
   
-  sampling.masks.Columns = setdiff(data.range.Columns, data.index.Columns);
+  sampling.masks.Columns  = linearMask(data.length.Columns, data.index.Columns);
+  sampling.masks.Rows     = linearMask(data.length.Rows, data.index.Rows);
   
+  sampling.masks.Target   = sampling.masks.Rows*sampling.masks.Columns';
+end
+
+function [mask] = linearMask(length, index)
+  mask = zeros(length,1);
+  mask(unique(index(:))) = 1;
 end
 
 function [ sourceStruct ] = loadSource( source )
   if ischar(source)
     
-    sourceVariable = [source];
+    sourceID      = source; %Data.generateUPID(source,[],[]);
     
-    sourceStruct = Data.dataSources(sourceVariable);
+    sourceStruct  = Data.dataSources(sourceID);
     
     if (isempty(sourceStruct))
-%       sourceStruct = Data.dataSources(source);
-%     else
+      %       sourceStruct = Data.dataSources(source);
+      %     else
       
       sourcePath = source;
       
@@ -95,7 +107,8 @@ function [ sourceStruct ] = loadSource( source )
         sourceStruct.(char(field)) = sourceData.(char(field));
       end
       
-      Data.dataSources(sourceVariable, sourceStruct);
+%       sourceID      = Data.generateUPID(sourceName);
+      Data.dataSources(sourceID, sourceStruct);
       
       %     source = struct('name', sourceName, 'path', sourcePath, );
     end
@@ -127,54 +140,79 @@ function [ data ] = prepareData ( source, data )
   %% Update Structures
   if newerStructure
     
-    data.index.Columns  = reshape(source.sparseIndex.spreadColumns',1,[]);
-    data.index.Sheets   = source.sparseIndex.spreadSheets(:);
-    data.index.Spectra = source.sparseIndex.bandIndex;
+    ticket  = source.sourceTicket;
+    index   = source.sparseIndex;
     
-    data.metrics.patch.Width  = source.sourceTicket.testform.iSis.patchwidth;
-    data.metrics.patch.Length = source.sourceTicket.testform.iSis.patchheight;
+    data.metadata = ticket;
     
-    data.metrics.print.Width  = source.sourceTicket.testform.press.printwidth;
-    data.metrics.print.Length = source.sourceTicket.testform.press.printlength;
-    data.metrics.print.Offset = source.sourceTicket.testform.press.leadoffset;
-    data.metrics.print.Shift  = source.sourceTicket.testform.press.axialshift;
+    data.index.Columns          = index.spreadColumns';
+    data.index.Rows             = index.spreadRows';
+    data.index.Sheets           = index.spreadSheets(:);
+    data.index.Spectra          = index.bandIndex;
+    
+    data.metrics.patchWidth     = millimeters(ticket.testform.iSis.patchwidth);
+    data.metrics.patchLength    = millimeters(ticket.testform.iSis.patchheight);
+    
+    data.metrics.pressWidth     = millimeters(ticket.testform.press.printwidth);
+    data.metrics.pressLength    = millimeters(ticket.testform.press.printlength);
+    
+    data.metrics.printOffset    = millimeters(ticket.testform.press.printoffset);
+    
+    data.metrics.paperWidth     = millimeters(ticket.testrun.substrate.sheetsize{1});
+    data.metrics.paperLength    = millimeters(ticket.testrun.substrate.sheetsize{2});
+    
+    % Reduntant with data.length.Rows & data.length.Columns
+    data.metrics.targetRows     = 1+nanmax(data.index.Rows(:))    - nanmin(data.index.Rows(:));
+    data.metrics.targetColumns  = 1+nanmax(data.index.Columns(:)) - nanmin(data.index.Columns(:));
+    
+    data.metrics.targetSize     = [data.metrics.targetRows data.metrics.targetColumns];
+    
+    data.metrics.targetOffset   = millimeters(ticket.testform.target.offset);
+    data.metrics.targetShift    = millimeters(ticket.testform.target.shift);
     
     try
-      inkZones   = source.sourceTicket.testform.press.inkzones;
-      zoneMetrics.Range = inkZones.range;
-      zoneMetrics.Width = inkZones.width;
-      zoneMetrics.Steps = inkZones.patches;
+      inkZones                  = ticket.testform.press.inkzones;
+      data.metrics.zoneRange    = inkZones.range;
+      data.metrics.zoneWidth    = inkZones.width;
+      data.metrics.zoneSteps    = inkZones.patches;
       
-      data.index.Zones  = inkZones.targetrange;
-      data.range.Zones  = inkZones.range;
-      data.metrics.zone = zoneMetrics;
+      data.index.SampleZones    = inkZones.targetrange;
+      data.index.PressZones     = inkZones.range;
     end
     
     data.tables.spectra(:,:, data.index.Columns,:) = source.sparseData.oldRef;
     
     
-  elseif olderStructure
+    %   elseif olderStructure
+    %
+    %     data.index.Columns  = source{1,2}{3,1};
+    %     data.index.Sheets   = source{1,2}{1,1};
+    %     data.index.Spectra  = source{1,2}{4,1};
+    %
+    %     data.tables.spectra(:,:, data.index.Columns,:) = source{1,1};
     
-    data.index.Columns  = source{1,2}{3,1};
-    data.index.Sheets   = source{1,2}{1,1};
-    data.index.Spectra  = source{1,2}{4,1};
+    %   end
     
-    data.tables.spectra(:,:, data.index.Columns,:) = source{1,1};
+    [data.range.Columns data.length.Columns]  = dataRange(data.index.Columns);
+    [data.range.Rows    data.length.Rows]     = dataRange(data.index.Rows);
+    
+%     data.range.Rows         = dataRange(data.index.Rows);
+    data.range.Sheets       = stepRange(data.index.Sheets);
+    data.range.Spectra      = stepRange(data.index.Spectra);
+    data.range.SampleZones  = dataRange(data.index.SampleZones);
+    data.range.PressZones   = dataRange(data.index.PressZones);
+    
+%     data.length.Columns     = min(data.index.Columns(:));
+%     data.length.Rows        = numel(data.index.Rows);
+    data.length.Sheets      = numel(data.index.Sheets);
+    data.length.Spectra     = numel(data.index.Spectra);
+    data.length.PressZones  = numel(data.index.PressZones);
+    data.length.SampleZones = numel(data.index.SampleZones);
     
   end
   
-  data.range.Columns  = 1:numel(data.index.Columns);
-  data.range.Sheets   = 1:numel(data.index.Sheets);
-  data.range.Spectra  = 1:numel(data.index.Spectra);
+  %   data.metrics.target.Sets  = supData.targetSize ./ size(supData.patchMap);
   
-  data.length.Columns = numel(data.range.Columns);
-  data.length.Sheets  = numel(data.range.Sheets);
-  data.length.Spectra = numel(data.range.Spectra);
-  
-  data.metrics.target.Size = [size(data.tables.spectra,2) size(data.tables.spectra,3)];
-  
-%   data.metrics.target.Sets  = supData.targetSize ./ size(supData.patchMap);
-
   
 end
 
@@ -190,7 +228,7 @@ function [ colorimetry ] = processColorimetry( data )
   end
   
   if reInterpCMS
-    colorimetry.refRange  = data.range.Spectra;
+    colorimetry.refRange  = data.index.Spectra;
     colorimetry.refIll    = interp1(colorimetry.lambda, colorimetry.illD65, colorimetry.refRange,'pchip')';
     colorimetry.refCMF    = interp1(colorimetry.lambda, colorimetry.cmf2deg,colorimetry.refRange ,'pchip');
     colorimetry.XYZn      = ref2XYZ(ones(length(colorimetry.refRange),1),colorimetry.refCMF,colorimetry.refIll);

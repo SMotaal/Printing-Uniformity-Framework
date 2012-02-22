@@ -15,7 +15,8 @@ function [ result ] = isVerified( expression, expected )
 %         result = strcmp(actual, expected);
 %       else
         try
-          result = all(actual==expected);
+          result = actual==expected;
+          result = ~isempty(result) && all(result);
         catch err
           result = false;
         end

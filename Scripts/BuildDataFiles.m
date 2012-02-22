@@ -1,5 +1,7 @@
 %ddir = fullfile('~','Documents','MATLAB','data');
 
+import Data.*;
+
 tic
 
 sid = 'ritsm7401';

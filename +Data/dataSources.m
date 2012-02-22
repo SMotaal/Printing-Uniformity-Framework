@@ -11,24 +11,41 @@ function [ data ] = dataSources( sourceName, varargin )
   persistent sources verbose sizeLimit;
   
   defaults.verbose=false;
-  defaults.sizeLimit=256; % defaults.sizeLimit =  200 * (2^20);
+  defaults.sizeLimit=1024; % defaults.sizeLimit =  200 * (2^20);
   
   default('verbose', int2str(defaults.verbose));
   default('sizeLimit', int2str(defaults.sizeLimit));
   
   if (~exist('sourceName', 'var'))
     %     disp(whos('sources'));
-    sourcesDetails = whos('sources');
+    whosDetails = whos('sources');
+    sourcesDetails.name = whosDetails.name;
+    sourcesDetails.megabytes = whosDetails.bytes/2^20;  
+    
     if isstruct(sources) && ~isempty(sources)
       sourcesDetails.elements = numel(fieldnames(sources));
       sourcesDetails.names = strtrim(reshape(char(strcat(fieldnames(sources),{' '}))',[],1)');%char(fieldnames(sources));
       sourcesDetails.names = regexprep(sourcesDetails.names,'\s+',' ');
+    else
+      sourcesDetails.elements = 0;
+      sourcesDetails.names = '';
     end
     data = sourcesDetails;
-    if (nargout==0)
+    if (nargout==0) && (numel(dbstack)>1)
       disp(sourcesDetails);
+      try
+        disp(sourcesDetails.names);
+      end
     end
     return;
+  else
+    if (strcmpi(sourceName, 'clear'))
+      clear sources;
+      return;
+    elseif (strcmpi(sourceName, 'reset'))
+      Data.dataSources([], 'verbose', 'reset', 'sizeLimit', 'reset');
+      return;
+    end
   end
   
   parser = grasppeParser;

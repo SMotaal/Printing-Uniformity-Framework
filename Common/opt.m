@@ -1,4 +1,4 @@
-function [ err ] = opt( varargin )
+function [ result err ] = opt( varargin )
 %OPT Safely execute a statement returning any caught exceptions
 
 statement = '';
@@ -13,9 +13,9 @@ end
 statement = strtrim(statement);
 
 try
-  evalin('caller', [statement ';']);
+  result = evalin('caller', [statement ';']);
 catch err
-  
+  result = false;
 end
 
 end

@@ -33,6 +33,11 @@ default length 0;
       strings = regexpi(strings,'\w+','match');
     end
     
+    if (ischar(list))
+      list = regexpi(list,'\w+','match');
+    end
+    
+    
     if (isempty(strings) && length~=-1)
       return;
     elseif (length==-1)
@@ -47,7 +52,7 @@ default length 0;
       return;
     end
     
-    if (iscellstr(list))
+    if (iscellstr(list) || ischar(list))
       lists={list};
     elseif (iscell(list) && ~iscellstr(list))
       lists=list;

@@ -3,7 +3,7 @@ function [ fileList nSections nSamples iSamples output_args ] = supListDataFiles
 %   Detailed explanation goes here
 
 %% Check that folder is set
-  folder  = datadir('uniprint', folder);
+  folder  = datadir('UniPrintRaw', folder);
   assert(exist(folder,'dir')==7,'Data folder is not found.')
 
   
