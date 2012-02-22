@@ -1,4 +1,4 @@
-function [ dataSource ] = mergeUPRegions( dataSource, dataSet )
+function [ dataSource ] = mergeUPRegions( dataSource, dataSet, params )
   %MERGEUPREGIONS combine print uniformity regions surfaces and statistics
   %   Prepares printing uniformity statistics data for plotting by merging
   %   region statistics data generated using masks groups within processed
@@ -11,81 +11,136 @@ function [ dataSource ] = mergeUPRegions( dataSource, dataSet )
   %   generated to overlay the surface and patch plots with the
   %   approporiate statistical data for each segment.
   
-  surfID          = Data.generateUPID([],dataSet, 'Surfs');
-    
-	regionSurfsData = Data.dataSources(surfID);
-    
-  if (isempty(regionSurfsData))
-    regionSurfsData = surfData(dataSource.statistics, dataSource.sampling.regions); %, [], dataSource.sampling.regions.zoneBands)
-    Data.dataSources(surfID, regionSurfsData, true);
-  end  
+  [regions fields]  = surfParams(params);
   
-  dataSource.data = regionSurfsData;
+  
+  regionSurfsData   = surfData(dataSource, dataSet, regions, fields);
+  
+  for region = fieldnames(regionSurfsData)
+    dataSource.data.(char(region)) = regionSurfsData.(char(region));
+  end
+  
+end
+
+function [regions fields] = surfParams(params)
+  % statMode    = {'sheet', 'axial', 'across', 'circumferential', 'around',
+  %       'region', 'regions', 'section', 'sections', 'zone', 'zones',
+  %       'zoneband', 'zonebands', 'band', 'bands'};
+  
+  statModes     = regexp(params.statMode,'\w+', 'match');
+  regions       = {};
+  for statMode  = statModes
+    switch lower(char(statMode{1}))
+      case {'axial', 'across'}
+        region  = 'across';
+      case {'circumferential', 'around'}
+        region  = 'around';
+      case {'region', 'regions', 'section', 'sections'}
+        region  = 'sections';
+      case {'zone', 'zones'}
+        region  = 'across';
+      case {'zoneband', 'zonebands', 'band', 'bands'}
+        region  = 'zoneBands';
+      otherwise
+        region  = '';
+    end
+    if ~isempty(region)
+      regions{numel(regions)+1} = region;
+    end
+  end
+  
+ 
+  statFields    = regexp(params.statField,'\w+', 'match');  
+  fields        = {};
+  for statField = statFields
+    switch lower(char(statField{1}))
+      case {'all'}
+        fields  = {};
+        break;
+      case {'mean'}
+        field   = 'Mean';
+      case {'std'}
+        field   = 'Std';
+      case {'lim'}
+        field   = 'Lim';
+%       case {'mean'}
+%         field = 'Mean';        
+      otherwise
+        field   = '';
+    end
+    if ~isempty(field)
+      fields{numel(fields)+1} = field;
+    end
+  end
+  
 end
 
 
-function [surfs] = surfData(stats, masks, region, field, summary)
+function [surfs] = surfData(dataSource, dataSet, regions, fields, summary)
   
-  default region  [];
-  default field   [];
-  default masks   [];
   default summary true;
   
-  if (isempty(region))
+  stats = dataSource.statistics;
+  masks = dataSource.sampling.regions;
+  
+  if (~exists('regions') || isempty(regions))
     regions = fieldnames(stats);
-    for r = 4:numel(regions)
-      region = char(regions(r));
-      surfs.(region) = surfData(stats, masks, region, field, summary);
-    end
-  elseif (isempty(field))
-    fields = fieldnames(stats.(region));
-    for f = 1:numel(fields)
-      field = char(fields(f));
-      surfs.(field) = surfData(stats, masks, region, field, summary);
-    end
-  else
-    
-    localStats  = stats.(region);
-    localMasks  = masks.(region);
-    
-    if (~isVerified('summary','false') && isVerified('size(localStats,2)>1', true))
-      summaryStats  = localStats(:,1);
-      localStats    = localStats(:,2:end);
+    regions = regions(4:end);
+  end
+  
+  for r = 1:numel(regions)
+    region = char(regions(r));
+    if (~exists('fields') || isempty(fields))
+      fields = fieldnames(stats.(region));
     end
     
-    nSheets   = size(localStats,2);
-    nRows     = size(localMasks,2);
-    nColumns  = size(localMasks,3);
-    nMasks    = size(localMasks,1);
-    nValues   = numel(localStats(1,1).(field));
+    surfID          = Data.generateUPID([],dataSet, [region 'Surfs']);
+    regionSurfsData = Data.dataSources(surfID);
     
-    surfs = zeros(nSheets, nMasks, nValues, nRows, nColumns);
-    
-    for m = 1:nMasks
-      localMask = squeeze(localMasks(m,:,:))==1;
-      if(all(localMask==0))
-        surfs(:,m,:,:) = NaN;
-      else
-        for s = 1:nSheets+1
-          
-          if (s==1) && exists('summary')
-%             sheetStats = summaryStats(m);
-            fieldStats = summaryStats(m).(field);
+    if (isempty(regionSurfsData))
+      %       regionSurfsData = surfData(dataSource.statistics, dataSource.sampling.regions); %, [], dataSource.sampling.regions.zoneBands)
+      for f = 1:numel(fields)
+        field = char(fields(f));
+        
+        localStats  = stats.(region);
+        localMasks  = masks.(region);
+        
+        if (~isVerified('summary','false') && isVerified('size(localStats,2)>1', true))
+          summaryStats  = localStats(:,1);
+          localStats    = localStats(:,2:end);
+        end
+        
+        nSheets   = size(localStats,2);
+        nRows     = size(localMasks,2);
+        nColumns  = size(localMasks,3);
+        nMasks    = size(localMasks,1);
+        nValues   = numel(localStats(1,1).(field));
+        
+        surfValues  = zeros(nSheets, nMasks, nValues, nRows, nColumns);
+        
+        for m = 1:nMasks
+          localMask = squeeze(localMasks(m,:,:))==1;
+          if(all(localMask==0))
+            surfValues(:,m,:,:) = NaN;
           else
-%             sheetStats = localStats(m,s-1);
-            fieldStats = localStats(m,s-1).(field);
-          end
-          
-%           fieldStats = sheetStats.(field);
-
-          for v = 1:nValues
-            surfs(s,m,v,localMask)    = fieldStats(v);
-            surfs(s,m,v,localMask==0) = NaN;
+            for s = 1:nSheets+1
+              if (s==1) && exists('summary')
+                fieldStats = summaryStats(m).(field);
+              else
+                fieldStats = localStats(m,s-1).(field);
+              end
+              for v = 1:nValues
+                surfValues(s,m,v,localMask)    = fieldStats(v);
+                surfValues(s,m,v,localMask==0) = NaN;
+              end
+            end
           end
         end
+        surfs.(region).(field) = surfValues;
       end
+      regionSurfsData = surfs.(region);
+      Data.dataSources(surfID, regionSurfsData, true);
     end
-%     surfs.Values = surfs;
+    surfs.(region) = regionSurfsData;
   end
 end
-

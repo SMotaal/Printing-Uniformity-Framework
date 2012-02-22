@@ -10,8 +10,12 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
   options.plotMode    = {'display', 'user', 'export'};
   defaults.plotMode   = {'display'};
   
-  options.statMode    = {'sheet', 'axial', 'circumferential', 'region', 'zone', 'zoneband', 'regions', 'zones', 'pages'};
+  options.statMode    = {'sheet', 'axial', 'across', 'circumferential', 'around', 'region', 'regions', 'section', 'sections', 'zone', 'zones', 'zoneband', 'zonebands', 'band', 'bands'};
   defaults.statMode   = {'regions'};
+  
+  options.statField   = {'all', {'mean', 'std', 'lim'}};
+  defaults.statField  = {'all'};
+  
   
   options.mode        = {options.plotMode{:},options.statMode{:}};
   defaults.mode       = {defaults.plotMode{:},defaults.statMode{:}};
@@ -139,7 +143,7 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
   %% Settings: Plot
   
   if(~isVerified('dataSource.data'))
-    dataSource = Stats.mergeUPRegions(dataSource, dataSet);
+    dataSource = Stats.mergeUPRegions(dataSource, dataSet, params);
   end
   
   %% Plotting: Prepare Figure Window
@@ -246,8 +250,9 @@ function [parser] = getInputParser(options, defaults)
     
     
     %% Parameters: Plot
-    parser.addParamValue('plotMode', defaults.plotMode, @(x)stropt(x, options.plotMode, 1));
-    parser.addParamValue('statMode', defaults.statMode, @(x)stropt(x, options.statMode));
+    parser.addParamValue('plotMode',  defaults.plotMode,  @(x)stropt(x, options.plotMode,   1));
+    parser.addParamValue('statMode',  defaults.statMode,  @(x)stropt(x, options.statMode     ));
+    parser.addParamValue('statField', defaults.statField, @(x)stropt(x, options.statField    ));
     
     parser.addParamValue('plotSummary', true, @(x) isValid(x,'logical'));
   
