@@ -3,7 +3,7 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
   %   Detailed explanation goes here
   
   %% Defaults
-  
+   
   options.exportMode  = {'none', {'png', 'mov', 'avi', 'eps'}};
   defaults.exportMode = {'none'};
   
@@ -15,7 +15,6 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
   
   options.statField   = {'all', {'mean', 'std', 'lim'}};
   defaults.statField  = {'all'};
-  
   
   options.mode        = {options.plotMode{:},options.statMode{:}};
   defaults.mode       = {defaults.plotMode{:},defaults.statMode{:}};
@@ -56,12 +55,22 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
     parser  = getInputParser(options, defaults);
     optargs = {};
     
-    if (isValid('=varargin{1}','struct') && ~isVerified('varargin{1}.tables'))
+    if (isValid('=varargin{1}','struct') && isVerified('varargin{1}.plotMode'))
       inputParams = varargin{1};
-      optargs = varargin(2:end);
     end
     
-    if (isValid('=varargin{1}','double') && isValid('=varargin{2}','struct') && ~isVerified('varargin{2}.tables'))
+%     if (isValid(dataSource,'struct') && isVerified('dataSource.plotMode'))
+%       inputParams = dataSource;
+%       dataSource = inputParams.dataSource;
+%       if isValid('=varargin{1}','double')
+%         inputParams.dataPatchSet = varargin{1};
+%         optargs = varargin(2:end);
+%       else
+%         optargs = varargin;
+%       end
+%     end    
+    
+    if (isValid('=varargin{1}','double') && isValid('=varargin{2}','struct') && isVerified('varargin{2}.plotMode'))
       inputParams = varargin{2};
       inputParams.dataPatchSet = varargin{1};
       optargs = varargin(3:end);
@@ -83,7 +92,9 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
   
 	inputParams = parser.Results;
   params = inputParams;
+  
   dataSource = inputParams.dataSource;
+  dataSet = params.dataSet;
   
   %% Settings: Exporting
   
@@ -108,12 +119,12 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
 
   %% Settings: Data Filtering & Processsing
   
-  if (params.dataLoading || ~isVerified('params.dataSet.patchSet', params.dataPatchSet))
+  if (params.dataLoading || ~isVerified('dataSet.patchSet', params.dataPatchSet))
     
     when(isempty(params.dataPatchSet),    'params.dataPatchSet = defaults.patchSet');
     when(isempty(params.dataSourceName),  'params.dataSourceName = dataSource.name');
     
-    params.dataSet = struct( 'sourceName', params.dataSourceName, ...
+    dataSet = struct( 'sourceName', params.dataSourceName, ...
       'patchSet', params.dataPatchSet, 'setLabel', ['tv' int2str(params.dataPatchSet) 'data'], ...
       'patchFilter', [], 'data', [] );
     
@@ -122,11 +133,10 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
   
 %   when (isempty(params.dataSet.data), ...
 %     'params.dataSet = Data.filterUPDataSet(dataSource, params.dataSet)');
-  when (isempty(params.dataSet.data), ...
-    'params.dataSet = Data.filterUPDataSet(dataSource, params.dataSet)');
+  if (isempty(dataSet.data))
+    dataSet = Data.filterUPDataSet(dataSource, dataSet);
+  end
 
-  
-  dataSet = params.dataSet;
   
   %% Settings: Statistics
   
@@ -142,17 +152,19 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
   
   %% Settings: Plot
   
-  if(~isVerified('dataSource.data'))
-    dataSource = Stats.mergeUPRegions(dataSource, dataSet, params);
-  end
+%   if(~isVerified('dataSource.data'))
+    dataSet = Stats.mergeUPRegions(dataSource, dataSet, params, options);
+%   end
   
   %% Plotting: Prepare Figure Window
   
-   
+  
   
   
   %% End of Parameters/Settings Parsing
   params.dataSource = dataSource;
+  params.dataSet    = dataSet;
+  
   parser.parse(params.dataSource, params);
   params = parser.Results;
   

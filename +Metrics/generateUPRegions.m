@@ -11,7 +11,9 @@ function [ dataSource regions ] = generateUPRegions( dataSource )
   
   
   [masks metrics] = regionROI(dataSource.metrics);
-  [masks metrics] = zoneROI(metrics, masks);
+  try
+    [masks metrics] = zoneROI(metrics, masks);
+  end
   
   dataSource.metrics  = metrics;
   

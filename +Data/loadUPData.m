@@ -107,7 +107,7 @@ function [ sourceStruct ] = loadSource( source )
         sourceStruct.(char(field)) = sourceData.(char(field));
       end
       
-%       sourceID      = Data.generateUPID(sourceName);
+      %       sourceID      = Data.generateUPID(sourceName);
       Data.dataSources(sourceID, sourceStruct);
       
       %     source = struct('name', sourceName, 'path', sourcePath, );
@@ -182,32 +182,23 @@ function [ data ] = prepareData ( source, data )
     
     data.tables.spectra(:,:, data.index.Columns,:) = source.sparseData.oldRef;
     
-    
-    %   elseif olderStructure
-    %
-    %     data.index.Columns  = source{1,2}{3,1};
-    %     data.index.Sheets   = source{1,2}{1,1};
-    %     data.index.Spectra  = source{1,2}{4,1};
-    %
-    %     data.tables.spectra(:,:, data.index.Columns,:) = source{1,1};
-    
-    %   end
-    
     [data.range.Columns data.length.Columns]  = dataRange(data.index.Columns);
     [data.range.Rows    data.length.Rows]     = dataRange(data.index.Rows);
     
-%     data.range.Rows         = dataRange(data.index.Rows);
     data.range.Sheets       = stepRange(data.index.Sheets);
-    data.range.Spectra      = stepRange(data.index.Spectra);
-    data.range.SampleZones  = dataRange(data.index.SampleZones);
-    data.range.PressZones   = dataRange(data.index.PressZones);
-    
-%     data.length.Columns     = min(data.index.Columns(:));
-%     data.length.Rows        = numel(data.index.Rows);
     data.length.Sheets      = numel(data.index.Sheets);
+    
+    data.range.Spectra      = stepRange(data.index.Spectra);
     data.length.Spectra     = numel(data.index.Spectra);
-    data.length.PressZones  = numel(data.index.PressZones);
-    data.length.SampleZones = numel(data.index.SampleZones);
+    
+    
+    try
+      data.range.PressZones   = dataRange(data.index.PressZones);
+      data.length.PressZones  = numel(data.index.PressZones);
+      
+      data.range.SampleZones  = dataRange(data.index.SampleZones);
+      data.length.SampleZones = numel(data.index.SampleZones);
+    end
     
   end
   

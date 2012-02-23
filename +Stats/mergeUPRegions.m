@@ -1,4 +1,4 @@
-function [ dataSource ] = mergeUPRegions( dataSource, dataSet, params )
+function [ dataSet ] = mergeUPRegions( dataSource, dataSet, params, options )
   %MERGEUPREGIONS combine print uniformity regions surfaces and statistics
   %   Prepares printing uniformity statistics data for plotting by merging
   %   region statistics data generated using masks groups within processed
@@ -11,13 +11,25 @@ function [ dataSource ] = mergeUPRegions( dataSource, dataSet, params )
   %   generated to overlay the surface and patch plots with the
   %   approporiate statistical data for each segment.
   
-  [regions fields]  = surfParams(params);
+  [regions fields]  = surfParams(params, options);
   
   
   regionSurfsData   = surfData(dataSource, dataSet, regions, fields);
   
   for region = fieldnames(regionSurfsData)
-    dataSource.data.(char(region)) = regionSurfsData.(char(region));
+    regionName = char(region);
+    if isVerified('dataSet.surfs.(regionName)')
+      
+      dataFields = fieldnames(regionSurfsData.(regionName));
+      for field = dataFields
+        fieldName = char(field);
+        dataSet.surfs.(regionName).(fieldName) = regionSurfsData.(regionName).(fieldName);
+      end
+      
+      
+    else
+      dataSet.surfs.(regionName) = regionSurfsData.(char(region));
+    end
   end
   
 end
@@ -49,8 +61,8 @@ function [regions fields] = surfParams(params)
     end
   end
   
- 
-  statFields    = regexp(params.statField,'\w+', 'match');  
+  
+  statFields    = regexp(params.statField,'\w+', 'match');
   fields        = {};
   for statField = statFields
     switch lower(char(statField{1}))
@@ -63,8 +75,8 @@ function [regions fields] = surfParams(params)
         field   = 'Std';
       case {'lim'}
         field   = 'Lim';
-%       case {'mean'}
-%         field = 'Mean';        
+        %       case {'mean'}
+        %         field = 'Mean';
       otherwise
         field   = '';
     end
@@ -94,13 +106,19 @@ function [surfs] = surfData(dataSource, dataSet, regions, fields, summary)
       fields = fieldnames(stats.(region));
     end
     
-    surfID          = Data.generateUPID([],dataSet, [region 'Surfs']);
-    regionSurfsData = Data.dataSources(surfID);
+    %     surfID          = Data.generateUPID([],dataSet, [region 'Surfs']);
+    %     regionSurfsData = Data.dataSources(surfID);
+    %
+    %     if (isempty(regionSurfsData))
     
-    if (isempty(regionSurfsData))
-      %       regionSurfsData = surfData(dataSource.statistics, dataSource.sampling.regions); %, [], dataSource.sampling.regions.zoneBands)
-      for f = 1:numel(fields)
-        field = char(fields(f));
+    for f = 1:numel(fields)
+      field = char(fields(f));
+      
+      surfID          = Data.generateUPID([],dataSet, [region ' ' field 'Surfs']);
+      regionSurfsData = Data.dataSources(surfID);
+      
+      if (isempty(regionSurfsData))
+        
         
         localStats  = stats.(region);
         localMasks  = masks.(region);
@@ -136,11 +154,11 @@ function [surfs] = surfData(dataSource, dataSet, regions, fields, summary)
             end
           end
         end
-        surfs.(region).(field) = surfValues;
+        regionSurfsData = surfValues;
       end
-      regionSurfsData = surfs.(region);
+      surfs.(region).(field) = regionSurfsData;
       Data.dataSources(surfID, regionSurfsData, true);
     end
-    surfs.(region) = regionSurfsData;
+    
   end
 end
