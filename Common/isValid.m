@@ -19,8 +19,9 @@ function [ result ] = isValid( object, expectedClass, varargin )
   
   result = false;
   
-  object = params.object;
-  expectedSize = params.expectedSize;
+  object          = params.object;
+  expectedClass   = params.expectedClass;
+  expectedSize    = params.expectedSize;
   
   if ischar(object) && ~isempty(regexp(object,'^=[^=]*$'))
     try

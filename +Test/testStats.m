@@ -193,9 +193,7 @@ def.BoldFont   = def.TextFont; %'Gill Sans Bold';  %'Helvetica Bold';
 def.BoldWeight = 'bold';
 def.TextColor  = 'k';
 def.FontSize   = 12;
-% if (isExporting)
-%   def.FontSize   = 14;
-% end
+
 
 style.TextFont     = {'FontName',   def.TextFont};
 style.TextColor    = {'Color', def.TextColor};
