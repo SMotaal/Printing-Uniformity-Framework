@@ -32,7 +32,7 @@ function [ setData ] = interpUPDataSet( dataSource, setFilter )
         setFilter= dataSource.sampling.masks.(['TV' int2str(setFilter)]);
       end
       
-      if isValid('=setFilter','char') && ...
+      if isValid('setFilter','char') && ...
           isVerified('all(islogical(dataSource.sampling.masks.(setFilter)))',1)
         setFilter = dataSource.sampling.masks.(setFilter);
       end

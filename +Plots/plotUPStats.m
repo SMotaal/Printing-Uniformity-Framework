@@ -55,14 +55,14 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
     parser  = getInputParser(options, defaults);
     optargs = {};
     
-    if (isValid('=varargin{1}','struct') && isVerified('varargin{1}.plotMode'))
+    if (isValid('varargin{1}','struct') && isVerified('varargin{1}.plotMode'))
       inputParams = varargin{1};
     end
     
 %     if (isValid(dataSource,'struct') && isVerified('dataSource.plotMode'))
 %       inputParams = dataSource;
 %       dataSource = inputParams.dataSource;
-%       if isValid('=varargin{1}','double')
+%       if isValid('varargin{1}','double')
 %         inputParams.dataPatchSet = varargin{1};
 %         optargs = varargin(2:end);
 %       else
@@ -70,13 +70,13 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
 %       end
 %     end    
     
-    if (isValid('=varargin{1}','double') && isValid('=varargin{2}','struct') && isVerified('varargin{2}.plotMode'))
+    if (isValid('varargin{1}','double') && isValid('varargin{2}','struct') && isVerified('varargin{2}.plotMode'))
       inputParams = varargin{2};
       inputParams.dataPatchSet = varargin{1};
       optargs = varargin(3:end);
     end
     
-    if (isValid('=inputParams','struct'))
+    if (isValid('inputParams','struct'))
       if ischar(dataSource)
         inputParams = deleteFields(inputParams, 'dataSource', 'dataSourceName');
       else

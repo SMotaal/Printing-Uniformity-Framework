@@ -1,4 +1,4 @@
-function [ result ] = isValid( object, expectedClass, varargin )
+function [ result exception ] = isValid( object, expectedClass, varargin )
   %ISVALID Validate class and check size
   %   Detailed explanation goes here
   
@@ -17,28 +17,24 @@ function [ result ] = isValid( object, expectedClass, varargin )
   
   params = parser.Results;
   
-  result = false;
+  result    = false;
+  exception = [];
   
   object          = params.object;
   expectedClass   = params.expectedClass;
   expectedSize    = params.expectedSize;
   
-  if ischar(object) && ~isempty(regexp(object,'^=[^=]*$'))
+  if (ischar(object) && isempty(inputname(1))) %~isempty(regexp(object,'^=[^=]*$'))
     try
-      object = evalin('caller', object(2:end));
+      object = evalin('caller', object);
     catch err
-      % error('Grasppe:IsValid:InvalidObject', 'Evaluation of object in caller failed.');
+      exception = MException('Grasppe:IsValid:InvalidObject', 'Evaluation of object in caller failed.');
       return;
     end
   end
   
   %% Validation
   validClass = isClass(object, expectedClass);
-  %   validClass  = isa(object, expectedClass);
-  %
-  %   if ~validClass && strcmpi(expectedClass, 'cellstr')
-  %     validClass = iscellstr(object);
-  %   end
   
   if numel(expectedSize) == 1
     validSize = numel(object) == expectedSize;
@@ -47,8 +43,7 @@ function [ result ] = isValid( object, expectedClass, varargin )
       all(size(size(object)) == size(expectedSize));
   end
   
-  result = validClass && (validSize || ischar(object));
-  
+  result = validClass && (validSize || (ischar(object)&&~isempty(object)));
   
 end
 

@@ -72,16 +72,32 @@ classdef grasppeHandle < handle
     
     %% Handle Functions
     
-    function hobj   = getObjects(obj, tag, type, parent, varargin)
-      hobj = grasppeHandle.getHandles(tag, type, parent, varargin{:});
+    function handles   = getHandles(obj, tag, type, parent, varargin)
+      handles = grasppeHandle.findObjects(tag, type, parent, varargin{:});
     end
     
-    function hAxes = selectAxes(obj, handle)
-      hAxes = grasppeHandle.setCurrentAxes(handle);
-      if (handle~=hAxes)
-        hAxes = [];
+    function handle = getHandle(obj, tag, type, parent, varargin)
+%       get(parent,'');
+      pVisibility = get(parent,'HandleVisibility');
+      set(parent,'HandleVisibility', 'on');    
+      args = {tag, type, parent, varargin{:}};
+      handle = grasppeHandle.findObjects(args{:});
+      if numel(handle)>1
+        delete(handle(2:end));
+        handle = grasppeHandle.findObjects(args{:});
+%         handle = handle(1);
+      else
+%         disp(args);
       end
-    end
+      set(parent,'HandleVisibility', pVisibility);      
+    end    
+    
+%     function hAxes = selectAxes(obj, handle)
+%       hAxes = grasppeHandle.setCurrentAxes(handle);
+%       if (handle~=hAxes)
+%         hAxes = [];
+%       end
+%     end
     
     %% Lower-Level Functions
     
@@ -151,19 +167,19 @@ classdef grasppeHandle < handle
     
     %% Static Handle Functions
     
-    function hobj = getHandles(tag, type, handles, varargin)
+    function hobj = findObjects(tag, type, parent, varargin)
       
       args = {}; hobj = [];
       
-      if (isVerified('ishandle(handles)', true))
-        args = {handles args{:}};
-      end
+%       if (isVerified('ishandle(parent)', true))
+%         args = {'Parent', parent, args{:}};
+%       end
       
-      if (isValid('=tag', 'char'))
+      if (isValid('tag', 'char'))
         args = {args{:}, 'Tag', tag};
       end
       
-      if (isValid('=type', 'char'))
+      if (isValid('type', 'char'))
         args = {args{:}, 'Type', type};
       end
       
@@ -172,23 +188,34 @@ classdef grasppeHandle < handle
       end
       
       try
-        hobj = findobj(args{:});
+        if (isValid('parent', 'handle'))
+          hobj = findobj(allchild(parent),args{:});
+        else
+          hobj = findobj(args{:});
+        end
+      end
+      if (numel(hobj)~=1)
+        disp({get(parent,'type'), args{:}});
+%         disp(hobj);
+        return;
       end
     end
     
-    function hAxes = setCurrentAxes(handle)
-      
-      hAxes = grasppeHandle.getHandles([],'axes', handle);
-      
-      if (all(ishandle(hAxes)) && numel(hAxes)==1)
-        hFigure = get(hAxes,'Parent');
-        set(hFigure, 'CurrentAxes', hAxes);
-        set(0,'CurrentFigure', hFigure);
-      else
-        hAxes = gca;
-      end
-      
-    end
+%     function hAxes = setCurrentAxes(handle)
+%       
+%       hAxes = handle; %grasppeHandle.findObjects([],'axes', handle);
+%       
+%       if (all(ishandle(hAxes)) && numel(hAxes)==1)
+%         hFigure = get(hAxes,'Parent');
+%         set(hFigure, 'CurrentAxes', hAxes);
+%         set(0,'CurrentFigure', hFigure);
+% %       else
+% %         hAxes = gca;
+%       else
+%         disp(handle);
+%       end
+%       
+%     end
     
   end
   

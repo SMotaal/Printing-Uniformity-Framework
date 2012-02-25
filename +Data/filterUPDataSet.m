@@ -20,17 +20,17 @@ function [ dataSet ] = filterUPDataSet( dataSource, sourceName, patchSet )
   
   
   %% Parameters
-  if isValid('=sourceName','struct')
+  if isValid('sourceName','struct')
     dataSet = sourceName;
   else
     dataSet = emptyStruct('sourceName', 'patchSet', 'patchFilter', 'data');
     
     try
-      if isValid('=sourceName', 'double')
+      if isValid('sourceName', 'double')
         patchSet = sourceName;
       end
         
-      if (~isValid('=sourceName','char'))
+      if (~isValid('sourceName','char'))
         dataSet.sourceName = dataSource.name;
       else
         dataSet.sourceName = sourceName;
@@ -53,8 +53,8 @@ function [ dataSet ] = filterUPDataSet( dataSource, sourceName, patchSet )
     %       );
   end
   
-  validSourceName   = isValid('=dataSet.sourceName','char');
-  validPatchSet     = isValid('=dataSet.patchSet', 'double');
+  validSourceName   = isValid('dataSet.sourceName','char');
+  validPatchSet     = isValid('dataSet.patchSet', 'double');
   validPatchFilter  = islogical(dataSet.patchFilter);
   
   if (~validSourceName)

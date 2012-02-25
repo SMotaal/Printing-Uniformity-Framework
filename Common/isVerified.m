@@ -9,18 +9,17 @@ function [ result ] = isVerified( expression, expected )
   result = false;
   
   try
-    actual = evalin('caller', expression);
+    if isValid('expression','char')
+      actual = evalin('caller', expression);
+    else
+      acutal = expression;
+    end
     if (exist('expected','var'))
-%       if ischar(expected)
-%         result = strcmp(actual, expected);
-%       else
         try
-          result = actual==expected;
-          result = ~isempty(result) && all(result);
+          result = isequal(actual, expected); % result = actual==expected; result = ~isempty(result) && all(result);
         catch err
           result = false;
         end
-%       end
     else
       result = true;
     end

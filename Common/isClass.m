@@ -1,31 +1,38 @@
 function [ result ] = isClass( object, expectedClass )
-%ISVALID Validate class and check size
-%   Detailed explanation goes here
-
-  parser = inputParser;
+  %ISVALID Validate class and check size
+  %   Detailed explanation goes here
   
-  %% Parameters
-  parser.addRequired('object');
+%   parser = inputParser;
+%   
+%   %% Parameters
+%   parser.addRequired('object');
+%   
+%   parser.addRequired('expectedClass', @ischar);
+%   
+%   parser.parse(object, expectedClass);
+%   
+%   params = parser.Results;
   
-  parser.addRequired('expectedClass', @ischar);
-    
-  parser.parse(object, expectedClass);
-  
-  params = parser.Results;
-   
   %% Validation
-  validClass  = isa(object, expectedClass);
   
-  if ~validClass && strcmpi(expectedClass, 'cellstr')
-    validClass = iscellstr(object);
-  end
-  
-  if ~validClass && strcmpi(expectedClass, 'numeric')
-    validClass = isnumeric(object);
-  end
+  try
+    switch lower(expectedClass)
+      case 'handle'
+        validClass = ishandle(object);
+      case 'object'
+        validClass = isobject(object);
+      case 'numeric'
+        validClass = isnumeric(object);
+      case 'cellstr'
+        validClass = iscellstr(object);
+      otherwise
+        validClass = isa(object, expectedClass);
+    end
     
-  result = validClass;
-  
+    result = ~isempty(validClass) && all(validClass);
+  catch err
+    result = false;
+  end
   
 end
 

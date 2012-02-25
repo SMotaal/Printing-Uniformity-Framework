@@ -8,7 +8,7 @@ function [ mmValues values unit ] = millimeters( values, unit )
   %   matrix to and require that a unit be specified as char (in, cm, m,
   %   inches, pica, point, pt, px... etc.).
   
-  if (~isVerified('class(unit)','char'))
+  if (~isValid('unit','char'))
     [values unit] = splitUnitValues( values );
   end
   

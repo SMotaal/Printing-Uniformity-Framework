@@ -15,7 +15,7 @@ function [ nargs even names values ] = pairedArgs(varargin)
     
   nargs = numel(args);
     
-%     if (isValid('=firstArg','double') && firstArg > 0 && firstArg < nargs)
+%     if (isValid('firstArg','double') && firstArg > 0 && firstArg < nargs)
 %       args  = args(firstArg:end);
 %       nargs = numel(args);
 %     end
