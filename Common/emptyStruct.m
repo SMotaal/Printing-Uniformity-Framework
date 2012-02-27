@@ -1,6 +1,5 @@
 function [ structure ] = emptyStruct( varargin )
-  %EMPTYSTRUCT Summary of this function goes here
-  %   Detailed explanation goes here
+  %EMPTYSTRUCT create struct with fieldnames only
   
   args = cell(numel(varargin)*2,1);
 

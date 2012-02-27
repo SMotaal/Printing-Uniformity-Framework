@@ -8,7 +8,16 @@ function [ data ] = dataSources( sourceName, varargin )
   %   return the data associated with the identifier. Non-existant
   %   variables will return empty matrix ([]) and
   
-  persistent sources verbose sizeLimit;
+  persistent verbose sizeLimit;
+  
+%   mlock;
+  try
+    sources = PersistentSources('dataSources');
+%     disp(sources);
+  catch
+    sources = [];
+  end
+%   onCleanup(@() PersistentSources('dataSources', sources));
   
   defaults.verbose=false;
   defaults.sizeLimit=1024; % defaults.sizeLimit =  200 * (2^20);
@@ -39,12 +48,20 @@ function [ data ] = dataSources( sourceName, varargin )
     end
     return;
   else
-    if (strcmpi(sourceName, 'clear'))
-      clear sources;
-      return;
-    elseif (strcmpi(sourceName, 'reset'))
-      Data.dataSources([], 'verbose', 'reset', 'sizeLimit', 'reset');
-      return;
+    switch (lower(sourceName))
+      case 'clear'
+        PersistentSources('dataSources', []); % clear sources;
+        return;
+      case 'lock'
+        mlock;
+        return;
+      case 'unlock'
+        munlock;
+        return;
+      case 'reset'
+        Data.dataSources([], 'verbose', 'reset', 'sizeLimit', 'reset');
+        return;
+      otherwise
     end
   end
   
@@ -117,7 +134,7 @@ function [ data ] = dataSources( sourceName, varargin )
       end
       source = [];
       data = [];
-      return;
+      PersistentSources('dataSources', sources); return;
     else
       %% Get source data
       try
@@ -181,11 +198,11 @@ function [ data ] = dataSources( sourceName, varargin )
         warning('Grasppe:DataSources:CollectingGarbage', [bufferWarning ...
           '. No unprotected data to clear while adding %s!\n'], sourcesSize, sizeLimit, inputParams.name);
       end
-      return;
+      PersistentSources('dataSources', sources); return;
     end
     sourcesDetails = whos('sources');
     sourcesSize = sourcesDetails.bytes/2^20;
   end
-  
+  PersistentSources('dataSources', sources); return;
 end
 

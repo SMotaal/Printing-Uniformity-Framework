@@ -2,6 +2,11 @@ classdef upPlotFigure < Plots.upViewComponent
   %UPPLOTFIGURE Printing Uniformity Plot Figure
   %   Detailed explanation goes here
   
+  properties (Constant = true, Transient = true)
+    ComponentType = 'figure';    
+    ComponentProperties = grasppeHandle.FigureProperties;
+  end  
+  
   properties (SetAccess = protected, GetAccess = protected)
     AxesHandle    % Axes handle
     TitleHandle   % Handle to title text
@@ -22,39 +27,34 @@ classdef upPlotFigure < Plots.upViewComponent
     
   end
   
-  properties (Constant = true, Transient = true)
-%     ClassName = eval(CLASS); ClassPath = eval(FILE);
-    
-    FigureProperties  = { 'Name', 'Renderer', 'Visible', 'Toolbar', 'Menubar', 'Color', 'Units' };
-    TitleProperties   = {{'Title', 'String'}};
-  end
-  
-  
   methods
     
     function obj = upPlotFigure(varargin)
            
-      [args values paired pairs] = grasppeHandle.parseOptions(obj, obj.Defaults, varargin{:});
+%       [args values paired pairs] = grasppeHandle.parseOptions(obj, obj.Defaults, varargin{:});
       
       obj.setOptions(obj.Defaults, varargin{:});
-      obj.createComponent;
+%       obj.ComponentProperties = ;
+      obj.createComponent('figure');
       
+
+%       obj.updateView;
     end
     
     %% Figure Operations
     
-    function obj = createComponent(obj, type, options)
-      % http://www.mathworks.com/help/techdoc/matlab_oop/brgxk22-1.html
-     
-      obj.createComponent@Plots.upViewComponent('figure', obj.getFigureOptions);
-      
-      obj.updateView;
-    end
+%     function obj = createComponent(obj, type, options)
+%       % http://www.mathworks.com/help/techdoc/matlab_oop/brgxk22-1.html
+%      
+%       obj.createComponent@Plots.upViewComponent('figure', obj.ComponentProperties);
+%       
+%       obj.updateView;
+%     end
     
     function handle = getFigure(obj)
       
       if (isempty(obj.Primitive))
-        obj.createComponent;
+        obj.createComponent();
       end
       
 %       try
@@ -83,7 +83,7 @@ classdef upPlotFigure < Plots.upViewComponent
       
       if (isempty(handle) || numel(handle)~=1)
         delete(handle);
-        handle = axes('parent', hFigure, 'position', [0,0,1,1], 'visible', 'off', 'Tag', 'Title Axes');
+        handle = axes('parent', hFigure, 'position', [0,0,1,1], 'visible', 'off', 'Tag', 'Title Axes', 'HitTest', 'off');
       end
       
     end
@@ -111,6 +111,12 @@ classdef upPlotFigure < Plots.upViewComponent
     function obj = updateComponent(obj)
       obj.updateTitle;            
       obj.updateFigure;
+    end
+    
+    function obj = enableRotation(obj)
+      try
+        rotate3d(obj.Primitive);
+      end
     end
     
     
@@ -149,7 +155,7 @@ classdef upPlotFigure < Plots.upViewComponent
         delete(hText);
 %         end
 %         hText = text(0.5, 0.95, obj.Title, 'parent', hOverlay);       
-        hText = obj.createHandleObject('text', 0.5, 0.95, obj.Title, 'parent', hOverlay,'Tag', tText); % text(0.5, 0.95, obj.Title, 'parent', hOverlay)
+        hText = obj.createHandleObject('text', hOverlay, 0.5, 0.95, obj.Title,'Tag', tText); % text(0.5, 0.95, obj.Title, 'parent', hOverlay)
         set(hText, obj.Styles.TitleStyle{:});
       end
       
@@ -173,8 +179,17 @@ classdef upPlotFigure < Plots.upViewComponent
   end
   
   methods(Static)
-    
-    
+    function options  = DefaultOptions( )
+      
+      Name      = 'Printing Uniformity Plot';
+      Title     = 'Printing Uniformity';
+      Color     = 'white';
+      Toolbar   = 'none';  Menubar = 'none';
+      Renderer  = 'opengl';
+      Parent    = 0;
+      
+      options = WorkspaceVariables(true);
+    end
   end
 end
 

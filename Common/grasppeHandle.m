@@ -1,9 +1,30 @@
-classdef grasppeHandle < handle
+classdef grasppeHandle < dynamicprops
   %GRASPPEHANDLE Grasppe Handle Superclass
+  
+  
+  properties (SetAccess = protected, GetAccess = public)
+    Primitive                 % HG primitive handle
+    Parent
+    Busy
+  end
+  
+  properties (Constant = true, GetAccess = public, Transient = true)
+    FigureProperties    = { 'Name', 'Renderer', 'Visible', 'Toolbar', 'Menubar', 'Color', 'Units', 'WindowStyle'}; %'Parent' };
+    TitleProperties     = {{'Title', 'String'}};
+    PlotProperties      = {'Parent'};
+    SurfaceProperties   = {};
+  end  
     
   methods
     
     %% Property Functions
+    function options = getComponentOptions(obj)
+      try
+        properties = obj.ComponentProperties;
+        options = obj.getOptions(properties);
+      end
+    end
+    
     
     function [options properties] = getOptions(obj, names)
       options     = [];
@@ -56,49 +77,60 @@ classdef grasppeHandle < handle
         options     = options(1:pairs*2);
         properties  = properties(1:pairs*2);
       end
+      
     end
     
     function obj = setOptions(obj, varargin)
       
-      [args values paired pairs] = grasppeHandle.parseOptions(obj, varargin{:});
-      
-      if (paired)
-        for i=1:numel(args)
-          obj.(args{i}) = values{i};
+      obj.Busy = true;
+      try
+        [args values paired pairs] = grasppeHandle.parseOptions(obj, varargin{:});
+
+        if (paired)
+          for i=1:numel(args)
+            obj.(args{i}) = values{i};
+          end
         end
       end
+      obj.Busy = false;
       
     end
     
     %% Handle Functions
+%     function obj = setParent(obj, value)
+%       try
+%         hObject = obj.Primitive;
+%         hParent = get(hObject,  'Parent');
+%         
+%         if (hParent~=value)
+%           set(obj.Primitive,'Parent', value);
+%           obj.Parent = value;
+%         end
+%       catch
+%         obj.Parent = value;
+%       end
+%     end    
     
     function handles   = getHandles(obj, tag, type, parent, varargin)
       handles = grasppeHandle.findObjects(tag, type, parent, varargin{:});
     end
     
     function handle = getHandle(obj, tag, type, parent, varargin)
-%       get(parent,'');
+
       pVisibility = get(parent,'HandleVisibility');
       set(parent,'HandleVisibility', 'on');    
       args = {tag, type, parent, varargin{:}};
       handle = grasppeHandle.findObjects(args{:});
+      
       if numel(handle)>1
         delete(handle(2:end));
         handle = grasppeHandle.findObjects(args{:});
-%         handle = handle(1);
-      else
-%         disp(args);
       end
-      set(parent,'HandleVisibility', pVisibility);      
+      
+      set(parent,'HandleVisibility', pVisibility);
+      
     end    
-    
-%     function hAxes = selectAxes(obj, handle)
-%       hAxes = grasppeHandle.setCurrentAxes(handle);
-%       if (handle~=hAxes)
-%         hAxes = [];
-%       end
-%     end
-    
+        
     %% Lower-Level Functions
     
     function value  = getStatic(obj, specifier)
@@ -129,7 +161,6 @@ classdef grasppeHandle < handle
       [nargs paired args values] = pairedArgs(varargin{:});
       
       if (nargs==0)
-        % Use defaults;
         return;
       end
       
@@ -171,10 +202,6 @@ classdef grasppeHandle < handle
       
       args = {}; hobj = [];
       
-%       if (isVerified('ishandle(parent)', true))
-%         args = {'Parent', parent, args{:}};
-%       end
-      
       if (isValid('tag', 'char'))
         args = {args{:}, 'Tag', tag};
       end
@@ -194,28 +221,8 @@ classdef grasppeHandle < handle
           hobj = findobj(args{:});
         end
       end
-      if (numel(hobj)~=1)
-        disp({get(parent,'type'), args{:}});
-%         disp(hobj);
-        return;
-      end
+
     end
-    
-%     function hAxes = setCurrentAxes(handle)
-%       
-%       hAxes = handle; %grasppeHandle.findObjects([],'axes', handle);
-%       
-%       if (all(ishandle(hAxes)) && numel(hAxes)==1)
-%         hFigure = get(hAxes,'Parent');
-%         set(hFigure, 'CurrentAxes', hAxes);
-%         set(0,'CurrentFigure', hFigure);
-% %       else
-% %         hAxes = gca;
-%       else
-%         disp(handle);
-%       end
-%       
-%     end
     
   end
   

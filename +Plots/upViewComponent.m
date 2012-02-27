@@ -7,6 +7,7 @@ classdef upViewComponent < grasppeHandle
     UpdatingDelayTimer        % To delays Recursive-Updating
     InstanceID
     InstanceLimit = 20;
+
   end
   
   properties (SetAccess = public, GetAccess = public)
@@ -15,9 +16,6 @@ classdef upViewComponent < grasppeHandle
     Tag
   end
   
-  properties (SetAccess = protected, GetAccess = protected)
-    Primitive                 % HG primitive handle
-  end
   
   properties (Dependent = true)
     ID
@@ -30,12 +28,9 @@ classdef upViewComponent < grasppeHandle
     ClassPath
   end
   
-  properties (Constant = true, GetAccess = private)
-    
-  end
-  
   methods
     
+   
     function id = get.ID(obj)
       instanceID = obj.InstanceID;
       if (isempty(instanceID) || ~ischar(instanceID))
@@ -70,7 +65,28 @@ classdef upViewComponent < grasppeHandle
     
     function obj = createComponent(obj, type, options)
       
-      hObj = obj.createHandleObject(type, options{:}, 'Visible', 'off');
+      if (~isValid('options','cell') || isempty(options))
+        options = obj.getComponentOptions;
+      end
+      
+      if (~isValid('type','char'))
+        try
+          type = obj.ComponentType;
+        catch err
+          error('Grasppe:Component:MissingType', ... 
+            'Attempt to create component without specifying type.');
+        end  
+      end
+      
+      if isValid('obj.Parent', 'handle')
+        parent = obj.Parent;
+%         options = {obj.Parent, options{:}, 'Visible', 'off'};
+      else
+        parent = [];
+%         options = {[], options{:}, 'Visible', 'off'};
+      end      
+      
+      hObj = obj.createHandleObject(type, parent, options{:});
       
       obj.Primitive = hObj;
       
@@ -80,10 +96,11 @@ classdef upViewComponent < grasppeHandle
         obj.show();
       end
       
+      set(hObj,'UserData',  obj);
       set(hObj,'HandleVisibility', 'callback');
     end
     
-    function hObj = createHandleObject (obj, type, varargin)
+    function hObj = createHandleObject (obj, type, parent, varargin)
       
       if ~(isValid('obj','object') && isValid('type','char'))
         error('Grasppe:CreateHandleObject:InvalidParamters', ...
@@ -99,9 +116,10 @@ classdef upViewComponent < grasppeHandle
       switch lower(type)
         case 'figure'
           constructor = lower(type);
-        case {'axes', 'plot', 'patch', 'surf', 'surfc'}
+          args = {args{:}, 'Visible', 'off'};
+        case {'axes', 'plot', 'patch', 'surface', 'surf', 'surfc'}
           constructor = lower(type);
-          args = {args{:}, 'Parent', obj.Primitive};
+%           args = {'Parent', obj.Parent, args{:}};
         case {'text'}
           constructor = lower(type);
         otherwise
@@ -109,10 +127,16 @@ classdef upViewComponent < grasppeHandle
             'Could not create a handle object of type ''%s''.', type);
       end
       
+      if isValid(parent, 'handle')
+        args = {args{:}, 'Parent', parent};
+      end
+      
+      disp(horzcat({constructor, args{:}}));
+      
       hObj = feval(constructor, args{:});
       
       if isempty(get(hObj,'tag'))
-        disp(get(hObj));
+%         disp(get(hObj));
       end
       
       hProperties = get(hObj);
@@ -136,17 +160,25 @@ classdef upViewComponent < grasppeHandle
     
     function 	obj = show(obj)
       try
-        obj.setOptions('Visible', 'on');
-        
-        switch lower(get(obj.Primitive,'type'))
-          case 'figure'
-            figure(obj.Primitive)
-          case 'axes'
-            axes(obj.Primitive);
+        h = Plots.upViewComponent.showHandle(obj.Primitive);
+        if (h==0)
+          if isValid('obj.ComponentType', 'char')
+            obj.createComponent(obj.ComponentType);
+          end          
         end
-      catch
-        set(obj.Primitive, 'Visible', 'on');
       end
+%       try
+%         obj.setOptions('Visible', 'on');
+%         
+%         switch lower(get(obj.Primitive,'type'))
+%           case 'figure'
+%             figure(obj.Primitive)
+%           case 'axes'
+%             axes(obj.Primitive);
+%         end
+%       catch
+%         set(obj.Primitive, 'Visible', 'on');
+%       end
     end
     
     function obj = set.Visible(obj, value)
@@ -155,18 +187,15 @@ classdef upViewComponent < grasppeHandle
       end
     end
     
+    function obj = updateComponent(obj);
+      updateView(obj);
+    end
+    
     function obj = updateView(obj)
-      %       persistent updating delayTimer;   % Prevent Recursive Updating
-      
-      updating = obj.UpdatingView;
-      
-      if isVerified('updating',true)
+           
+      if isequal(obj.UpdatingView, true)  %isVerified('updating',true)
         delayTimer = obj.UpdatingDelayTimer;
         if ~isVerified('class(delayTimer)','timer');
-          %           delayTimer = timer( ...
-          %             'Name','DelayTimer',, ...
-          %             'TimerFcn', {@Plots.upViewComponent.callbackEvent,obj});
-          %           obj.UpdatingDelayTimer = delayTimer;
         end
         try
           stop(delayTimer);
@@ -175,8 +204,7 @@ classdef upViewComponent < grasppeHandle
         return;
       end
       
-      obj.UpdatingView = true; %updating = true;
-      %       obj.updateView;
+      obj.UpdatingView = true;
       obj.updateComponent;
       
       obj.UpdatingView = false;
@@ -186,24 +214,63 @@ classdef upViewComponent < grasppeHandle
     
     %% Shared Property Wrappers
     
-    function [options] = get.Defaults(obj)
-      persistent DefinedOptions;
-      
-      if isempty(DefinedOptions)
-        DefinedOptions = obj.getStatic('DefaultOptions'); %  %eval([obj.ClassName '.getDefaultStyles']);
+    function [options] = get.Defaults(obj)     
+      try
+        options = obj.getStatic('DefaultOptions');
       end
-      
-      options = DefinedOptions;
     end
     
     function [styles] = get.Styles(obj)
       persistent DefinedStyles;
-      
-      if isempty(DefinedStyles)
-        DefinedStyles = obj.getStatic('DefaultStyles'); %  %eval([obj.ClassName '.getDefaultStyles']);
-      end
-      
+      default DefinedStyles = obj.getStatic('DefaultStyles');
       styles = DefinedStyles;
+    end
+    
+
+    function obj = resizeComponent(obj)
+      
+    end
+    
+    function obj = hide(obj)
+      try
+        obj.setOptions('Visible','off');
+      end
+      set(obj.Primitive,'Visible','off');
+    end
+    
+    function obj = finalizeComponent(obj)
+      delete(obj.Primitive);
+    end
+    
+    function obj = closeComponent(obj)
+      if (isQuitting)
+        obj.finalizeComponent();
+        return;
+      end
+      try
+      hType = get(obj.Primitive,'type');
+      
+      switch lower(hType)
+        case 'figure'
+          try
+            grasppeQueue([], ['Reopen ' obj.Name], ['click the link to reopen this figure'], ...
+              sprintf('%s.showHandle(%d);', eval(CLASS), obj.Primitive));
+            grasppeQueue([], ['Delete ' obj.Name], ['click the link to delete the figure'], ...
+              sprintf('delete(%d);', obj.Primitive));
+          end
+          obj.hide();
+        otherwise
+          obj.finalizeComponent();
+      end
+      catch
+%         delete(obj.Primitive);
+      end
+    end
+    
+    function delete(obj)
+      try
+        delete(obj.Primitive);
+      end
     end
     
   end
@@ -217,7 +284,7 @@ classdef upViewComponent < grasppeHandle
       %       dbstop('in',eval(CLASS),'if','error');  dbstop('in',eval(CLASS),'if','caught', 'error');
       
       if (~exist('object','var'))
-        disp(hashmap);
+%         disp(hashmap);
         return;
       end
       
@@ -279,16 +346,6 @@ classdef upViewComponent < grasppeHandle
       
     end
     
-    function options  = DefaultOptions( )
-      
-      Name      = 'Printing Uniformity Plot';
-      Title     = 'Printing Uniformity';
-      Color     = 'white';
-      Toolbar   = 'none';  Menubar = 'none';
-      Renderer  = 'opengl';
-      
-      options = WorkspaceVariables(true);
-    end
     
     function styles   = DefaultStyles()
       
@@ -396,13 +453,7 @@ classdef upViewComponent < grasppeHandle
       [token fcn] = Plots.upViewComponent.createCallbackToken(object, varargin{:});
     end
     
-    function obj = resizingComponent(obj)
-      
-    end
-    
-    function obj = closingComponent(obj)
-      delete(obj.Primitive);
-    end
+
     
   end
   
@@ -492,21 +543,21 @@ classdef upViewComponent < grasppeHandle
           end
         case 'CloseRequestFcn'
           if isSourceObject
-            object.closingComponent(object);
+            object.closeComponent();
           else
               delete(source);
           end
-          disp(token);
         case 'ResizeFcn'
           if isSourceObject
-            object.resizingComponent(object);
+            object.resizeComponent();
           end
         case 'DeleteFcn'
           set(source, 'Visible', 'off');
           drawnow;
-%           delete(source);
+          delete(source);
         case {'WindowButtonDownFcn', 'WindowButtonMotionFcn', 'WindowButtonUpFcn', 'WindowKeyPressFcn', 'WindowKeyReleaseFcn', 'WindowScrollWheelFcn'}
         otherwise
+          desc = sprintf('');
           if (~isempty(callback))
             try
               feval(callback{:})
@@ -519,11 +570,22 @@ classdef upViewComponent < grasppeHandle
           disp(token);
       end
     end
-  end
-  
-  methods (Abstract)
     
-    obj = updateComponent(obj);
+    
+    function 	handle = showHandle(handle)
+      try
+        set(handle,'Visible', 'on');
+        switch lower(get(handle,'type'))
+          case 'figure'
+            figure(handle)
+          case 'axes'
+            axes(handle);
+        end
+      catch err
+        handle = 0;
+      end
+    end
+    
   end
   
 end

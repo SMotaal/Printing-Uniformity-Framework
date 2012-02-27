@@ -11,7 +11,7 @@ function [ dataSet ] = mergeUPRegions( dataSource, dataSet, params, options )
   %   generated to overlay the surface and patch plots with the
   %   approporiate statistical data for each segment.
   
-  [regions fields]  = surfParams(params, options);
+  [regions fields]  = surfParams(params); %, options);
   
   
   regionSurfsData   = surfData(dataSource, dataSet, regions, fields);

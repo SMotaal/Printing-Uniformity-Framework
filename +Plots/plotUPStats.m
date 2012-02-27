@@ -1,4 +1,4 @@
-function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
+function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargin )
   %SUPSTATS Summary of this function goes here
   %   Detailed explanation goes here
   
@@ -16,8 +16,8 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
   options.statField   = {'all', {'mean', 'std', 'lim'}};
   defaults.statField  = {'all'};
   
-  options.mode        = {options.plotMode{:},options.statMode{:}};
-  defaults.mode       = {defaults.plotMode{:},defaults.statMode{:}};
+  options.mode        = {options.plotMode{:},options.statMode{:}, options.exportMode{2}{:}};
+  defaults.mode       = {defaults.plotMode{:},defaults.statMode{:}, options.exportMode{2}{:}};
   
   defaults.patchSet   = 100;
   
@@ -98,6 +98,7 @@ function [ dataSource params parser ] = plotUPStats( dataSource, varargin )
   
   %% Settings: Exporting
   
+  params = parseModeParamters(params, options, defaults);
   params = parseExportParameters(params);
   
   %% Settings: Data Source
@@ -179,6 +180,59 @@ function [ source ] = prepareUniformityData( source )
   
 end
 
+function [params] = parseModeParamters(params, options, defaults)
+  try
+    paramsMode = params.mode;
+    modes = regexp(paramsMode,'\w+', 'match');
+  catch err
+    paramsMode = '';
+    return;
+  end
+  
+  statModes = options.statMode;
+  plotModes = options.plotMode;
+  exportModes = options.exportMode{2};
+  
+  [statMode plotMode exportMode] = deal({});
+  
+  
+  for m = 1:numel(modes)
+    mode = char(modes{m});
+    if stropt(mode, statModes)
+      statMode  = {statMode{:}, mode};
+      continue;
+    end
+    if stropt(mode, plotModes)
+      plotMode  = {plotMode{:}, mode};
+      continue;
+    end    
+    if stropt(mode, exportModes)
+      exportMode  = {exportMode{:}, mode};
+      continue;
+    end
+%     statMode    = {statMode{:},   statModes(  find(strcmpi(mode, statModes)))};
+%     plotMode    = {plotMode{:},   plotModes(  find(strcmpi(mode, plotModes)))};
+%     exportMode  = {exportMode{:}, exportModes(find(strcmpi(mode, exportModes)))};
+  end
+  
+  if (~isempty(statMode))
+    params.statMode = statMode;
+  end
+
+  if (~isempty(plotMode))
+    params.plotMode = plotMode;
+  end
+    
+  if (~isempty(exportMode))
+    params.exportMode = exportMode;
+%   else
+%     params.exportMode = 'none';
+  end
+  
+  return;  
+end
+
+
 function [params] = parseExportParameters(params)
   
   try
@@ -234,12 +288,12 @@ function [parser] = getInputParser(options, defaults)
     parser.addOptional('dataPatchSet', [], ...
       @(x) (isempty(x) || (isnumeric(x) && x>=-100 && x<=100)) ...
       && numel(x)<=1);
-    
-    parser.addOptional('export', defaults.exportMode, ...
-      @(x) (isempty(x) || stropt(x, options.exportMode)));
-    
+        
     parser.addOptional('mode', defaults.mode, ...
       @(x) stropt(x, options.mode));
+    
+%     parser.addOptional('export', defaults.exportMode, ...
+%       @(x) (isempty(x) || stropt(x, options.exportMode)));    
     
     %% Parameters: Exporting
     parser.addParamValue('exportMode', defaults.exportMode, ...
@@ -267,5 +321,7 @@ function [parser] = getInputParser(options, defaults)
     parser.addParamValue('statField', defaults.statField, @(x)stropt(x, options.statField    ));
     
     parser.addParamValue('plotSummary', true, @(x) isValid(x,'logical'));
+    
+    return;
   
 end
