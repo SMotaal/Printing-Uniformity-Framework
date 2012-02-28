@@ -1,4 +1,4 @@
-classdef upEventHandler < handle
+classdef upEventHandler < Plots.upGrasppeHandle
   %UPEVENTHANDLER Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -12,7 +12,6 @@ classdef upEventHandler < handle
     end
     
   end
-  
   
   methods (Static)
     
@@ -74,10 +73,10 @@ classdef upEventHandler < handle
           isSourceObject = object.Primitive==source;
         end
         try
-          caller  = [get(source, 'Name'  ) ' '];
+          caller  = [obj.Get(source, 'Name'  ) ' '];
         end
         try
-          caller  = [caller '(' get(source, 'Type'  ) ')'];
+          caller  = [caller '(' obj.Get(source, 'Type'  ) ')'];
         end
       end
       
@@ -113,6 +112,10 @@ classdef upEventHandler < handle
       end
     end
   end
+  
+  methods(Abstract, Static)
+    options  = DefaultOptions()
+  end  
   
 end
 

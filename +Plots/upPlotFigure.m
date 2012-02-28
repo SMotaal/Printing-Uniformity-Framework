@@ -104,7 +104,8 @@ classdef upPlotFigure < Plots.upViewComponent
       if (isempty(hOverlay) || numel(hOverlay)~=1)
         delete(hOverlay);
         hOverlay = axes('parent', hFigure, 'position', [0,0,1,1], ...
-          'Visible', 'off', 'Tag', tOverlay, 'HitTest', 'off');
+          'Visible', 'off', 'Tag', tOverlay, 'HitTest', 'off', ...
+          'Color', 'none');
       end
       
     end
@@ -144,14 +145,14 @@ classdef upPlotFigure < Plots.upViewComponent
         %       end
         
         if ~isValidHandle(hText)         % http://www.mathworks.com/matlabcentral/newsreader/view_thread/153708
-          set(hOverlay,'Visible', 'on');
+          obj.Set(hOverlay,'Visible', 'on');
           hText = obj.createHandleObject('text', tText, hOverlay, 0.5, 0.95, obj.Title);
-          set(hText, obj.Styles.TitleStyle{:});
+          obj.Set(hText, obj.Styles.TitleStyle{:});
         end
         
         try
           options = obj.getOptions(obj.TitleProperties);
-          set(hText, options{:});
+          obj.Set(hText, options{:});
         catch err
           warning(err.identifier, err.message);
         end

@@ -104,7 +104,7 @@ classdef upSurface < Plots.upAxesObject
     
     function obj = refreshPlotData(obj)
       if isValidHandle(obj.Primitive)
-        set(obj.Primitive, 'XData', obj.XData, 'YData', obj.YData, 'ZData', obj.ZData);
+        obj.Set('XData', obj.XData, 'YData', obj.YData, 'ZData', obj.ZData);
       end
       drawnow expose;
     end

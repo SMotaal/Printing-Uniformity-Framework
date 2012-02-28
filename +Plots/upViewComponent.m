@@ -57,14 +57,22 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       
       hObj = obj.findObjects(obj.ID, type);
       
+      switch lower(type)
+        case 'figure'
+        case {'axes', 'plot', 'patch', 'surface', 'surf', 'surfc'}
+        case {'text'}
+        otherwise
+      end
+      
+      
       if isempty(hObj)
         obj.Primitive = obj.createHandleObject(type, obj.ID, parent, options{:});
       else
         obj.Primitive = hObj(1);
         if ~isempty(parent)
-          set(obj.Primitive, 'Parent', parent);
+          obj.Set('Parent', parent);
         end
-        set(obj.Primitive, options{:});
+        obj.Set(options{:});
       end
       
       obj.updateView;
@@ -74,7 +82,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       end
       
       setUserData(hObj, obj );
-      set(hObj,'HandleVisibility', 'callback');
+      obj.Set('HandleVisibility', 'callback');
     end
     
     function tag = componentTag(obj, tag)
@@ -84,7 +92,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
     function tag = createTag(obj, type, tag, parent)
       
       if isValidHandle(parent)
-        parentTag = get(parent,'tag');
+        parentTag = obj.Get(parent,'tag');
       else
         parentTag = '';
       end
@@ -135,24 +143,28 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       end
       
       if isValidHandle(parent)
+        parentArgs  = find(strcmpi(args(1:2:end),'parent'));
+        if ~isempty(parentArgs)
+          args = args(setdiff(1:numel(args), [parentArgs*2 parentArgs*2-1]));
+        end        
         args      = {args{:}, 'Parent', parent};
-        %
-        %         parentTag = get(parent,'tag');
-        %       else
-        %         parentTag = '';
       end
       
-      tag = obj.createTag(type, tag, parent);
+      if ~any(strcmpi(args(1:2:end),'tag'))
+        tag = obj.createTag(type, tag, parent);
+        args = {args{:}, 'Tag', tag};
+      end
       
       disp([constructor ':     ' toString(toString(args{:}))]);
       
-      hObj = feval(constructor, args{:}, 'Tag', tag);
+      hObj = feval(constructor, args{:});
       
-      if isempty(get(hObj,'tag'))
-        %         disp(get(hObj));
-      end
       
-      hProperties = get(hObj);
+%       if isempty(get(hObj,'tag'))
+%         %         disp(get(hObj));
+%       end
+      
+      hProperties = obj.Get(hObj);
       
       hHooks      = regexpi(fieldnames(hProperties),'^\w+Fcn$','match','noemptymatch');
       hHooks      = horzcat(hHooks{:});
@@ -161,11 +173,11 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       
       for i = 1:numel(hHooks)
         hook  = hHooks{i};
-        callback        = get(hObj, hook);
+        callback        = obj.Get(hObj, hook);
         hCallbacks{2,i} = obj.callbackFunction(hook, callback);
       end
       
-      set(hObj, hCallbacks{:});
+      obj.Set(hObj, hCallbacks{:});
       
       return;
       
@@ -186,7 +198,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       obj.Visible = value;
       if (~obj.Busy && isValidHandle(obj.Primitive))
         %       try
-        set(obj.Primitive, 'Visible',value);
+        obj.Set('Visible',value);
         %       end
       end
     end
@@ -200,9 +212,9 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       %       busy = obj.markBusy();
       %       try
       if ~isempty(obj.getComponentOptions) && isValidHandle(obj.Primitive)
-        set(obj.Primitive, obj.getComponentOptions{:});
-      else
-        disp(obj.ID);
+        obj.Set(obj.getComponentOptions{:});
+%       else
+%         disp(obj.ID);
       end
       %       catch err
       %         warning(err.identifier, err.message);
@@ -244,7 +256,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
     function obj = hide(obj)
       try
 %         obj.Visible = 'off;'
-      set(obj.Primitive,'Visible','off');
+      obj.Set('Visible','off');
       obj.setOptions('Visible','off');
       end
     end
@@ -258,7 +270,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       isClose = any(strcmpi({d.('file')}, 'close.p'));
       
       try
-        hType = get(obj.Primitive,'type');
+        hType = obj.Get(obj.Primitive,'type');
         
         switch lower(hType)
           case 'figure'

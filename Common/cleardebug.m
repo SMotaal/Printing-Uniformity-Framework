@@ -9,6 +9,7 @@ function [ output_args ] = dbclear( input_args )
   mlock
   dbstate = evalin('base', 'dbstatus(''-completenames'')');
   evalin('base', 'clear all;');
+  evalin('base', 'clear classes;');
   try
     delete(findobj(findall(0),'type','figure'));
   end

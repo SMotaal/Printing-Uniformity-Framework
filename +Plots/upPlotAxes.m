@@ -8,9 +8,6 @@ classdef upPlotAxes < Plots.upAxes
   end
     
   methods
-%     function obj = upPlotAxes(varargin)
-%       obj = obj@Plots.upAxes(varargin{:}, 'Visible', 'on');
-%     end    
     function obj = upPlotAxes(parentFigure, varargin)
       obj = obj@Plots.upAxes(parentFigure, varargin{:});
       obj.createComponent();
@@ -20,18 +17,18 @@ classdef upPlotAxes < Plots.upAxes
       hObj = obj.Primitive;
       hFig = obj.ParentFigure;
       
-      fUnits = get(hFig, 'Units');
-      set(hFig, 'Units', 'Pixels');
-      fPos   = get(hFig, 'Position');
-      set(hFig, 'Units', fUnits);
+      fUnits = obj.Get(hFig, 'Units');
+      obj.Set(hFig, 'Units', 'Pixels');
+      fPos   = obj.Get(hFig, 'Position');
+      obj.Set(hFig, 'Units', fUnits);
       
-      oUnits = get(hObj, 'Units');
-      set(hObj, 'Units', 'Pixels');
-      oPos   = get(hObj, 'OuterPosition');
+      oUnits = obj.Get('Units');
+      obj.Set('Units', 'Pixels');
+      oPos   = obj.Get('OuterPosition');
       oPad = 50;
       oPos = [oPad oPad fPos(3)-oPad*2 fPos(4)-oPad*3];
-      set(hObj, 'OuterPosition', oPos);
-      set(hObj, 'Units', oUnits);      
+      obj.Set('OuterPosition', oPos);
+      obj.Set('Units', oUnits);      
       
     end
   end

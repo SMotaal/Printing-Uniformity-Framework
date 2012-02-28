@@ -1,7 +1,6 @@
 classdef upGrasppeHandle < dynamicprops
   %GRASPPEHANDLE Grasppe Handle Superclass
   
-  
   properties (SetAccess = protected, GetAccess = public)
     Primitive                 % HG primitive handle
     Parent
@@ -13,11 +12,14 @@ classdef upGrasppeHandle < dynamicprops
   end
   
   properties (Constant = true, GetAccess = public, Transient = true)
-    FigureProperties    = { 'Name', 'Renderer', 'Visible', 'Toolbar', 'Menubar', 'Color', 'Units', 'WindowStyle'}; %'Parent' };
+    GlobalProperties    = {{'ID', 'Tag'}, 'Visible'};
+    
     TitleProperties     = {{'Title', 'String'}};
-    PlotAxesProperties  = {'Parent', 'Visible','HitTest'};
-    PlotProperties      = {'Parent', 'Visible'};
-    SurfaceProperties   = {'Parent'};
+    
+    FigureProperties    = {'Name', 'Renderer', 'Toolbar', 'Menubar', 'Color', 'Units', 'WindowStyle'};
+    PlotAxesProperties  = {'HitTest'};
+    PlotProperties      = {};
+    SurfaceProperties   = {};
   end
   
   methods
@@ -25,7 +27,7 @@ classdef upGrasppeHandle < dynamicprops
     %% Property Functions
     function options = getComponentOptions(obj)
       try
-        properties = obj.ComponentProperties;
+        properties = {obj.GlobalProperties{:}, obj.ComponentProperties{:}};
         options = obj.getOptions(properties);
       catch
         options = {};
@@ -40,7 +42,7 @@ classdef upGrasppeHandle < dynamicprops
     end
     
     function hParent = getParent(obj)
-      if isValidHandle(obj.Primitive) && isValidHand(get(obj.Primitive,'Parent'))
+      if isValidHandle(obj.Primitive) && isValidHand(obj.Get(obj.Primitive,'Parent'))
         hParent = get(obj.Primitive,'Parent');
       else
         hParent = [];
@@ -106,11 +108,17 @@ classdef upGrasppeHandle < dynamicprops
       try
         options = obj.getStatic('DefaultOptions');
       end
+    end
+    
+    function handleSet(obj, varargin)
+      Plots.upGrasppeHandle.Set(obj.Primitive, varargin{:});
+    end
+    
+    function handleGet(obj, varargin)
+      Plots.upGrasppeHandle.Get(obj.Primitive, varargin{:});
     end    
     
-    
-    function obj = setOptions(obj, varargin)
-      
+    function setOptions(obj, varargin)
       obj.Busy = true;
       try
         [args values paired pairs] = Plots.upGrasppeHandle.parseOptions(obj, varargin{:});
@@ -122,17 +130,18 @@ classdef upGrasppeHandle < dynamicprops
         end
       end
       obj.Busy = false;
-      
     end
     
-    function handles   = getHandles(obj, tag, type, parent, varargin)
+    function handles = getHandles(obj, tag, type, parent, varargin)
       handles = Plots.upGrasppeHandle.findObjects(tag, type, parent, varargin{:});
     end
     
     function handle = getHandle(obj, tag, type, parent, varargin)
       
-      pVisibility = get(parent,'HandleVisibility');
-      set(parent,'HandleVisibility', 'on');
+%       pVisibility = obj.Get(parent,'HandleVisibility');
+%       obj.Set(parent,'HandleVisibility', 'on');
+      obj.HandleVisibility(parent, 'on');
+      
       args = {tag, type, parent, varargin{:}};
       handle = Plots.upGrasppeHandle.findObjects(args{:});
       
@@ -141,8 +150,8 @@ classdef upGrasppeHandle < dynamicprops
         handle = Plots.upGrasppeHandle.findObjects(args{:});
       end
       
-      set(parent,'HandleVisibility', pVisibility);
-      
+%       obj.Set(parent,'HandleVisibility', pVisibility);
+      obj.HandleVisibility(parent);
     end
     
     %% Lower-Level Functions
@@ -159,6 +168,39 @@ classdef upGrasppeHandle < dynamicprops
         disp(err);
       end
     end
+    
+    function Set(handle, varargin)
+      if isobject(handle)
+        if nargin > 1 && isnumeric(varargin{1})
+          handle = varargin{1};
+          args = varargin(2:end);
+        else
+          handle = handle.Primitive;
+          args = varargin;
+        end
+      else
+        args = varargin;
+      end
+      
+      set(handle, args{:});
+    end
+    
+    function properties = Get(handle, varargin)
+      if isobject(handle)
+        if nargin > 1 && isnumeric(varargin{1})
+          handle = varargin{1};
+          args = varargin(2:end);
+        else
+          handle = handle.Primitive;
+          args = varargin;
+        end
+      else
+        args = varargin;
+      end      
+
+      properties = get(handle, args{:});
+    end    
+    
     
   end
   
@@ -236,6 +278,40 @@ classdef upGrasppeHandle < dynamicprops
         end
       end
       
+    end
+    
+    function state = HandleVisibility(handle, newstate)
+      
+      handleVariable = ['HandleVisibility' int2str(handle)]
+            
+      if (nargin==1)
+        try
+          newstate = evalin('caller', handleVariable)
+        end
+      end
+      
+      if ischar(newstate)
+        newstate = lower(newstate);
+      end
+      
+      oldstate = get(handle, 'HandleVisibility')
+        
+      switch newstate
+        case { 1,   true,   'on'}
+          set(handle, 'HandleVisibility', 'on');
+        case { 0,   false,  'off'}
+          set(handle, 'HandleVisibility', 'off');
+        case {-1,   'cb',   'callback'}
+          set(handle, 'HandleVisibility', 'callback');
+      end
+      
+      state = get(handle, 'HandleVisibility')
+      
+      if (nargin==1)
+        evalin('caller', ['clear ' handleVariable]);
+      else
+        assignin('caller', handleVariable, oldstate);
+      end
     end
     
   end
