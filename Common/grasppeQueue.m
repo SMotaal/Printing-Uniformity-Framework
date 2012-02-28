@@ -50,7 +50,7 @@ function [string] = tokenString(token)
   callback = '';
   try
     callback = token.callback;
-    if iscell(callback) ~isempty(callback) && ~isempty(which(callback{1}))
+    if iscell(callback) && ~isempty(callback) %&& ~isempty(which(callback{1}))
       callback = ['grasppeQueue(' int2str(callback.id) ')'];
     end
   catch err
@@ -199,10 +199,6 @@ function [token empty] = generateToken(id, varargin)  %title, text, callback)
   args{5} = '';
   
   [id title text callback] = deal(args{1:4});
-  
-%   if ~iscell(callback) && ~isempty(callback)
-%     callback = {callback};
-%   end
 
   
   [valid validId validTitle validText validCallback] = validTokenValues( ...
@@ -216,7 +212,7 @@ function [token empty] = generateToken(id, varargin)  %title, text, callback)
     empty = false;
   end
   
-  if isValid(token.callback,'char')
+  if ischar(token.callback) %','char')
     token.callback = {token.callback};
   end
 end

@@ -104,14 +104,12 @@ classdef upEventHandler < handle
           desc = sprintf('');
           if (~isempty(callback))
             try
-              feval(callback{:})
+              feval(callback{:});
             catch err
               warning('Grasppe:Component:CallbackError', err.message);
             end
           end
-          event.action =  [callsign ': ' caller];
-          disp(event);
-          disp(token);
+          event.action =  [callsign ': ' caller]; %  disp(event); disp(token);
       end
     end
   end

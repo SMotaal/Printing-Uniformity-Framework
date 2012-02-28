@@ -15,8 +15,6 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
     HitTest
   end
   
-  
-  
   methods
     
     
@@ -31,7 +29,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       if strcmpi(obj.Visible,'on')
         obj.createComponent();
       end
-    end   
+    end
     
     function obj = createComponent(obj, type, options)
       if (obj.Busy || isValidHandle('obj.Primitive'))
@@ -68,7 +66,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
         end
         set(obj.Primitive, options{:});
       end
-           
+      
       obj.updateView;
       
       if (strcmpi(obj.Visible,'on'))
@@ -146,23 +144,6 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       
       tag = obj.createTag(type, tag, parent);
       
-      %       if isempty(tag)
-      %         if isempty(parentTag)
-      %           idx = numel(findall(0,'type',type)) + 1;
-      %           tag = [constructor '_' int2str(idx)];
-      %         else
-      %           idx = numel(findobj(parent,'type',type)) + 1;
-      %           tag = [parent '.' constructor '_' int2str(idx)];
-      %         end
-      %         tag = upper(tag);
-      %       else
-      %         if isempty(parentTag)
-      %         else
-      %           tag = [parentTag '.' tag];
-      %         end
-      %       end
-      
-      
       disp([constructor ':     ' toString(toString(args{:}))]);
       
       hObj = feval(constructor, args{:}, 'Tag', tag);
@@ -216,17 +197,17 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
     end
     
     function obj = updateComponent(obj)
-%       busy = obj.markBusy();
-%       try
+      %       busy = obj.markBusy();
+      %       try
       if ~isempty(obj.getComponentOptions) && isValidHandle(obj.Primitive)
         set(obj.Primitive, obj.getComponentOptions{:});
       else
         disp(obj.ID);
       end
-%       catch err
-%         warning(err.identifier, err.message);
-%       end
-%       obj.Busy = busy;
+      %       catch err
+      %         warning(err.identifier, err.message);
+      %       end
+      %       obj.Busy = busy;
       
       %       drawnow();
       if (~obj.UpdatingView)
@@ -255,14 +236,17 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
     
     
     %% Shared Property Wrappers
-       
+    
     function obj = resizeComponent(obj)
       
     end
     
     function obj = hide(obj)
-      obj.setOptions('Visible','off');
+      try
+%         obj.Visible = 'off;'
       set(obj.Primitive,'Visible','off');
+      obj.setOptions('Visible','off');
+      end
     end
     
     function obj = finalizeComponent(obj)
@@ -270,27 +254,33 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
     end
     
     function obj = closeComponent(obj)
-      if (isQuitting)
-        obj.finalizeComponent();
-        return;
-      end
+      d = dbstack;
+      isClose = any(strcmpi({d.('file')}, 'close.p'));
+      
       try
         hType = get(obj.Primitive,'type');
         
         switch lower(hType)
           case 'figure'
-            try
-              grasppeQueue([], ['Reopen ' obj.Name], ['click the link to reopen this figure'], ...
-                sprintf('%s.showHandle(%d);', eval(CLASS), obj.Primitive));
-              grasppeQueue([], ['Delete ' obj.Name], ['click the link to delete the figure'], ...
-                sprintf('delete(%d);', obj.Primitive));
+            if (isClose || isQuitting())
+              obj.finalizeComponent();
+            else
+              obj.hide();
+              try
+                disp(sprintf(['\n%s is closed but the figure is not deleted.\n\nYou can still '...
+                  '<a href="matlab: %s.showHandle(%d);">reopen</a> it or ' ...
+                  '<a href="matlab: delete(%d);">delete</a> it to '...
+                  'reclaim resources.\n\n'], obj.Name, eval(CLASS), obj.Primitive, obj.Primitive));
+%                 grasppeQueue([], ['Reopen ' obj.Name], ['click the link to reopen this figure'], ...
+%                   sprintf('%s.showHandle(%d);', eval(CLASS), obj.Primitive));
+%                 grasppeQueue([], ['Delete ' obj.Name], ['click the link to delete the figure'], ...
+%                   sprintf('delete(%d);', obj.Primitive));
+              end
             end
-            obj.hide();
           otherwise
             obj.finalizeComponent();
+            return;
         end
-      catch
-        %         delete(obj.Primitive);
       end
     end
     
@@ -315,104 +305,6 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       
     end
     
-%     function [token fcn] = createCallbackToken(object, name, callback)
-%       
-%       if (~isValid('object',    'object'))
-%         object    = [];
-%       end
-%       
-%       if (~isValid('name',      'char'))
-%         name      = [];
-%       end
-%       
-%       if (~isValid('callback','cell'))
-%         if (isValid('callback',  'char'))
-%           callback  = {callback};
-%         else
-%           callback  = [];
-%         end
-%       end
-%       
-%       token = struct('Object', object, 'Name', name, 'Callback', callback);
-%       
-%       fcn   = {@Plots.upViewComponent.callbackEvent, token};
-%       
-%     end
-%     
-%     function callbackEvent(source, event, varargin)
-%       
-%       objectFound = false;
-%       object    = [];
-%       callsign  = [];
-%       callback  = [];
-%       caller    = [];
-%       isSourceObject  = false;
-%       
-%       if isstruct(varargin{1})
-%         token  =  varargin{1};
-%         if isValid('token.Object', eval(CLASS))
-%           object = token.Object;
-%           objectFound = true;
-%         end
-%         if isValid('token.Name', 'char')
-%           callsign = token.Name;
-%         end
-%         if isValid('token.callback','cell')
-%           callback = token.callback;
-%         end
-%         
-%         token.ObjectID = object.ID;
-%       end
-%       
-%       
-%       if isValid('source.Name', 'char'  )
-%         caller  = source.Name;
-%       elseif isValidHandle('source')
-%         try
-%           isSourceObject = object.Primitive==source;
-%         end
-%         try
-%           caller  = [get(source, 'Name'  ) ' '];
-%         end
-%         try
-%           caller  = [caller '(' get(source, 'Type'  ) ')'];
-%         end
-%       end
-%       
-%       switch callsign
-%         case 'UpdateView'
-%           if (objectFound)
-%             object.updateView();
-%             stop(source); delete(source);
-%           end
-%         case 'CloseRequestFcn'
-%           if isSourceObject
-%             object.closeComponent();
-%           else
-%             delete(source);
-%           end
-%         case 'ResizeFcn'
-%           if isSourceObject
-%             object.resizeComponent();
-%           end
-%         case 'DeleteFcn'
-%           set(source, 'Visible', 'off');  delete(source);
-%         case {'WindowButtonDownFcn', 'WindowButtonMotionFcn', 'WindowButtonUpFcn', 'WindowKeyPressFcn', 'WindowKeyReleaseFcn', 'WindowScrollWheelFcn'}
-%         otherwise
-%           desc = sprintf('');
-%           if (~isempty(callback))
-%             try
-%               feval(callback{:})
-%             catch err
-%               warning('Grasppe:Component:CallbackError', err.message);
-%             end
-%           end
-%           event.action =  [callsign ': ' caller];
-%           disp(event);
-%           disp(token);
-%       end
-%     end
-    
     function 	handle = showHandle(handle)
       try
         set(handle,'Visible', 'on');
@@ -431,7 +323,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
   
   methods(Abstract, Static)
     options  = DefaultOptions()
-  end  
-    
+  end
+  
 end
 

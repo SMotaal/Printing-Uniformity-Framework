@@ -41,7 +41,7 @@ classdef upPlotFigure < Plots.upViewComponent
       obj = obj@Plots.upViewComponent(varargin{:});
       obj.createComponent();
       obj.getPlotAxes();
-      obj.getOverlayAxes();
+%       obj.getOverlayAxes();
     end
     
     %% Figure Operations   
@@ -133,7 +133,7 @@ classdef upPlotFigure < Plots.upViewComponent
         return;
       end
       try
-        hOverlay  = obj.OverlayAxes;
+        hOverlay  = obj.getOverlayAxes;
         
         tText   = obj.componentTag('Figure Title');
         hText   = obj.getHandle(tText, 'text', hOverlay);
