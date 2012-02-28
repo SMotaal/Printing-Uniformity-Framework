@@ -433,13 +433,13 @@ set(hFig,'ResizeFcn', @resizeFigure); %,hFig, hAxes, hTitle, hBar, mView, bBar))
 
 
 %% Store Plot Data
-vFig  = get(hFig,   'UserData');
-vAxes = get(hAxes,  'UserData');
+vFig  = getUserData(hFig  );
+vAxes = getUserData(hAxes );
 
 vAxes.mView = mView;
 
-set(hFig,   'UserData', vFig);
-set(hAxes,  'UserData', vAxes);
+setUserData(hFig,   vFig  );
+setUserData(hAxes,  vAxes );
 
 %gridcolor(hAxes, mGridColor{:});
 
@@ -457,8 +457,8 @@ try
   hTitle  = get(hAxes,    'Title');
   hBar    = findobj(hFig, 'Type', 'Axes', 'Tag', 'Colorbar');
 
-  vFig    = get(hFig,   'UserData');
-  vAxes   = get(hAxes,  'UserData');
+  vFig    = getUserData(hFig  );
+  vAxes   = getUserData(hAxes );
 
   mView   = vAxes.mView;
   
@@ -486,8 +486,8 @@ try
     warning('Could not update colorbar position');
   end
 
-  set(hFig,   'UserData', vFig);
-  set(hAxes,  'UserData', vAxes);
+  setUserData(hFig, vFig    );
+  setUserData(hAxes, vAxes  );
 catch exception
 end
 end

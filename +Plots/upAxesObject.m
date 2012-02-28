@@ -1,95 +1,43 @@
-classdef upAxesObject < Plots.upViewComponent
+classdef upAxesObject < Plots.upFigureObject
   %UPAXESOBJECT Printing Uniformity Axes Superclass
   %   Detailed explanation goes here
   
   properties
   end
   
+  properties (Dependent=true)
+    PlotAxesObject
+    PlotAxes    
+  end
+  
   methods
-
-    %% Figure Operations
+    function obj = upAxesObject(parentFigure, varargin)
+      obj = obj@Plots.upFigureObject(parentFigure, varargin{:});
+    end
     
-%     function obj = createFigure(obj)
-%       % http://www.mathworks.com/help/techdoc/matlab_oop/brgxk22-1.html
-%       
-%       figureOptions = getFigureOptions(obj);
-%       
-%       hfig = figure(figureOptions{:}, 'Visible', 'off');
-%       
-%       if (strcmpi(obj.Visible,'on'))
-%         obj.show();
+    
+    function hAxes = get.PlotAxes(obj)
+      if isValid(obj.ParentFigureObject, 'Plots.upPlotFigure')
+        hAxes = obj.ParentFigureObject.PlotAxes;
+      else
+        hAxes = [];
+      end
+    end    
+    
+    function hParent = getParent(obj)
+      hParent = obj.PlotAxes;    
+%       if isValidHandle(obj.Primitive) && isValidHand(get(obj.Primitive,'Parent'))
+%         hParent = get(obj.Primitive,'Parent');
+%       else
+%         hParent = obj.PlotAxes;
 %       end
-%       
-%       obj.Primitive = hfig;
-%       
-%       obj.updateView;
-%     end
-    
-    function handle = getFigure(obj)
-      
-      if (isempty(obj.Primitive))
-        obj.createFigure;
-      end
-      
-      handle = obj.Primitive;
-      try
-        set(0,'CurrentFigure',handle);
-      catch
-        obj.createFigure;
-        handle = obj.getFigure;
-      end
-      
     end
     
-    function options = getFigureOptions(obj)
-      properties = obj.FigureProperties;
-      options = obj.getOptions(properties);
-    end
-    
-    
-    %% Window Operations
-    
-    function obj = show(obj)
-      hFigure = obj.getFigure;
-      
-      obj.setOptions('Visible', 'on');
-      
-      obj.updateView;
-      
-      figure(hFigure);
-    end
-    
-    %% Update Operations
-    
-    function obj = updateView(obj)
-      persistent updating delayTimer;
-      
-      if isVerified('updating',true)
-        if ~isVerified('class(delayTimer)','timer');
-          delayTimer = timer('Name','DelayTimer','ExecutionMode', 'singleShot', 'StartDelay', 1, ...
-            'TimerFcn', {@Plots.upPlotFigure.callbackEvent,obj});
-          start(delayTimer);
-        else
-          stop(delayTimer);
-          start(delayTimer);
-        end
-        return;
-      end
-      
-      updating = true;
-      
-      obj.updateFigure;
-      
-      updating = false;
-    end
-    
-    
-    function obj = updateFigure(obj)
-      obj.updateTitle;
-    end
-    
-    
-  end 
+  end
+  
+  methods(Abstract, Static)
+    options  = DefaultOptions()
+  end
   
 end
 

@@ -22,9 +22,21 @@ classdef grasppeHandle < dynamicprops
       try
         properties = obj.ComponentProperties;
         options = obj.getOptions(properties);
+      catch
+        options = {};
       end
     end
     
+    function hParent = get.Parent(obj)
+      hParent = obj.getParent();
+      if (isnan(hParent))
+        hParent = obj.Parent;
+      end
+    end
+    
+    function hParent = getParent(obj)
+      hParent = NaN;
+    end
     
     function [options properties] = getOptions(obj, names)
       options     = [];
@@ -215,10 +227,10 @@ classdef grasppeHandle < dynamicprops
       end
       
       try
-        if (isValid('parent', 'handle'))
+        if (isValidHandle('parent'))
           hobj = findobj(allchild(parent),args{:});
         else
-          hobj = findobj(args{:});
+          hobj = findobj(findall(0), args{:});
         end
       end
 

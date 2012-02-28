@@ -56,12 +56,12 @@ function [varargout] = PersistentSources(varargin)
         return;
       case 'readonly load'
         datastore = loaddata(datastore, true);
-        readonly  = true
+        readonly  = true;
         return;
       case 'readonly'
-        readonly = true
+        readonly = true;
       case 'readwrite'
-        readonly = false
+        readonly = false;
       case 'force save'
         if (~readonly)
           savedata(datastore, true);

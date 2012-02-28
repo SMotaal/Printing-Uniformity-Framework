@@ -1,4 +1,4 @@
-function [ output_args ] = substitute( matrix, value, sub )
+function [ matrix ] = substitute( matrix, value, sub )
   %SUBSTITUTE matrix values
   
   matrix(isnan(matrix)) = 0;
