@@ -5,6 +5,10 @@ classdef upPlotFigure < Plots.upViewComponent
   properties (Constant = true, Transient = true)
     ComponentType = 'figure';
     ComponentProperties = Plots.upGrasppeHandle.FigureProperties;
+    ComponentEvents = {'CloseRequestFcn', 'ResizeFcn', 'CreateFcn',    'DeleteFcn', ...
+      'KeyPressFcn', 'KeyReleaseFcn', 'ButtonDownFcn', 'ButtonUpFcn',     ...
+      'WindowButtonDownFcn', 'WindowButtonUpFcn', 'WindowButtonMotionFcn', ...
+      'WindowKeyPressFcn', 'WindowKeyReleaseFcn'};
   end
   
   properties (SetAccess = protected, GetAccess = public)
@@ -27,11 +31,16 @@ classdef upPlotFigure < Plots.upViewComponent
     
     %% Labels
     Title
+    BaseTitle
     
     %% Style
     Color, Units
     
-    %% Defaults
+    %% Hooks
+    CreateFcn, DeleteFcn, ResizeFcn, CloseRequestFcn
+    KeyPressFcn, KeyReleaseFcn, ButtonDownFcn, ButtonUpFcn,
+    WindowButtonDownFcn, WindowButtonUpFcn, WindowButtonMotionFcn
+    WindowKeyPressFcn, WindowKeyReleaseFcn
     
   end
   
@@ -158,14 +167,33 @@ classdef upPlotFigure < Plots.upViewComponent
         end
         
       catch err
-        disp(err);
+        dealwith(err);
       end
       
     end
     
     function obj = set.Title(obj, value)
+      if ischar(value)
+        obj.BaseTitle = value;
+        obj.Title = value;
+      else
+        obj.Title = char(value);
+      end
       obj.Title = value;
       obj.updateTitle();
+    end
+    
+    function obj = appendTitle(obj, value)
+%       persistent title;
+      
+      if isempty(obj.BaseTitle) || isequal(value, false)
+        obj.BaseTitle = obj.Title;
+      end
+      
+      if ischar(value)
+        obj.Title = {sprintf('<html><b>%s</b>%s</html>', obj.BaseTitle, value)};
+      end
+      
     end
   end
   

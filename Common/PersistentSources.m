@@ -1,6 +1,5 @@
-function [varargout] = PersistentSources(varargin)
+function varargout = PersistentSources(varargin)
   %PERSISTENTSOURCES Lock Persistent Data Storage
-  %   Detailed explanation goes here
   
   persistent datastore locked readonly;
   
@@ -19,7 +18,7 @@ function [varargout] = PersistentSources(varargin)
     mlock;
   end
   
-	if (isempty(readonly))
+  if (isempty(readonly))
     readonly = false;
   end
   
@@ -31,57 +30,79 @@ function [varargout] = PersistentSources(varargin)
       if nout == 0
         disp(datastore);
       elseif nout==1
-        varargout = datastore;
+        varargout = {datastore};
       end
     end
     return;
   end
   
-  if (nin==1 && nout==0 && ischar(varargin{1}))
-    switch lower(varargin{1})
-      case 'clear'
-        clear datastore;
-        touchdata(true);
-        return;
-      case 'load'
-        datastore = loaddata(datastore);
-        return;
-      case 'save'
-        if (~readonly)
-          savedata(datastore);
+  if (nout==0)
+    
+    if (nin==1)
+      firstArg = varargin{1};
+      if ischar(firstArg)
+        switch lower(firstArg)
+          case 'clear'
+            clear datastore;
+            touchdata(true);
+            return;
+          case 'load'
+            datastore = loaddata(datastore);
+            return;
+          case 'save'
+            if (~readonly)
+              savedata(datastore);
+            end
+            return;
+          case 'force load'
+            datastore = loaddata(datastore, true);
+            return;
+          case 'readonly load'
+            datastore = loaddata(datastore, true);
+            readonly  = true;
+            return;
+          case 'readonly'
+            readonly = true;
+            return;
+          case 'readwrite'
+            readonly = false;
+            return;
+          case 'force save'
+            if (~readonly)
+              savedata(datastore, true);
+            end
+            return;
+          case 'readonly save'
+            savedata(datastore, true);
+            return;
+          case 'lock'
+            mlock;
+            locked = true;
+            return;
+          case 'unlock'
+            munlock;
+            locked = false;
+            return;
         end
-        return;
-      case 'force load'
-        datastore = loaddata(datastore, true);
-        return;
-      case 'readonly load'
-        datastore = loaddata(datastore, true);
-        readonly  = true;
-        return;
-      case 'readonly'
-        readonly = true;
-      case 'readwrite'
-        readonly = false;
-      case 'force save'
-        if (~readonly)
-          savedata(datastore, true);
-        end
-        return;
-      case 'readonly save'
-        savedata(datastore, true);
-        return;
-      case 'lock'
-        mlock;
-        locked = true;
-        return;
-      case 'unlock'
-        munlock;
-        locked = false;
-        return;
+      elseif (isstruct(firstArg))
+        datastore = firstArg;
+      end
+    elseif (nin==2)
+      firstArg  = varargin{1};
+      secondArg = varargin{2};
+      switch lower(firstArg)
+        case {'load', 'save'}
+          try
+            filename = datafile(secondArg);
+            PersistentSources(['force ' firstArg]);
+          catch err
+            dealwith(err);
+          end
+          return;
+      end
     end
-  elseif (nin==1 && nout==0 && isstruct(varargin{1}))
-    datastore = varargin{1};
   end
+  
   
   [pargin ineven innames invalues] = pairedArgs(varargin{:});
   
@@ -107,6 +128,11 @@ function [varargout] = PersistentSources(varargin)
       end
       return;
     end
+    
+%     if (nin==0 && nout==1)
+%       varargout{1} = datastore;
+%       return;
+%     end
   catch err
     rethrow(err);
   end
@@ -151,6 +177,12 @@ function values = getValues(insources, names, E)
   trigger(EXCEPT);
 end
 
+function forcedraw()
+  pause(0.05); 
+  drawnow();
+  pause(0.05);
+end
+
 
 function datastore = loaddata(datastore, forced)
   persistent loaded;
@@ -159,12 +191,11 @@ function datastore = loaddata(datastore, forced)
   if (~loaded || forced)
     if exist(datafile, 'file') > 0
       try
-        statusbar(0, 'Loading data store... '); drawnow();
-%         fprintf(2,'\nLoading data store... ');
-        load(datafile, 'datastore');
-        statusbar(0);
+        statusbar(0, 'Loading data store... '); forcedraw();  % fprintf(2,'\nLoading data store... ');
+        data = load(datafile, 'datastore');
+        datastore = data.datastore;
         loaded = true;
-%         fprintf(1,'Done.\n\n');
+        statusbar(0, 'Processing persistent data...'); forcedraw(); % fprintf(1,'Done.\n\n');
       catch err
         disp(err);
       end
@@ -183,17 +214,18 @@ function [] = savedata(datastore, forced)
   
   if (~saved || forced)
     try
-      statusbar(0, 'Saving data store... '); drawnow();
+      statusbar(0, 'Saving data store... '); forcedraw();
       if (isQuitting)
         fprintf(2,'\nSaving data store... ');
       end
       save(datafile, 'datastore');
-      statusbar(0);
       touchdata(false);
       saved = true;
       if (isQuitting)
         fprintf(1,'Done.\n\n');
       end
+      statusbar(0, 'Processing persistent data...'); forcedraw();
+      statusbar(0);
     end
   end
 end
@@ -208,11 +240,23 @@ function touched = touchdata(reset)
     modified = reset;
   end
   
-%   modified  = isequal(reset,true) || modified;
+  %   modified  = isequal(reset,true) || modified;
   touched   = modified;
 end
 
-function filename = datafile()
-  path      = fileparts(mfilename('fullpath'));
-  filename  = fullfile(path, 'datastore.mat');
+function filename = datafile(filename)
+  persistent lastFile defaultFile;
+ 
+  defaultFile = 'datastore';
+
+  if exists('filename') && ischar(filename)
+      [pathstr filename ext] = fileparts(filename);
+      lastFile = filename;
+  end
+  
+  if isempty(lastFile)
+    lastFile = defaultFile;
+  end
+
+  filename  = datadir('Sources', [lastFile '.mat']);	%fullfile(path, 'datastore.mat');
 end

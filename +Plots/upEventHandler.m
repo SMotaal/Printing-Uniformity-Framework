@@ -3,6 +3,7 @@ classdef upEventHandler < Plots.upGrasppeHandle
   %   Detailed explanation goes here
   
   properties
+    KeyEventHandlers, MouseEventHandlers
   end
   
   methods
@@ -10,6 +11,81 @@ classdef upEventHandler < Plots.upGrasppeHandle
     function [fcn token]  = callbackFunction(object, varargin)
       [token fcn] = Plots.upEventHandler.createCallbackToken(object, varargin{:});
     end
+    
+    function registerKeyEventHandler(obj, handler)
+      obj.registerEventHandler('KeyEventHandlers', handler);
+    end
+    function registerMouseEventHandler(obj, handler)
+      obj.registerEventHandler('MouseEventHandlers', handler);
+    end    
+%       handlers = obj.KeyEventHandlers;
+%       
+%       if ~iscell(handlers)
+%         handlers = {};
+%       end
+%             
+%       if ~any(handlers==handler)
+%         handlers{end+1} = handler;
+%         obj.KeyEventHandlers = handlers;
+%       end
+    
+    function registerEventHandler(obj, hanldersGroup, handler)
+      handlers = obj.(hanldersGroup);
+      
+      if ~iscell(handlers)
+        handlers = {};
+      end
+            
+      if ~any(handlers==handler)
+        handlers{end+1} = handler;
+        obj.(hanldersGroup) = handlers;
+      end
+    end
+        
+        
+    function mouseUp(obj, event, source)
+      handlers = obj.MouseEventHandlers;
+      if iscell(handlers) && ~isempty(handlers)
+        for i = 1:numel(handlers)
+          try
+            handlers{i}.mouseUp(event, obj);
+          end
+        end
+      end
+    end
+    
+    function mouseDown(obj, event, source)
+      handlers = obj.MouseEventHandlers;
+      if iscell(handlers) && ~isempty(handlers)
+        for i = 1:numel(handlers)
+          try
+            handlers{i}.mouseDown(event, obj);
+          end
+        end
+      end
+    end    
+    
+    function keyPress(obj, event, source)
+      handlers = obj.KeyEventHandlers;
+      if iscell(handlers) && ~isempty(handlers)
+        for i = 1:numel(handlers)
+          try
+            handlers{i}.keyPress(event, obj);
+          end
+        end
+      end
+    end
+    
+    function keyRelease(obj, event, source)
+      handlers = obj.KeyEventHandlers;
+      if iscell(handlers) && ~isempty(handlers)
+        for i = 1:numel(handlers)
+          try
+            handlers{i}.keyRelease(event, obj);
+          end
+        end
+      end      
+    end    
     
   end
   
@@ -82,23 +158,37 @@ classdef upEventHandler < Plots.upGrasppeHandle
       
       switch callsign
         case 'UpdateView'
-          if (objectFound)
-            object.updateView();
+%           if (objectFound)
             stop(source); delete(source);
-          end
+            object.updateView();
+%           end
+        case 'DisableRotation'
+          stop(source);
+          object.toggleRotation('callback');
         case 'CloseRequestFcn'
-          if isSourceObject
+%           if isSourceObject
             object.closeComponent();
-          else
-            delete(source);
-          end
+%           else
+%             delete(source);
+%           end
         case 'ResizeFcn'
-          if isSourceObject
+%           if isSourceObject
             object.resizeComponent();
-          end
+%           end
         case 'DeleteFcn'
           set(source, 'Visible', 'off');  delete(source);
-        case {'WindowButtonDownFcn', 'WindowButtonMotionFcn', 'WindowButtonUpFcn', 'WindowKeyPressFcn', 'WindowKeyReleaseFcn', 'WindowScrollWheelFcn'}
+        case {'KeyPressFcn', 'WindowKeyPressFcn'}
+%           if isSourceObject
+            object.keyPress(event);
+%           end         
+        case {'KeyReleaseFcn', 'WindowKeyReleaseFcn'};
+%           if isSourceObject
+            object.keyRelease(event);
+%         case {'WindowButtonDownFcn', 'WindowButtonMotionFcn', 'WindowButtonUpFcn', 'WindowKeyPressFcn', 'WindowKeyReleaseFcn', 'WindowScrollWheelFcn'}
+        case {'ButtonUpFcn', 'WindowButtonUpFcn'}
+          object.mouseUp(event);
+        case {'ButtonDownFcn', 'WindowButtonDownFcn'}
+          object.mouseDown(event);
         otherwise
           desc = sprintf('');
           if (~isempty(callback))
@@ -108,8 +198,18 @@ classdef upEventHandler < Plots.upGrasppeHandle
               warning('Grasppe:Component:CallbackError', err.message);
             end
           end
-          event.action =  [callsign ': ' caller]; %  disp(event); disp(token);
+          
       end
+      try      
+          if (objectFound)
+            event.target = [int2str(source) '>' object.ID];
+          else
+            event.target = source;
+          end
+          event.action =  [callsign ': ' caller]; %disp(token);
+%           disp(toString(flat(structList(event))));
+      end
+
     end
   end
   

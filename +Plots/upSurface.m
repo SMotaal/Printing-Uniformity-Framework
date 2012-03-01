@@ -19,64 +19,51 @@ classdef upSurface < Plots.upAxesObject
     CData
     Sheet
     Modified
+    RotationMode
   end
   
   methods
     function obj = upSurface(parentFigure, varargin)
       obj = obj@Plots.upAxesObject(parentFigure, varargin{:});
-      obj.createComponent;      
+      obj.createComponent;
+      
+      obj.ParentFigureObject.registerKeyEventHandler(obj);
+      obj.ParentFigureObject.registerMouseEventHandler(obj);
+      
       obj.Modified = 1;
     end
     
-%     function obj = getPatentFigure(obj)
-%       persistent locked;
-%       
-%       if isVerified('locked', true), return; end; locked = true;
-%       
-%       try
-%         if ~isValidHandle(obj.ParentFigure)
-%           obj.ParentFigureObject = Plots.upPlotFigure('WindowStyle','docked');
-%           obj.ParentFigure = obj.ParentFigureObject.Primitive;
-%         end
-%       catch err
-%         locked = false; rethrow(err);
-%       end
-%       
-%       locked = false;
-%     end
-%     function obj = set.ParentFigure(obj, hFigure)
-%       if isValidHandle(hFigure)
-%         validParent = isValidHandle('obj.ParentFigureObject.Primitive');
-%         if (~isequal(hFigure,obj.ParentFigureObject.Primitive))
-%           obj.ParentFigureObject = getUserData(hFigure);
-%         end
-%       end
-%       if ~isequal(obj.Parent, obj.PlotAxes)
-%         obj.setOptions('Parent', obj.PlotAxes);
-%       end
-%       if isValidHandle('obj.ParentFigureObject.Primitive')
-%         if isequal(obj.ParentFigureObject.Primitive, value)
-%           return;
-%         else
-%         end
-%       else
-%         obj.ParentFigureObject = get(obj.ParentFigure,'UserData');
-%       end
-%       if ~isequal(obj.ParentFigureObject, value)
-%       
-%     end    
+    function keyPress(obj, event, source)
+      if (stropt(event.Modifier, 'control command'))
+        switch event.Key
+          case 'uparrow'
+            obj.stepSheet(+1);
+          case 'downarrow'
+            obj.stepSheet(-1);
+        end
+      end
+      end
+    
+      function stepSheet(obj, step)
+        %         try
+        length    =  obj.PlotSource.length.Sheets;
+        sheet     =  obj.Sheet;
+        
+        obj.Sheet = mod(sheet+step, length);
+
+      end
+      
     
     function obj = processPlotData(obj)
       try
         obj.retrieveSourceData;
+        rows      = obj.PlotSource.metrics.sampleSize(1);
+        columns   = obj.PlotSource.metrics.sampleSize(2);
       catch err
-        disp(err);
         return;
       end
       
-      rows      = obj.PlotSource.metrics.sampleSize(1);
-      columns   = obj.PlotSource.metrics.sampleSize(2);
-      
+      try
       sheet     = obj.Sheet;
       
       [X Y Z]   = meshgrid(1:columns, 1:rows, 1);
@@ -86,15 +73,27 @@ classdef upSurface < Plots.upAxesObject
       region    = subrange( fieldnames(surfs),           {1});
       field     = subrange( fieldnames(surfs.(region)),  {1});
       
-      setData   = obj.PlotData.surfs.(region).(field);
+%       setData   = obj.PlotData.surfs.(region).(field);
+%       
+%       sheetData = squeeze( setData(sheet,:,:,:)  );
+%       sheetData = substitute(sheetData, nan, 0);
+%       sheetData = sum(sheetData,1);
+
+      targetFilter  = obj.PlotSource.sampling.masks.Target;
+%       patchFilter   = obj.PlotData.patchFilter;
+%       sheetFilter   = logical( ...
+%         repmat(patchFilter,size(targetFilter) ./ size(patchFilter))); %targetFilter * repmat(patchFilter,size(targetFilter)./size(patchFilter))
+
+      sheetData = obj.PlotData.data(sheet).surfData;
       
-      sheetData = squeeze( setData(sheet,:,:,:)  );
-      sheetData = substitute(sheetData, nan, 0);
-      sheetData = sum(sheetData,1);
-      
-      Z = reshape(sheetData,size(Z));
+      Z = sheetData';
+      Z(targetFilter~=1) = NaN;
       
       obj.setPlotData(X, Y, Z);
+      
+      catch err
+        dealwith(err);
+      end
       
     end
     
@@ -113,6 +112,9 @@ classdef upSurface < Plots.upAxesObject
     function obj = set.Sheet(obj, value)
       obj.Sheet = value;
       obj.Modified = true;
+      try
+        obj.ParentFigureObject.appendTitle([' [' int2str(obj.Sheet) ']']);
+      end
       if ~(obj.Busy)
         obj.updateComponent;
       end
@@ -124,41 +126,7 @@ classdef upSurface < Plots.upAxesObject
         obj.updateComponent;
       end
     end
-    
-%     
-%     function hFigure = get.ParentFigure(obj)
-% %       obj.getPatentFigure();
-%       if isValidHandle('obj.ParentFigureObject.Primitive')
-%         hFigure = obj.ParentFigureObject.Primitive;
-%       else
-%         hFigure = [];
-%       end
-%     end
-    
-    
-    %     function hParent = getParent(obj)
-    %       obj.getPatentFigure();
-    %
-    %       hParent = obj.ParentFigureObject.PlotAxes();
-    %
-    %       if ~isequal(hParent, obj.Parent)
-    %         setOptions('Parent', obj.Parent);
-    %       end
-    %
-    %     end
-    
-    %     function hAxes = getParentAxes(obj)
-    %       obj.getPatentFigure();
-    %
-    %       hFigure = obj.ParentFigure;
-    %       oFigure = obj.ParentFigureObject;
-    %
-    %       hAxes =  oFigure.getHandle('Plot Axes', 'axes', hFigure);
-    %       if ~isValid([hAxes],'handle')
-    %         hAxes   = obj.createHandleObject('axes', hFigure, 'Tag', 'Plot Axes');
-    %       end
-    %     end
-    
+        
     function obj = updateComponent(obj)
       if (obj.Modified)
         obj.processPlotData;
@@ -185,7 +153,7 @@ classdef upSurface < Plots.upAxesObject
           obj.DataParameters = {obj.DataParameters};
         end
       catch err
-        disp(err);
+        dealwith(err);
       end
       obj.Busy = false;
       
@@ -193,17 +161,79 @@ classdef upSurface < Plots.upAxesObject
     end
     
     function obj = show(obj)
-%       obj.getPatentFigure();
       
-      obj.updateComponent;  % obj.Parent = obj.getParentAxes();
+      obj.updateComponent;
             
       obj.show@Plots.upViewComponent;
       
       try
         obj.ParentFigureObject.show();
       end
-      %       obj.ParentFigureObject.enableRotation();
-%       commandwindow;
+      
+      rotate3d(obj.PlotAxes);
+      
+      obj.ParentFigureObject.attachEvents();
+    end
+    
+    function toggleRotation(obj, mode)
+      try
+        persistent cbActionPost hRotate releaseTimer
+        default mode = ~obj.RotationMode;
+
+        if isempty(cbActionPost)
+          cbActionPost = obj.callbackFunction('WindowButtonUpFcn');
+        end
+        
+        if isempty(releaseTimer)
+            releaseTimer = timer('Name','ReleaseTimer', 'Period', 0.05, 'StartDelay', 0.05, ...
+              'TimerFcn', callbackFunction(obj, 'DisableRotation'));          
+        end
+        
+        switch mode
+          case {true,   'on'}
+            hRotate = rotate3d(obj.PlotAxes);
+            set(hRotate, 'ActionPostCallback', cbActionPost, 'Enable', 'on');
+            try stop(releaseTimer); end
+          case {false,  'off'}
+            try start(releaseTimer); end
+          case {'callback'}
+            try
+              hRotate = rotate3d(obj.PlotAxes);
+              set(hRotate,'Enable', 'off');
+%               hManager = uigetmodemanager(obj.ParentFigure);
+%               set(hManager.WindowListenerHandles,'Enable','off'); % zap the listeners
+              obj.ParentFigureObject.attachEvents;
+            catch err
+              start(releaseTimer);
+            end
+            obj.ParentFigureObject.attachEvents;
+            figure(obj.ParentFigure);
+        end
+
+%         if (mode)
+%         else
+%           hRotate = rotate3d(obj.PlotAxes);
+% %           t = timer('Name','DelayTimer', 'Period', 2, 'StartDelay', 2, 'TimerFcn', {@rotate3d,'off'});
+% %           rotate3d off;
+% %           hRotate = rotate3d(obj.PlotAxes);
+% %             if ~isempty(hRotate)
+% %             end
+% %           set(hRotate, 'Enable', 'off');
+% %           rotate3d(obj.PlotAxes, 'Enable', 'off');
+% %           obj.ParentFigureObject.attachEvents;
+%         end
+      catch err
+        dealwith(err);
+      end
+      
+    end
+    
+    function mouseUp(obj, event, source)
+      obj.toggleRotation(false);
+    end
+    
+    function mouseDown(obj, event, source)
+      obj.toggleRotation(true);
     end
     
     function obj = retrieveSourceData(obj)
@@ -228,7 +258,7 @@ classdef upSurface < Plots.upAxesObject
       [source data params] = Plots.plotUPStats(args{:});
       
       obj.setOptions('DataSource', source.name, 'DataSet', params.dataPatchSet, ...
-        'PlotSource', source, 'PlotData', data, 'PlotParamters', params);
+        'PlotSource', source, 'PlotData', data, 'PlotParameters', params);
       
     end
     

@@ -23,7 +23,8 @@ for source = {'rithp7k01', 'rithp5501', 'ritsm7402a','ritsm7402b','ritsm7402c'}
 %       plotType = char(plotType);
       plotMode = 'regions';
       exportAll=true; % exportVideo=true; exportPng=true; exportEps=false;
-      testStats;
+      Alpha.supStatsSurf
+      
 %     end
   end
 end

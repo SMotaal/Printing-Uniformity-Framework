@@ -27,7 +27,12 @@ classdef upGrasppeHandle < dynamicprops
     %% Property Functions
     function options = getComponentOptions(obj)
       try
-        properties = {obj.GlobalProperties{:}, obj.ComponentProperties{:}};
+        try
+          hooks = obj.ComponentEvents;
+        catch
+          hooks = {};
+        end
+        properties = {obj.GlobalProperties{:}, obj.ComponentProperties{:}, hooks{:}};
         options = obj.getOptions(properties);
       catch
         options = {};
@@ -128,6 +133,8 @@ classdef upGrasppeHandle < dynamicprops
             obj.(args{i}) = values{i};
           end
         end
+      catch err
+        dealwith(err);
       end
       obj.Busy = false;
     end
@@ -165,7 +172,7 @@ classdef upGrasppeHandle < dynamicprops
         end
         value = eval([className '.' specifier]);
       catch err
-        disp(err);
+        dealwith(err);
       end
     end
     
@@ -282,11 +289,11 @@ classdef upGrasppeHandle < dynamicprops
     
     function state = HandleVisibility(handle, newstate)
       
-      handleVariable = ['HandleVisibility' int2str(handle)]
+      handleVariable = ['HandleVisibility' int2str(handle)];
             
       if (nargin==1)
         try
-          newstate = evalin('caller', handleVariable)
+          newstate = evalin('caller', handleVariable);
         end
       end
       
@@ -294,7 +301,7 @@ classdef upGrasppeHandle < dynamicprops
         newstate = lower(newstate);
       end
       
-      oldstate = get(handle, 'HandleVisibility')
+      oldstate = get(handle, 'HandleVisibility');
         
       switch newstate
         case { 1,   true,   'on'}
@@ -305,7 +312,7 @@ classdef upGrasppeHandle < dynamicprops
           set(handle, 'HandleVisibility', 'callback');
       end
       
-      state = get(handle, 'HandleVisibility')
+      state = get(handle, 'HandleVisibility');
       
       if (nargin==1)
         evalin('caller', ['clear ' handleVariable]);

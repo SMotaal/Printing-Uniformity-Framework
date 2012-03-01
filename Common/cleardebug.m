@@ -10,6 +10,7 @@ function [ output_args ] = dbclear( input_args )
   dbstate = evalin('base', 'dbstatus(''-completenames'')');
   evalin('base', 'clear all;');
   evalin('base', 'clear classes;');
+  evalin('base', 'delete(timerfindall());');  
   try
     delete(findobj(findall(0),'type','figure'));
   end

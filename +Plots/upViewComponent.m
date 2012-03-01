@@ -108,8 +108,6 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
         tag = upper(tag);
       else
         if isempty(parentTag)
-          %         else
-          %           tag = [parentTag '.' tag];
         end
       end
       
@@ -164,23 +162,70 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
 %         %         disp(get(hObj));
 %       end
       
+      obj.attachEvents(hObj);
+      
+      return;
+      
+    end
+    
+    function attachEvents(obj, hObj)
+      
+      try
+      
+      if ~isValid('hObj', 'handle')
+        hObj = obj.Primitive;
+        
+      end
       hProperties = obj.Get(hObj);
+      
+      isComponent = isequal(hObj, obj.Primitive);
       
       hHooks      = regexpi(fieldnames(hProperties),'^\w+Fcn$','match','noemptymatch');
       hHooks      = horzcat(hHooks{:});
       
       hCallbacks  = hHooks;
       
-      for i = 1:numel(hHooks)
-        hook  = hHooks{i};
-        callback        = obj.Get(hObj, hook);
-        hCallbacks{2,i} = obj.callbackFunction(hook, callback);
+      restrictedHooks = {'WindowKeyPressFcn', 'WindowKeyReleaseFcn'};
+      % 'WindowButtonDownFcn', 'WindowButtonMotionFcn', 'WindowButtonUpFcn'
+      
+      try
+        componentHooks = obj.ComponentEvents;
+      catch
+        componentHooks = {};
       end
       
-      obj.Set(hObj, hCallbacks{:});
+      if (isComponent && strcmpi(obj.Get(hObj, 'type'),'figure'));
+        try
+          hManager = uigetmodemanager(hObj);
+          set(hManager.WindowListenerHandles,'Enable','off'); % zap the listeners
+        catch err
+          disp(err);
+        end        
+      end
       
-      return;
       
+      for i = 1:numel(hHooks)
+        hook  = hHooks{i};
+        if stropt(hook, componentHooks) && isComponent
+          if isempty(obj.(hook))
+            obj.setOptions(hook, obj.callbackFunction(hook));
+          else
+            obj.setOptions(hook, obj.(hook));
+          end
+        else
+          if ~stropt(hook, restrictedHooks)
+            callback        = obj.Get(hObj, hook);
+            hCallbacks{2,i} = obj.callbackFunction(hook, callback);        
+          else
+            hCallbacks{2,i} = obj.callbackFunction(hook);        
+          end
+        end
+      end
+      
+      obj.Set(hObj, hCallbacks{:});   
+      catch err
+        dealwith(err);
+      end
     end
     
     function 	obj = show(obj)
