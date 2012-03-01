@@ -1,4 +1,4 @@
-function [ hFig, j ] = supSurf( sourceData, hFig, mView, pBar, cl, input_args )
+function [ hFig, hSurf ] = supSurf( sourceData, hFig, mView, pBar, cl, input_args )
 %SUPSURF plots supSample as a surf
 %   Detailed explanation goes here
 
@@ -385,10 +385,10 @@ switch mView
     %'EdgeColor', 'none');%(dataSamples>0),dataColumns(dataSamples>0),dataSamples(dataSamples>0)); %,'ZDataSource','supZData');
     %, 'CDataMapping', 'scaled', ...
     %'EdgeColor', 'none',);
-    surf(r+rOffset,c+cOffset,dataMesh,dataMesh,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
+    hSurf = surf(r+rOffset,c+cOffset,dataMesh,dataMesh,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
     'EdgeColor', 'none', 'CDataSource','supZData', mGlobalStyle{:}, 'LineWidth', defLineWidth);  
   otherwise
-    surf(r+rOffset,c+cOffset,dataMesh,dataMesh,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
+    hSurf = surf(r+rOffset,c+cOffset,dataMesh,dataMesh,'ZDataSource','supZData', 'CDataMapping', 'scaled', ...
     'EdgeColor', 'none', 'CDataSource','supZData', mGlobalStyle{:}, 'LineWidth', defLineWidth);
 end
 

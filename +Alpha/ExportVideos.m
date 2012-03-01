@@ -18,39 +18,43 @@ function [ output_args ] = ExportVideos( forced, sources, patchvalues, views, se
   
   allData = Alpha.InterpData(forced);
   
-  exporting.path = fullfile(cd, 'output',['supVideo-' datestr(now, 'yymmdd')]);
+  exportingPath = fullfile(cd, 'output',['supVideo-' datestr(now, 'yymmdd')]);
+  
+  
   
   for source = sources
     sourceName  = char(source);
     sourceData  = allData.(sourceName);
     
-    videoSourceData.CMS       = sourceData.CMS;
-    videoSourceData.Data      = sourceData.Data;
-    videoSourceData.Filename  = sourceData.Filename;
-    videoSourceData.FilePath  = sourceData.FilePath;
-    videoSourceData.Sheet     = 1;
-    
-    for fView = views %1:4
+    parfor i = 1:numel(patchvalues)
+      
       for fset = sets
-        
         fSet = char(fset);
         
-        for fTV = patchvalues
+        for fView = views %1:4
           
-          setID = ['DataSetTV' int2str(fTV)];
           
-          videoSourceData.PlotData = sourceData.(setID).PlotData;
-          videoSourceData.Sample = sourceData.(setID).Sample;
-
-          exporting.name = lower([sourceName '-' upper(fSet) '-' int2str(fView) '-' int2str(fTV)]);
-          exporting.file = fullfile(exporting.path, exporting.name);
-
-          if exist(exporting.path, 'dir') == 0
-            mkdir(exporting.path);
+          fValue = patchvalues(i);
+          
+          setID = ['DataSetTV' int2str(fValue)];
+          
+          SourceData = sourceData;
+          SourceSet  = SourceData.(setID);
+          
+          VideoSourceData = struct(...
+            'CMS',      SourceData.CMS,       'Data',     SourceData.Data', ...
+            'Filename', SourceData.Filename,  'FilePath', SourceData.FilePath', ...
+            'PlotData', SourceSet.PlotData,   'Sample',   SourceSet.Sample, ...
+            'Sheet',    1);
+          
+          exportingName = lower([sourceName '-' upper(fSet) '-' int2str(fView) '-' int2str(fValue)]);
+          exportingFile = fullfile(exportingPath, exportingName);
+          
+          if exist(exportingPath, 'dir') == 0
+            mkdir(exportingPath);
           end
           
-
-          Alpha.supVideo(videoSourceData, fView,  exporting.file, fSet);
+          Alpha.supVideo(VideoSourceData, fView,  exportingFile, fSet);
           
         end
         
