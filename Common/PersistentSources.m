@@ -202,6 +202,7 @@ function datastore = loaddata(datastore, forced)
     else
       loaded = true;
     end
+    statusbar(0,'');
   end
 end
 
@@ -225,8 +226,8 @@ function [] = savedata(datastore, forced)
         fprintf(1,'Done.\n\n');
       end
       statusbar(0, 'Processing persistent data...'); forcedraw();
-      statusbar(0);
     end
+    statusbar(0);    
   end
 end
 
