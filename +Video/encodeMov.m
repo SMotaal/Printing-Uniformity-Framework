@@ -19,10 +19,8 @@ if iscellstr(varargin)
     
     pathstr = pathstr(1:end-1);
     
-    %     avilist = strcat(avilist, ', "', pathstr, '"');
     avilist = strcat(avilist, ' "', pathstr, '"');
   end
-  %   avilist = ['{' avilist(3:end) '}'];
 end
 
 avilist = strtrim(avilist);
@@ -33,7 +31,7 @@ scriptpath = fullfile(pathstr, 'EncodeMov.scpt');
 
 command = ['osascript ' scriptpath ' ' avilist];
 
-result = system(command);
+[status, result] = system(command);
 
 end
 

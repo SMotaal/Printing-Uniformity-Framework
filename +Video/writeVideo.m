@@ -17,7 +17,7 @@ function [ mVideoWriter ] = writeVideo( file, frames, frameindex )
   mVideoWriter.Quality = 100;
   
   try
-    open(mVideoWriter); % runlog(['.']);
+    open(mVideoWriter);
     try
       for f = 1:nFrames
         for i = frameindex(f):frameindex(f+1)-1;
