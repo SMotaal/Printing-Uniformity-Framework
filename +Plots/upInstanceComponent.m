@@ -29,6 +29,18 @@ classdef upInstanceComponent < handle
       type = obj.ClassName;
     end
     
+    function type = getComponentType(obj, type)
+      if isValid('type','char')
+        return;
+      end
+      try
+        type = obj.ComponentType;
+      catch err
+        error('Grasppe:Component:MissingType', ...
+          'Attempt to create component without specifying type.');
+      end      
+    end
+    
     function className = get.ClassName(obj)
       superName = eval(CLASS);
       className = class(obj);

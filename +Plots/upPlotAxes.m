@@ -4,13 +4,13 @@ classdef upPlotAxes < Plots.upAxes
   
   properties (Constant = true, Transient = true)
     ComponentType = 'axes';
-    ComponentProperties = Plots.upGrasppeHandle.PlotAxesProperties;
+    ComponentProperties = Graphics.Properties.PlotAxes;
   end
     
   methods
     function obj = upPlotAxes(parentFigure, varargin)
       obj = obj@Plots.upAxes(parentFigure, varargin{:});
-      obj.createComponent();
+%       obj.createComponent();
     end
     
     function obj = resizeComponent(obj)

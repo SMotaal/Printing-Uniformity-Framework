@@ -1,110 +1,30 @@
-classdef upPlotFigure < Plots.upViewComponent
+classdef upPlotFigure < Plots.upViewComponent & Graphics.PlotFigureObject
   %UPPLOTFIGURE Printing Uniformity Plot Figure
   %   Detailed explanation goes here
-  
-  properties (Constant = true, Transient = true)
-    ComponentType = 'figure';
-    ComponentProperties = Plots.upGrasppeHandle.FigureProperties;
-    ComponentEvents = {'CloseRequestFcn', 'ResizeFcn', 'CreateFcn',    'DeleteFcn', ...
-      'KeyPressFcn', 'KeyReleaseFcn', 'ButtonDownFcn', 'ButtonUpFcn',     ...
-      'WindowButtonDownFcn', 'WindowButtonUpFcn', 'WindowButtonMotionFcn', ...
-      'WindowKeyPressFcn', 'WindowKeyReleaseFcn'};
-  end
-  
-  properties (SetAccess = protected, GetAccess = public)
-    AxesHandle    % Axes handle
-    TitleHandle   % Handle to title text
-    
-    PlotAxesObject
-    OverlayAxesObject
-  end
-  
-  properties (Dependent = true)
-    PlotAxes
-    OverlayAxes
-  end
-  
-  properties   % Test.testStats
-    
-    %% Figure
-    Renderer, Toolbar, Menubar, WindowStyle
-    
-    %% Labels
-    Title
-    BaseTitle
-    
-    %% Style
-    Color, Units
-    
-    %% Hooks
-    CreateFcn, DeleteFcn, ResizeFcn, CloseRequestFcn
-    KeyPressFcn, KeyReleaseFcn, ButtonDownFcn, ButtonUpFcn,
-    WindowButtonDownFcn, WindowButtonUpFcn, WindowButtonMotionFcn
-    WindowKeyPressFcn, WindowKeyReleaseFcn
-    
-  end
-  
+
+
   methods
     %
     function obj = upPlotFigure(varargin)
       obj = obj@Plots.upViewComponent(varargin{:});
-      obj.createComponent();
-      obj.getPlotAxes();
-%       obj.getOverlayAxes();
     end
     
-    %% Figure Operations   
-    function options = getFigureOptions(obj)
-      properties = obj.FigureProperties;
-      options = obj.getOptions(properties);
-    end
-    
-    function hAxes = get.PlotAxes(obj)
-      if isValid(obj.PlotAxesObject, 'Plots.upPlotAxes')
-        hAxes = obj.PlotAxesObject.Primitive;
-      else
-        hAxes = [];
-      end
-    end    
-    
-    function hOverlay = get.OverlayAxes(obj)
-      if isValidHandle('obj.OverlayAxes.Primitive')
-        hOverlay = obj.OverlayAxes.Primitive;
-      else
-        hOverlay = [];
-      end
-    end
-    
-        
-    function hFigure = getFigure(obj)
-      
-      if (isempty(obj.Primitive))
-        obj.createComponent();
-      end
-      
-      hFigure = obj.Primitive;
-      
-    end
-
+    %% Figure Operations
     function obj = resizeComponent(obj)
-      try
-        obj.PlotAxesObject.resizeComponent;
-      end
+%       try
+%         obj.PlotAxesObject.resizeComponent;
+%       end
     end
     
     function hAxes = getPlotAxes(obj)
-      if ~isValidHandle('obj.PlotAxesObject.Primitive')
-        obj.PlotAxesObject = Plots.upPlotAxes(obj, 'Parent', obj.Primitive);
-
-      end
       
-      hAxes = obj.PlotAxes;
+%       hAxes = obj.PlotAxes;
     end
     
     
     function hOverlay = getOverlayAxes(obj)
       
-      hFigure   = obj.getFigure;
+      hFigure   = obj.Primitive;
 
       tOverlay  = obj.componentTag('Figure Overlay');
       
@@ -160,7 +80,7 @@ classdef upPlotFigure < Plots.upViewComponent
         end
         
         try
-          options = obj.getOptions(obj.TitleProperties);
+          options = obj.getOptions(Graphics.Properties.Title);
           obj.Set(hText, options{:});
         catch err
           warning(err.identifier, err.message);

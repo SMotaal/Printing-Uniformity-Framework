@@ -20,11 +20,11 @@ function [ g ] = listobj( input_args )
         p{4} = 'C';
     end
     p   = {p{:}, ''};
-    hd  = upper([p{2}(1) p{2}(end) ' ' sprintf('% 3.0f',h)]);
+    hd  = upper([p{2}(1) p{2}(end) ' ' sprintf('% 10.7f',h)]);
     if isempty(p{3})
       hp  = ['    ' p{4} ''];
     else
-      hp  = ['' sprintf('% 3.0f', p{3}) ' ' p{4} ''];
+      hp  = ['' sprintf('% 10.7f', p{3}) ' ' p{4} ''];
     end
     ht  = char(p{1});
     hs  = char(p{5});

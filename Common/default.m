@@ -4,7 +4,7 @@ function [ value ] = default( var, varargin) % , flag, space)
 space = 'caller';
 
 if evalin(space,['~exist(''' var ''', ''var'') || isempty(' var ')'])
-  let('value', varargin{:});
+  value = flatcat(varargin);
   try
     eValue = eval(value);
     if (isnumeric(eValue) || islogical(eValue))

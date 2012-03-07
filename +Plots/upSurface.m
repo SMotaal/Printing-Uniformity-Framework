@@ -3,7 +3,7 @@ classdef upSurface < Plots.upAxesObject
   
   properties (Constant = true, Transient = true)
     ComponentType = 'surf';
-    ComponentProperties = Plots.upGrasppeHandle.SurfaceProperties;
+    ComponentProperties = Graphics.Properties.Surface;
   end
   
   properties
@@ -25,7 +25,7 @@ classdef upSurface < Plots.upAxesObject
   methods
     function obj = upSurface(parentFigure, varargin)
       obj = obj@Plots.upAxesObject(parentFigure, varargin{:});
-      obj.createComponent;
+%       obj.createComponent;
       
       obj.ParentFigureObject.registerKeyEventHandler(obj);
       obj.ParentFigureObject.registerMouseEventHandler(obj);

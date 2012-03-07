@@ -18,7 +18,8 @@ elseif numel(varargin)>1
   end
 end
 value = strtrim(regexprep(value,'^"(.*)"$','''$1'''));
-opt value = eval(['[' value ']']);
+
+try value = eval(['[' value ']']); end
 
 assignin(space, var, value);
 

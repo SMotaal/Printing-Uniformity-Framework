@@ -2,14 +2,34 @@ function [ strings ] = toString( varargin )
   %TOSTRING convert objects to string representation
   %   Detailed explanation goes here
   
-  if length(varargin)==1
-    strings = valueString(varargin{1});
-  else
-    strings = cell(size(varargin));
-    for i = 1:length(varargin)
-      strings{i} = valueString(varargin{i});
-    end
+  args = varargin;
+  
+  while ~isempty(args) && iscell(args) && length(args)==1
+    args = args{1};
   end
+  
+  strings = strtrim(evalc('disp(args);'));
+  
+  if ~isempty(strings)
+  
+    lines = regexpi(strings, '[^\n]*', 'match');
+
+    strings = flatcat(regexprep(lines, '^\s*((Column \d+)|(Columns \d+ through \d+))\s*$', ''));
+
+    strings = regexprep(strtrim(strings), '\s+', ', ');
+  end
+  
+  
+  
+  
+%   if length(varargin)==1
+%     strings = valueString(varargin{1});
+%   else
+%     strings = cell(size(varargin));
+%     for i = 1:length(varargin)
+%       strings{i} = valueString(varargin{i});
+%     end
+%   end
   
 end
 

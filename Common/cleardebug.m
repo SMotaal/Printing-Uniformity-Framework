@@ -1,4 +1,4 @@
-function [ output_args ] = dbclear( input_args )
+function [ output_args ] = cleardebug( input_args )
   %DBCLEAR Summary of this function goes here
   %   Detailed explanation goes here
   
@@ -6,19 +6,21 @@ function [ output_args ] = dbclear( input_args )
   
   warning('off');
   
-  mlock
-  dbstate = evalin('base', 'dbstatus(''-completenames'')');
-  evalin('base', 'clear all;');
-  evalin('base', 'clear classes;');
-  evalin('base', 'delete(timerfindall());');  
+  mlock;
   try
-    delete(findobj(findall(0),'type','figure'));
+    if feature('IsDebugMode'), dbquit all; end
+    dbstate = evalin('base', 'dbstatus(''-completenames'')');
+    evalin('base', 'clear all;');
+    evalin('base', 'clear classes;');
+    evalin('base', 'delete(timerfindall());');  
+    try delete(findobj(findall(0),'type','figure')); catch err, end
+    delete(timerfindall);
+    assignin('base', 'dbstate', dbstate);
+    evalin('base', 'dbstop(dbstate)');
+    evalin('base', 'clear dbstate;');
   end
-  delete(timerfindall);
-  assignin('base', 'dbstate', dbstate);
-  evalin('base', 'dbstop(dbstate)');
-  evalin('base', 'clear dbstate;');
   munlock;
+  evalin('base', 'clear cleardebug');
   
   warning('on');
   

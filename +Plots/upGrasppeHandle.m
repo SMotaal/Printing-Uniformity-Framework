@@ -11,28 +11,24 @@ classdef upGrasppeHandle < dynamicprops
     Defaults
   end
   
-  properties (Constant = true, GetAccess = public, Transient = true)
-    GlobalProperties    = {{'ID', 'Tag'}, 'Visible'};
-    
-    TitleProperties     = {{'Title', 'String'}};
-    
-    FigureProperties    = {'Name', 'Renderer', 'Toolbar', 'Menubar', 'Color', 'Units', 'WindowStyle'};
-    PlotAxesProperties  = {'HitTest'};
-    PlotProperties      = {};
-    SurfaceProperties   = {};
+  properties (Constant = true, GetAccess = private, Transient = true)
+    Properties  = Graphics.Properties;
   end
   
   methods
     
     %% Property Functions
-    function options = getComponentOptions(obj)
+    function options = getComponentOptions(obj, options)
+      if isValid('options','cell') && ~isempty(options)
+        return;
+      end
       try
         try
           hooks = obj.ComponentEvents;
         catch
           hooks = {};
         end
-        properties = {obj.GlobalProperties{:}, obj.ComponentProperties{:}, hooks{:}};
+        properties = {Graphics.Properties.Global{:}, obj.ComponentProperties{:}, hooks{:}};
         options = obj.getOptions(properties);
       catch
         options = {};
@@ -93,6 +89,15 @@ classdef upGrasppeHandle < dynamicprops
           
           value = obj.(alias);
           
+          if ~isempty(regexp(alias, ['(^Is[A-Z])' '|' '(\w+Enabled$)' '|' '(\w+Visible$)']))
+            switch value
+              case {0, false, 'off', 'no'}
+                value = 'off';
+              case {1, true, 'on', 'yes'};
+                value = 'on';
+            end
+          end
+          
           if (~isempty(value))
             index = (pairs)*2 + 1;
             pairs = pairs + 1;
@@ -114,15 +119,7 @@ classdef upGrasppeHandle < dynamicprops
         options = obj.getStatic('DefaultOptions');
       end
     end
-    
-    function handleSet(obj, varargin)
-      Plots.upGrasppeHandle.Set(obj.Primitive, varargin{:});
-    end
-    
-    function handleGet(obj, varargin)
-      Plots.upGrasppeHandle.Get(obj.Primitive, varargin{:});
-    end    
-    
+        
     function setOptions(obj, varargin)
       obj.Busy = true;
       try
@@ -174,40 +171,7 @@ classdef upGrasppeHandle < dynamicprops
       catch err
         dealwith(err);
       end
-    end
-    
-    function Set(handle, varargin)
-      if isobject(handle)
-        if nargin > 1 && isnumeric(varargin{1})
-          handle = varargin{1};
-          args = varargin(2:end);
-        else
-          handle = handle.Primitive;
-          args = varargin;
-        end
-      else
-        args = varargin;
-      end
-      
-      set(handle, args{:});
-    end
-    
-    function properties = Get(handle, varargin)
-      if isobject(handle)
-        if nargin > 1 && isnumeric(varargin{1})
-          handle = varargin{1};
-          args = varargin(2:end);
-        else
-          handle = handle.Primitive;
-          args = varargin;
-        end
-      else
-        args = varargin;
-      end      
-
-      properties = get(handle, args{:});
     end    
-    
     
   end
   
@@ -218,8 +182,6 @@ classdef upGrasppeHandle < dynamicprops
     function [args values paired pairs] = parseOptions(obj, varargin)
       
       pairs = 0;
-      
-      varargin{:};
       
       [nargs paired args values] = pairedArgs(varargin{:});
       

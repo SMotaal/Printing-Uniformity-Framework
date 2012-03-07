@@ -26,29 +26,22 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
         obj.setOptions(varargin{:});
       end
       
-      if strcmpi(obj.Visible,'on')
-        obj.createComponent();
-      end
+      obj.Visible = resolve(strcmpi(obj.Visible,'on'), 'on', 'off');
+      
+      obj.createComponent([], []);
+      
     end
     
     function obj = createComponent(obj, type, options)
+      
       if (obj.Busy || isValidHandle('obj.Primitive'))
         return;
       end
       
-      if (~isValid('options','cell') || isempty(options))
-        options = obj.getComponentOptions;
-      end
+      options = obj.getComponentOptions(options);
       
-      if (~isValid('type','char'))
-        try
-          type = obj.ComponentType;
-        catch err
-          error('Grasppe:Component:MissingType', ...
-            'Attempt to create component without specifying type.');
-        end
-      end
-      
+      type    = obj.getComponentType(type);
+            
       if isValidHandle('obj.Parent')
         parent = obj.Parent;
       else
@@ -231,11 +224,11 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
     function 	obj = show(obj)
       try
         h = Plots.upViewComponent.showHandle(obj.Primitive);
-        if (h==0)
-          if isValid('obj.ComponentType', 'char')
-            obj.createComponent(obj.ComponentType);
-          end
-        end
+%         if (h==0)
+%           if isValid('obj.ComponentType', 'char')
+%             obj.createComponent(obj.ComponentType);
+%           end
+%         end
       end
     end
     

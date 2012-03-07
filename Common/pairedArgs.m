@@ -11,20 +11,16 @@ function [ nargs even names values ] = pairedArgs(varargin)
 %   try
 %     args = evalin('caller', 'varargin{:}');
 
-  args = varargin(:);
+  if length(varargin)==1 && iscell(varargin{1})
+    args  = varargin{1}(:);
+  elseif length(varargin)>1
+    args  = varargin(:);
+  else
+    args  = {};
+  end
     
   nargs = numel(args);
-    
-%     if (isValid('firstArg','double') && firstArg > 0 && firstArg < nargs)
-%       args  = args(firstArg:end);
-%       nargs = numel(args);
-%     end
-%     
-%   catch err
-%     error('Grasppe:VarArgs:InvalidCaller', ...
-%       'Attempt to execute varargs outside a function is invalid.');
-%   end
-  
+      
   if nargout > 1
     even = rem(nargs,2)==0;
   end

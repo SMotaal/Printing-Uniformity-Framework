@@ -22,7 +22,7 @@ classdef upFigureObject < Plots.upViewComponent
     function obj = set.ParentFigureObject(obj, parentFigure)
       if isValid('parentFigure', 'Plots.upPlotFigure')
         obj.ParentFigureObject = parentFigure;
-        obj.Parent = obj.ParentFigureObject.getFigure;
+        obj.Parent = obj.ParentFigureObject.Primitive;
       else
         error('Grasppe:upAxesObject:InvalidParent', ...
           'Could not obtain a valid plot figure to hold this %s object.', obj.ClassName);
@@ -31,7 +31,7 @@ classdef upFigureObject < Plots.upViewComponent
     
     function hFigure = get.ParentFigure(obj)
       if isValid(obj.ParentFigureObject, 'Plots.upPlotFigure')
-        hFigure = obj.ParentFigureObject.getFigure;
+        hFigure = obj.ParentFigureObject.Primitive;
       else
         hFigure = [];
       end

@@ -4,7 +4,7 @@ classdef upOverlayAxes < Plots.upAxes
   
   properties (Constant = true, Transient = true)
     ComponentType = 'axes';
-    ComponentProperties = Plots.upGrasppeHandle.PlotAxesProperties;
+    ComponentProperties = Model.Properties.PlotAxes;
   end  
   
   properties
