@@ -5,7 +5,7 @@ classdef AxesObject < InFigureObject
   properties
   end
   
-  properties (Transient = true)
+  properties (Transient, Hidden)
     ComponentType = 'axes';
     
     ComponentProperties = { ...
@@ -51,7 +51,9 @@ classdef AxesObject < InFigureObject
       obj.OuterPosition = value;
     end
     
-    
+  end
+  
+  methods (Hidden=true)
     
     function setPosition(obj, value, mode)
       
@@ -90,7 +92,7 @@ classdef AxesObject < InFigureObject
   end
   
   
-  methods(Abstract, Static)
+  methods(Abstract, Static, Hidden)
     options  = DefaultOptions()
     obj = createAxesObject()
   end

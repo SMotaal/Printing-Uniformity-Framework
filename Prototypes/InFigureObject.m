@@ -2,8 +2,23 @@ classdef InFigureObject < HandleGraphicsObject
   %INFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (SetObservable)
     ParentFigure
+  end
+  
+  properties
+    Padding = [20 20 20 20]
+  end
+  
+  methods
+    function value = get.Padding(obj)
+      value = obj.Padding;
+    end
+    
+    function set.Padding(obj, value)
+      obj.Padding = changeSet(obj.Padding, value);
+      try obj.resizeComponent; end
+    end
   end
   
   methods

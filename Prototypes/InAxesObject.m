@@ -2,7 +2,7 @@ classdef InAxesObject < HandleGraphicsObject
   %INAXESOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (SetObservable)
     ParentAxes
   end
   

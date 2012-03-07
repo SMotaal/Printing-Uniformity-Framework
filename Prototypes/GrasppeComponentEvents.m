@@ -5,9 +5,17 @@ classdef GrasppeComponentEvents < GrasppeHandle & EventHandlerObject
   properties
   end
   
-  methods
+  methods (Hidden)
     
     function attachEvents(obj, hooks)
+      
+      if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
+          [names aliases] = obj.getOptionNames(obj.getComponentHooks);
+          hooks = aliases;
+      end
+      
+      if ~iscell(hooks), return; end
+      
       callbacks = cell(size(hooks));
       for i = 1:numel(hooks)
         hook  = hooks{i};
@@ -74,7 +82,7 @@ classdef GrasppeComponentEvents < GrasppeHandle & EventHandlerObject
     
   end
   
-  methods (Static)
+  methods (Static, Hidden)
     function Show(handle)
       try
         set(handle,'Visible', 'on');

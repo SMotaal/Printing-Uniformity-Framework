@@ -6,7 +6,7 @@ classdef EventHandlerObject < GrasppeHandle
     KeyEventHandlers, MouseEventHandlers
   end
   
-  methods
+  methods (Hidden=true)
     
     function [fcn token]  = callbackFunction(object, varargin)
       [token fcn] = EventHandlerObject.createCallbackToken(object, varargin{:});
@@ -17,17 +17,7 @@ classdef EventHandlerObject < GrasppeHandle
     end
     function registerMouseEventHandler(obj, handler)
       obj.registerEventHandler('MouseEventHandlers', handler);
-    end    
-%       handlers = obj.KeyEventHandlers;
-%       
-%       if ~iscell(handlers)
-%         handlers = {};
-%       end
-%             
-%       if ~any(handlers==handler)
-%         handlers{end+1} = handler;
-%         obj.KeyEventHandlers = handlers;
-%       end
+    end
     
     function registerEventHandler(obj, hanldersGroup, handler)
       handlers = obj.(hanldersGroup);
@@ -89,7 +79,7 @@ classdef EventHandlerObject < GrasppeHandle
     
   end
   
-  methods (Static)
+  methods (Static, Hidden)
     
     function [token fcn] = createCallbackToken(object, name, callback)
       
@@ -212,7 +202,7 @@ classdef EventHandlerObject < GrasppeHandle
     end
   end
   
-  methods(Abstract, Static)
+  methods(Abstract, Static, Hidden)
     options  = DefaultOptions()
   end  
   

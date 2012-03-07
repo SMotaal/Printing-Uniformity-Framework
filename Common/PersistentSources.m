@@ -37,71 +37,65 @@ function varargout = PersistentSources(varargin)
   end
   
   if (nout==0)
-    
+    handled  = true;
     if (nin==1)
       firstArg = varargin{1};
       if ischar(firstArg)
         switch lower(firstArg)
           case 'clear'
-            clear datastore;
-            touchdata(true);
-            return;
+            clear datastore;	touchdata(true); 	cleared = true
           case 'load'
             datastore = loaddata(datastore);
-            return;
           case 'save'
-            if (~readonly)
-              savedata(datastore);
-            end
-            return;
-          case 'force load'
-            datastore = loaddata(datastore, true);
-            return;
-          case 'readonly load'
-            datastore = loaddata(datastore, true);
-            readonly  = true;
-            return;
-          case 'readonly'
-            readonly = true;
-            return;
-          case 'readwrite'
-            readonly = false;
-            return;
-          case 'force save'
-            if (~readonly)
-              savedata(datastore, true);
-            end
-            return;
-          case 'readonly save'
-            savedata(datastore, true);
-            return;
+            if (~readonly), savedata(datastore); end
+          case {'readonly', 'ro', 'r'};
+            readonly  = true
+          case {'readwrite', 'rw', 'r/w'};
+            readonly  = false
           case 'lock'
-            mlock;
-            locked = true;
-            return;
+            mlock;    locked    = true
           case 'unlock'
-            munlock;
-            locked = false;
-            return;
+            munlock;  locked    = false
+          otherwise
+            handled  = false;
         end
       elseif (isstruct(firstArg))
         datastore = firstArg;
+      else
+        handled   = false;        
       end
     elseif (nin==2)
-      firstArg  = varargin{1};
-      secondArg = varargin{2};
+      firstArg    = varargin{1};
+      secondArg   = varargin{2};
+      forced      = false;
+      overwrite   = false;
       switch lower(firstArg)
         case {'load', 'save'}
-          try
-            filename = datafile(secondArg);
-            PersistentSources(['force ' firstArg]);
-          catch err
-            dealwith(err);
+          try datafile(secondArg); catch err, dealwith(err); end
+          PersistentSources(['force ' firstArg]);
+        case 'filename'
+          datafile(secondArg);
+        case {'force', 'forced'}
+          forced      = true
+        case {'readonly',  'r'}
+          overwrite   = true; readonly    = true
+        case {'readwrite', 'rw', 'r/w'}
+          readonly    = false;
+        otherwise
+          handled     = false;
+      end
+      switch lower(secondArg)
+        case load
+          datastore = loaddata(datastore, forced);
+        case save
+          if ~readonly || overwrite
+            savedata(datastore, forced);
           end
-          return;
       end
     end
   end
+  
+  if handled, return; end
   
   
   [pargin ineven innames invalues] = pairedArgs(varargin{:});
@@ -129,10 +123,10 @@ function varargout = PersistentSources(varargin)
       return;
     end
     
-%     if (nin==0 && nout==1)
-%       varargout{1} = datastore;
-%       return;
-%     end
+    %     if (nin==0 && nout==1)
+    %       varargout{1} = datastore;
+    %       return;
+    %     end
   catch err
     rethrow(err);
   end
@@ -178,7 +172,7 @@ function values = getValues(insources, names, E)
 end
 
 function forcedraw()
-  pause(0.05); 
+  pause(0.05);
   drawnow();
   pause(0.05);
 end
@@ -227,7 +221,7 @@ function [] = savedata(datastore, forced)
       end
       statusbar(0, 'Processing persistent data...'); forcedraw();
     end
-    statusbar(0);    
+    statusbar(0);
   end
 end
 
@@ -246,18 +240,18 @@ function touched = touchdata(reset)
 end
 
 function filename = datafile(filename)
-  persistent lastFile defaultFile;
- 
+  persistent dataFile defaultFile;
+  
   defaultFile = 'datastore';
-
+  
   if exists('filename') && ischar(filename)
-      [pathstr filename ext] = fileparts(filename);
-      lastFile = filename;
+    [pathstr filename ext] = fileparts(filename);
+    dataFile = filename
   end
   
-  if isempty(lastFile)
-    lastFile = defaultFile;
+  if isempty(dataFile)
+    dataFile = defaultFile;
   end
-
-  filename  = datadir('Sources', [lastFile '.mat']);	%fullfile(path, 'datastore.mat');
+  
+  filename  = datadir('Sources', [dataFile '.mat']);	%fullfile(path, 'datastore.mat');
 end

@@ -17,7 +17,8 @@ disp('Running Tests...');
 newProfile();
 
 x = PlotFigureObject;
-% endProfile(); newProfile();
+endProfile(); newProfile();
+s = SurfaceObject.createPlotObject(x.PlotAxes);
 % x.setVisible(true);
 % endProfile(); newProfile();
 % [dataSource params] = Plots.plotUPStats('ritsm7402c',params);

@@ -1,29 +1,29 @@
-classdef HandleGraphicsObject < GrasppeComponent
+classdef HandleGraphicsObject < GrasppeComponent & GrasppeComponentEvents
   %HANDLEGRAPHICSOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (Constant, GetAccess = public, Transient, Hidden=false)
+  properties (Transient, Hidden)
     HandleProperties = { ...
-      'Parent', 'Children', ...
+      'Parent', {'Children', 'Children', 'readonly'}, ...
       {'ID', 'Tag'}, {'Type','Type','readonly'} , 'HandleVisibility', ...
       {'CallbackQueueMode', 'BusyAction'}, {'CallbackInterruption', 'Interruptible'}, ...
       {'IsHighlightable', 'SelectionHighlight'}, {'IsClickable', 'HitTest'}, {'ContextMenu', 'UIContextMenu'}, ...
       {'IsDestructing','BeingDeleted', 'readonly'}, {'IsVisible', 'Visible'}, {'IsSelected', 'Selected'}, ...
-%       {'Object', 'UserData'} ...
+      %       {'Object', 'UserData'} ...
       };
     
     HandleEvents = {'CreateFcn', 'DeleteFcn', 'ButtonDownFcn'};
     
   end
-    
-  properties (GetAccess=public, SetAccess=public)
+  
+  properties (SetObservable)
     Parent
     IsClickable=true
     IsVisible=true
     IsSelected=false
   end
   
-  properties (Hidden=false, GetAccess=public, SetAccess=public)
+  properties (Hidden, SetObservable)
     Type
     HandleVisibility='on'
     Children
@@ -35,7 +35,7 @@ classdef HandleGraphicsObject < GrasppeComponent
   end
   
   %% Hooks
-  properties (Hidden=false)
+  properties (Hidden)
     CreateFcn, DeleteFcn, ButtonDownFcn,
   end
   
@@ -122,25 +122,27 @@ classdef HandleGraphicsObject < GrasppeComponent
     
   end
   
-  methods % Getters / Setters
-    
-    function set.IsVisible(obj, value)
-      obj.IsVisible = value;
-      obj.pushUpdates('Visibility');
-    end
-    
+  methods (Hidden)
     function setVisible(obj, value)
       obj.IsVisible = value;
     end
+  end    
+  
+  methods % Getters / Setters
     
+    function set.IsVisible(obj, value)
+      obj.IsVisible = changeSet(obj.IsVisible, value);
+      obj.pushUpdates('Visibility');
+    end
+        
     function set.Parent(obj, value)
-      obj.Parent = value;
+      obj.Parent = changeSet(obj.Parent, value);
       obj.pushUpdates('Parent');
     end
     
   end
   
-  methods(Abstract, Static)
+  methods(Abstract, Static, Hidden)
     options  = DefaultOptions()
   end
   

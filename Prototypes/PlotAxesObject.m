@@ -3,9 +3,10 @@ classdef PlotAxesObject < AxesObject
   %   Detailed explanation goes here
   
   properties
+    
   end
   
-  methods (Access=protected)
+  methods (Access=protected, Hidden)
     function obj = PlotAxesObject(parentFigure, varargin)
       obj = obj@AxesObject(varargin{:},'ParentFigure', parentFigure );
     end
@@ -18,16 +19,20 @@ classdef PlotAxesObject < AxesObject
     
   end
   
-  methods
+  methods (Hidden)
     function obj = resizeComponent(obj)
       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
-      padding=20;
-      obj.set('Units', 'pixels', 'outerposition', ...
-        [padding padding parentPosition([3 4])-2*padding]);
+      
+      padding=obj.Padding;
+      
+      size     = parentPosition([3 4]) - padding([1 2]) - padding([3 4]);
+      position = [padding([1 2]) size];
+      
+      obj.set('Units', 'pixels', 'outerposition', position);
     end    
   end
   
-  methods (Static)
+  methods (Static, Hidden)
     function options  = DefaultOptions( )
       
       IsVisible     = true;
@@ -38,6 +43,9 @@ classdef PlotAxesObject < AxesObject
       options = WorkspaceVariables(true);
     end
     
+  end
+  
+  methods (Static)
     function obj = createAxesObject(parentFigure, varargin)
       obj = PlotAxesObject(parentFigure, varargin{:});
     end    

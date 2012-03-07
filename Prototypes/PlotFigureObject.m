@@ -4,29 +4,36 @@ classdef PlotFigureObject < FigureObject
   
   %#ok<*MCSUP>
   
-  properties (GetAccess=public, SetAccess=public)
+  properties (Transient, Hidden)
+    BaseTitle, SampleTitle
   end
   
   %% Functional Properties
-  properties
-    Title, BaseTitle, SampleTitle
+  properties (SetObservable)
+    Title
+  end
+  
+  methods (Hidden)
+    function obj = PlotFigureObject(varargin)
+      obj = obj@FigureObject(varargin{:});
+    end
   end
   
   %% Functional Properties Getters / Setters
   methods
     
     function set.BaseTitle(obj, value)
-      obj.BaseTitle = value;
+      obj.BaseTitle = changeSet(obj.BaseTitle, value);
       obj.Title = [obj.BaseTitle obj.SampleTitle];
     end
     
     function set.SampleTitle(obj, value)
-      obj.SampleTitle = value;
+      obj.SampleTitle = changeSet(obj.SampleTitle, value);
       obj.Title = [obj.BaseTitle obj.SampleTitle];
     end
     
     function set.Title(obj, value)
-      obj.Title = value;
+      obj.Title = changeSet(obj.Title, value);
       if isValidHandle('obj.TitleTextHandle')
         set(obj.TitleTextHandle, 'String', value);
       end
@@ -35,7 +42,7 @@ classdef PlotFigureObject < FigureObject
     
   end
   
-  methods (Access=protected)
+  methods (Access=protected, Hidden)
     function createComponent(obj, type)
       obj.createComponent@GrasppeComponent(type);
       obj.OverlayAxes = OverlayAxesObject.createAxesObject(obj);
@@ -47,7 +54,7 @@ classdef PlotFigureObject < FigureObject
   end
   
   %% Plot Objects
-  properties (Dependent)
+  properties (Dependent, Hidden)
     TitleTextHandle, PlotAxesHandle, OverlayAxesHandle
   end
   
@@ -72,16 +79,18 @@ classdef PlotFigureObject < FigureObject
       handle = []; try handle = obj.OverlayAxes.Handle; end
     end
     
+  end
+  
+  methods (Hidden)
     function obj = resizeComponent(obj)
       try obj.PlotAxes.resizeComponent; end
       try obj.OverlayAxes.resizeComponent; end
       try obj.TitleText.resizeComponent; end
     end
-
   end
   
   
-  methods (Static)
+  methods (Static, Hidden)
     function options  = DefaultOptions( )
       
       WindowTitle   = 'Printing Uniformity Plot';
@@ -93,7 +102,7 @@ classdef PlotFigureObject < FigureObject
       Parent        = 0;
       
       options = WorkspaceVariables(true);
-    end    
+    end
   end
   
   

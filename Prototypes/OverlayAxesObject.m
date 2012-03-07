@@ -5,7 +5,7 @@ classdef OverlayAxesObject < AxesObject
   properties
   end
   
-  methods (Access=protected)
+  methods (Access=protected, Hidden)
     function obj = OverlayAxesObject(parentFigure, varargin)
       obj = obj@AxesObject(varargin{:},'ParentFigure', parentFigure );
     end
@@ -20,7 +20,7 @@ classdef OverlayAxesObject < AxesObject
     
   end
   
-  methods
+  methods (Hidden)
     function obj = resizeComponent(obj)
       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
       padding=20;
@@ -29,7 +29,7 @@ classdef OverlayAxesObject < AxesObject
     end    
   end
   
-  methods (Static)
+  methods (Static, Hidden)
     function options  = DefaultOptions( )
       
       IsVisible     = false;
@@ -42,6 +42,9 @@ classdef OverlayAxesObject < AxesObject
       options = WorkspaceVariables(true);
     end
     
+  end
+  
+  methods (Static)
     function obj = createAxesObject(parentFigure, varargin)
       obj = OverlayAxesObject(parentFigure, varargin{:});
     end    

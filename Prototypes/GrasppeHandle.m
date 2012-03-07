@@ -2,21 +2,25 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   %GRASPPEHANDLE Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (Hidden=false)
+  properties (Hidden=true)
     IsUpdating  = false;
     Debugging   = false;
     InstanceID
   end
   
   properties (Dependent)
-    ID    
+    ID
+  end
+  
+  properties (Dependent, Hidden=true)
     Handle
     IsHandled
     ClassName
     ClassPath
+    MetaClass
   end
   
-  properties (SetAccess=private, GetAccess=public)
+  properties (SetAccess=private, GetAccess=public, Hidden)
     Primitive
   end
   
@@ -38,7 +42,9 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       if ~isValidHandle('handle')
         handle = [];
       end
-      obj.Primitive = handle;
+      obj.Primitive = changeSet(obj.Primitive, handle);
+      
+      try obj.pullHandleOptions; end
     end
     
     function id = get.ID(obj)
@@ -68,11 +74,13 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       classPath = fullfile(which(obj.ClassName));
     end
     
-    
+    function metaClass = get.MetaClass(obj)
+      metaClass = metaclass(obj);
+    end    
     
   end
   
-  methods (Hidden=false)
+  methods (Hidden)
     
     function set(obj, varargin)
       if nargin>1 && isValidHandle(varargin{1})
@@ -100,7 +108,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
     end
   end
   
-  methods (Access=protected)
+  methods (Access=protected, Hidden)
     
     function pushHandleOptions(obj, names, emptyValues)
       default emptyValues true;
@@ -301,7 +309,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   end
   
   
-    methods (Static)
+    methods (Static, Hidden)
     
     function [ID instance] = InstanceRecord(object)
       persistent instances hashmap
@@ -368,7 +376,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
     end
   end  
   
-  methods(Abstract, Static)
+  methods(Abstract, Static, Hidden)
     options  = DefaultOptions()
   end
   

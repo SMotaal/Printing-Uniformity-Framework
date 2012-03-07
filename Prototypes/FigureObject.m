@@ -2,7 +2,7 @@ classdef FigureObject < HandleGraphicsObject & EventHandlerObject
   %UPFIGUREOBJECTSMODEL Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (Transient)
+  properties (Transient, Hidden)
     ComponentType = 'figure';
     
     ComponentProperties = { ...
@@ -16,13 +16,13 @@ classdef FigureObject < HandleGraphicsObject & EventHandlerObject
       {'ButtonMotionFcn', 'WindowButtonMotionFcn'}};
   end
   
-  methods
+  methods (Hidden)
     function obj = FigureObject(varargin)
       obj = obj@HandleGraphicsObject(varargin{:});
     end
   end
   
-  properties
+  properties (SetObservable)
     
     %% Figure
     WindowTitle, Renderer, Toolbar, Menubar, WindowStyle
@@ -36,14 +36,14 @@ classdef FigureObject < HandleGraphicsObject & EventHandlerObject
   end
   
   %% Hooks
-  properties (Hidden=false)
+  properties (Hidden)
     ResizeFcn, CloseRequestFcn,  % CreateFcn, DeleteFcn,
     ButtonUpFcn, ButtonMotionFcn
     KeyPressFcn, KeyReleaseFcn
   end
   
   
-  methods(Static)   
+  methods(Static, Hidden)   
     options  = DefaultOptions()
   end
   

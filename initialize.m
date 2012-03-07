@@ -8,7 +8,7 @@ function [ output_args ] = initialize( input_args )
   
   if isempty(delayTimer)
     fprintf(1,'\n\nHello!\n');
-    delayTimer = timer('Tag','StartupTimer', 'StartDelay', 5, ...
+    delayTimer = timer('Tag','StartupTimer', 'StartDelay', 0.5, ...
       'TimerFcn', 'initialize;');
     start(delayTimer);
     fprintf(2,'\nWorkspace: '); fprintf(1, 'Loading...  \n');
@@ -22,8 +22,8 @@ function [ output_args ] = initialize( input_args )
 end
 
 function initializeScript()
-  PersistentSources('readonly');
-  PersistentSources('load');
+  PersistentSources readonly;
+  PersistentSources load;  
   fprintf(2,'\nWorkspace: '); fprintf(1, 'Ready\n');
   setstatus(0,'');
   

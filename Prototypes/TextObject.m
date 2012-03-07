@@ -2,29 +2,19 @@ classdef TextObject < InAxesObject
   %TEXTOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (Transient)
+  properties (Transient, Hidden)
     ComponentType = 'text';
     
     ComponentProperties = { ...
      {'Text', 'String'}, 'Position', 'Color', 'Units'};
     
-    ComponentEvents = { ...
-      };
-    
+    ComponentEvents = {};
   end
   
   
-  properties
-    Text
+  properties  (SetObservable) 
+    Text, Color, Units, Position    
   end
-  
-  properties
-    Color, Units, Position
-  end
-  
-%   properties (Dependent)
-%     Position
-%   end
 
   methods
     function set.Text(obj, value)
@@ -33,7 +23,7 @@ classdef TextObject < InAxesObject
     end
   end
 
-  methods (Access=protected)
+  methods (Access=protected, Hidden)
     
     function obj = TextObject(varargin)
       obj = obj@InAxesObject(varargin{:});
@@ -43,7 +33,7 @@ classdef TextObject < InAxesObject
 
   
   
-  methods(Abstract, Static)
+  methods(Abstract, Static, Hidden)
     options  = DefaultOptions()
     obj = createTextObject()
   end

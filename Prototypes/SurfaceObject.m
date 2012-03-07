@@ -2,10 +2,14 @@ classdef SurfaceObject < InAxesObject
   %SURFACEOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (Transient, Hidden)
     ComponentType = 'surf';
     
     ComponentProperties = { ...
+      'Clipping', ...
+      'DisplayName', ...
+      'CData', 'CDataMapping', ...
+      'XData', 'YData', 'ZData' ...
      };
     
     ComponentEvents = { ...
@@ -13,7 +17,12 @@ classdef SurfaceObject < InAxesObject
     
   end
    
-  properties
+  properties (SetObservable)
+    Clipping, DisplayName, CData, CDataMapping, XData, YData, ZData
+  end
+  
+  properties (Dependent)
+    
   end
   
   methods (Access=protected)
@@ -26,7 +35,7 @@ classdef SurfaceObject < InAxesObject
   end
   
   
-  methods (Static)
+  methods (Static, Hidden)
     function options  = DefaultOptions( )
       
       IsVisible     = true;
@@ -35,6 +44,9 @@ classdef SurfaceObject < InAxesObject
       options = WorkspaceVariables(true);
     end
     
+  end
+  
+  methods (Static)
     function obj = createPlotObject(parentAxes, varargin)
       obj = SurfaceObject(parentAxes, varargin{:});
     end
