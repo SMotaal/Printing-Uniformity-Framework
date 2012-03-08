@@ -55,7 +55,7 @@ classdef GraphicsObject < GrasppeComponent & GraphicsEventHandler
     function setObjectHandle(obj, name, value)
       type = regexp(name,'[A-Z][a-z]+$','match');
       handle = [];
-      if isValidHandle(value) && strcmpi(get(value, 'type'), type)
+      if isValidHandle(value) %&& strcmpi(get(value, 'type'), type)
         handle = value;
       end
       obj.([name 'Handle']) = handle;
@@ -64,7 +64,7 @@ classdef GraphicsObject < GrasppeComponent & GraphicsEventHandler
     function handle = getObjectHandle(obj, name)
       value = obj.([name 'Handle']);
       type = regexp(name,'[A-Z][a-z]+$','match');
-      if isValidHandle(value) && strcmpi(get(value, 'type'), type)
+      if isValidHandle(value) %&& strcmpi(get(value, 'type'), type)
         handle = value;
       else
         handle = [];

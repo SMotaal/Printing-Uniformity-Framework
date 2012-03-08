@@ -21,7 +21,7 @@ classdef SurfaceObject < InAxesObject
   end
   
   properties (SetObservable)
-    Clipping, DisplayName, CData, CDataMapping, XData, YData, ZData
+    Clipping, DisplayName='', CData, CDataMapping, XData, YData, ZData
     AntiAliasing = 'on';
   end
   
@@ -33,34 +33,31 @@ classdef SurfaceObject < InAxesObject
     function obj = SurfaceObject(parentAxes, varargin)
       obj = obj@InAxesObject(varargin{:},'ParentAxes', parentAxes);
     end
+    
     function createComponent(obj, type)
       debugStamp(obj.ID);
       obj.createComponent@GrasppeComponent(type);
       obj.ParentFigure.registerKeyEventHandler(obj);
     end
+    
   end
   
   methods
     function refreshPlot(obj, dataSource)
       debugStamp(obj.ID);
       obj.IsRefreshing = true;
-%       try obj.DataSource.refreshPlot(obj); end
-
       if ~exists('dataSource')
         dataSource = obj.DataSource;
       end
         updating = obj.IsUpdating;
         for property = obj.DataProperties
           try
-            obj.IsUpdating = false;
-            obj.(char(property)) = dataSource.(char(property));
-            
+            obj.IsUpdating = false; obj.(char(property)) = dataSource.(char(property));
           catch err
             disp(err);
           end
           obj.IsUpdating = updating;
         end
-%           try plotObject.forceSet(char(property), obj.(property)); end
       obj.updatePlotTitle(dataSource.SourceID, dataSource.SampleID);
       obj.IsRefreshing = false;
     end

@@ -124,6 +124,7 @@ classdef EventHandler < GrasppeHandle
         end
       end
       
+      try
       switch callsign
         case 'UpdateView'
 %           if (objectFound)
@@ -141,10 +142,10 @@ classdef EventHandler < GrasppeHandle
 %           end
         case 'ResizeFcn'
 %           if isSourceObject
-            object.resizeComponent();
+            object.windowResize(event);
 %           end
         case 'DeleteFcn'
-            object.delete();
+            object.deleteComponent();
         case {'KeyPressFcn', 'WindowKeyPressFcn'}
 %           if isSourceObject
             object.keyPress(event);
@@ -166,6 +167,7 @@ classdef EventHandler < GrasppeHandle
               warning('Grasppe:Component:CallbackError', err.message);
             end
           end
+      end
       end
       try      
           if (objectFound)

@@ -2,7 +2,10 @@ classdef OverlayAxesObject < AxesObject
   %OVERLAYAXESOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (Transient, Hidden)
+    ComponentType = 'axes';
+    ComponentProperties = { };
+    ComponentEvents = { };
   end
   
   methods (Access=protected, Hidden)
@@ -15,7 +18,7 @@ classdef OverlayAxesObject < AxesObject
       
       obj.Position = [0.1 0.1 0.8 0.8];
       
-      obj.set('XTick', [], 'YTick' ,[]);
+      obj.handleSet('XTick', [], 'YTick' ,[]);
     end
     
   end
@@ -24,7 +27,7 @@ classdef OverlayAxesObject < AxesObject
     function obj = resizeComponent(obj)
       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
       padding=20;
-      obj.set('Units', 'pixels', 'position', ...
+      obj.handleSet('Units', 'pixels', 'position', ...
         [padding padding parentPosition([3 4])-2*padding]);
     end    
   end
@@ -45,7 +48,7 @@ classdef OverlayAxesObject < AxesObject
   end
   
   methods (Static)
-    function obj = createAxesObject(parentFigure, varargin)
+    function obj = Create(parentFigure, varargin)
       obj = OverlayAxesObject(parentFigure, varargin{:});
     end    
   end

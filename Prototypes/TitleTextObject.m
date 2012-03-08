@@ -14,9 +14,9 @@ classdef TitleTextObject < TextObject
       obj.createComponent@GrasppeComponent(type);
       
       position = obj.Position;
-      position([1 2]) = [0.5 1];
-      obj.set('Position', position);
-      obj.set('HorizontalAlignment', 'center');
+      position([1 2]) = [0 1];
+      obj.handleSet('Position', position);
+      obj.handleSet('HorizontalAlignment', 'Left');
     end
   end
   

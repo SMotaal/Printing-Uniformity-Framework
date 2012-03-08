@@ -5,8 +5,8 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   properties (Hidden=true)
     IsUpdating  = false;
     Debugging   = false;
-%     Reforced    = false;
-%     ForceQueue  = {};
+    %     Reforced    = false;
+    %     ForceQueue  = {};
     InstanceID
   end
   
@@ -78,36 +78,69 @@ classdef GrasppeHandle < dynamicprops & hgsetget
     
     function metaClass = get.MetaClass(obj)
       metaClass = metaclass(obj);
-    end    
+    end
     
   end
   
   methods (Hidden)
     
-    function set(obj, varargin)
-      if nargin>1 && isValidHandle(varargin{1})
-        handle = varargin{1};
-      else
-        handle = obj.Handle;
-      end
-      if ~isempty(handle)
-        set(handle, varargin{:});
+    function handleSet(obj, varargin)
+      try
+        if nargin>1 && isValidHandle('varargin{1}')
+          handle = varargin{1};
+          args = varargin(2:end);
+        else
+          handle = obj.Handle;
+          args = varargin;
+        end
+        if ~isempty(handle)
+          try
+            set(handle, args{:});
+%             GrasppeHandle.HandleSet(handle, args{:});
+          catch err
+            GrasppeHandle.VerboseSet(handle, args{:});
+          end
+        else
+%           disp(varargin);
+        end
+      catch err
+        dealwith(err);
       end
     end
         
-    function values = get(obj, varargin)
-      if nargin>1 && isValidHandle(varargin{1})
+    function values = handleGet(obj, varargin)
+      if nargin>1 && isValidHandle('varargin{1}')
         handle = varargin{1};
+        args = varargin(2:end);
       else
         handle = obj.Handle;
+        args = varargin;
       end
       if ~isempty(handle)
-        values = get(handle, varargin{:});
+        %         getting = args
+        values = get(handle, args{:});
       else
         values = {};
       end
       
     end
+    
+    function autoSet(obj, property, value)
+      if isnumeric(value)
+        obj.handleSet(property, value);
+      elseif isequal(lower(value), 'auto')
+        obj.handleSet([property 'Mode'], 'auto');
+      end
+    end
+    
+    function value = autoGet(obj, property)
+      value = obj.handleGet([property 'Mode']);
+      if ~isequal(lower(value), 'auto')
+        value = obj.handleGet(property);
+      end
+    end
+    
+    
   end
   
   methods (Access=protected, Hidden)
@@ -122,7 +155,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       end
       
       try
-      	[options] = obj.getHandleOptions(names, false);
+        [options] = obj.getHandleOptions(names, false);
       catch
         for i = 1:numel(names)
           if ischar(names{i})
@@ -137,7 +170,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
         options = obj.removeEmptyOptions(options);
       end
       
-      obj.set(options{:});
+      obj.handleSet(options{:});
     end
     
     function [options handleOptions] = getHandleOptions(obj, names, readonly)
@@ -167,7 +200,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       
       [names aliases] = obj.getOptionNames(names);
       
-      handleOptions = obj.get(names);
+      handleOptions = obj.handleGet(names);
       
       options(1:2:end) = aliases;
       options(2:2:end) = handleOptions;
@@ -204,24 +237,24 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       options = finalOptions(1:p*2);
     end
     
-%     function forceSetOptions(obj, varargin)
-%       [args values paired pairs] = obj.parseOptions(varargin{:});
-%       if (paired)
-%         for i=1:numel(args)
-% %           if obj.Reforced, break; end
-%           try
-%             if ~isequal(obj.(args{i}), values{i})
-%               obj.(args{i}) = values{i};
-%             end
-%           catch err
-%             if ~strcontains(err.identifier, 'noSetMethod')
-%               rethrow(err);
-%             end
-%           end
-%         end
-%         
-%       end      
-%     end
+    %     function forceSetOptions(obj, varargin)
+    %       [args values paired pairs] = obj.parseOptions(varargin{:});
+    %       if (paired)
+    %         for i=1:numel(args)
+    % %           if obj.Reforced, break; end
+    %           try
+    %             if ~isequal(obj.(args{i}), values{i})
+    %               obj.(args{i}) = values{i};
+    %             end
+    %           catch err
+    %             if ~strcontains(err.identifier, 'noSetMethod')
+    %               rethrow(err);
+    %             end
+    %           end
+    %         end
+    %
+    %       end
+    %     end
     
     function setOptions(obj, varargin)
       if obj.IsUpdating, return; else obj.IsUpdating = true; end
@@ -241,7 +274,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
           end
         end
         
-      end      
+      end
       
       obj.IsUpdating = false;
     end
@@ -298,7 +331,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
           elseif ilength==3
             if (readonly || ~strcmpi(item{3}, 'readonly'))
               aliases{n}  = item{1};
-              names{n}    = item{2};          
+              names{n}    = item{2};
             else
               continue;
             end
@@ -315,24 +348,63 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       value = obj.(name);
       if name(1:2)=='Is' %regexp(name, ['(^Is[A-Z])' '|' '(\w+Enabled$)' '|' '(\w+Visible$)'], 'Once'))
         value = isOn(value, 'on', 'off');
-%         switch value
-%           case {0, false, 'no'}
-%             value = 'off';
-%           case {1, true, 'yes'};
-%             value = 'on';
-%           otherwise
-%         end
+        %         switch value
+        %           case {0, false, 'no'}
+        %             value = 'off';
+        %           case {1, true, 'yes'};
+        %             value = 'on';
+        %           otherwise
+        %         end
       end
     end
     
   end
   
   
-    methods (Static, Hidden)
+  methods (Static, Hidden)
+    
+%     function Set(handle, varargin)
+%       if ishandle(handle)
+%         set(handle, varargin{:});
+%       end
+%     end
+%     
+%     function Set(handle, varargin)
+%       if ishandle(handle)
+%         set(handle, varargin{:});
+%       end
+%     end    
+    
+    
+    function VerboseSet(hg, varargin)
+      try
+        properties = varargin(1:2:end);
+        values = varargin(2:2:end);
+        for i = 1:numel(properties)
+          try
+            property = properties{i};
+            value = values{i};
+            set(hg, property, value);
+          catch err
+            if ~isempty(strfind(err.identifier, 'BadHandle')) %ishandle(hg)
+              %               dealwith(err);
+            elseif ~isempty(strfind(err.identifier, 'hg:set_chck'))
+              disp([property '=' toString(value) ' [' err.message ']']);
+              %               dealwith(err);
+            else
+              return;
+            end
+          end
+        end
+      catch err
+        %         dealwith(err);
+      end
+    end
+    
     
     function [ID instance] = InstanceRecord(object)
       persistent instances hashmap
-           
+      
       if (~exist('object','var')), return; end
       
       instance = struct( 'class', class(object), 'created', now(), 'object', object );
@@ -372,7 +444,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       end
       
       group 	= SafeName(instance.class);                                 %genvarname(strrep(instance.class,',','_'));
-
+      
       if (numel(row)~=1)
         try
           groupInstances  = instances.(group);
@@ -391,7 +463,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       ID  = id;
       
     end
-  end  
+  end
   
   methods(Abstract, Static, Hidden)
     options  = DefaultOptions()

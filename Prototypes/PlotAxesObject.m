@@ -2,8 +2,10 @@ classdef PlotAxesObject < AxesObject
   %PLOTAXESOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
-    
+  properties (Transient, Hidden)
+    ComponentType = 'axes';
+    ComponentProperties = { };
+    ComponentEvents = { };    
   end
   
   methods (Access=protected, Hidden)
@@ -28,7 +30,7 @@ classdef PlotAxesObject < AxesObject
       size     = parentPosition([3 4]) - padding([1 2]) - padding([3 4]);
       position = [padding([1 2]) size];
       
-      obj.set('Units', 'pixels', 'outerposition', position);
+      obj.handleSet('Units', 'pixels', 'outerposition', position);
     end    
   end
   
@@ -40,13 +42,15 @@ classdef PlotAxesObject < AxesObject
       Box           = 'on';
       Color         = 'none';
       
+      AspectRatio   = [1 1 1];
+      
       options = WorkspaceVariables(true);
     end
     
   end
   
   methods (Static)
-    function obj = createAxesObject(parentFigure, varargin)
+    function obj = Create(parentFigure, varargin)
       obj = PlotAxesObject(parentFigure, varargin{:});
     end    
   end

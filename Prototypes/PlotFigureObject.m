@@ -49,9 +49,9 @@ classdef PlotFigureObject < FigureObject
   methods (Access=protected, Hidden)
     function createComponent(obj, type)
       obj.createComponent@GrasppeComponent(type);
-      obj.OverlayAxes = OverlayAxesObject.createAxesObject(obj);
+      obj.OverlayAxes = OverlayAxesObject.Create(obj);
       obj.TitleText   = TitleTextObject.createTextObject(obj.OverlayAxes);
-      obj.PlotAxes    = PlotAxesObject.createAxesObject(obj);
+      obj.PlotAxes    = PlotAxesObject.Create(obj);
       obj.TitleText.updateTitle;
     end
     
@@ -59,11 +59,11 @@ classdef PlotFigureObject < FigureObject
   
   %% Plot Objects
   properties (Dependent, Hidden)
-    TitleTextHandle, PlotAxesHandle, OverlayAxesHandle
+    TitleTextHandle, PlotAxesHandle, OverlayAxesHandle, ColorBarHandle
   end
   
   properties
-    TitleText, PlotAxes, OverlayAxes
+    TitleText, PlotAxes, OverlayAxes, ColorBar
   end
   
   %% Plot Objects Getters / Setters
@@ -71,7 +71,7 @@ classdef PlotFigureObject < FigureObject
     %% Title Text
     function handle = get.TitleTextHandle(obj)
       handle = []; try handle = obj.TitleText.Handle; end
-    end
+    end    
     
     %% Plot Axes
     function handle = get.PlotAxesHandle(obj)
@@ -82,6 +82,12 @@ classdef PlotFigureObject < FigureObject
     function handle = get.OverlayAxesHandle(obj)
       handle = []; try handle = obj.OverlayAxes.Handle; end
     end
+    
+    %% ColorBar
+    function handle = get.ColorBarHandle(obj)
+      handle = []; try handle = obj.ColorBar.Handle; end
+    end
+    
     
   end
   

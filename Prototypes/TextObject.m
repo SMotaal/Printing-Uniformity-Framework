@@ -19,7 +19,7 @@ classdef TextObject < InAxesObject
   methods
     function set.Text(obj, value)
       obj.Text = value;
-      obj.set('String', value);
+      obj.handleSet('String', value);
     end
   end
 

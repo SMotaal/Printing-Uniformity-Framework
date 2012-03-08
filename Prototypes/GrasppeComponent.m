@@ -78,6 +78,7 @@ classdef GrasppeComponent < GrasppeHandle
     function properties = getComponentProperties(obj)
       properties  = {};
       try properties = obj.ComponentProperties; end
+      try properties = [properties obj.CommonProperties]; end
       try properties = [properties obj.HandleProperties]; end
     end
         
@@ -97,13 +98,13 @@ classdef GrasppeComponent < GrasppeHandle
   
   methods (Access=protected, Hidden=true)
     
-    function createComponent(obj, type)
+    function createComponent(obj, type, varargin)
       if obj.IsHandled, return; end
       
       if isempty(type), type    = obj.getComponentType(); end
       
       if isValidHandle('obj.Parent'), parent = obj.Parent;
-      else parent = 0; end
+      else parent = []; end
       
       handledOptions = obj.getHandleOptions([], false);
       
@@ -112,6 +113,9 @@ classdef GrasppeComponent < GrasppeHandle
           graphicHandle = true;
         case {'axes', 'plot', 'patch', 'surface', 'surf', 'surfc'}
           graphicHandle = true;
+        case {'colorbar'}
+          graphicHandle = true;
+          parent = [];
         case {'text'}
           graphicHandle = true;
         otherwise
@@ -120,7 +124,17 @@ classdef GrasppeComponent < GrasppeHandle
       
       if graphicHandle
         options = obj.removeEmptyOptions(handledOptions);
-        handle = Components.CreateHandleObject(type, obj.ID, parent, options{:}, 'UserData', obj);
+        args = {type, obj.ID, parent, options{:}, 'UserData', obj, varargin{:}};
+        switch lower(type)
+          case {'colorbar'}
+            idx   = find(strcmp(args,'peer'));
+            peer  = args{idx+1};
+            args  = args([1:idx-1 idx+2:end]);
+            handle = colorbar('peer', peer);
+            obj.handleSet(handle, args{6:end});
+          otherwise
+            handle = Components.CreateHandleObject(args{:});
+        end
       else
         handle = [];
       end

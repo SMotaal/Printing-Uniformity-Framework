@@ -2,12 +2,14 @@ function [ output_args ] = debugStamp( tag )
   %DEBUGSTAMP Summary of this function goes here
   %   Detailed explanation goes here
   
-  persistent debugtimer debugstack stackdups stackloops;
+  persistent debugtimer debugstack stackdups stackloops stacktime;
   
   try
-  debugmode = true;
-  latencyLimit = 100;
-  stackLimit = 5;
+  debugmode     = true;
+  intrusive     = false;
+  verbose       = false;
+  stackLimit    = 5;
+  latencyLimit  = stackLimit * 100;
   
   if ~debugmode, return; end
   
@@ -41,10 +43,19 @@ function [ output_args ] = debugStamp( tag )
 %   end
   try
   if n>latencyLimit || stackloops>stackLimit
-    stack = dbstack('-completenames');
-    disp(debugstack);    
-    stamp
-    keyboard
+    stack = dbstack('-completenames'); 
+    try
+      duration = toc(stacktime);
+    catch
+      duration = 0;
+    end
+    if verbose
+      disp(debugstack);
+    else
+      disp(sprintf('Stacks: %d \tLoops: %d \tDuration: %5.3f s',n , stackloops, duration));
+    end
+    stamp;
+    if (intrusive) keyboard; end
   end
   end
   
@@ -57,6 +68,7 @@ function [ output_args ] = debugStamp( tag )
   end
   
   start(debugtimer);
+  stacktime = tic;
   
   catch err
     disp(err);

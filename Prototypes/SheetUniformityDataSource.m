@@ -53,19 +53,6 @@ classdef SheetUniformityDataSource < UniformityDataSource
   methods (Static, Hidden)
     function options  = DefaultOptions()
       SourceID        = 'ritsm7402a';
-      %     DataParameters: []
-      %         SourceData: []
-      %            SetData: []
-      %         SampleData: []
-      %           SourceID: []
-      %              SetID: []
-      %           SampleID: []
-      %         SourceName: []
-      %            SetName: []
-      %               Sets: 0
-      %         SampleName: []
-      %            Samples: 0
-      %                 ID: 'SheetUniformityDataSource_1'
       
       options = WorkspaceVariables(true);
     end

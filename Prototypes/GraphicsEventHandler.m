@@ -3,16 +3,46 @@ classdef GraphicsEventHandler < EventHandler & KeyEventHandler & MouseEventHandl
   %   Detailed explanation goes here
   
   properties
+    WindowEventHandlers
   end
   
   methods (Hidden)
+    
+    function registerWindowEventHandler(obj, handler)
+      obj.registerEventHandler('WindowEventHandlers', handler);
+    end
+
         
     function finalizeComponent(obj)
-      delete(obj.Handle);
+      obj.delete;
     end
     
+    function windowResize(obj, event, source)
+      obj.resizeComponent();
+      handlers = obj.WindowEventHandlers;
+      if iscell(handlers) && ~isempty(handlers)
+        for i = 1:numel(handlers)
+          try
+            handlers{i}.resizeComponent();
+          end
+        end
+      end      
+    end
+
+%     function windowClosed(obj, event, source)
+%       obj.resizeComponent();
+%       handlers = obj.WindowEventHandlers;
+%       if iscell(handlers) && ~isempty(handlers)
+%         for i = 1:numel(handlers)
+%           try
+%             handlers{i}.resizeComponent();
+%           end
+%         end
+%       end      
+%     end
+    
+    
     function resizeComponent(obj)
-      
     end
     
     
@@ -21,7 +51,7 @@ classdef GraphicsEventHandler < EventHandler & KeyEventHandler & MouseEventHandl
       isClose = any(strcmpi({d.('file')}, 'close.p'));
       
       try
-        hType = obj.get('type');
+        hType = obj.handleGet('type');
         
         switch lower(hType)
           case 'figure'
@@ -44,10 +74,12 @@ classdef GraphicsEventHandler < EventHandler & KeyEventHandler & MouseEventHandl
     end
     
     function delete(obj)
-      if isvalid(obj) && ~isOn(obj.IsDestructing)
-        obj.IsDestructing = true;
-        try delete(obj.Handle); end
-        try delete(obj); end
+      try
+%         if ~isOn(obj.IsDestructing)
+          obj.IsDestructing = true;
+          try delete(obj.Handle); end
+      catch err
+        disp(err);
       end
     end
     

@@ -7,7 +7,7 @@ function [ handle ] = CreateHandleObject (type, tag, parent, varargin)
   switch type
     case 'figure'
       args = [args, 'Visible', 'off'];
-    case {'axes', 'plot', 'patch', 'surface', 'surf', 'surfc'}
+    case {'axes', 'colorbar', 'plot', 'patch', 'surface', 'surf', 'surfc'}
     case {'text'}
     otherwise
       error('Grasppe:CreateHandleObject:UnsupportedGraphicsObject', ...
@@ -20,15 +20,28 @@ function [ handle ] = CreateHandleObject (type, tag, parent, varargin)
       args = args(setdiff(1:numel(args), [parentArgs*2 parentArgs*2-1]));
     end
     args = [args, 'Parent', parent];
+  elseif isempty(parent)
+    parentArgs = find(strcmpi(args(1:2:end),'parent'));
+    if ~isempty(parentArgs)
+      args = args(setdiff(1:numel(args), [parentArgs*2 parentArgs*2-1]));
+    end    
   end
 
   if isValid('tag','char')
     args = [args, 'Tag', tag];
   end
   
-  disp(['CreateHandleObject:' constructor ' ==> ' toString(args{:})]);
+  disp(sprintf(['\n*** CreateHandleObject: ' constructor ' ==> ' toString(args{:}) '\n']));
   
-  handle = feval(constructor, args{:});
+%   switch type
+%     case 'colorbar'
+%       idx   = find(strcmp(args,'peer'));
+%       peer  = args{idx+1};
+%       args  = args([1:idx-1 idx+2:end]);
+%       handle = colorbar('peer', peer);
+%     otherwise
+      handle = feval(constructor, args{:});
+%   end
     
 end
 

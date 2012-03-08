@@ -5,17 +5,43 @@ classdef AxesObject < InFigureObject
   properties
   end
   
-  properties (Transient, Hidden)
-    ComponentType = 'axes';
+  properties (Transient, Hidden, Constant)    
     
-    ComponentProperties = { ...
-     'Box', 'Color', 'Units'}; %, 'Position'
+    CommonProperties = { ...
+     'Box', 'Color', 'Units', 'Projection', 'View', ...
+     ...
+     'FontName', 'FontSize', 'FontAngle', 'FontWeight', 'FontUnits', ...
+     ...
+     'XScale', 'XDir', 'XColor', 'XLabel', 'XAxisLocation', ...
+     'XGrid', 'XMinorGrid', 'XMinorTick', ...
+     ...
+     'YScale', 'YDir', 'YColor', 'YLabel', 'YAxisLocation', ...
+     'YGrid', 'YMinorGrid', 'YMinorTick', ...
+     ...
+     'ZScale', 'ZDir', 'ZColor', 'ZLabel', ...
+     'ZGrid', 'ZMinorGrid', 'ZMinorTick', ...
+     };
    
-   %{'PositionMode', 'ActivePositionProperty'},
-   
-   
-    ComponentEvents = { ...
-      };
+%     ComponentEvents = { };
+
+%     ComponentType = 'axes';
+%     
+%     ComponentProperties = { ...
+%      'Box', 'Color', 'Units', 'Projection', 'View', ...
+%      ...
+%      'FontName', 'FontSize', 'FontAngle', 'FontWeight', 'FontUnits', ...
+%      ...
+%      'XScale', 'XDir', 'XColor', 'XLabel', 'XAxisLocation', ...
+%      'XGrid', 'XMinorGrid', 'XMinorTick', ...
+%      ...
+%      'YScale', 'YDir', 'YColor', 'YLabel', 'YAxisLocation', ...
+%      'YGrid', 'YMinorGrid', 'YMinorTick', ...
+%      ...
+%      'ZScale', 'ZDir', 'ZColor', 'ZLabel', ...
+%      'ZGrid', 'ZMinorGrid', 'ZMinorTick', ...
+%      };
+%    
+%     ComponentEvents = { };
     
   end
   
@@ -24,7 +50,39 @@ classdef AxesObject < InFigureObject
   end
   
   properties
-    Position, OuterPosition
+    %ActivePositionProperty
+    Position, OuterPosition,
+    
+    Projection, View
+    
+    FontName, FontSize, FontAngle, FontWeight, FontUnits
+    
+    XScale, XDir, XColor, XLabel, XAxisLocation
+    XGrid, XMinorGrid, XMinorTick
+       
+    YScale, YDir, YColor, YLabel, YAxisLocation
+    YGrid, YMinorGrid, YMinorTick    
+    
+    ZScale, , ZDir, ZColor, ZLabel
+    ZGrid, ZMinorGrid, ZMinorTick
+  
+  end
+  
+  properties (Dependent)
+    %DataAspectRatioMode
+    AspectRatio
+    
+    %CLimMode   ALimMode
+    CLim,       ALim
+    
+    %XLimMode   XTickMode,  XTickLabelMode    
+    XLim,       XTick,      XTickLabel
+    
+    %YLimMode   YTickMode,  YTickLabelMode
+    YLim,       YTick,      YTickLabel
+    
+    %ZLimMode   ZTickMode,  ZTickLabelMode
+    ZLim,       ZTick,      ZTickLabel
   end
   
   methods (Access=protected)
@@ -38,7 +96,7 @@ classdef AxesObject < InFigureObject
   methods
         
     function position = get.Position(obj)
-      position = obj.get('Position');
+      position = obj.handleGet('Position');
     end
     
     function set.Position(obj, value)
@@ -50,6 +108,124 @@ classdef AxesObject < InFigureObject
       obj.setPosition(value, 'outerposition');
       obj.OuterPosition = value;
     end
+    
+%     function set.DataAspectRatio(obj, value)
+%       if isequal(value &&
+%     end
+
+    %DataAspectRatioMode
+%     function set.(obj, value)
+%     end
+%     function =get.(obj)
+%     end
+
+    %% AspectRatio / DataAspectRatio
+    function set.AspectRatio(obj, value)
+      obj.autoSet('DataAspectRatio', value);
+    end
+    
+    function value=get.AspectRatio(obj)
+      value = obj.autoGet('DataAspectRatio');
+    end
+
+    %% CLim
+    function set.CLim(obj, value)
+      obj.autoSet('CLim', value);
+    end
+    
+    function value=get.CLim(obj)
+      value = obj.autoGet('DataAspectRatio');
+    end
+
+    %% ALim
+    function set.ALim(obj, value)
+      obj.autoSet('ALim', value);
+    end
+    
+    function value=get.ALim(obj)
+      value = obj.autoGet('ALim');
+    end
+
+    %% XLim
+    function set.XLim(obj, value)
+      obj.autoSet('XLim', value);
+    end
+    
+    function value=get.XLim(obj)
+      value = obj.autoGet('XLim');
+    end
+
+    % XTick
+    function set.XTick(obj, value)
+      obj.autoSet('XTick', value);
+    end
+    
+    function value=get.XTick(obj)
+      value = obj.autoGet('XTick');
+    end
+
+    % XTickLabel
+    function set.XTickLabel(obj, value)
+      obj.autoSet('XTickLabel', value);
+    end
+    
+    function value=get.XTickLabel(obj)
+      value = obj.autoGet('XTickLabel');
+    end
+
+    %% YLim
+    function set.YLim(obj, value)
+      obj.autoSet('YLim', value);
+    end
+    
+    function value=get.YLim(obj)
+      value = obj.autoGet('YLim');
+    end
+
+    % YTick
+    function set.YTick(obj, value)
+      obj.autoSet('YTick', value);
+    end
+    
+    function value=get.YTick(obj)
+      value = obj.autoGet('YTick');
+    end
+
+    % YTickLabel
+    function set.YTickLabel(obj, value)
+      obj.autoSet('YTickLabel', value);
+    end
+    
+    function value=get.YTickLabel(obj)
+      value = obj.autoGet('YTickLabel');
+    end
+
+    %% ZLim
+    function set.ZLim(obj, value)
+      obj.autoSet('ZLim', value);
+    end
+    
+    function value=get.ZLim(obj)
+      value = obj.autoGet('ZLim');
+    end
+
+    % ZTick
+    function set.ZTick(obj, value)
+      obj.autoSet('ZTick', value);
+    end
+    
+    function value=get.ZTick(obj)
+      value = obj.autoGet('ZTick');
+    end
+
+    % ZTickLabel
+    function set.ZTickLabel(obj, value)
+      obj.autoSet('ZTickLabel', value);
+    end
+    
+    function value=get.ZTickLabel(obj)
+      value = obj.autoGet('ZTickLabel');
+    end    
     
   end
   
@@ -76,17 +252,17 @@ classdef AxesObject < InFigureObject
       integer   = isinteger(value) || isInteger(value);
       double    = numeric && ~relative;
       
-      currentUnits = obj.get('Units');
+      currentUnits = obj.handleGet('Units');
       
       try
         if relative
-          obj.set('ActivePositionProperty', mode, 'Units', 'normalized', 'Position', value);
+          obj.handleSet('ActivePositionProperty', mode, 'Units', 'normalized', 'Position', value);
         elseif integer
-          obj.set('ActivePositionProperty', mode, 'Units', 'pixels', 'Position', value);
+          obj.handleSet('ActivePositionProperty', mode, 'Units', 'pixels', 'Position', value);
         end
       end
       
-      obj.set('Units', currentUnits);
+      obj.handleSet('Units', currentUnits);
     end
     
   end
@@ -94,7 +270,7 @@ classdef AxesObject < InFigureObject
   
   methods(Abstract, Static, Hidden)
     options  = DefaultOptions()
-    obj = createAxesObject()
+    obj = Create()
   end
 
   

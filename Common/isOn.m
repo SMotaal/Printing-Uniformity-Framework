@@ -15,8 +15,7 @@ function [ state ] = isOn( state, onState, offState )
     if exist('onState', 'var')
       state = onState;  
     end
-    otherwise % case {0, false, 'no'};
-    state = offState;
+    otherwise % case {0, false, 'no'};      
     state = false;
     if exist('offState', 'var')
       state = offState;  
