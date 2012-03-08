@@ -43,6 +43,10 @@ function [ result exception ] = isValid( object, expectedClass, varargin )
       all(size(size(object)) == size(expectedSize));
   end
   
+  if (validClass && strcmpi(expectedClass,'cell')) && isequal(expectedSize, 0);
+    validSize = ~isempty(object);
+  end
+  
   if (validClass && strcmpi(expectedClass,'struct'))
     validSize = validSize & ~isempty(fieldnames(object));
   end

@@ -7,52 +7,38 @@ classdef UniformityDataSource < GrasppeComponent
     HandleEvents = {};
     ComponentType = 'UniformityDataSource';
     ComponentProperties = '';
+    
+    DataProperties = {'XData', 'YData', 'ZData', 'SampleID', 'SourceID', 'SetID'};
+    
   end
   
   
   properties (Hidden)
-    IsRetrieving = false;
+    IsRetrieving      = false;
+    IsRetrieved       = false;
+    IsSettingSource   = false;
+    
+    PlotObjects   = {};
   end
   
   properties (SetObservable)
-    DataParameters
-    ExtendedParameters
-    DataSource
-    SourceData
-    SetData
-    SampleData
     
-    XData
-    YData
-    ZData
+    ExtendedParameters,
+    DataParameters, DataSource, SourceData, SetData, SampleData
+    XData, YData, ZData
+    SourceID, SetID, SampleID
+    SetIndex, SampleIndex,
+    SampleSummary = false
     
-    SourceID
-    SetID
-    SampleID;
-    
-    SampleIndex
-    SampleSummary = false;
   end
   
   properties (Dependent)
-    SourceName
-    
-    SetName
-    Sets
-    
-    SampleName
-    Samples
-    
-    Rows
-    Columns
-    Regions
-    Zones
+    SourceName, SetName, Sets, SampleName, Samples
+    Rows, Columns, Regions, Zones
   end
-  
   
   methods (Hidden)
     function obj = UniformityDataSource(varargin)
-      
       args = varargin;
       plotObject = [];
       try
@@ -70,10 +56,60 @@ classdef UniformityDataSource < GrasppeComponent
     end
     
     function attachPlotObject(obj, plotObject)
-      objSetObserve = {'XData', 'YData', 'ZData', 'SampleID', 'SourceID', 'SetID'}; %objProperties([obj.MetaClass.PropertyList.SetObservable]);
+      debugStamp(obj.ID);
+%       plotProperties = plotObject.DataProperties; %objProperties([obj.MetaClass.PropertyList.SetObservable]);
+%       
+%       objProperties = obj.DataProperties;
+%       
+%       attachProperties = {};
+%       
+%       for property = plotProperties
+%         if stropt(char(property), objProperties)
+%           attachProperties = {attachProperties{:}, char(property)};
+%         end
+%       end
+%       
+%       attachProperties = attachProperties
+%       
+%       if isempty(attachProperties), return; end
+%       
+%       addlistener(obj, attachProperties, 'PostSet', @plotObject.refreshPlotData);
       
-      if ~isempty(objSetObserve)
-        addlistener(obj, objSetObserve, 'PostSet', @plotObject.refreshPlotData);
+      plotObjects = obj.PlotObjects;
+      if ~any(plotObjects==plotObject)
+        obj.PlotObjects = {plotObjects{:}, plotObject};
+      end
+      
+      obj.refreshPlot(plotObject);
+    end
+    
+    function refreshPlot(obj, plotObject)
+      plotObject.refreshPlot(obj);
+%       debugStamp(obj.ID);
+% %       if ~plotObject.IsRefreshing
+%         for property = obj.DataProperties
+%           try plotObject.(char(property)) = obj.(char(property)); end
+% %           try plotObject.forceSet(char(property), obj.(property)); end
+%         end
+% %       end
+    end
+    
+    function refreshPlotData(obj, varargin)
+      plotObjects = {};
+      if isempty(varargin)
+        plotObjects = obj.PlotObjects;
+      else
+        plotObjects = varargin;
+      end
+      
+      if ~isempty(plotObjects), debugStamp(obj.ID); end
+      
+      for i = 1:numel(plotObjects)
+        
+        try
+          plotObjects{i}.refreshPlot();
+%           obj.refreshPlot(); %.refreshPlot;
+        end
       end
     end
   end
@@ -82,16 +118,21 @@ classdef UniformityDataSource < GrasppeComponent
   methods
     function set.SourceID(obj, value)
       obj.SourceID = changeSet(obj.SourceID, value);
-      obj.retrieveSourceData();
+      debugStamp(obj.ID);
+      obj.resetSource;
     end
     
     function set.SetID(obj, value)
       obj.SetID = changeSet(obj.SetID, value);
+      debugStamp(obj.ID);
     end
     
     function set.SampleID(obj, value)
       obj.SampleID = changeSet(obj.SampleID, value);
-      try obj.processPlotData(); end
+      debugStamp(obj.ID);
+      if ~obj.IsRetrieving
+        try obj.processPlotData(); end
+      end
     end
   end
   
@@ -102,24 +143,42 @@ classdef UniformityDataSource < GrasppeComponent
       
     end
     
-    function retrieveSourceData(obj)
-      
-      if obj.IsRetrieving
+    function resetSource(obj)
+      debugStamp(obj.ID);
+      obj.IsSettingSource = true;
+      obj.clearSourceData();
+      obj.retrieveSourceData();
+      obj.IsSettingSource = false;
+    end
+    
+    function clearSourceData(obj)
+      debugStamp(obj.ID);
+      obj.IsRetrieved = false;  obj.IsRetrieving = false;
+      if ~obj.IsSettingSource
+        obj.SourceID = [];
         return;
       end
+      obj.SourceData  = [];
+      obj.SetData     = [];
+      obj.ExtendedParameters = [];
+      obj.SampleID    = [];
+    end
+    
+    function retrieveSourceData(obj)
+      if obj.IsRetrieving || obj.IsRetrieved, return; else obj.IsRetrieving=true; end
+      
+      debugStamp(obj.ID);
       
       source = obj.SourceID;
       
       if ~isValid(source, 'char')
-        obj.SourceData  = [];
-        obj.SetData     = [];
-        obj.ExtendedParameters = [];
-        obj.SampleID    = [];
-%         obj.Samples     = [];
         return;
       end
       
-      obj.IsRetrieving = true;
+      obj.SourceData  = [];
+      obj.SetData     = [];
+      obj.ExtendedParameters = [];
+      obj.SampleID    = [];
       
       args = {source};
       
@@ -135,19 +194,27 @@ classdef UniformityDataSource < GrasppeComponent
       obj.SetData       = setData;
       obj.ExtendedParameters = parameters;
       obj.SampleID      = 1;
-%       obj.Samples       = obj.SourceData.length.Sheets;
       
-      obj.IsRetrieving = false;
+      obj.IsRetrieved   = true;
+      obj.IsRetrieving  = false;
+      
+      obj.refreshPlotData();
     end
     
     
     function setPlotData(obj, XData, YData, ZData)
-      obj.XData = XData;
-      obj.YData = YData;
-      obj.ZData = ZData;
+      debugStamp(obj.ID);
+%       obj.forceSet('XData', XData, 'YData', YData, 'ZData', ZData);
+% %       obj.set('XData', XData, 'YData', YData, 'ZData', ZData);
+            obj.XData = XData;
+            obj.YData = YData;
+            obj.ZData = ZData;
+            obj.refreshPlotData;
     end
     
     function sheet = setSheet (obj, sheet)
+      
+      debugStamp(obj.ID);
       
       currentSheet  = obj.SampleID;
       firstSheet    = 1;

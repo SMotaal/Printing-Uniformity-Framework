@@ -1,4 +1,4 @@
-classdef InAxesObject < HandleGraphicsObject
+classdef InAxesObject < GraphicsObject
   %INAXESOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -13,7 +13,7 @@ classdef InAxesObject < HandleGraphicsObject
   
   methods (Hidden)
     function obj = InAxesObject(varargin)
-      obj = obj@HandleGraphicsObject(varargin{:});
+      obj = obj@GraphicsObject(varargin{:});
     end
   end
   

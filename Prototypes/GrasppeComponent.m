@@ -98,8 +98,7 @@ classdef GrasppeComponent < GrasppeHandle
   methods (Access=protected, Hidden=true)
     
     function createComponent(obj, type)
-      
-      if (obj.IsHandled), return; end
+      if obj.IsHandled, return; end
       
       if isempty(type), type    = obj.getComponentType(); end
       
@@ -201,18 +200,30 @@ classdef GrasppeComponent < GrasppeHandle
       end
     end
     
+%     function forceSet(obj, varargin)
+% %       if obj.IsSetting, return; else obj.IsSetting = true; end
+%       
+%       obj.forceSetOptions(varargin{:});
+%       
+% %       if obj.IsHandled %&& ~obj.IsUpdating
+% %         %obj.IsUpdating = true;
+% %         obj.pushHandleOptions();	obj.pullHandleOptions();
+%         %obj.IsUpdating = false;
+% %       end
+%       
+% %       obj.IsSetting = false;      
+%     end
+    
+    
     function setOptions(obj, varargin)
-%       if obj.IsSetting, return; end
-      
-      obj.IsSetting = true;
+      if obj.IsSetting, return; else obj.IsSetting = true; end
       
       obj.setOptions@GrasppeHandle(varargin{:});
       
-      updating = obj.IsUpdating;
-      if obj.IsHandled && ~updating
+      if obj.IsHandled && ~obj.IsUpdating
         obj.IsUpdating = true;
         obj.pushHandleOptions();	obj.pullHandleOptions();
-        obj.IsUpdating = updating;
+        obj.IsUpdating = false;
       end
       
       obj.IsSetting = false;

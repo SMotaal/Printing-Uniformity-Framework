@@ -16,11 +16,13 @@ disp('Running Tests...');
 
 newProfile();
 
-x = PlotFigureObject;
+% x = PlotFigureObject(); s = UniformitySurfaceObject.createPlotObject(x.PlotAxes); x.setVisible(true);
+
+x = PlotFigureObject('WindowStyle', 'docked');
 endProfile(); newProfile();
-s = SurfaceObject.createPlotObject(x.PlotAxes);
-% x.setVisible(true);
-% endProfile(); newProfile();
+s = UniformitySurfaceObject.createPlotObject(x.PlotAxes);
+endProfile(); newProfile();
+x.setVisible(true);
 % [dataSource params] = Plots.plotUPStats('ritsm7402c',params);
 % endProfile(); newProfile();
 % [dataSource params] = Plots.plotUPStats('ritsm7402c', 50, params);

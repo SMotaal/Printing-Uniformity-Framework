@@ -1,4 +1,4 @@
-classdef InFigureObject < HandleGraphicsObject
+classdef InFigureObject < GraphicsObject
   %INFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -23,7 +23,7 @@ classdef InFigureObject < HandleGraphicsObject
   
   methods
     function obj = InFigureObject(varargin)
-      obj = obj@HandleGraphicsObject(varargin{:});
+      obj = obj@GraphicsObject(varargin{:});
     end
     
     function set.ParentFigure(obj, parentFigure)

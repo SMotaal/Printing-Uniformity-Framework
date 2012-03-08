@@ -11,7 +11,7 @@ classdef AxesObject < InFigureObject
     ComponentProperties = { ...
      'Box', 'Color', 'Units'}; %, 'Position'
    
-   %{'PositionMode', 'ActivePositionProperty'}, 
+   %{'PositionMode', 'ActivePositionProperty'},
    
    
     ComponentEvents = { ...
@@ -72,7 +72,7 @@ classdef AxesObject < InFigureObject
 %       obj.set('ActivePositionProperty', mode);
       
       numeric   = isnumeric(value);
-      relative  = ~isinteger(value) && numeric && all(value>=0) && all(value<=1);      
+      relative  = ~isinteger(value) && numeric && all(value>=0) && all(value<=1);
       integer   = isinteger(value) || isInteger(value);
       double    = numeric && ~relative;
       
@@ -86,7 +86,7 @@ classdef AxesObject < InFigureObject
         end
       end
       
-      obj.set('Units', currentUnits);      
+      obj.set('Units', currentUnits);
     end
     
   end

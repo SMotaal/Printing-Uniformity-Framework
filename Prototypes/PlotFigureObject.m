@@ -24,16 +24,20 @@ classdef PlotFigureObject < FigureObject
     
     function set.BaseTitle(obj, value)
       obj.BaseTitle = changeSet(obj.BaseTitle, value);
-      obj.Title = [obj.BaseTitle obj.SampleTitle];
+      obj.updatePlotTitle;
     end
     
     function set.SampleTitle(obj, value)
       obj.SampleTitle = changeSet(obj.SampleTitle, value);
-      obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')'];
+      obj.updatePlotTitle;
+    end
+    
+    function updatePlotTitle(obj)
+      obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')']; 
     end
     
     function set.Title(obj, value)
-      obj.Title = changeSet(obj.Title, value);
+      obj.Title = strtrim(value);
       if isValidHandle('obj.TitleTextHandle')
         set(obj.TitleTextHandle, 'String', value);
       end

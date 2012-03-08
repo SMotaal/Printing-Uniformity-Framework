@@ -5,6 +5,8 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   properties (Hidden=true)
     IsUpdating  = false;
     Debugging   = false;
+%     Reforced    = false;
+%     ForceQueue  = {};
     InstanceID
   end
   
@@ -202,29 +204,46 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       options = finalOptions(1:p*2);
     end
     
+%     function forceSetOptions(obj, varargin)
+%       [args values paired pairs] = obj.parseOptions(varargin{:});
+%       if (paired)
+%         for i=1:numel(args)
+% %           if obj.Reforced, break; end
+%           try
+%             if ~isequal(obj.(args{i}), values{i})
+%               obj.(args{i}) = values{i};
+%             end
+%           catch err
+%             if ~strcontains(err.identifier, 'noSetMethod')
+%               rethrow(err);
+%             end
+%           end
+%         end
+%         
+%       end      
+%     end
+    
     function setOptions(obj, varargin)
-      updating = obj.IsUpdating;
-      
-      if updating
-        return;
-      end
-      obj.IsUpdating = true;
+      if obj.IsUpdating, return; else obj.IsUpdating = true; end
       
       [args values paired pairs] = obj.parseOptions(varargin{:});
-      
       if (paired)
         for i=1:numel(args)
           try
-            obj.(args{i}) = values{i};
+            if ~isequal(obj.(args{i}), values{i})
+              obj.(args{i}) = values{i};
+            end
           catch err
             if ~strcontains(err.identifier, 'noSetMethod')
+              obj.IsUpdating = false;
               rethrow(err);
             end
           end
         end
-      end
+        
+      end      
       
-      obj.IsUpdating = updating;
+      obj.IsUpdating = false;
     end
     
     function [args values paired pairs] = parseOptions(obj, varargin)
@@ -314,9 +333,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
     function [ID instance] = InstanceRecord(object)
       persistent instances hashmap
            
-      if (~exist('object','var'))
-        return;
-      end
+      if (~exist('object','var')), return; end
       
       instance = struct( 'class', class(object), 'created', now(), 'object', object );
       

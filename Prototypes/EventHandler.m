@@ -1,22 +1,15 @@
-classdef EventHandlerObject < GrasppeHandle
+classdef EventHandler < GrasppeHandle
   %UPEVENTHANDLER Summary of this class goes here
   %   Detailed explanation goes here
   
   properties
-    KeyEventHandlers, MouseEventHandlers
+    
   end
   
   methods (Hidden=true)
     
     function [fcn token]  = callbackFunction(object, varargin)
-      [token fcn] = EventHandlerObject.createCallbackToken(object, varargin{:});
-    end
-    
-    function registerKeyEventHandler(obj, handler)
-      obj.registerEventHandler('KeyEventHandlers', handler);
-    end
-    function registerMouseEventHandler(obj, handler)
-      obj.registerEventHandler('MouseEventHandlers', handler);
+      [token fcn] = EventHandler.createCallbackToken(object, varargin{:});
     end
     
     function registerEventHandler(obj, hanldersGroup, handler)
@@ -31,51 +24,36 @@ classdef EventHandlerObject < GrasppeHandle
         obj.(hanldersGroup) = handlers;
       end
     end
-        
-        
-    function mouseUp(obj, event, source)
-      handlers = obj.MouseEventHandlers;
-      if iscell(handlers) && ~isempty(handlers)
-        for i = 1:numel(handlers)
-          try
-            handlers{i}.mouseUp(event, obj);
+    
+    function attachEvents(obj, hooks)
+      
+      if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
+          [names aliases] = obj.getOptionNames(obj.getComponentHooks);
+          hooks = aliases;
+      end
+      
+      if ~iscell(hooks), return; end
+      
+      callbacks = cell(size(hooks));
+      for i = 1:numel(hooks)
+        hook  = hooks{i};
+        callback = obj.(hook);
+        if isempty(callback)
+          callback = obj.callbackFunction(hook);
+        else
+          if ~isClass(callback,'EventHandler.callbackEvent')
+            callback = obj.callbackFunction(hook, callback);
           end
         end
+        callbacks{i} = callback;
       end
+      
+      finalHooks = reshape({hooks{:}; callbacks{:}},1,[]);
+      
+      obj.setOptions(finalHooks{:});
+      
     end
     
-    function mouseDown(obj, event, source)
-      handlers = obj.MouseEventHandlers;
-      if iscell(handlers) && ~isempty(handlers)
-        for i = 1:numel(handlers)
-          try
-            handlers{i}.mouseDown(event, obj);
-          end
-        end
-      end
-    end    
-    
-    function keyPress(obj, event, source)
-      handlers = obj.KeyEventHandlers;
-      if iscell(handlers) && ~isempty(handlers)
-        for i = 1:numel(handlers)
-          try
-            handlers{i}.keyPress(event, obj);
-          end
-        end
-      end
-    end
-    
-    function keyRelease(obj, event, source)
-      handlers = obj.KeyEventHandlers;
-      if iscell(handlers) && ~isempty(handlers)
-        for i = 1:numel(handlers)
-          try
-            handlers{i}.keyRelease(event, obj);
-          end
-        end
-      end      
-    end    
     
   end
   
@@ -101,7 +79,7 @@ classdef EventHandlerObject < GrasppeHandle
       
       token = struct('Object', object, 'Name', name, 'Callback', callback);
       
-      fcn   = {@EventHandlerObject.callbackEvent, token};
+      fcn   = {@EventHandler.callbackEvent, token};
       
     end
     

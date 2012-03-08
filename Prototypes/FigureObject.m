@@ -1,4 +1,4 @@
-classdef FigureObject < HandleGraphicsObject & EventHandlerObject
+classdef FigureObject < GraphicsObject & EventHandler
   %UPFIGUREOBJECTSMODEL Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -18,7 +18,7 @@ classdef FigureObject < HandleGraphicsObject & EventHandlerObject
   
   methods (Hidden)
     function obj = FigureObject(varargin)
-      obj = obj@HandleGraphicsObject(varargin{:});
+      obj = obj@GraphicsObject(varargin{:});
     end
   end
   

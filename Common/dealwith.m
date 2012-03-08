@@ -5,6 +5,8 @@ function [ err ] = dealwith(err)
   debugmode = true;
   
   if debugmode
+    disp(err);
+    keyboard;
     dbstop in dealwith>debugError if error;
     debugError(err);
     dbclear in dealwith;

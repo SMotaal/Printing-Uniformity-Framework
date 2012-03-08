@@ -12,9 +12,10 @@ classdef SheetUniformityDataSource < UniformityDataSource
     
     
     function processPlotData(obj)
+      debugStamp(obj.ID);
       sourceData = [];
       try
-%         obj.retrieveSourceData;
+        obj.retrieveSourceData; %end
         
         sourceData = obj.SourceData;
         
@@ -28,7 +29,7 @@ classdef SheetUniformityDataSource < UniformityDataSource
       
       if isempty(sourceData), return; end;
       
-      try
+%       try
         setData = obj.SetData;
         sheetData = setData.data(sheet).surfData;
         
@@ -41,9 +42,9 @@ classdef SheetUniformityDataSource < UniformityDataSource
         
         obj.setPlotData(X, Y, Z);
         
-      catch err
-        dealwith(err);
-      end
+%       catch err
+%         dealwith(err);
+%       end
       
     end
     

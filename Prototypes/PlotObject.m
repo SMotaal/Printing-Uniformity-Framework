@@ -5,8 +5,8 @@ classdef PlotObject
   properties
   end
   
-  methods
-  end
+  methods   
+  end   
   
 end
 

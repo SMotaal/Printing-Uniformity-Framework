@@ -4,10 +4,15 @@ function [ newValue change ] = changeSet( currentValue, newValue)
 
   change = ~isequal(currentValue, newValue);
   
-  if change
+  if ischar(currentValue)
+    change = ~strcmpi(currentValue, newValue);
+  end
+  
+  if any(change)==1
     return;
   else
     if nargout==1
+      evalin('caller', 'return;');
       evalin('caller', 'return;');
     end
   end
