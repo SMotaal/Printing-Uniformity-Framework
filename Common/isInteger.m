@@ -3,7 +3,7 @@ function [ check ] = isInteger( object )
   %   Detailed explanation goes here
   
   try
-    check = all(round(object)==object);
+    check = isnumeric(object) && all(round(object)==object);
   catch err
     check = false;
   end

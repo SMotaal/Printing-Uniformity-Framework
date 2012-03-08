@@ -13,7 +13,7 @@ if evalin(space,['~exist(''' var ''', ''var'') || isempty(' var ')'])
   end
   if (numel(varargin)>1 && strcmpi(varargin{1},'='))
 %     try
-      value = evalin(space, [value ';']);
+      value = evalin(space, [value(2:end) ';']);
 %     catch
 %       try
 %         value = eval(value);

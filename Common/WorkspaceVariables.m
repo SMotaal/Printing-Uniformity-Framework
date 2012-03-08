@@ -12,7 +12,9 @@ function [ VariableStructure ] = WorkspaceVariables(Clear)
   
   VariableStructure = load(tempfile);
   
+  recycleStat = recycle('off');
   delete(tempfile);
+  recycle(recycleStat);
   
 end
 

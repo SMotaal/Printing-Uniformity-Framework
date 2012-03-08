@@ -36,9 +36,11 @@ function varargout = PersistentSources(varargin)
     return;
   end
   
+  handled = false;
+  
   if (nout==0)
     handled  = true;
-    if (nin==1)
+    if (nin==1) && ~isempty(varargin{1})
       firstArg = varargin{1};
       if ischar(firstArg)
         switch lower(firstArg)
@@ -64,7 +66,7 @@ function varargout = PersistentSources(varargin)
       else
         handled   = false;        
       end
-    elseif (nin==2)
+    elseif (nin==2) && ~isempty(varargin{1}) && ~isempty(varargin{2})
       firstArg    = varargin{1};
       secondArg   = varargin{2};
       forced      = false;
@@ -72,7 +74,7 @@ function varargout = PersistentSources(varargin)
       switch lower(firstArg)
         case {'load', 'save'}
           try datafile(secondArg); catch err, dealwith(err); end
-          PersistentSources(['force ' firstArg]);
+          PersistentSources('force', firstArg);
         case 'filename'
           datafile(secondArg);
         case {'force', 'forced'}
@@ -84,13 +86,15 @@ function varargout = PersistentSources(varargin)
         otherwise
           handled     = false;
       end
-      switch lower(secondArg)
-        case load
-          datastore = loaddata(datastore, forced);
-        case save
-          if ~readonly || overwrite
-            savedata(datastore, forced);
-          end
+      if handled && ischar(secondArg)
+        switch lower(secondArg)
+          case 'load'
+            datastore = loaddata(datastore, forced);
+          case 'save'
+            if ~readonly || overwrite
+              savedata(datastore, forced);
+            end
+        end
       end
     end
   end
@@ -142,6 +146,8 @@ function sources = setValues(sources, names, values, E)
       name  = names{i};
       value = values{i};
       
+%       disp (['PersistentSet ' name ' OK']);
+      
       if (ischar(name) && ~isempty(name) && (strcmpi(name, genvarname(name))))
         sources.(name) = value;
       else
@@ -162,6 +168,9 @@ function values = getValues(insources, names, E)
     try
       name      = names{i};
       values{i} = insources.(name);
+      
+%       disp (['PersistentGet ' name ' OK']);
+      
     catch err
       err = extendException(E.NAMING,[], 'The variable ''%s'' is undefined.', name);
       EXCEPT = {EXCEPT{:}, err};

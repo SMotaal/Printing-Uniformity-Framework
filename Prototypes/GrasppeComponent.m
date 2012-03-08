@@ -202,7 +202,7 @@ classdef GrasppeComponent < GrasppeHandle
     end
     
     function setOptions(obj, varargin)
-      if obj.IsSetting, return; end
+%       if obj.IsSetting, return; end
       
       obj.IsSetting = true;
       
@@ -228,7 +228,7 @@ classdef GrasppeComponent < GrasppeHandle
           obj.pullHandleOptions({{alias, name}});
         end
         obj.IsPulling = false;
-        fprintf('Pulling (%d/%d):\t\t%s <= %s]\n', obj.pulledEvents, obj.pullEvents, alias, name);
+%         fprintf('Pulling (%d/%d):\t\t%s <= %s]\n', obj.pulledEvents, obj.pullEvents, alias, name);
       end
     end
     
@@ -240,7 +240,7 @@ classdef GrasppeComponent < GrasppeHandle
           [name alias] = obj.lookupOptionName(source.Name, true);
           obj.pushedEvents = obj.pushedEvents+1;
           obj.pushHandleOptions({{alias, name}});
-          fprintf('Pushing (%d/%d):\t\t%s => %s]\n', obj.pushedEvents, obj.pushEvents, alias, name);
+%           fprintf('Pushing (%d/%d):\t\t%s => %s]\n', obj.pushedEvents, obj.pushEvents, alias, name);
         end
         obj.IsPushing = false;
       end

@@ -11,11 +11,13 @@ classdef InAxesObject < HandleGraphicsObject
   end
   
   
-  methods
+  methods (Hidden)
     function obj = InAxesObject(varargin)
       obj = obj@HandleGraphicsObject(varargin{:});
     end
-    
+  end
+  
+  methods
     function set.ParentAxes(obj, parentAxes)
       try
         if ~InAxesObject.checkInheritence(parentAxes, 'AxesObject')

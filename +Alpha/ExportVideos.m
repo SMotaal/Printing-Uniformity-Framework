@@ -10,6 +10,9 @@ function [ output_args ] = ExportVideos( forced, sources, fValues, fViews, fSets
   
   cleanupFcn = onCleanup(@cleanUp);
   
+  PersistentSources load UniPrintAlpha;
+  PersistentSources readonly;
+  
   if isempty(sources)
     sources = {'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01', 'rithp5501'};
   end

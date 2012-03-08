@@ -17,6 +17,8 @@ function [ strings ] = toString( varargin )
     strings = flatcat(regexprep(lines, '^\s*((Column \d+)|(Columns \d+ through \d+))\s*$', ''));
 
     strings = regexprep(strtrim(strings), '\s+', ', ');
+    
+    strings = strrep(strings, '''', '');
   end
   
   

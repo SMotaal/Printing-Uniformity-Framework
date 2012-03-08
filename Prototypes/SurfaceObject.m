@@ -9,7 +9,8 @@ classdef SurfaceObject < InAxesObject
       'Clipping', ...
       'DisplayName', ...
       'CData', 'CDataMapping', ...
-      'XData', 'YData', 'ZData' ...
+      'XData', 'YData', 'ZData', ...
+      {'AntiAliasing' 'LineSmoothing'} ...
      };
     
     ComponentEvents = { ...
@@ -19,6 +20,8 @@ classdef SurfaceObject < InAxesObject
    
   properties (SetObservable)
     Clipping, DisplayName, CData, CDataMapping, XData, YData, ZData
+    SourceID, SetID, SampleID
+    AntiAliasing = 'on';
   end
   
   properties (Dependent)
@@ -31,6 +34,45 @@ classdef SurfaceObject < InAxesObject
     end
     function createComponent(obj, type)
       obj.createComponent@GrasppeComponent(type);
+      obj.ParentFigure.registerKeyEventHandler(obj);
+    end
+  end
+  
+  methods
+    function refreshPlotData(obj, source, event)
+      try
+        dataSource = event.AffectedObject;
+        dataField = source.Name;
+        obj.(dataField) = dataSource.(dataField);
+      end
+    end
+    
+    function keyPress(obj, event, source)
+      if (stropt(event.Modifier, 'control command'))
+        switch event.Key
+          case 'uparrow'
+            obj.setSheet('+1');
+          case 'downarrow'
+            obj.setSheet('-1');
+        end
+      end      
+    end
+    
+    function set.SampleID(obj, value)
+      obj.SampleID = changeSet(obj.SampleID, value);
+      try obj.ParentFigure.SampleTitle = int2str(value); end;
+      try obj.DataSource.SampleID = changeSet(obj.DataSource.SampleID, value); end;
+    end
+    
+    function set.SourceID(obj, value)
+      obj.SourceID = changeSet(obj.SourceID, value);
+      try obj.ParentFigure.BaseTitle = value; end;
+      try obj.DataSource.SourceID = changeSet(obj.DataSource.SourceID, value); end;
+    end
+    
+    
+    function setSheet(obj, value)
+      try obj.DataSource.setSheet(value); end
     end
   end
   

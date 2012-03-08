@@ -29,7 +29,7 @@ classdef PlotFigureObject < FigureObject
     
     function set.SampleTitle(obj, value)
       obj.SampleTitle = changeSet(obj.SampleTitle, value);
-      obj.Title = [obj.BaseTitle obj.SampleTitle];
+      obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')'];
     end
     
     function set.Title(obj, value)
@@ -87,6 +87,16 @@ classdef PlotFigureObject < FigureObject
       try obj.OverlayAxes.resizeComponent; end
       try obj.TitleText.resizeComponent; end
     end
+    
+    function keyPress(obj, event, source)
+      if (stropt(event.Modifier, 'control command'))
+        switch event.Key
+          case 'w'
+            obj.closeComponent();
+        end
+      end
+      obj.keyPress@FigureObject(event);   
+    end
   end
   
   
@@ -94,10 +104,10 @@ classdef PlotFigureObject < FigureObject
     function options  = DefaultOptions( )
       
       WindowTitle   = 'Printing Uniformity Plot';
-      Title         = 'Printing Uniformity';
+      BaseTitle     = 'Printing Uniformity';
       Color         = 'white';
       Toolbar       = 'none';  Menubar = 'none';
-      WindowStyle   = 'docked';
+      WindowStyle   = 'normal';
       Renderer      = 'opengl';
       Parent        = 0;
       

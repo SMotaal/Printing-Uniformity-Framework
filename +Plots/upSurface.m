@@ -49,7 +49,7 @@ classdef upSurface < Plots.upAxesObject
         length    =  obj.PlotSource.length.Sheets;
         sheet     =  obj.Sheet;
         
-        obj.Sheet = mod(sheet+step, length);
+        obj.Sheet = mod(sheet-1+step, length-1)+1;
 
       end
       
