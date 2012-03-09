@@ -12,23 +12,27 @@ classdef KeyEventHandler < EventHandler
       obj.registerEventHandler('KeyEventHandlers', handler);
     end
     
-    function keyPress(obj, event, source)
+    function consumed = keyPress(obj, event, source)
+      consumed = false;
       handlers = obj.KeyEventHandlers;
       if iscell(handlers) && ~isempty(handlers)
         for i = 1:numel(handlers)
           try
-            handlers{i}.keyPress(event, obj);
+            consumed = handlers{i}.keyPress(event, obj);
+            if consumed, return; end
           end
         end
       end
     end
     
-    function keyRelease(obj, event, source)
+    function consumed = keyRelease(obj, event, source)
+      consumed = false;
       handlers = obj.KeyEventHandlers;
       if iscell(handlers) && ~isempty(handlers)
         for i = 1:numel(handlers)
           try
-            handlers{i}.keyRelease(event, obj);
+            consumed = handlers{i}.keyRelease(event, obj);
+            if consumed, return; end
           end
         end
       end

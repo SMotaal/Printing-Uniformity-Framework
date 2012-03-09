@@ -1,8 +1,8 @@
 classdef InAxesObject < GraphicsObject
-  %INAXESOBJECT Summary of this class goes here
+  %INAXESOBJECT Superclass for plot and annotation objects
   %   Detailed explanation goes here
   
-  properties (SetObservable)
+  properties (SetObservable, GetObservable)
     ParentAxes
   end
   
@@ -26,6 +26,7 @@ classdef InAxesObject < GraphicsObject
         obj.ParentAxes = parentAxes;
         obj.Parent = parentAxes.Handle;
       catch err
+        try debugStamp(obj.ID); end
         disp(err);
         obj.ParentAxes = [];
       end

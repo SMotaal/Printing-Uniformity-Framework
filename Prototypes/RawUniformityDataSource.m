@@ -1,12 +1,12 @@
-classdef SheetUniformityDataSource < UniformityDataSource
-  %SURFACEUNIFORMITYDATASOURCE Summary of this class goes here
+classdef RawUniformityDataSource < UniformityDataSource
+  %SURFACEUNIFORMITYDATASOURCE Raw printing uniformity data source
   %   Detailed explanation goes here
   
   properties
   end
   
   methods (Hidden)
-    function obj = SheetUniformityDataSource(varargin)
+    function obj = RawUniformityDataSource(varargin)
       obj = obj@UniformityDataSource(varargin{:});
     end
     
@@ -59,8 +59,8 @@ classdef SheetUniformityDataSource < UniformityDataSource
   end
   
   methods (Static)
-    function obj = createDataSource(varargin)
-      obj = SheetUniformityDataSource(varargin{:});
+    function obj = Create(varargin)
+      obj = RawUniformityDataSource(varargin{:});
     end
   end
   

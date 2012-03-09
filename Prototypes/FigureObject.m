@@ -22,7 +22,7 @@ classdef FigureObject < GraphicsObject & EventHandler
     end
   end
   
-  properties (SetObservable)
+  properties (SetObservable, GetObservable)
     
     %% Figure
     WindowTitle, Renderer, Toolbar, Menubar, WindowStyle

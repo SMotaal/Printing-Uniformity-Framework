@@ -18,7 +18,21 @@ classdef PlotAxesObject < AxesObject
       
       obj.OuterPosition = [0.1 0.1 0.8 0.8];
     end
-    
+        
+  end
+  
+  methods
+    function clearAxes(obj)
+      try
+        for i = obj.Children
+          if ~ishandle(i)
+            continue;
+          end
+          try delete(get(i, 'UserData')); end
+          try delete (i); end
+        end
+      end
+    end    
   end
   
   methods (Hidden)

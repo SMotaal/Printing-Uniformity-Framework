@@ -1,5 +1,5 @@
 classdef UniformityDataSource < GrasppeComponent
-  %UNIFORMITYDATASOURCE Summary of this class goes here
+  %UNIFORMITYDATASOURCE Superclass for surface uniformity data sources
   %   Detailed explanation goes here
   
   properties (Transient, Hidden)
@@ -21,7 +21,7 @@ classdef UniformityDataSource < GrasppeComponent
     PlotObjects   = {};
   end
   
-  properties (SetObservable)
+  properties (SetObservable, GetObservable)
     
     ExtendedParameters,
     DataParameters, DataSource, SourceData, SetData, SampleData
@@ -42,7 +42,7 @@ classdef UniformityDataSource < GrasppeComponent
       args = varargin;
       plotObject = [];
       try
-        if UniformityDataSource.checkInheritence(varargin{1}, 'SurfaceObject')
+        if UniformityDataSource.checkInheritence(varargin{1}, 'PlotObject')
           plotObject = varargin{1};
           args = varargin(2:end);
         end
@@ -57,24 +57,6 @@ classdef UniformityDataSource < GrasppeComponent
     
     function attachPlotObject(obj, plotObject)
       debugStamp(obj.ID);
-%       plotProperties = plotObject.DataProperties; %objProperties([obj.MetaClass.PropertyList.SetObservable]);
-%       
-%       objProperties = obj.DataProperties;
-%       
-%       attachProperties = {};
-%       
-%       for property = plotProperties
-%         if stropt(char(property), objProperties)
-%           attachProperties = {attachProperties{:}, char(property)};
-%         end
-%       end
-%       
-%       attachProperties = attachProperties
-%       
-%       if isempty(attachProperties), return; end
-%       
-%       addlistener(obj, attachProperties, 'PostSet', @plotObject.refreshPlotData);
-      
       plotObjects = obj.PlotObjects;
       if ~any(plotObjects==plotObject)
         obj.PlotObjects = {plotObjects{:}, plotObject};
@@ -85,13 +67,6 @@ classdef UniformityDataSource < GrasppeComponent
     
     function refreshPlot(obj, plotObject)
       plotObject.refreshPlot(obj);
-%       debugStamp(obj.ID);
-% %       if ~plotObject.IsRefreshing
-%         for property = obj.DataProperties
-%           try plotObject.(char(property)) = obj.(char(property)); end
-% %           try plotObject.forceSet(char(property), obj.(property)); end
-%         end
-% %       end
     end
     
     function refreshPlotData(obj, varargin)
@@ -108,7 +83,6 @@ classdef UniformityDataSource < GrasppeComponent
         
         try
           plotObjects{i}.refreshPlot();
-%           obj.refreshPlot(); %.refreshPlot;
         end
       end
     end
@@ -204,12 +178,12 @@ classdef UniformityDataSource < GrasppeComponent
     
     function setPlotData(obj, XData, YData, ZData)
       debugStamp(obj.ID);
-%       obj.forceSet('XData', XData, 'YData', YData, 'ZData', ZData);
-% %       obj.set('XData', XData, 'YData', YData, 'ZData', ZData);
-            obj.XData = XData;
-            obj.YData = YData;
-            obj.ZData = ZData;
-            obj.refreshPlotData;
+      %       obj.forceSet('XData', XData, 'YData', YData, 'ZData', ZData);
+      % %       obj.set('XData', XData, 'YData', YData, 'ZData', ZData);
+      obj.XData = XData;
+      obj.YData = YData;
+      obj.ZData = ZData;
+      obj.refreshPlotData;
     end
     
     function sheet = setSheet (obj, sheet)
@@ -293,7 +267,7 @@ classdef UniformityDataSource < GrasppeComponent
   methods(Abstract, Static, Hidden)
     processPlotData(obj)
     options  = DefaultOptions()
-    obj = createDataSource()
+    obj = Create()
   end
   
   

@@ -16,14 +16,14 @@ classdef GraphicsObject < GrasppeComponent & GraphicsEventHandler
     
   end
   
-  properties (SetObservable)
+  properties (SetObservable, GetObservable)
     Parent
     IsClickable=true
     IsVisible=true
     IsSelected=false
   end
   
-  properties (Hidden, SetObservable)
+  properties (SetObservable, GetObservable)
     Type
     HandleVisibility='on'
     Children

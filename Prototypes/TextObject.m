@@ -12,7 +12,7 @@ classdef TextObject < InAxesObject
   end
   
   
-  properties  (SetObservable) 
+  properties (SetObservable, GetObservable)
     Text, Color, Units, Position    
   end
 
@@ -35,7 +35,7 @@ classdef TextObject < InAxesObject
   
   methods(Abstract, Static, Hidden)
     options  = DefaultOptions()
-    obj = createTextObject()
+    obj = Create()
   end
 
   

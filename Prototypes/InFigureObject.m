@@ -2,7 +2,7 @@ classdef InFigureObject < GraphicsObject
   %INFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (SetObservable)
+  properties (SetObservable, GetObservable)
     ParentFigure
   end
   
@@ -34,6 +34,7 @@ classdef InFigureObject < GraphicsObject
         obj.ParentFigure = parentFigure;
         obj.Parent = parentFigure.Handle;
       catch err
+        try debugStamp(obj.ID); end
         disp(err);
         obj.ParentFigure = [];
       end

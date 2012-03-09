@@ -15,6 +15,8 @@ classdef GrasppeComponent < GrasppeHandle
     IsPulling = false;
     IsPushing = false;
     IsSetting = false;
+    
+    DebugPropertySynching = false;
   end
   
   methods
@@ -172,10 +174,12 @@ classdef GrasppeComponent < GrasppeHandle
         objSetObserve = objProperties([obj.MetaClass.PropertyList.SetObservable]);
 
         if ~isempty(objSetObserve)
+          addlistener(obj, objSetObserve, 'PreGet',  @GrasppeComponent.refreshHandleProperty);
           addlistener(obj, objSetObserve, 'PostSet', @GrasppeComponent.refreshObjectProperty);
         end
       catch err
-        disp(err); dealwith(err);
+        try debugStamp(obj.ID); end
+        disp(err); %dealwith(err);
       end
     end
     
@@ -244,6 +248,13 @@ classdef GrasppeComponent < GrasppeHandle
     end
     
     function handlePropertyUpdate(obj, source, event)
+      
+%       persistent debugging;
+%       
+%       if isempty(debugging)
+%         debugging = obj.DebugPropertySynching;
+%       end
+      
       obj.pullEvents = obj.pullEvents + 1;
       if ~obj.IsUpdating && ~obj.IsPushing
         obj.IsPulling = true;
@@ -253,7 +264,9 @@ classdef GrasppeComponent < GrasppeHandle
           obj.pullHandleOptions({{alias, name}});
         end
         obj.IsPulling = false;
-%         fprintf('Pulling (%d/%d):\t\t%s <= %s]\n', obj.pulledEvents, obj.pullEvents, alias, name);
+        if obj.DebugPropertySynching
+          try fprintf('Pulling (%d/%d):\t\t%s <= %s]\n', obj.pulledEvents, obj.pullEvents, alias, name); end
+        end
       end
     end
     
@@ -265,7 +278,9 @@ classdef GrasppeComponent < GrasppeHandle
           [name alias] = obj.lookupOptionName(source.Name, true);
           obj.pushedEvents = obj.pushedEvents+1;
           obj.pushHandleOptions({{alias, name}});
-%           fprintf('Pushing (%d/%d):\t\t%s => %s]\n', obj.pushedEvents, obj.pushEvents, alias, name);
+          if obj.DebugPropertySynching
+            try fprintf('Pushing (%d/%d):\t\t%s => %s]\n', obj.pushedEvents, obj.pushEvents, alias, name); end
+          end
         end
         obj.IsPushing = false;
       end
@@ -275,7 +290,11 @@ classdef GrasppeComponent < GrasppeHandle
   
   methods(Static, Hidden)
     function refreshHandleProperty(source, event)
-      obj = event.AffectedObject.UserData;
+      if ~(isobject(source))
+        obj = event.AffectedObject.UserData;
+      else
+        obj = event.AffectedObject;
+      end
       if GrasppeComponent.checkInheritence(obj) && isvalid(obj)
         obj.handlePropertyUpdate(source, event);
       end

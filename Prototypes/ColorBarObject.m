@@ -12,7 +12,7 @@ classdef ColorBarObject < AxesObject
     PeerAxes
   end
   
-  properties (SetObservable)
+  properties (SetObservable, GetObservable)
     Location
   end
   

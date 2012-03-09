@@ -1,14 +1,14 @@
-classdef UniformitySurfaceObject < UniformityPlotObject & SurfaceObject
+classdef UniformityPatchObject < UniformityPlotObject & PatchObject
   %UNIFORMITYSURFACEPLOT Summary of this class goes here
   %   Detailed explanation goes here
-  
+
   properties
-  end  
-    
+  end
+  
   methods (Access=protected)
-    function obj = UniformitySurfaceObject(parentAxes, varargin)
+    function obj = UniformityPatchObject(parentAxes, varargin)
       obj = obj@UniformityPlotObject();      
-      obj = obj@SurfaceObject(parentAxes, varargin{:});
+      obj = obj@PatchObject(parentAxes, varargin{:});
     end
     function createComponent(obj, type)
       obj.createComponent@PlotObject(type);
@@ -22,9 +22,10 @@ classdef UniformitySurfaceObject < UniformityPlotObject & SurfaceObject
   
   methods (Static)
     function obj = Create(parentAxes, varargin)
-      obj = UniformitySurfaceObject(parentAxes, varargin{:});
+      obj = UniformityPatchObject(parentAxes, varargin{:});
     end
   end
+
   
   
 end

@@ -38,7 +38,7 @@ classdef TitleTextObject < TextObject
       options = WorkspaceVariables(true);
     end
     
-    function obj = createTextObject(parentAxes, varargin)
+    function obj = Create(parentAxes, varargin)
       obj = TitleTextObject(parentAxes, varargin{:});
     end
   end

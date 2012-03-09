@@ -79,6 +79,7 @@ classdef GraphicsEventHandler < EventHandler & KeyEventHandler & MouseEventHandl
           obj.IsDestructing = true;
           try delete(obj.Handle); end
       catch err
+        try debugStamp(obj.ID); end
         disp(err);
       end
     end

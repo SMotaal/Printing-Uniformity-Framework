@@ -9,9 +9,18 @@ classdef PlotFigureObject < FigureObject
   end
   
   %% Functional Properties
-  properties (SetObservable)
+  properties (SetObservable, GetObservable)
     Title
   end
+  
+  %% Plot Objects
+  properties (Dependent, Hidden)
+    TitleTextHandle, PlotAxesHandle, OverlayAxesHandle, ColorBarHandle
+  end
+  
+  properties
+    TitleText, PlotAxes, OverlayAxes, ColorBar
+  end  
   
   methods (Hidden)
     function obj = PlotFigureObject(varargin)
@@ -50,21 +59,13 @@ classdef PlotFigureObject < FigureObject
     function createComponent(obj, type)
       obj.createComponent@GrasppeComponent(type);
       obj.OverlayAxes = OverlayAxesObject.Create(obj);
-      obj.TitleText   = TitleTextObject.createTextObject(obj.OverlayAxes);
+      obj.TitleText   = TitleTextObject.Create(obj.OverlayAxes);
       obj.PlotAxes    = PlotAxesObject.Create(obj);
       obj.TitleText.updateTitle;
     end
     
   end
   
-  %% Plot Objects
-  properties (Dependent, Hidden)
-    TitleTextHandle, PlotAxesHandle, OverlayAxesHandle, ColorBarHandle
-  end
-  
-  properties
-    TitleText, PlotAxes, OverlayAxes, ColorBar
-  end
   
   %% Plot Objects Getters / Setters
   methods
@@ -98,14 +99,16 @@ classdef PlotFigureObject < FigureObject
       try obj.TitleText.resizeComponent; end
     end
     
-    function keyPress(obj, event, source)
+    function consumed = keyPress(obj, event, source)
+      consumed = false;
       if (stropt(event.Modifier, 'control command'))
         switch event.Key
           case 'w'
             obj.closeComponent();
+            consumed = true;
         end
       end
-      obj.keyPress@FigureObject(event);   
+      consumed = obj.keyPress@FigureObject(event);   
     end
   end
   
