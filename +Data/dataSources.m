@@ -25,6 +25,8 @@ function [ data ] = dataSources( sourceName, varargin )
   default('verbose', int2str(defaults.verbose));
   default('sizeLimit', int2str(defaults.sizeLimit));
   
+  data = [];
+  
   if (~exist('sourceName', 'var'))
     %     disp(whos('sources'));
     whosDetails = whos('sources');

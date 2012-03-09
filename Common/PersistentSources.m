@@ -92,7 +92,7 @@ function varargout = PersistentSources(varargin)
             datastore = loaddata(datastore, forced);
           case 'save'
             if ~readonly || overwrite
-              savedata(datastore, forced);
+              savedata(datastore, forced | overwrite);
             end
         end
       end

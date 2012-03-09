@@ -108,7 +108,7 @@ function [ sourceStruct ] = loadSource( source )
       end
       
       %       sourceID      = Data.generateUPID(sourceName);
-      Data.dataSources(sourceID, sourceStruct);
+      Data.dataSources(sourceID, sourceStruct, true);
       
       %     source = struct('name', sourceName, 'path', sourcePath, );
     end
