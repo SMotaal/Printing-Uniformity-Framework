@@ -1,7 +1,5 @@
-function [ output_args ] = testBuffering( input_args )
+function [ output_args ] = BuildDataBuffer( input_args )
   %TESTBUFFERING Summary of this function goes here
-  %   Detailed explanation goes here
-%     Data.dataSources; return;
   warnState = warning ('off', 'backtrace');
   PersistentSources readwrite;
   PersistentSources clear;
@@ -9,14 +7,22 @@ function [ output_args ] = testBuffering( input_args )
   Data.dataSources('clear');
   Data.dataSources([], 'verbose', true, 'sizeLimit', 1024);
   
+  SourceIDs   = {'rithp7k01','rithp5501','ritsm7402a','ritsm7402b','ritsm7402c'};
+  PatchValues = [0 25 50 75 100]; %-1
+  
+  disp('Buffering Print Uniformity Data');
+  fprintf(['SourceIDs:\t' toString(SourceIDs) '\n']);
+  fprintf(['PatchValues:\t' toString(PatchValues) '\n']);
+  
   rt = tic;
-  for source = {'rithp7k01','rithp5501','ritsm7402a','ritsm7402b','ritsm7402c'};
-    parfor set = [-1 0 25 50 75 100]
+  for source = SourceIDs
+    parfor p = 1:numel(PatchValues)
+      
+      patchValue = PatchValues(p);
       
       t = tic;
-      [stats parser params] = Plots.plotUPStats(char(source),set);
+      [stats parser params] = Plots.plotUPStats(char(source),patchValue);
       et = toc(t);
-      %       params = parser.Results;
       src = params.dataSourceName;
       rsrc = [src blanks(10-numel(src))];
       tv = params.dataPatchSet;
@@ -27,12 +33,12 @@ function [ output_args ] = testBuffering( input_args )
       rnames = strrep(rnames,'hp','');
       elements = dsrc.elements;
       megabytes = dsrc.megabytes;
-      fprintf([ '%s' '\t' '% 4.0f' '\t' '%5.2f' '\t' '%2.0f' '\t' '% 7.2f' '' '\t' '%s' '\n'],rsrc, tv, et, elements, megabytes, rnames);
+      fprintf([ '\t' '%s' '\t' '% 4.0f' '\t' '%5.2f' '\t' '%2.0f' '\t' '% 7.2f' '' '\t' '%s' '\n'],rsrc, tv, et, elements, megabytes, rnames);
       
     end
   end
   toc(rt);
-  
+  disp('Saving PersistentSources Buffer');  
   PersistentSources force save;
   PersistentSources 'readonly';
   

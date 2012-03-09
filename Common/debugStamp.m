@@ -6,8 +6,9 @@ function [ output_args ] = debugStamp( tag )
   
   try
   debugmode     = true;
+  verbose       = true;  
   intrusive     = false;
-  verbose       = false;
+  detailed      = false;
   stackLimit    = 5;
   latencyLimit  = stackLimit * 100;
   
@@ -49,7 +50,7 @@ function [ output_args ] = debugStamp( tag )
     catch
       duration = 0;
     end
-    if verbose
+    if detailed
       disp(debugstack);
     else
       disp(sprintf('Stacks: %d \tLoops: %d \tDuration: %5.3f s',n , stackloops, duration));
@@ -60,6 +61,10 @@ function [ output_args ] = debugStamp( tag )
   end
   
   debugstack = [debugstack nextstack];
+  
+  if verbose
+    disp(nextstack);
+  end  
   
   if isempty(debugtimer) || ~isvalid(debugtimer)
     debugtimer = timer('Name','DebugStampTimer','ExecutionMode', 'fixedDelay', 'Period', 0.4, 'StartDelay', 1, 'TimerFcn', @stamp);

@@ -48,6 +48,7 @@ function [ data ] = dataSources( sourceName, varargin )
     end
     return;
   else
+    if ~isempty(sourceName)
     switch (lower(sourceName))
       case 'clear'
         PersistentSources('dataSources', []); % clear sources;
@@ -62,6 +63,9 @@ function [ data ] = dataSources( sourceName, varargin )
         Data.dataSources([], 'verbose', 'reset', 'sizeLimit', 'reset');
         return;
       otherwise
+    end
+    else
+      disp([]);
     end
   end
   
