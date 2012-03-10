@@ -18,7 +18,9 @@ classdef UniformityDataSource < GrasppeComponent
     IsRetrieved       = false;
     IsSettingSource   = false;
     
-    PlotObjects   = {};
+    LinkedPlotObjects;
+    LinkedPlotHandles = [];
+    PlotObjects       = {};
   end
   
   properties (SetObservable, GetObservable)
@@ -61,28 +63,73 @@ classdef UniformityDataSource < GrasppeComponent
       if ~any(plotObjects==plotObject)
         obj.PlotObjects = {plotObjects{:}, plotObject};
       end
-      
+      obj.linkPlotObject(plotObject);
       obj.refreshPlot(plotObject);
+    end
+    
+    function linkPlotObject(obj, plotObject)
+      xData = obj.XData; yData = obj.YData; zData = obj.ZData;
+      try
+        [plotObject.XDataSource xset] = changeSet(plotObject.XDataSource, 'xData');
+        [plotObject.YDataSource yset] = changeSet(plotObject.YDataSource, 'yData');
+        [plotObject.ZDataSource zset] = changeSet(plotObject.ZDataSource, 'zData');
+        if ~isempty(obj.LinkedPlotObjects)
+          obj.LinkedPlotObjects(end+1) = plotObject;
+        else
+          obj.LinkedPlotObjects = plotObject;
+        end
+      end
+      try
+        obj.LinkedPlotObjects = unique(obj.LinkedPlotObjects);
+      end
+      linkedHandles = [];
+      for linkedPlot = obj.LinkedPlotObjects
+        try linkedHandles = [linkedHandles linkedPlot.Handle]; end
+      end
+      obj.LinkedPlotHandles = linkedHandles;
     end
     
     function refreshPlot(obj, plotObject)
       plotObject.refreshPlot(obj);
     end
     
+    function refreshLinkedPlots(obj, linkedPlots)
+      xData = obj.XData; yData = obj.YData; zData = obj.ZData;
+      try
+        linkedPlots = unqiue(linkedPlots);
+      catch err
+        obj.linkPlotObject();
+        linkedPlots = unique(obj.LinkedPlotHandles);
+      end
+%       if ~all(ishandle(linkedPlots));
+%         error('Grasppe:InvalidArgument', 'Expected handles');
+%       end
+      linkedPlots = linkedPlots(ishandle(linkedPlots));
+      try
+        refreshdata(linkedPlots, 'caller');
+      catch err
+        keyboard
+      end
+    end
+    
     function refreshPlotData(obj, varargin)
       plotObjects = {};
+     
       if isempty(varargin)
         plotObjects = obj.PlotObjects;
       else
         plotObjects = varargin;
       end
       
+      t = tic;
+      obj.refreshLinkedPlots();
+      toc(t);
+      
       if ~isempty(plotObjects), debugStamp(obj.ID); end
       
       for i = 1:numel(plotObjects)
-        
         try
-          plotObjects{i}.refreshPlot();
+          obj.refreshPlot(plotObjects{i});
         end
       end
     end

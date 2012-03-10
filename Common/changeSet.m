@@ -13,7 +13,7 @@ function [ newValue change ] = changeSet( currentValue, newValue)
   else
     if nargout==1
       evalin('caller', 'return;');
-      evalin('caller', 'return;');
+%       evalin('caller', 'return;');
     end
   end
   

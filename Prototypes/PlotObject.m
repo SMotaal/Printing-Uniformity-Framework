@@ -3,7 +3,7 @@ classdef PlotObject < InAxesObject
   %   Detailed explanation goes here
   
   properties
-    IsRefreshing = false;    
+    IsRefreshing = false; 
   end
   
   properties (Dependent)
@@ -68,6 +68,9 @@ classdef PlotObject < InAxesObject
   methods
     function consumed = keyPress(obj, event, source)
       consumed = false;
+      if event.consumed == true
+        return;
+      end
       if (stropt(event.Modifier, 'control command'))
         consumed = true;
         switch event.Key
@@ -84,12 +87,16 @@ classdef PlotObject < InAxesObject
     function refreshPlot(obj, dataSource)
       debugStamp(obj.ID);
       try obj.IsRefreshing = true; end
+      
       if ~exists('dataSource')
         dataSource = [];
         try dataSource = obj.DataSource; end
       end
+      
       try updating = obj.IsUpdating; end
+      
       try properties = obj.DataProperties; end
+      
       for property = obj.DataProperties
         try obj.IsUpdating = false; end
         try
@@ -104,7 +111,9 @@ classdef PlotObject < InAxesObject
         end
         try obj.IsUpdating = updating; end
       end
+      
       obj.updatePlotTitle(dataSource.SourceID, dataSource.SampleID);
+      
       try obj.IsRefreshing = false; end
     end
     

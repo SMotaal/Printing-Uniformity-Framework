@@ -4,6 +4,8 @@ classdef KeyEventHandler < EventHandler
   
   properties
     KeyEventHandlers
+    
+    LastKeyEvent
   end
   
   methods
@@ -13,16 +15,21 @@ classdef KeyEventHandler < EventHandler
     end
     
     function consumed = keyPress(obj, event, source)
-      consumed = false;
+      event.id = cputime;
+      consumed = false; event.consumed = false;
       handlers = obj.KeyEventHandlers;
       if iscell(handlers) && ~isempty(handlers)
         for i = 1:numel(handlers)
           try
             consumed = handlers{i}.keyPress(event, obj);
-            if consumed, return; end
+            if consumed
+              event.consumed = consumed;
+            end
+%               return; end
           end
         end
       end
+      consumed = event.consumed;
     end
     
     function consumed = keyRelease(obj, event, source)

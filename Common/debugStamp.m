@@ -5,7 +5,7 @@ function [ output_args ] = debugStamp( tag )
   persistent debugtimer debugstack stackdups stackloops stacktime;
   
   try
-  debugmode     = true;
+  debugmode     = false;
   verbose       = true;  
   intrusive     = false;
   detailed      = false;

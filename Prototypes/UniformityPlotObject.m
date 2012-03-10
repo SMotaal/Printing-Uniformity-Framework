@@ -7,7 +7,7 @@ classdef UniformityPlotObject < GrasppeHandle
   end
   
   properties (Dependent)
-    SampleNumber
+%     IsLinked;
   end
   
   methods (Access=protected)
@@ -22,6 +22,14 @@ classdef UniformityPlotObject < GrasppeHandle
         obj.DataSource.attachPlotObject(obj);
       end
     end    
+  end
+  
+  methods
+    function set.DataSource(obj, value)
+      try obj.DataSource = value; end
+      value.attachPlotObject(obj);
+%       try value.attachPlotObject(obj); end
+    end
   end
   
 end

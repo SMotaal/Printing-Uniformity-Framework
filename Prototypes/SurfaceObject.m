@@ -10,24 +10,33 @@ classdef SurfaceObject < PlotObject
       'DisplayName', ...
       'CData', 'CDataMapping', ...
       'XData', 'YData', 'ZData', ...
+      'XDataSource', 'YDataSource', 'ZDataSource', ...
       {'AntiAliasing' 'LineSmoothing'} ...
       };    
 
     ComponentEvents = {};
     
-    DataProperties = {'XData', 'YData', 'ZData', 'CData', 'AData'}; %, 'SampleID', 'SourceID', 'SetID'};
+    DataProperties = {'XData', 'YData', 'ZData'}; %, 'CData', 'AData'}; %, 'SampleID', 'SourceID', 'SetID'};
 
   end
   
   properties (SetObservable, GetObservable)
-    Clipping, DisplayName='', CData, CDataMapping, XData, YData, ZData
+    XData, YData, ZData
+    XDataSource, YDataSource, ZDataSource
+    Clipping, DisplayName='', CData, CDataMapping, %
     AntiAliasing = 'on';
   end
     
   methods (Access=protected)
     function obj = SurfaceObject(parentAxes, varargin)
       obj = obj@PlotObject(parentAxes, varargin{:});
+    end
+    
+    function createComponent(obj, type)
+      debugStamp(obj.ID);
+      obj.createComponent@PlotObject(type);
     end    
+    
   end
   
   methods

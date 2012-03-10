@@ -118,7 +118,18 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       end
       if ~isempty(handle)
         %         getting = args
-        values = get(handle, args{:});
+        try
+          values = get(handle, args{:});
+        catch
+          try
+            values = get(handle, args);
+          catch err
+            disp(err);
+            try
+              disp(sprintf('%s:HandleGet: %s', obj.ID, toString(args)));
+            end
+          end
+        end
       else
         values = {};
       end
