@@ -5,26 +5,19 @@ classdef SurfaceObject < PlotObject
   properties (Transient, Hidden)
     ComponentType = 'surf';
     
-    ComponentProperties = { ...
-      'Clipping', ...
-      'DisplayName', ...
-      'CData', 'CDataMapping', ...
-      'XData', 'YData', 'ZData', ...
-      'XDataSource', 'YDataSource', 'ZDataSource', ...
-      {'AntiAliasing' 'LineSmoothing'} ...
-      };    
-
+    ComponentProperties = { 'Clipping', 'DisplayName', {'AntiAliasing' 'LineSmoothing'}};
     ComponentEvents = {};
     
-    DataProperties = {'XData', 'YData', 'ZData'}; %, 'CData', 'AData'}; %, 'SampleID', 'SourceID', 'SetID'};
+    DataProperties = {'AData', 'CData', 'XData', 'YData', 'ZData'}; %, 'CData', 'AData'}; %, 'SampleID', 'SourceID', 'SetID'};
 
   end
   
   properties (SetObservable, GetObservable)
-    XData, YData, ZData
-    XDataSource, YDataSource, ZDataSource
-    Clipping, DisplayName='', CData, CDataMapping, %
-    AntiAliasing = 'on';
+    Clipping, DisplayName='', AntiAliasing = 'on', CDataMapping;    
+  end
+  
+  properties (GetObservable, SetObservable)
+    AData, CData, XData, YData, ZData
   end
     
   methods (Access=protected)
@@ -34,20 +27,59 @@ classdef SurfaceObject < PlotObject
     
     function createComponent(obj, type)
       debugStamp(obj.ID);
+      obj.attachDataListeners;
       obj.createComponent@PlotObject(type);
-    end    
-    
-  end
-  
-  methods
-    function set.ZData(obj, value)
-      try
-        obj.ZData = value;
-        obj.CData = value;
-      end
     end
   end
   
+  methods
+    %AData, CData, XData, YData, ZData
+    function value = get.AData(obj)
+      debugStamp(obj.ID);
+      value = obj.dataGet('AData');
+    end
+    function set.AData(obj, value)
+      debugStamp(obj.ID);
+      obj.dataSet('AData', value);
+    end
+    
+    function value = get.CData(obj)
+      debugStamp(obj.ID);
+      value = obj.dataGet('CData');
+    end
+    function set.CData(obj, value)
+      debugStamp(obj.ID);
+      obj.dataSet('CData', value);
+    end
+        
+    function value = get.XData(obj)
+      debugStamp(obj.ID);
+      value = obj.dataGet('XData');
+    end
+    function set.XData(obj, value)
+      debugStamp(obj.ID);
+      obj.dataSet('XData', value);
+    end
+    
+    function value = get.YData(obj)
+      debugStamp(obj.ID);
+      value = obj.dataGet('YData');
+    end
+    function set.YData(obj, value)
+      debugStamp(obj.ID);
+      obj.dataSet('YData', value);
+    end
+    
+    function value = get.ZData(obj)
+      debugStamp(obj.ID);
+      value = obj.dataGet('ZData');
+    end
+    function set.ZData(obj, value)
+      debugStamp(obj.ID);
+      obj.dataSet('ZData', value);
+    end
+  end
+
   methods (Static, Hidden)
     function options  = DefaultOptions( )
       

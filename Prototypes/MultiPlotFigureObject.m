@@ -96,7 +96,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
       catch err
       end
       if isempty(plotAxes) || ~PlotAxesObject.checkInheritence(plotAxes)
-        [plotAxes idx id] = obj.createPlotAxes(idx, id)
+        [plotAxes idx id] = obj.createPlotAxes(idx, id);
       end
 
     end
@@ -250,6 +250,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
                 'Units', 'pixels', 'Position', plotPosition);
             end
           catch err
+            try debugStamp(obj.ID); end
             disp(err);
             disp(obj.PlotAxes{i});
           end
@@ -259,8 +260,8 @@ classdef MultiPlotFigureObject < PlotFigureObject
       end
       
       catch err
+        try debugStamp(obj.ID); end
         disp(err);
-        keyboard;
       end
       
     end

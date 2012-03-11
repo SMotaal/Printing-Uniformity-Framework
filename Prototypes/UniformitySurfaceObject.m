@@ -1,4 +1,4 @@
-classdef UniformitySurfaceObject < UniformityPlotObject & SurfaceObject
+classdef UniformitySurfaceObject < SurfaceObject & UniformityPlotObject
   %UNIFORMITYSURFACEPLOT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -13,11 +13,11 @@ classdef UniformitySurfaceObject < UniformityPlotObject & SurfaceObject
     
   methods (Access=protected)
     function obj = UniformitySurfaceObject(parentAxes, varargin)
+      obj = obj@SurfaceObject(parentAxes, varargin{:});      
       obj = obj@UniformityPlotObject();      
-      obj = obj@SurfaceObject(parentAxes, varargin{:});
     end
     function createComponent(obj, type)
-      obj.createComponent@PlotObject(type);
+      obj.createComponent@SurfaceObject(type);
       obj.createComponent@UniformityPlotObject(type);      
     end    
   end
@@ -26,19 +26,25 @@ classdef UniformitySurfaceObject < UniformityPlotObject & SurfaceObject
   methods
     function refreshPlot(obj, dataSource)
       dataProperties = obj.ExtendedDataProperties;
-      if isempty(obj.XDataSource)
-        dataProperties = {dataProperties{:}, 'XData'};
+      try
+        if isempty(obj.XDataSource)
+          dataProperties = {dataProperties{:}, 'XData'};
+        end
+        if isempty(obj.YDataSource)
+          dataProperties = {dataProperties{:}, 'YData'};
+        end
+        if isempty(obj.ZDataSource)
+          dataProperties = {dataProperties{:}, 'ZData'};
+        end
+        obj.DataProperties = dataProperties;
+        if ~isempty(dataProperties) && ~isempty(obj.DataSource)
+          obj.refreshPlot@SurfaceObject();
+        end
+      catch err
+        debugStamp(obj.ID);
+%         disp(err);
       end
-      if isempty(obj.YDataSource)
-        dataProperties = {dataProperties{:}, 'YData'};
-      end
-      if isempty(obj.ZDataSource)
-        dataProperties = {dataProperties{:}, 'ZData'};
-      end
-      obj.DataProperties = dataProperties;
-      if ~isempty(dataProperties) && ~isempty(obj.DataSource)
-        obj.refreshPlot@SurfaceObject();
-      end
+      try obj.updatePlotTitle(obj.DataSource.SourceID, obj.DataSource.SampleID); end
 %       debugStamp(obj.ID);
 %       try obj.IsRefreshing = true; end
 %       if ~exists('dataSource')
@@ -61,7 +67,6 @@ classdef UniformitySurfaceObject < UniformityPlotObject & SurfaceObject
 %         end
 %         try obj.IsUpdating = updating; end
 %       end
-%       obj.updatePlotTitle(dataSource.SourceID, dataSource.SampleID);
 %       try obj.IsRefreshing = false; end
     end
     

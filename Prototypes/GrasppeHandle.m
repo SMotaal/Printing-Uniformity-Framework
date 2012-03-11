@@ -109,6 +109,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
     end
         
     function values = handleGet(obj, varargin)
+      values = {};
       if nargin>1 && isValidHandle('varargin{1}')
         handle = varargin{1};
         args = varargin(2:end);
@@ -124,14 +125,13 @@ classdef GrasppeHandle < dynamicprops & hgsetget
           try
             values = get(handle, args);
           catch err
+            try debugStamp(obj.ID); end
             disp(err);
             try
               disp(sprintf('%s:HandleGet: %s', obj.ID, toString(args)));
             end
           end
         end
-      else
-        values = {};
       end
       
     end

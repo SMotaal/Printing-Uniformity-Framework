@@ -1,4 +1,4 @@
-function [ output_args ] = debugStamp( tag )
+function [ output_args ] = debugStamp( tag, level )
   %DEBUGSTAMP Summary of this function goes here
   %   Detailed explanation goes here
   
@@ -6,13 +6,17 @@ function [ output_args ] = debugStamp( tag )
   
   try
   debugmode     = false;
-  verbose       = true;  
+  verbose       = false;
   intrusive     = false;
   detailed      = false;
   stackLimit    = 5;
   latencyLimit  = stackLimit * 100;
   
   if ~debugmode, return; end
+  
+  if ~isInteger('level') || ~isScalar(level)
+    level       = 5;
+  end
   
   d = dbstack('-completenames');
   
@@ -25,9 +29,9 @@ function [ output_args ] = debugStamp( tag )
   n = stamp;
   
   if n==1
-    debugstack='';
-    stackdups='';
-    stackloops=0;
+    debugstack  = '';
+    stackdups   = '';
+    stackloops  = 0;
   end  
  
   try
@@ -62,7 +66,7 @@ function [ output_args ] = debugStamp( tag )
   
   debugstack = [debugstack nextstack];
   
-  if verbose
+  if verbose || level < 5
     disp(nextstack);
   end  
   

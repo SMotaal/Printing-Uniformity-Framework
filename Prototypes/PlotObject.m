@@ -20,7 +20,22 @@ classdef PlotObject < InAxesObject
       debugStamp(obj.ID);
       obj.createComponent@GrasppeComponent(type);
       obj.ParentFigure.registerKeyEventHandler(obj);
-    end    
+    end
+    
+    function attachDataListeners(obj)
+      try
+        %% Attach object listeners
+        obvProperties = obj.DataProperties;
+        
+        if ~isempty(obvProperties)
+          addlistener(obj, obvProperties, 'PreGet', @PlotObject.gettingDataProperty);
+          addlistener(obj, obvProperties, 'PreSet', @PlotObject.settingDataProperty);
+        end
+      catch err
+        try debugStamp(obj.ID); end
+        disp(err); %dealwith(err);
+      end
+    end
   end
   
   methods    
@@ -46,7 +61,7 @@ classdef PlotObject < InAxesObject
   
   methods
     function setSheet(obj, value)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); end
       try obj.DataSource.setSheet(value); end
       obj.updatePlotTitle;
     end
@@ -82,7 +97,7 @@ classdef PlotObject < InAxesObject
             consumed = false;
         end
       end
-    end    
+    end  
     
     function refreshPlot(obj, dataSource)
       debugStamp(obj.ID);
@@ -106,6 +121,7 @@ classdef PlotObject < InAxesObject
           if strcmp(err.identifier, 'MATLAB:noSuchMethodOrField')
             try disp(sprintf('\t%s ==> %s',err.identifier, char(property))); end
           else
+            try debugStamp(obj.ID); end
             disp(err);
           end
         end
@@ -128,6 +144,69 @@ classdef PlotObject < InAxesObject
         disp(err);
       end
     end
+    
+    function dataSet(obj, property, value)
+      try
+        if isequal(lower(value), 'auto')
+          obj.handleSet([property 'Mode'], 'auto');
+          return;
+        end
+      end
+      try
+        if ischar(value)
+          obj.handleSet([property 'Source'], value);
+          return;
+        end
+      end
+      if isnumeric(value)
+        obj.handleSet(property, value);
+        return;
+      end
+      try debugStamp(obj.ID);
+        disp(sprintf('Could not set %s for %s', property, obj.ID));
+      end
+    end
+    
+    function value = dataGet(obj, property)
+      try
+        value  = obj.handleGet([property 'Source']);
+        if ischar(value) && ~isempty(value)
+          return;
+        end
+      end      
+      try
+        value  = obj.handleGet([property 'Mode']);
+        if isequal(lower(value), 'auto')
+          return;
+        end
+      end
+      value = obj.handleGet(property);
+    end
+    
+  end
+  
+  methods (Static)
+    function settingDataProperty(source, event)
+%       try
+%         obj = event.AffectedObject;
+%         property = source.name;
+%         value = event.
+%         obj.handleSet(
+      debugStamp();
+%       disp(event);
+    end       
+    function gettingDataProperty(source, event)
+      debugStamp();
+%       disp(event);
+    end      
+%       if ~(isobject(source))
+%         obj = event.AffectedObject.UserData;
+%       else
+%         obj = event.AffectedObject;
+%       end
+%       if GrasppeComponent.checkInheritence(obj) && isvalid(obj)
+%         obj.handlePropertyUpdate(source, event);
+%       end
   end
   
 end

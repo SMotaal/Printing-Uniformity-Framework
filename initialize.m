@@ -23,7 +23,7 @@ end
 
 function initializeScript()
   PersistentSources readonly;
-  PersistentSources load UniPrintBeta; %PersistentSources load;  
+  PersistentSources load; %PersistentSources load;  
   fprintf(2,'\nWorkspace: '); fprintf(1, 'Ready\n');
   setstatus(0,'');
   

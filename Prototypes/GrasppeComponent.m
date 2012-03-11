@@ -16,6 +16,8 @@ classdef GrasppeComponent < GrasppeHandle
     IsPushing = false;
     IsSetting = false;
     
+    ComponentFields;
+    
     DebugPropertySynching = false;
   end
   
@@ -86,16 +88,20 @@ classdef GrasppeComponent < GrasppeHandle
         
     function [fields aliases] = getComponentFields(obj, names)
       
-      hooks       = obj.getComponentHooks;
-      properties  = obj.getComponentProperties;
-      
-      fields = [properties hooks];
-      
-      if nargout==2
-        [fields aliases] = obj.getOptionNames(fields);
+      if isempty(obj.ComponentFields)
+        hooks       = obj.getComponentHooks;
+        properties  = obj.getComponentProperties;
+        
+        fields = [properties hooks];
+        
+        if nargout==2
+          [fields aliases] = obj.getOptionNames(fields);
+        end
+        obj.ComponentFields = fields;
+      else        
+        [fields aliases] = obj.getOptionNames(obj.ComponentFields);
       end
     end
-    
   end
   
   methods (Access=protected, Hidden=true)
@@ -168,14 +174,28 @@ classdef GrasppeComponent < GrasppeHandle
             addlistener(handle, handleProperties,  'PostSet', @GrasppeComponent.refreshHandleProperty);
           end
         end
+        
+        try obj.attachObjectListeners; end
+        try obj.attachDataListeners; end
+        
+      catch err
+        try debugStamp(obj.ID); end
+        disp(err); %dealwith(err);
+      end
 
+    end
+    
+    function attachObjectListeners(obj)
+      try
         %% Attach object listeners
         objProperties = {obj.MetaClass.PropertyList.Name};   %{mc.PropertyList.Name; mc.PropertyList.SetObservable}';
-        objSetObserve = objProperties([obj.MetaClass.PropertyList.SetObservable]);
+        setObservable = [obj.MetaClass.PropertyList.SetObservable];
+        getObservable = [obj.MetaClass.PropertyList.GetObservable];
+        obvProperties = objProperties([setObservable | getObservable]);
 
-        if ~isempty(objSetObserve)
-          addlistener(obj, objSetObserve, 'PreGet',  @GrasppeComponent.refreshHandleProperty);
-          addlistener(obj, objSetObserve, 'PostSet', @GrasppeComponent.refreshObjectProperty);
+        if ~isempty(obvProperties)
+          addlistener(obj, obvProperties, 'PreGet',  @GrasppeComponent.refreshHandleProperty);
+          addlistener(obj, obvProperties, 'PostSet', @GrasppeComponent.refreshObjectProperty);
         end
       catch err
         try debugStamp(obj.ID); end

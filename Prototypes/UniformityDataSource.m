@@ -18,9 +18,9 @@ classdef UniformityDataSource < GrasppeComponent
     IsRetrieved       = false;
     IsSettingSource   = false;
     
-    LinkedPlotObjects;
+    LinkedPlotObjects = [];
     LinkedPlotHandles = [];
-    PlotObjects       = {};
+    PlotObjects       = [];
   end
   
   properties (SetObservable, GetObservable)
@@ -51,46 +51,46 @@ classdef UniformityDataSource < GrasppeComponent
       end
       
       obj = obj@GrasppeComponent(args{:});
-      
-      if ~isempty(plotObject)
-        obj.attachPlotObject(plotObject);
-      end
     end
     
     function attachPlotObject(obj, plotObject)
       debugStamp(obj.ID);
       plotObjects = obj.PlotObjects;
       if ~any(plotObjects==plotObject)
-        obj.PlotObjects = {plotObjects{:}, plotObject};
+        try
+          obj.PlotObjects(end+1) = plotObject;
+        catch
+          obj.PlotObjects = plotObject;
+        end
       end
       obj.linkPlotObject(plotObject);
       obj.refreshPlot(plotObject);
     end
     
     function linkPlotObject(obj, plotObject)
-      xData = obj.XData; yData = obj.YData; zData = obj.ZData;
       try
-        [plotObject.XDataSource xset] = changeSet(plotObject.XDataSource, 'xData');
-        [plotObject.YDataSource yset] = changeSet(plotObject.YDataSource, 'yData');
-        [plotObject.ZDataSource zset] = changeSet(plotObject.ZDataSource, 'zData');
-        if ~isempty(obj.LinkedPlotObjects)
-          obj.LinkedPlotObjects(end+1) = plotObject;
-        else
-          obj.LinkedPlotObjects = plotObject;
+        if isobject(plotObject)
+          plotObject.XData = 'xData';
+          plotObject.YData = 'yData';
+          plotObject.ZData = 'zData';
+          try
+            obj.LinkedPlotObjects(end+1) = plotObject;
+          catch
+            obj.LinkedPlotObjects = plotObject;
+          end       
         end
       end
       try
         obj.LinkedPlotObjects = unique(obj.LinkedPlotObjects);
       end
-      linkedHandles = [];
-      for linkedPlot = obj.LinkedPlotObjects
-        try linkedHandles = [linkedHandles linkedPlot.Handle]; end
+      try
+        obj.LinkedPlotHandles = unique([obj.LinkedPlotObjects.Handle]);
       end
-      obj.LinkedPlotHandles = linkedHandles;
     end
     
     function refreshPlot(obj, plotObject)
       plotObject.refreshPlot(obj);
+      obj.refreshPlotData();
     end
     
     function refreshLinkedPlots(obj, linkedPlots)
@@ -101,9 +101,6 @@ classdef UniformityDataSource < GrasppeComponent
         obj.linkPlotObject();
         linkedPlots = unique(obj.LinkedPlotHandles);
       end
-%       if ~all(ishandle(linkedPlots));
-%         error('Grasppe:InvalidArgument', 'Expected handles');
-%       end
       linkedPlots = linkedPlots(ishandle(linkedPlots));
       try
         refreshdata(linkedPlots, 'caller');
@@ -121,9 +118,7 @@ classdef UniformityDataSource < GrasppeComponent
         plotObjects = varargin;
       end
       
-      t = tic;
       obj.refreshLinkedPlots();
-      toc(t);
       
       if ~isempty(plotObjects), debugStamp(obj.ID); end
       
@@ -230,7 +225,8 @@ classdef UniformityDataSource < GrasppeComponent
       obj.XData = XData;
       obj.YData = YData;
       obj.ZData = ZData;
-      obj.refreshPlotData;
+      
+      obj.refreshPlotData();
     end
     
     function sheet = setSheet (obj, sheet)
