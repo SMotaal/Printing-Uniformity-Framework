@@ -89,10 +89,19 @@ endProfile(); snapnow(); newProfile();
 % > In testPrototypes at 58 
 
 x.WindowStyle = 'normal';
-jFrame = get(x.Handle,'JavaFrame');
-jFrame.setMaximized(true);
-x.resizeComponent;
-endProfile(); snapnow(); newProfile();
+% jFrame = get(x.Handle,'JavaFrame');
+% jFrame.setMaximized(true);
+%  1          61        1168         796
+set(x.Handle, 'Position', [1 61 1168 796]);
+drawnow;
+% x.resizeComponent;
+endProfile(); 
+pause(2);
+set(x.Handle, 'Position', [1 61 1168 796]);
+pause(2);
+snapnow(); 
+
+newProfile();
 
 % 13  14.999
 for i = 1:d.Samples
@@ -111,17 +120,17 @@ drawnow();
 % 34.809
 fprintf('Tests Complete in %f s.\n', toc(rId));
 
-disp('Saving Test Profiles...');
-
-rID = tic;
-
-% Saving Profiles Complete in 721.330361 s.
-for pi = 1:numel(pInfo)
-  profileName = ['Prototypes' int2str(pi)];
-  fprintf('Saving %s...\n', profileName);
-  profsave( pInfo(pi), fullfile(cd, 'output', 'profile', profileName));
-end
-
-fprintf('Saving Profiles Complete in %f s.\n', toc(rId));
-
-clear all;
+% disp('Saving Test Profiles...');
+% 
+% rID = tic;
+% 
+% % Saving Profiles Complete in 721.330361 s.
+% for pi = 1:numel(pInfo)
+%   profileName = ['Prototypes' int2str(pi)];
+%   fprintf('Saving %s...\n', profileName);
+%   profsave( pInfo(pi), fullfile(cd, 'output', 'profile', profileName));
+% end
+% 
+% fprintf('Saving Profiles Complete in %f s.\n', toc(rId));
+% 
+% clear all;

@@ -80,12 +80,12 @@ newProfile();
 <span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_1</span>
 
 x = PlotFigureObject(<span class="string">'WindowStyle'</span>, <span class="string">'docked'</span>);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 <span class="comment">% 2   1.978</span>
 <span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_1</span>
 s = UniformitySurfaceObject.Create(x.PlotAxes);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 <span class="comment">% 3   0.258</span>
 x.setVisible(true);
@@ -98,7 +98,7 @@ endProfile(); newProfile();
 <span class="comment">% 5   1.451</span>
 <span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_2</span>
 s = UniformitySurfaceObject.Create(x.PlotAxes);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 <span class="comment">% 6   0.570</span>
 d = s.DataSource; b = ColorBarObject.Create(p);
@@ -109,7 +109,7 @@ endProfile(); newProfile();
   s.setSheet(<span class="string">'+1'</span>);
   drawnow();
 <span class="keyword">end</span>
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 <span class="comment">% 8   0.021</span>
 delete(x);
@@ -121,12 +121,12 @@ endProfile(); newProfile();
 <span class="comment">% *** CreateHandleObject: text ==&gt; String, Title, Tag, TitleTextObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.024658203125], Tag, TitleTextObject_2</span>
 <span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_2</span>
 x = MultiPlotFigureObject(<span class="string">'WindowStyle'</span>, <span class="string">'docked'</span>); x.setVisible(1);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 <span class="comment">% 10  1.340</span>
 <span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.024658203125], Tag, UniformitySurfaceObject_3</span>
 s(1) = UniformitySurfaceObject.Create(x.getPlotAxes(1));
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 <span class="comment">% 11  1.557</span>
 <span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_3</span>
@@ -138,7 +138,7 @@ endProfile(); newProfile();
 <span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_6</span>
 <span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_7, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [26.024658203125], Tag, UniformitySurfaceObject_7</span>
 <span class="keyword">for</span> i = 2:5, s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), <span class="string">'DataSource'</span>, s(1).DataSource); <span class="keyword">end</span>
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 <span class="comment">% 12  1.157</span>
 <span class="comment">% Warning: figure JavaFrame property will be obsoleted in a future release. For more</span>
@@ -146,38 +146,51 @@ endProfile(); newProfile();
 <span class="comment">% &gt; In testPrototypes at 58</span>
 
 x.WindowStyle = <span class="string">'normal'</span>;
-jFrame = get(x.Handle,<span class="string">'JavaFrame'</span>);
-jFrame.setMaximized(true);
-x.resizeComponent;
-endProfile(); newProfile();
+<span class="comment">% jFrame = get(x.Handle,'JavaFrame');</span>
+<span class="comment">% jFrame.setMaximized(true);</span>
+<span class="comment">%  1          61        1168         796</span>
+set(x.Handle, <span class="string">'Position'</span>, [1 61 1168 796]);
+drawnow;
+<span class="comment">% x.resizeComponent;</span>
+endProfile();
+pause(2);
+set(x.Handle, <span class="string">'Position'</span>, [1 61 1168 796]);
+pause(2);
+snapnow();
+
+newProfile();
 
 <span class="comment">% 13  14.999</span>
 <span class="keyword">for</span> i = 1:d.Samples
   s(1).setSheet(<span class="string">'+1'</span>);
   drawnow();
 <span class="keyword">end</span>
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 <span class="comment">% 14  0.013</span>
+<span class="comment">% close all;</span>
 delete(x);
 
-endProfile();
+endProfile(); close <span class="string">all</span>;
 
+drawnow();
 <span class="comment">% 34.809</span>
 fprintf(<span class="string">'Tests Complete in %f s.\n'</span>, toc(rId));
 
-disp(<span class="string">'Saving Test Profiles...'</span>);
-
-rID = tic;
-
-<span class="comment">% Saving Profiles Complete in 721.330361 s.</span>
-<span class="keyword">for</span> pi = 1:numel(pInfo)
-  profileName = [<span class="string">'Prototypes'</span> int2str(pi)];
-  fprintf(<span class="string">'Saving %s...\n'</span>, profileName);
-  profsave( pInfo(pi), fullfile(cd, <span class="string">'output'</span>, <span class="string">'profile'</span>, profileName));
-<span class="keyword">end</span>
-
-fprintf(<span class="string">'Saving Profiles Complete in %f s.\n'</span>, toc(rId));
+<span class="comment">% disp('Saving Test Profiles...');</span>
+<span class="comment">%</span>
+<span class="comment">% rID = tic;</span>
+<span class="comment">%</span>
+<span class="comment">% % Saving Profiles Complete in 721.330361 s.</span>
+<span class="comment">% for pi = 1:numel(pInfo)</span>
+<span class="comment">%   profileName = ['Prototypes' int2str(pi)];</span>
+<span class="comment">%   fprintf('Saving %s...\n', profileName);</span>
+<span class="comment">%   profsave( pInfo(pi), fullfile(cd, 'output', 'profile', profileName));</span>
+<span class="comment">% end</span>
+<span class="comment">%</span>
+<span class="comment">% fprintf('Saving Profiles Complete in %f s.\n', toc(rId));</span>
+<span class="comment">%</span>
+<span class="comment">% clear all;</span>
 </pre><pre class="codeoutput">Cleared Debug Workspace.
 Running Tests...
 
@@ -187,25 +200,26 @@ Running Tests...
 *** CreateHandleObject: axes ==&gt; Box, off, Color, none, Tag, OverlayAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, off, Selected, off, UserData, [1x1, OverlayAxesObject], Parent, [1], Tag, OverlayAxesObject_1
 
 
-*** CreateHandleObject: text ==&gt; String, Title, Tag, TitleTextObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.0015869140625], Tag, TitleTextObject_1
+*** CreateHandleObject: text ==&gt; String, Title, Tag, TitleTextObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.0426025390625], Tag, TitleTextObject_1
 
 
 *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_1
 
-Elapsed time is 1.452875 seconds.
+Elapsed time is 1.507706 seconds.
+</pre><pre class="codeoutput">
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.0426025390625], Tag, UniformitySurfaceObject_1
 
-*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.0015869140625], Tag, UniformitySurfaceObject_1
+Elapsed time is 2.366816 seconds.
+</pre><pre class="codeoutput">Elapsed time is 2.809895 seconds.
+Elapsed time is 0.000224 seconds.
 
-Elapsed time is 2.607720 seconds.
-Elapsed time is 2.776034 seconds.
-Elapsed time is 0.000446 seconds.
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.0426025390625], Tag, UniformitySurfaceObject_2
 
-*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.0015869140625], Tag, UniformitySurfaceObject_2
-
-Elapsed time is 1.482670 seconds.
-Elapsed time is 0.758447 seconds.
-Elapsed time is 9.589232 seconds.
-Elapsed time is 0.022099 seconds.
+Elapsed time is 1.597544 seconds.
+</pre><img vspace="5" hspace="5" src="testPrototypes_01.png" alt=""> <pre class="codeoutput">Elapsed time is 0.702512 seconds.
+Stacks: 501 	Loops: 0 	Duration: 0.045 s
+Elapsed time is 12.314676 seconds.
+</pre><img vspace="5" hspace="5" src="testPrototypes_02.png" alt=""> <pre class="codeoutput">Elapsed time is 0.070463 seconds.
 
 *** CreateHandleObject: figure ==&gt; Name, Printing, Uniformity, Plot, Renderer, opengl, ToolBar, none, MenuBar, none, WindowStyle, docked, Color, white, Tag, MultiPlotFigureObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, MultiPlotFigureObject], Visible, off, Parent, [0], Tag, MultiPlotFigureObject_1
 
@@ -213,64 +227,46 @@ Elapsed time is 0.022099 seconds.
 *** CreateHandleObject: axes ==&gt; Box, off, Color, none, Tag, OverlayAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, off, Selected, off, UserData, [1x1, OverlayAxesObject], Parent, [1], Tag, OverlayAxesObject_2
 
 
-*** CreateHandleObject: text ==&gt; String, Title, Tag, TitleTextObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.0091552734375], Tag, TitleTextObject_2
+*** CreateHandleObject: text ==&gt; String, Title, Tag, TitleTextObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.0498046875], Tag, TitleTextObject_2
 
 
 *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_2
 
-Elapsed time is 0.940304 seconds.
+Elapsed time is 1.472136 seconds.
+</pre><img vspace="5" hspace="5" src="testPrototypes_03.png" alt=""> <pre class="codeoutput">
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.0498046875], Tag, UniformitySurfaceObject_3
 
-*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.0091552734375], Tag, UniformitySurfaceObject_3
-
-Elapsed time is 1.305163 seconds.
-
+Elapsed time is 1.680406 seconds.
+</pre><img vspace="5" hspace="5" src="testPrototypes_04.png" alt=""> <pre class="codeoutput">
 *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_3
 
 
-*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_4, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [11.0091552734375], Tag, UniformitySurfaceObject_4
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_4, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [12.0498046875], Tag, UniformitySurfaceObject_4
 
 
 *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_4, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_4
 
 
-*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_5, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [16.0091552734375], Tag, UniformitySurfaceObject_5
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_5, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [18.0498046875], Tag, UniformitySurfaceObject_5
 
 
 *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_5, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_5
 
 
-*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [21.0091552734375], Tag, UniformitySurfaceObject_6
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [24.0498046875], Tag, UniformitySurfaceObject_6
 
 
 *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_6
 
 
-*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_7, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [26.0091552734375], Tag, UniformitySurfaceObject_7
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_7, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [30.0498046875], Tag, UniformitySurfaceObject_7
 
-Elapsed time is 1.499702 seconds.
-Warning: figure JavaFrame property will be obsoleted in a future release. For
-more information see &lt;a href="http://www.mathworks.com/javaframe"&gt;the JavaFrame
-resource on the MathWorks web site&lt;/a&gt;. 
-Elapsed time is 0.975309 seconds.
-Elapsed time is 12.853500 seconds.
-Elapsed time is 0.015547 seconds.
-Tests Complete in 36.502335 s.
-Saving Test Profiles...
-Saving Prototypes1...
-Saving Prototypes2...
-Saving Prototypes3...
-Saving Prototypes4...
-Saving Prototypes5...
-Saving Prototypes6...
-Saving Prototypes7...
-Saving Prototypes8...
-Saving Prototypes9...
-Saving Prototypes10...
-Saving Prototypes11...
-Saving Prototypes12...
-Saving Prototypes13...
-Saving Prototypes14...
-Saving Profiles Complete in 754.662690 s.
+Elapsed time is 2.973051 seconds.
+</pre><img vspace="5" hspace="5" src="testPrototypes_05.png" alt=""> <pre class="codeoutput">Elapsed time is 0.301193 seconds.
+</pre><img vspace="5" hspace="5" src="testPrototypes_06.png" alt=""> <pre class="codeoutput">Stacks: 501 	Loops: 0 	Duration: 0.016 s
+Elapsed time is 15.006276 seconds.
+</pre><pre class="codeoutput">Elapsed time is 0.099931 seconds.
+Tests Complete in 52.640074 s.
 </pre><p class="footer"><br>
       Published with MATLAB&reg; 7.14<br></p></div><!--
 ##### SOURCE BEGIN #####
@@ -299,12 +295,12 @@ newProfile();
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_1
 
 x = PlotFigureObject('WindowStyle', 'docked');
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 2   1.978
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_1
 s = UniformitySurfaceObject.Create(x.PlotAxes);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 3   0.258
 x.setVisible(true);
@@ -317,7 +313,7 @@ endProfile(); newProfile();
 % 5   1.451
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_2
 s = UniformitySurfaceObject.Create(x.PlotAxes);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 6   0.570
 d = s.DataSource; b = ColorBarObject.Create(p);
@@ -328,7 +324,7 @@ for i = 1:d.Samples
   s.setSheet('+1');
   drawnow();
 end
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 8   0.021
 delete(x);
@@ -340,12 +336,12 @@ endProfile(); newProfile();
 % *** CreateHandleObject: text ==> String, Title, Tag, TitleTextObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.024658203125], Tag, TitleTextObject_2
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_2
 x = MultiPlotFigureObject('WindowStyle', 'docked'); x.setVisible(1);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 10  1.340
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.024658203125], Tag, UniformitySurfaceObject_3
 s(1) = UniformitySurfaceObject.Create(x.getPlotAxes(1));
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 11  1.557
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_3
@@ -357,7 +353,7 @@ endProfile(); newProfile();
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_6
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_7, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [26.024658203125], Tag, UniformitySurfaceObject_7
 for i = 2:5, s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), 'DataSource', s(1).DataSource); end
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 12  1.157
 % Warning: figure JavaFrame property will be obsoleted in a future release. For more
@@ -365,38 +361,51 @@ endProfile(); newProfile();
 % > In testPrototypes at 58 
 
 x.WindowStyle = 'normal';
-jFrame = get(x.Handle,'JavaFrame');
-jFrame.setMaximized(true);
-x.resizeComponent;
-endProfile(); newProfile();
+% jFrame = get(x.Handle,'JavaFrame');
+% jFrame.setMaximized(true);
+%  1          61        1168         796
+set(x.Handle, 'Position', [1 61 1168 796]);
+drawnow;
+% x.resizeComponent;
+endProfile(); 
+pause(2);
+set(x.Handle, 'Position', [1 61 1168 796]);
+pause(2);
+snapnow(); 
+
+newProfile();
 
 % 13  14.999
 for i = 1:d.Samples
   s(1).setSheet('+1');
   drawnow();
 end
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 14  0.013
+% close all;
 delete(x);
 
-endProfile();
+endProfile(); close all;
 
+drawnow();
 % 34.809
 fprintf('Tests Complete in %f s.\n', toc(rId));
 
-disp('Saving Test Profiles...');
-
-rID = tic;
-
-% Saving Profiles Complete in 721.330361 s.
-for pi = 1:numel(pInfo)
-  profileName = ['Prototypes' int2str(pi)];
-  fprintf('Saving %s...\n', profileName);
-  profsave( pInfo(pi), fullfile(cd, 'output', 'profile', profileName));
-end
-
-fprintf('Saving Profiles Complete in %f s.\n', toc(rId));
+% disp('Saving Test Profiles...');
+% 
+% rID = tic;
+% 
+% % Saving Profiles Complete in 721.330361 s.
+% for pi = 1:numel(pInfo)
+%   profileName = ['Prototypes' int2str(pi)];
+%   fprintf('Saving %s...\n', profileName);
+%   profsave( pInfo(pi), fullfile(cd, 'output', 'profile', profileName));
+% end
+% 
+% fprintf('Saving Profiles Complete in %f s.\n', toc(rId));
+% 
+% clear all;
 
 ##### SOURCE END #####
 --></body></html>

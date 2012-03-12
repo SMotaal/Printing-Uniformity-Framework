@@ -1,7 +1,7 @@
 function [ output_args ] = initialize( input_args )
   %INITIALIZE Summary of this function goes here
   
-  addpath('Common', 'Scripts', 'Prototypes');
+  addpath('Common', 'Scripts', 'Prototypes', 'Algorithms', 'Test');
   
   timerID     = 'InitializeTimer';
   delayTimer  = timerfind('Tag','StartupTimer');
