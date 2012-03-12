@@ -23,12 +23,12 @@ newProfile();
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_1
 
 x = PlotFigureObject('WindowStyle', 'docked');
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 2   1.978
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_1
 s = UniformitySurfaceObject.Create(x.PlotAxes);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 3   0.258
 x.setVisible(true);
@@ -41,7 +41,7 @@ endProfile(); newProfile();
 % 5   1.451
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_2
 s = UniformitySurfaceObject.Create(x.PlotAxes);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 6   0.570
 d = s.DataSource; b = ColorBarObject.Create(p);
@@ -52,7 +52,7 @@ for i = 1:d.Samples
   s.setSheet('+1');
   drawnow();
 end
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 8   0.021
 delete(x);
@@ -64,12 +64,12 @@ endProfile(); newProfile();
 % *** CreateHandleObject: text ==> String, Title, Tag, TitleTextObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.024658203125], Tag, TitleTextObject_2
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_2
 x = MultiPlotFigureObject('WindowStyle', 'docked'); x.setVisible(1);
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 10  1.340
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.024658203125], Tag, UniformitySurfaceObject_3
 s(1) = UniformitySurfaceObject.Create(x.getPlotAxes(1));
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 11  1.557
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_3
@@ -81,7 +81,7 @@ endProfile(); newProfile();
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_6
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_7, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [26.024658203125], Tag, UniformitySurfaceObject_7
 for i = 2:5, s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), 'DataSource', s(1).DataSource); end
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 12  1.157
 % Warning: figure JavaFrame property will be obsoleted in a future release. For more
@@ -92,20 +92,22 @@ x.WindowStyle = 'normal';
 jFrame = get(x.Handle,'JavaFrame');
 jFrame.setMaximized(true);
 x.resizeComponent;
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 13  14.999
 for i = 1:d.Samples
   s(1).setSheet('+1');
   drawnow();
 end
-endProfile(); newProfile();
+endProfile(); snapnow(); newProfile();
 
 % 14  0.013
+% close all;
 delete(x);
 
-endProfile();
+endProfile(); close all;
 
+drawnow();
 % 34.809
 fprintf('Tests Complete in %f s.\n', toc(rId));
 
@@ -121,3 +123,5 @@ for pi = 1:numel(pInfo)
 end
 
 fprintf('Saving Profiles Complete in %f s.\n', toc(rId));
+
+clear all;

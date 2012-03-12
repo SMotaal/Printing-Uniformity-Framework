@@ -6,7 +6,7 @@ classdef GrasppeComponent < GrasppeHandle
     Defaults
   end
   
-  properties (Hidden=true)
+  properties (Hidden=false)
     OptionsTable
     pullEvents    = 0;
     pushEvents    = 0;
@@ -17,6 +17,7 @@ classdef GrasppeComponent < GrasppeHandle
     IsSetting = false;
     
     ComponentFields;
+    ComponentAliases;
     
     DebugPropertySynching = false;
   end
@@ -27,7 +28,7 @@ classdef GrasppeComponent < GrasppeHandle
     end
   end
   
-  methods (Hidden=true)
+  methods (Hidden=false)
     function obj = GrasppeComponent(varargin)
       if isValid('obj.Defaults','struct')
         obj.setOptions(obj.Defaults, varargin{:});
@@ -68,7 +69,7 @@ classdef GrasppeComponent < GrasppeHandle
     
   end
   
-  methods (Hidden=true)
+  methods (Hidden=false)
     function type = getComponentType(obj)
       try type = obj.ComponentType; end
     end
@@ -87,24 +88,26 @@ classdef GrasppeComponent < GrasppeHandle
     end
         
     function [fields aliases] = getComponentFields(obj, names)
-      
-      if isempty(obj.ComponentFields)
-        hooks       = obj.getComponentHooks;
-        properties  = obj.getComponentProperties;
-        
-        fields = [properties hooks];
-        
-        if nargout==2
-          [fields aliases] = obj.getOptionNames(fields);
+      try
+        if isempty(obj.ComponentFields)
+          hooks       = obj.getComponentHooks;
+          properties  = obj.getComponentProperties;
+          
+          fields = [properties hooks];
+          obj.ComponentFields = fields;
         end
-        obj.ComponentFields = fields;
-      else        
-        [fields aliases] = obj.getOptionNames(obj.ComponentFields);
+        fields = obj.ComponentFields;
+        if nargout==2
+            [fields aliases] = obj.getOptionNames(fields);
+        end          
+      catch err
+        halt(err, 'obj.ID');
+        try debugStamp(obj.ID, 4); catch, debugStamp('', 4); end
       end
     end
   end
   
-  methods (Access=protected, Hidden=true)
+  methods (Access=protected, Hidden=false)
     
     function createComponent(obj, type, varargin)
       if obj.IsHandled, return; end
@@ -218,6 +221,7 @@ classdef GrasppeComponent < GrasppeHandle
       default emptyValues true;
       default names;
       if isempty(names)
+        try debugStamp(obj.ID, 5); catch, debugStamp('', 5); end
         names = obj.getComponentFields;
       end
       
@@ -256,7 +260,19 @@ classdef GrasppeComponent < GrasppeHandle
     function setOptions(obj, varargin)
       if obj.IsSetting, return; else obj.IsSetting = true; end
       
-      obj.setOptions@GrasppeHandle(varargin{:});
+      try
+        obj.setOptions@GrasppeHandle(varargin{:});
+      catch
+        for i = 1:length(varargin)/2
+          try
+            option  = varargin{i*2-1};
+            value   = varargin{i*2};
+            obj.setOptions@GrasppeHandle(option, value);
+          catch err
+            halt(err, 'obj.ID');
+          end
+        end
+      end
       
       if obj.IsHandled && ~obj.IsUpdating
         obj.IsUpdating = true;

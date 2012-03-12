@@ -17,7 +17,7 @@ classdef PlotObject < InAxesObject
     end
     
     function createComponent(obj, type)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       obj.createComponent@GrasppeComponent(type);
       obj.ParentFigure.registerKeyEventHandler(obj);
     end
@@ -100,7 +100,7 @@ classdef PlotObject < InAxesObject
     end  
     
     function refreshPlot(obj, dataSource)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       try obj.IsRefreshing = true; end
       
       if ~exists('dataSource')
@@ -134,7 +134,7 @@ classdef PlotObject < InAxesObject
     end
     
     function refreshPlotData(obj, source, event)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       try
         dataSource = event.AffectedObject;
         dataField = source.Name;
@@ -192,11 +192,11 @@ classdef PlotObject < InAxesObject
 %         property = source.name;
 %         value = event.
 %         obj.handleSet(
-      debugStamp();
+      try debugStamp(); catch, debugStamp(); end;
 %       disp(event);
     end       
     function gettingDataProperty(source, event)
-      debugStamp();
+      try debugStamp(); catch, debugStamp(); end;
 %       disp(event);
     end      
 %       if ~(isobject(source))

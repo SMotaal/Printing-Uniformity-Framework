@@ -1,4 +1,4 @@
-classdef RawUniformityDataSource < UniformityDataSource
+classdef RegionStatsUniformityDataSource < UniformityDataSource
   %SURFACEUNIFORMITYDATASOURCE Raw printing uniformity data source
   %   Detailed explanation goes here
   
@@ -6,7 +6,7 @@ classdef RawUniformityDataSource < UniformityDataSource
   end
   
   methods (Hidden)
-    function obj = RawUniformityDataSource(varargin)
+    function obj = RegionStatsUniformityDataSource(varargin)
       obj = obj@UniformityDataSource(varargin{:});
     end
     

@@ -41,7 +41,7 @@ classdef UniformitySurfaceObject < SurfaceObject & UniformityPlotObject
           obj.refreshPlot@SurfaceObject();
         end
       catch err
-        debugStamp(obj.ID);
+        try debugStamp(obj.ID); catch, debugStamp(); end;
 %         disp(err);
       end
       try obj.updatePlotTitle(obj.DataSource.SourceID, obj.DataSource.SampleID); end
@@ -71,7 +71,7 @@ classdef UniformitySurfaceObject < SurfaceObject & UniformityPlotObject
     end
     
     function refreshPlotData(obj, source, event)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       try
         dataSource = event.AffectedObject;
         dataField = source.Name;

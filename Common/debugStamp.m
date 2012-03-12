@@ -5,7 +5,7 @@ function [ output_args ] = debugStamp( tag, level )
   persistent debugtimer debugstack stackdups stackloops stacktime;
   
   try
-  debugmode     = false;
+  debugmode     = true;
   verbose       = false;
   intrusive     = false;
   detailed      = false;
@@ -14,7 +14,7 @@ function [ output_args ] = debugStamp( tag, level )
   
   if ~debugmode, return; end
   
-  if ~isInteger('level') || ~isScalar(level)
+  if ~isInteger('level') || ~isscalar(level)
     level       = 5;
   end
   

@@ -40,7 +40,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
   
   methods
     function preparePlotAxesStack(obj)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       plotLimit   = obj.PlotAxesLimit;
       plotStack   = obj.PlotAxesStack;
       plotTargets = obj.PlotAxesTargets;      
@@ -77,7 +77,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
     end
     
     function [plotAxes idx id] = getPlotAxes(obj, target)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       idx = []; id = ''; plotAxes =[];
       try
         if isValid('target', 'char')
@@ -102,7 +102,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
     end
     
     function [plotAxes idx id] = createPlotAxes(obj, idx, id)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       nextIdx = idx;  nextID  = id;
       
       nAxes = length(obj.PlotAxes);

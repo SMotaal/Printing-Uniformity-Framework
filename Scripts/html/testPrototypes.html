@@ -1,0 +1,402 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>testPrototypes</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-11"><meta name="DC.source" content="testPrototypes.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><pre class="codeinput">clc; <span class="keyword">try</span> dbquit <span class="string">all</span>, <span class="keyword">end</span>;close <span class="string">all</span>; cleardebug;
+
+pi = 1;
+clear <span class="string">pInfo</span>;
+
+
+disp(<span class="string">'Cleared Debug Workspace.'</span>);
+
+newProfile  = @(varargin) evalin(<span class="string">'caller'</span>, <span class="string">'profile on; tId=tic;,'</span>    );
+endProfile  = @(varargin) evalin(<span class="string">'caller'</span>, [<span class="string">'toc(tId); profile off; '</span> <span class="keyword">...</span>
+  <span class="string">'pInfo(pi) = profile(''info''); '</span> <span class="string">'pi = pi+1; '</span> ]                   );
+
+rId = tic;
+
+disp(<span class="string">'Running Tests...'</span>);
+
+newProfile();
+
+<span class="comment">% 1   1.096</span>
+<span class="comment">% *** CreateHandleObject: figure ==&gt; Name, Printing, Uniformity, Plot, Renderer, opengl, ToolBar, none, MenuBar, none, WindowStyle, docked, Color, white, Tag, PlotFigureObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotFigureObject], Visible, off, Parent, [0], Tag, PlotFigureObject_1</span>
+<span class="comment">% *** CreateHandleObject: axes ==&gt; Box, off, Color, none, Tag, OverlayAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, off, Selected, off, UserData, [1x1, OverlayAxesObject], Parent, [1], Tag, OverlayAxesObject_1</span>
+<span class="comment">% *** CreateHandleObject: text ==&gt; String, Title, Tag, TitleTextObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.01708984375], Tag, TitleTextObject_1</span>
+<span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_1</span>
+
+x = PlotFigureObject(<span class="string">'WindowStyle'</span>, <span class="string">'docked'</span>);
+endProfile(); newProfile();
+
+<span class="comment">% 2   1.978</span>
+<span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_1</span>
+s = UniformitySurfaceObject.Create(x.PlotAxes);
+endProfile(); newProfile();
+
+<span class="comment">% 3   0.258</span>
+x.setVisible(true);
+endProfile(); newProfile();
+
+<span class="comment">% 4   0.001</span>
+p = x.PlotAxes;
+endProfile(); newProfile();
+
+<span class="comment">% 5   1.451</span>
+<span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_2</span>
+s = UniformitySurfaceObject.Create(x.PlotAxes);
+endProfile(); newProfile();
+
+<span class="comment">% 6   0.570</span>
+d = s.DataSource; b = ColorBarObject.Create(p);
+endProfile(); newProfile();
+
+<span class="comment">% 7   9.277</span>
+<span class="keyword">for</span> i = 1:d.Samples
+  s.setSheet(<span class="string">'+1'</span>);
+  drawnow();
+<span class="keyword">end</span>
+endProfile(); newProfile();
+
+<span class="comment">% 8   0.021</span>
+delete(x);
+endProfile(); newProfile();
+
+<span class="comment">% 9   0.879</span>
+<span class="comment">% *** CreateHandleObject: figure ==&gt; Name, Printing, Uniformity, Plot, Renderer, opengl, ToolBar, none, MenuBar, none, WindowStyle, docked, Color, white, Tag, MultiPlotFigureObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, MultiPlotFigureObject], Visible, off, Parent, [0], Tag, MultiPlotFigureObject_1</span>
+<span class="comment">% *** CreateHandleObject: axes ==&gt; Box, off, Color, none, Tag, OverlayAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, off, Selected, off, UserData, [1x1, OverlayAxesObject], Parent, [1], Tag, OverlayAxesObject_2</span>
+<span class="comment">% *** CreateHandleObject: text ==&gt; String, Title, Tag, TitleTextObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.024658203125], Tag, TitleTextObject_2</span>
+<span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_2</span>
+x = MultiPlotFigureObject(<span class="string">'WindowStyle'</span>, <span class="string">'docked'</span>); x.setVisible(1);
+endProfile(); newProfile();
+
+<span class="comment">% 10  1.340</span>
+<span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.024658203125], Tag, UniformitySurfaceObject_3</span>
+s(1) = UniformitySurfaceObject.Create(x.getPlotAxes(1));
+endProfile(); newProfile();
+
+<span class="comment">% 11  1.557</span>
+<span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_3</span>
+<span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_4, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [11.024658203125], Tag, UniformitySurfaceObject_4</span>
+<span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_4, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_4</span>
+<span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_5, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [16.024658203125], Tag, UniformitySurfaceObject_5</span>
+<span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_5, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_5</span>
+<span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [21.024658203125], Tag, UniformitySurfaceObject_6</span>
+<span class="comment">% *** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_6</span>
+<span class="comment">% *** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_7, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [26.024658203125], Tag, UniformitySurfaceObject_7</span>
+<span class="keyword">for</span> i = 2:5, s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), <span class="string">'DataSource'</span>, s(1).DataSource); <span class="keyword">end</span>
+endProfile(); newProfile();
+
+<span class="comment">% 12  1.157</span>
+<span class="comment">% Warning: figure JavaFrame property will be obsoleted in a future release. For more</span>
+<span class="comment">% information see the JavaFrame resource on the MathWorks web site.</span>
+<span class="comment">% &gt; In testPrototypes at 58</span>
+
+x.WindowStyle = <span class="string">'normal'</span>;
+jFrame = get(x.Handle,<span class="string">'JavaFrame'</span>);
+jFrame.setMaximized(true);
+x.resizeComponent;
+endProfile(); newProfile();
+
+<span class="comment">% 13  14.999</span>
+<span class="keyword">for</span> i = 1:d.Samples
+  s(1).setSheet(<span class="string">'+1'</span>);
+  drawnow();
+<span class="keyword">end</span>
+endProfile(); newProfile();
+
+<span class="comment">% 14  0.013</span>
+delete(x);
+
+endProfile();
+
+<span class="comment">% 34.809</span>
+fprintf(<span class="string">'Tests Complete in %f s.\n'</span>, toc(rId));
+
+disp(<span class="string">'Saving Test Profiles...'</span>);
+
+rID = tic;
+
+<span class="comment">% Saving Profiles Complete in 721.330361 s.</span>
+<span class="keyword">for</span> pi = 1:numel(pInfo)
+  profileName = [<span class="string">'Prototypes'</span> int2str(pi)];
+  fprintf(<span class="string">'Saving %s...\n'</span>, profileName);
+  profsave( pInfo(pi), fullfile(cd, <span class="string">'output'</span>, <span class="string">'profile'</span>, profileName));
+<span class="keyword">end</span>
+
+fprintf(<span class="string">'Saving Profiles Complete in %f s.\n'</span>, toc(rId));
+</pre><pre class="codeoutput">Cleared Debug Workspace.
+Running Tests...
+
+*** CreateHandleObject: figure ==&gt; Name, Printing, Uniformity, Plot, Renderer, opengl, ToolBar, none, MenuBar, none, WindowStyle, docked, Color, white, Tag, PlotFigureObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotFigureObject], Visible, off, Parent, [0], Tag, PlotFigureObject_1
+
+
+*** CreateHandleObject: axes ==&gt; Box, off, Color, none, Tag, OverlayAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, off, Selected, off, UserData, [1x1, OverlayAxesObject], Parent, [1], Tag, OverlayAxesObject_1
+
+
+*** CreateHandleObject: text ==&gt; String, Title, Tag, TitleTextObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.0015869140625], Tag, TitleTextObject_1
+
+
+*** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_1
+
+Elapsed time is 1.452875 seconds.
+
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.0015869140625], Tag, UniformitySurfaceObject_1
+
+Elapsed time is 2.607720 seconds.
+Elapsed time is 2.776034 seconds.
+Elapsed time is 0.000446 seconds.
+
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.0015869140625], Tag, UniformitySurfaceObject_2
+
+Elapsed time is 1.482670 seconds.
+Elapsed time is 0.758447 seconds.
+Elapsed time is 9.589232 seconds.
+Elapsed time is 0.022099 seconds.
+
+*** CreateHandleObject: figure ==&gt; Name, Printing, Uniformity, Plot, Renderer, opengl, ToolBar, none, MenuBar, none, WindowStyle, docked, Color, white, Tag, MultiPlotFigureObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, MultiPlotFigureObject], Visible, off, Parent, [0], Tag, MultiPlotFigureObject_1
+
+
+*** CreateHandleObject: axes ==&gt; Box, off, Color, none, Tag, OverlayAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, off, Selected, off, UserData, [1x1, OverlayAxesObject], Parent, [1], Tag, OverlayAxesObject_2
+
+
+*** CreateHandleObject: text ==&gt; String, Title, Tag, TitleTextObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.0091552734375], Tag, TitleTextObject_2
+
+
+*** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_2
+
+Elapsed time is 0.940304 seconds.
+
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.0091552734375], Tag, UniformitySurfaceObject_3
+
+Elapsed time is 1.305163 seconds.
+
+*** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_3
+
+
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_4, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [11.0091552734375], Tag, UniformitySurfaceObject_4
+
+
+*** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_4, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_4
+
+
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_5, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [16.0091552734375], Tag, UniformitySurfaceObject_5
+
+
+*** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_5, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_5
+
+
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [21.0091552734375], Tag, UniformitySurfaceObject_6
+
+
+*** CreateHandleObject: axes ==&gt; Box, on, Color, none, Tag, PlotAxesObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_6
+
+
+*** CreateHandleObject: surf ==&gt; LineSmoothing, on, Tag, UniformitySurfaceObject_7, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [26.0091552734375], Tag, UniformitySurfaceObject_7
+
+Elapsed time is 1.499702 seconds.
+Warning: figure JavaFrame property will be obsoleted in a future release. For
+more information see &lt;a href="http://www.mathworks.com/javaframe"&gt;the JavaFrame
+resource on the MathWorks web site&lt;/a&gt;. 
+Elapsed time is 0.975309 seconds.
+Elapsed time is 12.853500 seconds.
+Elapsed time is 0.015547 seconds.
+Tests Complete in 36.502335 s.
+Saving Test Profiles...
+Saving Prototypes1...
+Saving Prototypes2...
+Saving Prototypes3...
+Saving Prototypes4...
+Saving Prototypes5...
+Saving Prototypes6...
+Saving Prototypes7...
+Saving Prototypes8...
+Saving Prototypes9...
+Saving Prototypes10...
+Saving Prototypes11...
+Saving Prototypes12...
+Saving Prototypes13...
+Saving Prototypes14...
+Saving Profiles Complete in 754.662690 s.
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+clc; try dbquit all, end;close all; cleardebug;
+
+pi = 1;
+clear pInfo;
+
+
+disp('Cleared Debug Workspace.');
+
+newProfile  = @(varargin) evalin('caller', 'profile on; tId=tic;,'    );
+endProfile  = @(varargin) evalin('caller', ['toc(tId); profile off; ' ...
+  'pInfo(pi) = profile(''info''); ' 'pi = pi+1; ' ]                   );
+
+rId = tic;
+
+disp('Running Tests...');
+
+newProfile();
+
+% 1   1.096
+% *** CreateHandleObject: figure ==> Name, Printing, Uniformity, Plot, Renderer, opengl, ToolBar, none, MenuBar, none, WindowStyle, docked, Color, white, Tag, PlotFigureObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotFigureObject], Visible, off, Parent, [0], Tag, PlotFigureObject_1
+% *** CreateHandleObject: axes ==> Box, off, Color, none, Tag, OverlayAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, off, Selected, off, UserData, [1x1, OverlayAxesObject], Parent, [1], Tag, OverlayAxesObject_1
+% *** CreateHandleObject: text ==> String, Title, Tag, TitleTextObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.01708984375], Tag, TitleTextObject_1
+% *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_1
+
+x = PlotFigureObject('WindowStyle', 'docked');
+endProfile(); newProfile();
+
+% 2   1.978
+% *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_1
+s = UniformitySurfaceObject.Create(x.PlotAxes);
+endProfile(); newProfile();
+
+% 3   0.258
+x.setVisible(true);
+endProfile(); newProfile();
+
+% 4   0.001
+p = x.PlotAxes;
+endProfile(); newProfile();
+
+% 5   1.451
+% *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.01708984375], Tag, UniformitySurfaceObject_2
+s = UniformitySurfaceObject.Create(x.PlotAxes);
+endProfile(); newProfile();
+
+% 6   0.570
+d = s.DataSource; b = ColorBarObject.Create(p);
+endProfile(); newProfile();
+
+% 7   9.277
+for i = 1:d.Samples
+  s.setSheet('+1');
+  drawnow();
+end
+endProfile(); newProfile();
+
+% 8   0.021
+delete(x);
+endProfile(); newProfile();
+
+% 9   0.879
+% *** CreateHandleObject: figure ==> Name, Printing, Uniformity, Plot, Renderer, opengl, ToolBar, none, MenuBar, none, WindowStyle, docked, Color, white, Tag, MultiPlotFigureObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, MultiPlotFigureObject], Visible, off, Parent, [0], Tag, MultiPlotFigureObject_1
+% *** CreateHandleObject: axes ==> Box, off, Color, none, Tag, OverlayAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, off, Selected, off, UserData, [1x1, OverlayAxesObject], Parent, [1], Tag, OverlayAxesObject_2
+% *** CreateHandleObject: text ==> String, Title, Tag, TitleTextObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.024658203125], Tag, TitleTextObject_2
+% *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_2
+x = MultiPlotFigureObject('WindowStyle', 'docked'); x.setVisible(1);
+endProfile(); newProfile();
+
+% 10  1.340
+% *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [6.024658203125], Tag, UniformitySurfaceObject_3
+s(1) = UniformitySurfaceObject.Create(x.getPlotAxes(1));
+endProfile(); newProfile();
+
+% 11  1.557
+% *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_3, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_3
+% *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_4, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [11.024658203125], Tag, UniformitySurfaceObject_4
+% *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_4, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_4
+% *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_5, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [16.024658203125], Tag, UniformitySurfaceObject_5
+% *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_5, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_5
+% *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [21.024658203125], Tag, UniformitySurfaceObject_6
+% *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_6
+% *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_7, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [26.024658203125], Tag, UniformitySurfaceObject_7
+for i = 2:5, s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), 'DataSource', s(1).DataSource); end
+endProfile(); newProfile();
+
+% 12  1.157
+% Warning: figure JavaFrame property will be obsoleted in a future release. For more
+% information see the JavaFrame resource on the MathWorks web site. 
+% > In testPrototypes at 58 
+
+x.WindowStyle = 'normal';
+jFrame = get(x.Handle,'JavaFrame');
+jFrame.setMaximized(true);
+x.resizeComponent;
+endProfile(); newProfile();
+
+% 13  14.999
+for i = 1:d.Samples
+  s(1).setSheet('+1');
+  drawnow();
+end
+endProfile(); newProfile();
+
+% 14  0.013
+delete(x);
+
+endProfile();
+
+% 34.809
+fprintf('Tests Complete in %f s.\n', toc(rId));
+
+disp('Saving Test Profiles...');
+
+rID = tic;
+
+% Saving Profiles Complete in 721.330361 s.
+for pi = 1:numel(pInfo)
+  profileName = ['Prototypes' int2str(pi)];
+  fprintf('Saving %s...\n', profileName);
+  profsave( pInfo(pi), fullfile(cd, 'output', 'profile', profileName));
+end
+
+fprintf('Saving Profiles Complete in %f s.\n', toc(rId));
+
+##### SOURCE END #####
+--></body></html>

@@ -6,7 +6,7 @@ classdef EventHandler < GrasppeHandle
     
   end
   
-  methods (Hidden=true)
+  methods (Hidden=false)
     
     function [fcn token]  = callbackFunction(object, varargin)
       [token fcn] = EventHandler.createCallbackToken(object, varargin{:});
@@ -26,7 +26,7 @@ classdef EventHandler < GrasppeHandle
     end
     
     function attachEvents(obj, hooks)
-      
+      try
       if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
           [names aliases] = obj.getOptionNames(obj.getComponentHooks);
           hooks = aliases;
@@ -51,6 +51,10 @@ classdef EventHandler < GrasppeHandle
       finalHooks = reshape({hooks{:}; callbacks{:}},1,[]);
       
       obj.setOptions(finalHooks{:});
+      catch err
+        halt(err, 'obj.ID');
+        try debugStamp(obj.ID, 4); end
+      end
       
     end
     

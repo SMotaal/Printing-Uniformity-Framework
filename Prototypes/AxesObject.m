@@ -229,7 +229,7 @@ classdef AxesObject < InFigureObject
     
   end
   
-  methods (Hidden=true)
+  methods (Hidden=false)
     
     function setPosition(obj, value, mode)
       

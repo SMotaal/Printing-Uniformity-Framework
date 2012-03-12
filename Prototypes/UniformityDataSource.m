@@ -54,7 +54,7 @@ classdef UniformityDataSource < GrasppeComponent
     end
     
     function attachPlotObject(obj, plotObject)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       plotObjects = obj.PlotObjects;
       if ~any(plotObjects==plotObject)
         try
@@ -105,7 +105,8 @@ classdef UniformityDataSource < GrasppeComponent
       try
         refreshdata(linkedPlots, 'caller');
       catch err
-        keyboard
+        halt(err, 'obj.ID');
+        try debugStamp(obj.ID, 4); end
       end
     end
     
@@ -134,18 +135,18 @@ classdef UniformityDataSource < GrasppeComponent
   methods
     function set.SourceID(obj, value)
       obj.SourceID = changeSet(obj.SourceID, value);
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       obj.resetSource;
     end
     
     function set.SetID(obj, value)
       obj.SetID = changeSet(obj.SetID, value);
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
     end
     
     function set.SampleID(obj, value)
       obj.SampleID = changeSet(obj.SampleID, value);
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       if ~obj.IsRetrieving
         try obj.processPlotData(); end
       end
@@ -160,7 +161,7 @@ classdef UniformityDataSource < GrasppeComponent
     end
     
     function resetSource(obj)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       obj.IsSettingSource = true;
       obj.clearSourceData();
       obj.retrieveSourceData();
@@ -168,7 +169,7 @@ classdef UniformityDataSource < GrasppeComponent
     end
     
     function clearSourceData(obj)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       obj.IsRetrieved = false;  obj.IsRetrieving = false;
       if ~obj.IsSettingSource
         obj.SourceID = [];
@@ -183,7 +184,7 @@ classdef UniformityDataSource < GrasppeComponent
     function retrieveSourceData(obj)
       if obj.IsRetrieving || obj.IsRetrieved, return; else obj.IsRetrieving=true; end
       
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       
       source = obj.SourceID;
       
@@ -219,7 +220,7 @@ classdef UniformityDataSource < GrasppeComponent
     
     
     function setPlotData(obj, XData, YData, ZData)
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       %       obj.forceSet('XData', XData, 'YData', YData, 'ZData', ZData);
       % %       obj.set('XData', XData, 'YData', YData, 'ZData', ZData);
       obj.XData = XData;
@@ -231,7 +232,7 @@ classdef UniformityDataSource < GrasppeComponent
     
     function sheet = setSheet (obj, sheet)
       
-      debugStamp(obj.ID);
+      try debugStamp(obj.ID); catch, debugStamp(); end;
       
       currentSheet  = obj.SampleID;
       firstSheet    = 1;
