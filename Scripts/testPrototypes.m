@@ -58,12 +58,16 @@ endProfile(); snapnow(); newProfile();
 delete(x);
 endProfile(); newProfile();
 
+
+% w=6; x = MultiPlotFigureObject('WindowStyle', 'docked', 'PlotAxesLimit', w); x.setVisible(1); s(1) = UniformitySurfaceObject.Create(x.getPlotAxes(1)); for i = 2:w, s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), 'DataSource', s(1).DataSource); end
+
 % 9   0.879
 % *** CreateHandleObject: figure ==> Name, Printing, Uniformity, Plot, Renderer, opengl, ToolBar, none, MenuBar, none, WindowStyle, docked, Color, white, Tag, MultiPlotFigureObject_1, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, MultiPlotFigureObject], Visible, off, Parent, [0], Tag, MultiPlotFigureObject_1
 % *** CreateHandleObject: axes ==> Box, off, Color, none, Tag, OverlayAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, off, Selected, off, UserData, [1x1, OverlayAxesObject], Parent, [1], Tag, OverlayAxesObject_2
 % *** CreateHandleObject: text ==> String, Title, Tag, TitleTextObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, off, Visible, on, Selected, off, UserData, [1x1, TitleTextObject], Parent, [0.024658203125], Tag, TitleTextObject_2
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_2, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_2
-x = MultiPlotFigureObject('WindowStyle', 'docked'); x.setVisible(1);
+w = 6;
+x = MultiPlotFigureObject('WindowStyle', 'normal', 'PlotAxesLimit', w); x.setVisible(1);
 endProfile(); snapnow(); newProfile();
 
 % 10  1.340
@@ -80,7 +84,7 @@ endProfile(); snapnow(); newProfile();
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [21.024658203125], Tag, UniformitySurfaceObject_6
 % *** CreateHandleObject: axes ==> Box, on, Color, none, Tag, PlotAxesObject_6, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, PlotAxesObject], Parent, [1], Tag, PlotAxesObject_6
 % *** CreateHandleObject: surf ==> LineSmoothing, on, Tag, UniformitySurfaceObject_7, HandleVisibility, on, SelectionHighlight, on, HitTest, on, Visible, on, Selected, off, UserData, [1x1, UniformitySurfaceObject], Parent, [26.024658203125], Tag, UniformitySurfaceObject_7
-for i = 2:5, s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), 'DataSource', s(1).DataSource); end
+for i = 2:w, s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), 'DataSource', s(1).DataSource); end
 endProfile(); snapnow(); newProfile();
 
 % 12  1.157
