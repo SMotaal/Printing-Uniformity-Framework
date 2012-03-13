@@ -1,20 +1,27 @@
-function [ VariableStructure ] = WorkspaceVariables(Clear)
+function [ s ] = WorkspaceVariables(Clear)
   %WORKSPACEVARIABLES structure containing workspace variables
   
-  mpath = fileparts(mfilename);
-  tempfile = fullfile(mpath,'~workspace.mat');
   
-  evalin('caller', ['save(''' tempfile ''')']);
+  vars  = evalin('caller', 'who');
   
-  if isVerified('Clear',true)
-    evalin('caller', 'clear');
-  end
+  assignin('caller', 'WorkspaceVariableNames', vars);
+  s     = evalin('caller', 'varStruct(WorkspaceVariableNames{:})');
   
-  VariableStructure = load(tempfile);
   
-  recycleStat = recycle('off');
-  delete(tempfile);
-  recycle(recycleStat);
+%   mpath = fileparts(mfilename);
+%   tempfile = fullfile(mpath,'~workspace.mat');
+%   
+%   evalin('caller', ['save(''' tempfile ''')']);
+%   
+    if isVerified('Clear',true)
+      evalin('caller', 'clear');
+    end
+%   
+%   VariableStructure = load(tempfile);
+%   
+%   recycleStat = recycle('off');
+%   delete(tempfile);
+%   recycle(recycleStat);
   
 end
 
