@@ -97,6 +97,11 @@ function [localStats] = calculateStats( data,  masks, population )
   
   localStats = struct;
   
+  % IN PLOTUPSTATS: Data.filterUPDataSet produces Column-First data!
+  % IN PLOTUPSTATS: Metrics.generateUPRegions produces Row-First masks!
+  
+  % data is Row-First
+  
   %% Run Statistics
   if isValid('population', 'struct')
     iMean = firstMatch(fieldnames(population), '^Mean$' );
@@ -130,8 +135,11 @@ function [localStats] = calculateStats( data,  masks, population )
             
     for m = 1:nMasks
       
-      localStats(m,si).(tMean) = nanmean(sheetData(:));
-      localStats(m,si).(tStd ) = nanstd(sheetData(:));
+      localMask   = masks(m,:,:)==1;
+      regionData  = sheetData(localMask); % regionData  = zeros(size(localMask)) * NaN; % regionData(localMask)  = sheetData(localMask);
+
+      localStats(m,si).(tMean) = nanmean(regionData);
+      localStats(m,si).(tStd ) = nanstd(regionData);
       localStats(m,si).(tLim ) = localStats(m,si).(tMean) + [-3 +3].*localStats(m,si).(tStd);
 
       if isValid('rMean', 'double')

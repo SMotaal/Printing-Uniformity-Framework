@@ -6,7 +6,7 @@ function [ output_args ] = debugStamp( tag, level )
   
   try
   debugmode     = true;
-  verbose       = false;
+  verbose       = true;
   intrusive     = false;
   detailed      = false;
   stackLimit    = 5;

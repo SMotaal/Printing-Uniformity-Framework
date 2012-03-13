@@ -10,7 +10,7 @@ function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargi
   options.plotMode    = {'display', 'user', 'export'};
   defaults.plotMode   = {'display'};
   
-  options.statMode    = {'sheet', 'axial', 'across', 'circumferential', 'around', 'region', 'regions', 'section', 'sections', 'zone', 'zones', 'zoneband', 'zonebands', 'band', 'bands'};
+  options.statMode    = {'complete', 'sheet', 'axial', 'across', 'circumferential', 'around', 'region', 'regions', 'section', 'sections', 'zone', 'zones', 'zoneband', 'zonebands', 'band', 'bands'};
   defaults.statMode   = {'regions'};
   
   options.statField   = {'all', {'mean', 'std', 'lim'}};
@@ -49,27 +49,14 @@ function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargi
     parser.parse(dataSource.Results.dataSource, varargin{:}); % inputParams = dataSource.Results;
     
   else
-    
-%     inputParams = [];
-    
+        
     parser  = getInputParser(options, defaults);
     optargs = {};
     
     if (isValid('varargin{1}','struct') && isVerified('varargin{1}.plotMode'))
       inputParams = varargin{1};
     end
-    
-%     if (isValid(dataSource,'struct') && isVerified('dataSource.plotMode'))
-%       inputParams = dataSource;
-%       dataSource = inputParams.dataSource;
-%       if isValid('varargin{1}','double')
-%         inputParams.dataPatchSet = varargin{1};
-%         optargs = varargin(2:end);
-%       else
-%         optargs = varargin;
-%       end
-%     end    
-    
+        
     if (isValid('varargin{1}','double') && isValid('varargin{2}','struct') && isVerified('varargin{2}.plotMode'))
       inputParams = varargin{2};
       inputParams.dataPatchSet = varargin{1};
@@ -115,8 +102,6 @@ function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargi
   
   dataSource                = loadSource( dataSource );
   params.dataSourceName     = dataSource.name;
-  
-%   dataSource = params.dataSource;
 
   %% Settings: Data Filtering & Processsing
   
@@ -131,11 +116,12 @@ function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargi
     
     opt dataSource.sets = deleteFields(dataSource.sets, );
   end
-  
-%   when (isempty(params.dataSet.data), ...
-%     'params.dataSet = Data.filterUPDataSet(dataSource, params.dataSet)');
+
   if (isempty(dataSet.data))
     dataSet = Data.filterUPDataSet(dataSource, dataSet);
+    
+    % Data.filterUPDataSet produces Column-First data!
+    % imshow(reshape(dataSet.data(2).surfData, 76, 52)',[])
   end
 
   
@@ -144,18 +130,24 @@ function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargi
   if(~isVerified('dataSource.sampling.regions'))
     dataSource = Metrics.generateUPRegions(dataSource);
     deleteFields(dataSource, 'statistics', 'plotting');
+    
+    % Metrics.generateUPRegions produces Row-First masks!
+    % imshow(reshape(squeeze(dataSource.sampling.regions.sections(1,:,:))', 76, 52)',[])
   end
+  
+  % Data.filterUPDataSet produces Column-First data!
+  % Metrics.generateUPRegions produces Row-First masks!
   
   if(~isVerified('dataSource.statistics'))
     dataSource = Stats.generateUPStats(dataSource, dataSet);
     deleteFields(dataSource, 'plotting');
+    
+    % End up with local stats variables for each mask
   end
   
   %% Settings: Plot
   
-%   if(~isVerified('dataSource.data'))
-    dataSet = Stats.mergeUPRegions(dataSource, dataSet, params, options);
-%   end
+  dataSet = Stats.mergeUPRegions(dataSource, dataSet, params, options);
   
   %% Plotting: Prepare Figure Window
   
@@ -210,9 +202,7 @@ function [params] = parseModeParamters(params, options, defaults)
       exportMode  = {exportMode{:}, mode};
       continue;
     end
-%     statMode    = {statMode{:},   statModes(  find(strcmpi(mode, statModes)))};
-%     plotMode    = {plotMode{:},   plotModes(  find(strcmpi(mode, plotModes)))};
-%     exportMode  = {exportMode{:}, exportModes(find(strcmpi(mode, exportModes)))};
+
   end
   
   if (~isempty(statMode))

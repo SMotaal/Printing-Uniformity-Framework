@@ -7,7 +7,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
   properties
     PlotAxesTargets = []; % = struct('id', [], 'idx', [], 'object', []);
     PlotAxesStack   = [];
-    PlotAxesLimit   = 10;
+    PlotAxesLimit   = 4;
     PlotRows;
     PlotColumns;
     PlotWidth;
@@ -304,7 +304,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
           end
           catch err
             try debugStamp(obj.ID); end
-            disp(err);
+%             disp(err);
             disp(obj.PlotAxes{i});
           end
         end

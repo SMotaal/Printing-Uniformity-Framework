@@ -21,7 +21,7 @@ function [ output_args ] = BuildDataBuffer( input_args )
       patchValue = PatchValues(p);
       
       t = tic;
-      [stats parser params] = Plots.plotUPStats(char(source),patchValue);
+      [stats parser params] = Plots.plotUPStats(char(source),patchValue,'complete');
       et = toc(t);
       src = params.dataSourceName;
       rsrc = [src blanks(10-numel(src))];

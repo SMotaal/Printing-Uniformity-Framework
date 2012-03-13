@@ -139,7 +139,10 @@ function [mask rect] = rectMask (rows, columns, startRow, endRow, startColumn, e
     mask = zeros(rows, columns);
     
     try
-      rect = [startRow startColumn; endRow endColumn];
+      rect = [...
+        startRow  startColumn; ...
+        endRow    endColumn];
+      
       mask(rect(1):rect(2), rect(3):rect(4)) = 1;
     catch err
       disp(err);

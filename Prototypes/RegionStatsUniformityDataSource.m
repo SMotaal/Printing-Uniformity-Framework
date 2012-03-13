@@ -3,6 +3,9 @@ classdef RegionStatsUniformityDataSource < UniformityDataSource
   %   Detailed explanation goes here
   
   properties
+    DataGroup   = 'surfs';
+    RegionGroup = 'sections';
+    StatsGroup  = 'Mean';
   end
   
   methods (Hidden)
@@ -31,13 +34,14 @@ classdef RegionStatsUniformityDataSource < UniformityDataSource
       
 %       try
         setData = obj.SetData;
-        sheetData = setData.data(sheet).surfData;
+        sheetData = reshape(setData.(obj.DataGroup).(obj.RegionGroup).(obj.StatsGroup)(sheet,1,:),52, 76);
+%         sheetData = setData.(obj.DataGroup).(obj.RegionGroup).(obj.StatsGroup); %setData.data(sheet).surfData;
         
         [X Y Z]   = meshgrid(1:columns, 1:rows, 1);
         
         targetFilter  = sourceData.sampling.masks.Target;
         
-        Z = sheetData';
+        Z = sheetData;
         Z(targetFilter~=1) = NaN;
         
         obj.setPlotData(X, Y, Z);
