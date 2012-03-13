@@ -343,20 +343,6 @@ classdef GrasppeComponent < GrasppeHandle
       end
     end
     
-    function checks = checkInheritence(obj, classname)
-      if ~isValid('classname', 'char')
-        classname = eval(CLASS);
-      end
-      
-      try
-        objClass  = class(obj);
-        objSuper  = superclasses(objClass);
-        
-        checks = stropt(classname, {objClass, objSuper{:}});
-      catch
-        checks = false;
-      end
-    end
   end
   
   methods(Abstract, Static, Hidden)

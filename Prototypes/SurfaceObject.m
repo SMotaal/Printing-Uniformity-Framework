@@ -13,7 +13,7 @@ classdef SurfaceObject < PlotObject
   end
   
   properties (SetObservable, GetObservable)
-    Clipping, DisplayName='', AntiAliasing = 'on', CDataMapping;    
+    Clipping, DisplayName='', AntiAliasing = 'on', CDataMapping;
   end
   
   properties (GetObservable, SetObservable)

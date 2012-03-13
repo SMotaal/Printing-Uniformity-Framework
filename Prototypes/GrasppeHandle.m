@@ -402,18 +402,20 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   
   methods (Static, Hidden)
     
-    %     function Set(handle, varargin)
-    %       if ishandle(handle)
-    %         set(handle, varargin{:});
-    %       end
-    %     end
-    %
-    %     function Set(handle, varargin)
-    %       if ishandle(handle)
-    %         set(handle, varargin{:});
-    %       end
-    %     end
-    
+    function checks = checkInheritence(obj, classname)
+      if ~isValid('classname', 'char')
+        classname = eval(CLASS);
+      end
+      
+      try
+        objClass  = class(obj);
+        objSuper  = superclasses(objClass);
+        
+        checks = stropt(classname, {objClass, objSuper{:}});
+      catch
+        checks = false;
+      end
+    end
     
     function VerboseSet(hg, varargin)
       try

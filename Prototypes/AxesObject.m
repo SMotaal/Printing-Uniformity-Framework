@@ -1,4 +1,4 @@
-classdef AxesObject < InFigureObject
+classdef AxesObject < InFigureObject & DecoratedObject
   %AXESOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -8,7 +8,7 @@ classdef AxesObject < InFigureObject
   properties (Transient, Hidden, Constant)    
     
     CommonProperties = { ...
-     'Box', 'Color', 'Units', 'Projection', 'View', ...
+     'Box', 'Color', 'Units', 'Projection', ... % 'View', ...
      ...
      'FontName', 'FontSize', 'FontAngle', 'FontWeight', 'FontUnits', ...
      ...
@@ -53,7 +53,7 @@ classdef AxesObject < InFigureObject
     %ActivePositionProperty
     Position, OuterPosition,
     
-    Projection, View
+    Projection, % View
     
     FontName, FontSize, FontAngle, FontWeight, FontUnits
     
@@ -89,6 +89,7 @@ classdef AxesObject < InFigureObject
     
     function obj = AxesObject(varargin)
       obj = obj@InFigureObject(varargin{:});
+      AxesViewDecorator(obj);
     end
     
   end
