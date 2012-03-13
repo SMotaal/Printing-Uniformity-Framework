@@ -5,8 +5,8 @@ function [ output_args ] = debugStamp( tag, level )
   persistent debugtimer debugstack stackdups stackloops stacktime;
   
   try
-  debugmode     = true;
-  verbose       = true;
+  debugmode     = false;
+  verbose       = false;
   intrusive     = false;
   detailed      = false;
   stackLimit    = 5;

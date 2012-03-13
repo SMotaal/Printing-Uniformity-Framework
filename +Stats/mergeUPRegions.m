@@ -10,7 +10,7 @@ function [ dataSet ] = mergeUPRegions( dataSource, dataSet, params, options )
   %   contiuous surface and patch data sources. Value labels are also
   %   generated to overlay the surface and patch plots with the
   %   approporiate statistical data for each segment.
-  
+  t = tic;
   [regions fields]  = surfParams(params); %, options);
   
   
@@ -37,6 +37,7 @@ function [ dataSet ] = mergeUPRegions( dataSource, dataSet, params, options )
     end
   end
   
+%   setStatus(['Merging region data completed in ' num2str(toc(t)) ' seconds']);
 end
 
 function [regions fields] = surfParams(params)
@@ -129,7 +130,7 @@ function [surfs] = surfData(dataSource, dataSet, regions, fields, summary)
       end
       
       surfID          = Data.generateUPID([],dataSet, [region ' ' field 'Surfs']);
-      regionSurfsData = []; Data.dataSources(surfID);
+      regionSurfsData = []; %Data.dataSources(surfID);
       
       if (isempty(regionSurfsData))
         
@@ -174,9 +175,9 @@ function [surfs] = surfData(dataSource, dataSet, regions, fields, summary)
         
         regionSurfsData = localSurfs;
       end
-      subsurf.(region).(field)  = regionSurfsData;
+      subsurf.(region).(field)  = localSubs;
       surfs.(region).(field)    = localSurfs;
-      Data.dataSources(surfID, regionSurfsData, true);
+%       Data.dataSources(surfID, regionSurfsData, true);
     end
     
   end

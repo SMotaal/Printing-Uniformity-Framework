@@ -1,7 +1,7 @@
 x = MultiPlotFigureObject();
 x.setVisible(1);
 
-d = RegionStatsUniformityDataSource(); 
+d = RegionsUniformityDataSource(); 
 
 % s = UniformitySurfaceObject.Create(x.getPlotAxes(1), 'DataSource', d);
 
