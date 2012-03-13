@@ -29,6 +29,7 @@ classdef DecoratedObject < GrasppeHandle
       
       for i = 1:nDecorations
         obj.attachDecoratorProperty(decorator, decorations{i});
+        decorator.(decorations{i}) = obj.(decorations{i});
       end
       
       if isempty(decorators)
@@ -55,9 +56,8 @@ classdef DecoratedObject < GrasppeHandle
 %       mb1.SetMethod = {@setView, ;
       
       addlistener(obj, decoration, 'PreGet', @GrasppeDecorator.GetDecoratorProperty);
-% %       addlistener(obj, decoration, 'PreSet', @GrasppeDecorator.GetDecoratorProperty);
-% %       PreSet ? triggered just before the property value is set, before calling its set access method.
-      addlistener(obj, decoration, 'PostSet', @GrasppeDecorator.SetDecoratorProperty);
+      addlistener(obj, decoration, 'PreSet', @GrasppeDecorator.preSetDecoratorProperty);
+      addlistener(obj, decoration, 'PostSet', @GrasppeDecorator.postSetDecoratorProperty);
       
       obj.(decoration) = obj.(decoration);
       

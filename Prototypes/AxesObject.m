@@ -89,6 +89,11 @@ classdef AxesObject < InFigureObject & DecoratedObject
     
     function obj = AxesObject(varargin)
       obj = obj@InFigureObject(varargin{:});
+    end
+    
+    
+    function createComponent(obj, type)
+      obj.createComponent@InFigureObject(type);
       AxesViewDecorator(obj);
     end
     
