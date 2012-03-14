@@ -3,12 +3,10 @@ classdef UniformitySurfaceObject < SurfaceObject & UniformityPlotObject
   %   Detailed explanation goes here
   
   properties
-%     IsLinked = false;
       ExtendedDataProperties = {};
   end
   
   properties (Dependent)
-%     IsLinked;
   end
     
   methods (Access=protected)
@@ -42,32 +40,8 @@ classdef UniformitySurfaceObject < SurfaceObject & UniformityPlotObject
         end
       catch err
         try debugStamp(obj.ID); catch, debugStamp(); end;
-%         disp(err);
       end
       try obj.updatePlotTitle(obj.DataSource.SourceID, obj.DataSource.SampleID); end
-%       debugStamp(obj.ID);
-%       try obj.IsRefreshing = true; end
-%       if ~exists('dataSource')
-%         dataSource = [];
-%         try dataSource = obj.DataSource; end
-%       end
-%       try updating = obj.IsUpdating; end
-%       try properties = obj.DataProperties; end
-%       for property = obj.DataProperties
-%         try obj.IsUpdating = false; end
-%         try
-%           obj.(char(property)) = dataSource.(char(property));
-%         catch err
-%           try debugStamp(obj.ID); end                      
-%           if strcmp(err.identifier, 'MATLAB:noSuchMethodOrField')
-%             try disp(sprintf('\t%s ==> %s',err.identifier, char(property))); end
-%           else
-%             disp(err);
-%           end
-%         end
-%         try obj.IsUpdating = updating; end
-%       end
-%       try obj.IsRefreshing = false; end
     end
     
     function refreshPlotData(obj, source, event)
@@ -95,7 +69,6 @@ classdef UniformitySurfaceObject < SurfaceObject & UniformityPlotObject
       
       IsVisible     = true;
       IsClickable   = true;
-%       IsLinkable    = true;
       
       options = WorkspaceVariables(true);
     end

@@ -1,24 +1,20 @@
-classdef AxesViewDecorator < GrasppeDecorator
+classdef FontDecorator < GrasppeDecorator
   %AXESVIEWDECORATOR Summary of this class goes here
   %   Detailed explanation goes here
   
   properties
-    DecoratingProperties = {'View'};
+    DecoratingProperties = {'FontAngle', 'FontName', 'FontSize', 'FontUnits', 'FontWeight'};
   end
   
   properties (SetObservable, GetObservable)
-    View
+    FontAngle, FontName, FontSize, FontUnits, FontWeight
   end
   
   methods
-    function obj = AxesViewDecorator(varargin)
+    function obj = FontDecorator(varargin)
       obj@GrasppeDecorator(varargin{:});
     end
     
-    function value = getView(obj)
-    end
-    function setView(obj, value)
-    end
   end
   
   methods(Static, Hidden)

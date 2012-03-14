@@ -57,6 +57,9 @@ classdef PlotAxesObject < AxesObject
       Color         = 'none';
       
       AspectRatio   = [1 1 1];
+      View          = [0 90];
+      
+      FontSize      = 8;
       
       options = WorkspaceVariables(true);
     end

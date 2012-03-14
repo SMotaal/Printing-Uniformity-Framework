@@ -1,4 +1,4 @@
-classdef TextObject < InAxesObject
+classdef TextObject < InAxesObject & DecoratedObject
   %TEXTOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -26,7 +26,10 @@ classdef TextObject < InAxesObject
   methods (Access=protected, Hidden)
     
     function obj = TextObject(varargin)
+      obj = obj@DecoratedObject();
       obj = obj@InAxesObject(varargin{:});
+      
+      FontDecorator(obj);
     end
     
   end

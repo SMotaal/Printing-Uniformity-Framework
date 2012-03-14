@@ -11,8 +11,10 @@ classdef GrasppeDecorator < GrasppeHandle
   methods
     
     function obj = GrasppeDecorator(component)
-      obj.Component = component;
-      component.decorate(obj);
+      try
+        obj.Component = component;
+        component.decorate(obj);
+      end
     end
     
     function decorations = get.ComponentDecorations(obj)
@@ -23,6 +25,11 @@ classdef GrasppeDecorator < GrasppeHandle
           decorations = obj.DecoratingProperties;
         end
       end
+    end
+    
+    function set.Component(obj, value)
+      obj.Component = value;
+      obj.Component.decorate(obj);
     end
     
     function properties = get.DecorationProperties(obj)
@@ -44,18 +51,19 @@ classdef GrasppeDecorator < GrasppeHandle
       
       handleValue   = obj.Component.handleGet(propertyName);
       
-      try currentValue  = obj.(propertyName);
-      catch err, currentValue  = []; end
+%       try currentValue  = obj.(propertyName);
+%       catch err, currentValue  = []; end
       
-%       try componentValue  = obj.Component.(propertyName);
-%       catch err, currentValue  = []; end      
+      try componentValue  = obj.Component.(propertyName);
+      catch err, currentValue  = []; end      
       
 %       if ~isequal(currentValue, handleValue) || ~isequal(handleValue, componentValue)
-        obj.Component.handleSet(propertyName, currentValue); %obj.Component.(propertyName));
+%         disp(sprintf('\t%s.%s(%s) = %s', obj.ID, propertyName, class(currentValue), toString(currentValue)));
+        obj.Component.handleSet(propertyName, componentValue); %obj.Component.(propertyName));
 %       end     
-      
-      obj.DecorationProperties.(propertyName) = currentValue;
-%       obj.(propertyName) = obj.DecorationProperties.(propertyName);
+%       disp('done!');
+      obj.DecorationProperties.(propertyName) = obj.Component.handleGet(propertyName);
+%       obj.(propertyName) = obj.Component.handleGet(propertyName);
 
     end
     
@@ -72,30 +80,21 @@ classdef GrasppeDecorator < GrasppeHandle
         obj.DecorationProperties.(propertyName) = currentValue;        
         obj.Component.(propertyName) = handleValue;
       end
-      
-%       obj.setDecoratorProperty(source, event);
-      
+            
     end
   end
   
   methods(Static, Hidden)
-%     function UpdateDecoratorProperty(source, event, decorator, dsource, devent, t)
-%       toc(t);
-%       stop(source); delete(source);    
-%       decorator.setDecoratorProperty(dsource, devent);
-%     end     
     function preSetDecoratorProperty(source, event)
       obj = event.AffectedObject;
     
       currentValue = obj.(source.Name);
-      
-      % try disp(['PreSet: ' source.Name ' = ' toString(currentValue)]); end
-      
+            
       if GrasppeDecorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
-            decorator = obj.Decorators(i);
-            decorator.(source.Name) = currentValue;
+%             obj.(source.Name) = currentValue;
+            obj.Decorators{i}.(source.Name) = currentValue;
           end
         end
       end
@@ -106,14 +105,11 @@ classdef GrasppeDecorator < GrasppeHandle
       obj = event.AffectedObject;
     
       currentValue = obj.(source.Name);
-      
-      % try disp(['PostSet: ' source.Name ' = ' toString(currentValue)]); end
-      
+            
       if GrasppeDecorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
-            decorator = obj.Decorators(i);
-            decorator.setDecoratorProperty(source, event);
+            obj.Decorators{i}.setDecoratorProperty(source, event);
           end
         end
       end
@@ -126,7 +122,7 @@ classdef GrasppeDecorator < GrasppeHandle
       if GrasppeDecorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
-            decorator = obj.Decorators(i);
+            decorator = obj.Decorators{i};
             if stropt(source.Name, decorator.ComponentDecorations)
               decorator.getDecoratorProperty(source, event);
               return;

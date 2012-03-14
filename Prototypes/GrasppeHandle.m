@@ -291,10 +291,10 @@ classdef GrasppeHandle < dynamicprops & hgsetget
                 obj.(args{i}) = values{i};
               end
             catch err
-              try
-                disp({obj.ID, args{i}, values{i}});        
-              end
-              halt(err, 'obj.ID');
+%               try
+%                 disp({obj.ID, args{i}, values{i}});        
+%               end
+%               halt(err, 'obj.ID');
               if ~strcontains(err.identifier, 'noSetMethod')
                 try debugStamp(obj.ID, 5); end
                 disp(['Could not set ' args{i} ' for ' class(obj)]);
@@ -429,7 +429,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
           catch err
             if ~isempty(strfind(err.identifier, 'BadHandle')) %ishandle(hg)
               %               dealwith(err);
-            elseif ~isempty(strfind(err.identifier, 'hg:set_chck'))
+            elseif ~isempty(strfind(err.identifier, 'hg:set_chck')) && ~isempty(value)
               disp([property '=' toString(value) ' [' err.message ']']);
               %               dealwith(err);
             else

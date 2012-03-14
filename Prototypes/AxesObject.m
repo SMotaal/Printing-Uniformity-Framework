@@ -5,12 +5,10 @@ classdef AxesObject < InFigureObject & DecoratedObject
   properties
   end
   
-  properties (Transient, Hidden, Constant)    
+  properties (Transient, Hidden)    
     
     CommonProperties = { ...
      'Box', 'Color', 'Units', 'Projection', ... % 'View', ...
-     ...
-     'FontName', 'FontSize', 'FontAngle', 'FontWeight', 'FontUnits', ...
      ...
      'XScale', 'XDir', 'XColor', 'XLabel', 'XAxisLocation', ...
      'XGrid', 'XMinorGrid', 'XMinorTick', ...
@@ -55,7 +53,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     
     Projection, % View
     
-    FontName, FontSize, FontAngle, FontWeight, FontUnits
+%     FontName, FontSize, FontAngle, FontWeight, FontUnits
     
     XScale, XDir, XColor, XLabel, XAxisLocation
     XGrid, XMinorGrid, XMinorTick
@@ -88,13 +86,16 @@ classdef AxesObject < InFigureObject & DecoratedObject
   methods (Access=protected)
     
     function obj = AxesObject(varargin)
+      obj = obj@DecoratedObject();
       obj = obj@InFigureObject(varargin{:});
+
+      AxesViewDecorator(obj);
+      FontDecorator(obj);
     end
     
     
     function createComponent(obj, type)
       obj.createComponent@InFigureObject(type);
-      AxesViewDecorator(obj);
     end
     
   end

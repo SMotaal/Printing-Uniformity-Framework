@@ -14,7 +14,7 @@ classdef OverlayAxesObject < AxesObject
     end
     
     function createComponent(obj, type)
-      obj.createComponent@GrasppeComponent(type);
+      obj.createComponent@AxesObject(type);
       
       obj.Position = [0.1 0.1 0.8 0.8];
       

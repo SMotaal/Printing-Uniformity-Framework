@@ -269,7 +269,7 @@ classdef GrasppeComponent < GrasppeHandle
             value   = varargin{i*2};
             obj.setOptions@GrasppeHandle(option, value);
           catch err
-            halt(err, 'obj.ID');
+%             halt(err, 'obj.ID');
           end
         end
       end

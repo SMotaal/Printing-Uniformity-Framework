@@ -3,7 +3,8 @@ classdef DecoratedObject < GrasppeHandle
   %   Detailed explanation goes here
   
   properties
-    Decorators
+    Decorators = {};
+    DecoratorNames = {};
     Decorations 
   end
   
@@ -22,7 +23,7 @@ classdef DecoratedObject < GrasppeHandle
       nDecorations        = length(decorations);
       
       try
-        if stropt(decorator.ClassName, {decorators(:).ClassName})
+        if stropt(decorator.ClassName, obj.DecoratorNames)
           return;
         end
       end
@@ -32,11 +33,8 @@ classdef DecoratedObject < GrasppeHandle
         decorator.(decorations{i}) = obj.(decorations{i});
       end
       
-      if isempty(decorators)
-        obj.Decorators = decorator;
-      else
-        obj.Decorators(end+1) = decorator;
-      end
+        obj.Decorators = {obj.Decorators{:}, decorator};
+        obj.DecoratorNames = {obj.DecoratorNames{:}, decorator.ClassName};
       
     end
     
@@ -59,7 +57,15 @@ classdef DecoratedObject < GrasppeHandle
       addlistener(obj, decoration, 'PreSet', @GrasppeDecorator.preSetDecoratorProperty);
       addlistener(obj, decoration, 'PostSet', @GrasppeDecorator.postSetDecoratorProperty);
       
-      obj.(decoration) = obj.(decoration);
+      try
+        defaultValue      = obj.Defaults.(decoration);
+%         obj.(decoration)  = defaultValue;
+        set(obj.Handle, decoration, defaultValue);
+%         obj.handleSet(decoration, obj.(decoration));
+        disp(sprintf('\t%s.%s(%s) = %s', obj.ID, decoration, class(defaultValue), toString(defaultValue)));
+      end
+      
+%       obj.(decoration) = obj.(decoration);
       
     end
     
