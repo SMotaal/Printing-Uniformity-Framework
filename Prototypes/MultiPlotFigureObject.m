@@ -217,7 +217,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
             r = ceil(cells/c);
             wT = c*w;
             hT = r*h;
-            u = (wT*hT)/(plottingWidth*plottingHeight);
+            u = (w*h*cells)/(plottingWidth*plottingHeight);
             if (u>maxU) && (u<=1) && wT<=plottingWidth && hT<=plottingHeight
               columns = c;
               rows    = r;
