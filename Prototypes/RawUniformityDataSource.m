@@ -29,22 +29,22 @@ classdef RawUniformityDataSource < UniformityDataSource
       
       if isempty(sourceData), return; end;
       
-%       try
-        setData = obj.SetData;
-        sheetData = setData.data(sheet).surfData;
-        
-        [X Y Z]   = meshgrid(1:columns, 1:rows, 1);
-        
-        targetFilter  = sourceData.sampling.masks.Target;
-        
-        Z = sheetData';
-        Z(targetFilter~=1) = NaN;
-        
-        obj.setPlotData(X, Y, Z);
-        
-%       catch err
-%         dealwith(err);
-%       end
+      %       try
+      setData = obj.SetData;
+      sheetData = setData.data(sheet).surfData;
+      
+      [X Y Z]   = meshgrid(1:columns, 1:rows, 1);
+      
+      targetFilter  = sourceData.sampling.masks.Target;
+      
+      Z = sheetData';
+      Z(targetFilter~=1) = NaN;
+      
+      obj.setPlotData(X, Y, Z);
+      
+      %       catch err
+      %         dealwith(err);
+      %       end
       
     end
     

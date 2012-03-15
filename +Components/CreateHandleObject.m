@@ -8,6 +8,7 @@ function [ handle ] = CreateHandleObject (type, tag, parent, varargin)
     case 'figure'
       args = [args, 'Visible', 'off'];
     case {'axes', 'colorbar', 'plot', 'patch', 'surface', 'surf', 'surfc'}
+    case {'uitable'}
     case {'text'}
     otherwise
       error('Grasppe:CreateHandleObject:UnsupportedGraphicsObject', ...

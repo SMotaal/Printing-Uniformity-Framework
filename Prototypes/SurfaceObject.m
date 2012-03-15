@@ -9,7 +9,7 @@ classdef SurfaceObject < PlotObject
     ComponentEvents = {};
     
     DataProperties = {'AData', 'CData', 'XData', 'YData', 'ZData'}; %, 'CData', 'AData'}; %, 'SampleID', 'SourceID', 'SetID'};
-
+    
   end
   
   properties (SetObservable, GetObservable)
@@ -19,7 +19,7 @@ classdef SurfaceObject < PlotObject
   properties (GetObservable, SetObservable)
     AData, CData, XData, YData, ZData
   end
-    
+  
   methods (Access=protected)
     function obj = SurfaceObject(parentAxes, varargin)
       obj = obj@PlotObject(parentAxes, varargin{:});
@@ -51,7 +51,7 @@ classdef SurfaceObject < PlotObject
       try debugStamp(obj.ID); catch, debugStamp(); end;
       obj.dataSet('CData', value);
     end
-        
+    
     function value = get.XData(obj)
       try debugStamp(obj.ID); catch, debugStamp(); end;
       value = obj.dataGet('XData');
@@ -79,7 +79,7 @@ classdef SurfaceObject < PlotObject
       obj.dataSet('ZData', value);
     end
   end
-
+  
   methods (Static, Hidden)
     function options  = DefaultOptions( )
       

@@ -24,7 +24,7 @@ classdef ColorBarObject < AxesObject
   methods (Access=protected, Hidden)
     function obj = ColorBarObject(peerAxes, varargin)
       parentFigure = peerAxes.ParentFigure;
-           
+      
       obj = obj@AxesObject(varargin{:}, 'PeerAxes', peerAxes ,'ParentFigure', parentFigure);
       
       try
@@ -50,7 +50,7 @@ classdef ColorBarObject < AxesObject
       obj.Location = 'North';
       
       obj.resizeComponent();
-
+      
     end
     
   end
@@ -64,14 +64,14 @@ classdef ColorBarObject < AxesObject
     
     function resizeComponent(obj)
       obj.resizeToFigure;
-%       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
-%       peerPosition    = pixelPosition(obj.PeerAxes.Handle);
-%       
-%       size      = [peerPosition(3), 10];
-%       position  = [peerPosition(1) peerPosition(2)+peerPosition(4) size];
-%       
-%       obj.handleSet('Units', 'pixels', 'position', position);
-    end    
+      %       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
+      %       peerPosition    = pixelPosition(obj.PeerAxes.Handle);
+      %
+      %       size      = [peerPosition(3), 10];
+      %       position  = [peerPosition(1) peerPosition(2)+peerPosition(4) size];
+      %
+      %       obj.handleSet('Units', 'pixels', 'position', position);
+    end
     
     function resizeToFigure(obj)
       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
@@ -92,7 +92,7 @@ classdef ColorBarObject < AxesObject
       position  = [peerPosition(1) peerPosition(2)+peerPosition(4) size];
       
       obj.handleSet('Units', 'pixels', 'position', position);
-    end      
+    end
     
   end
   

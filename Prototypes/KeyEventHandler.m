@@ -4,8 +4,8 @@ classdef KeyEventHandler < EventHandler
   
   properties
     KeyEventHandlers
-    
     LastKeyEvent
+    
   end
   
   methods
@@ -15,7 +15,14 @@ classdef KeyEventHandler < EventHandler
     end
     
     function consumed = keyPress(obj, event, source)
-      event.id = cputime;
+      %       persistent lastTrigger
+      
+      %       if isscalar(lastTrigger) && toc(lastTrigger)<0.35
+      %         return;
+      %       end
+      %
+      %       lastTrigger = tic;
+      
       consumed = false; event.consumed = false;
       handlers = obj.KeyEventHandlers;
       if iscell(handlers) && ~isempty(handlers)
@@ -23,9 +30,8 @@ classdef KeyEventHandler < EventHandler
           try
             consumed = handlers{i}.keyPress(event, obj);
             if consumed
-              event.consumed = consumed;
+              event.consumed = true;
             end
-%               return; end
           end
         end
       end

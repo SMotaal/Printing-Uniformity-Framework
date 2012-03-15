@@ -11,8 +11,8 @@ classdef GraphicsEventHandler < EventHandler & KeyEventHandler & MouseEventHandl
     function registerWindowEventHandler(obj, handler)
       obj.registerEventHandler('WindowEventHandlers', handler);
     end
-
-        
+    
+    
     function finalizeComponent(obj)
       obj.delete;
     end
@@ -26,20 +26,20 @@ classdef GraphicsEventHandler < EventHandler & KeyEventHandler & MouseEventHandl
             handlers{i}.resizeComponent();
           end
         end
-      end      
+      end
     end
-
-%     function windowClosed(obj, event, source)
-%       obj.resizeComponent();
-%       handlers = obj.WindowEventHandlers;
-%       if iscell(handlers) && ~isempty(handlers)
-%         for i = 1:numel(handlers)
-%           try
-%             handlers{i}.resizeComponent();
-%           end
-%         end
-%       end      
-%     end
+    
+    %     function windowClosed(obj, event, source)
+    %       obj.resizeComponent();
+    %       handlers = obj.WindowEventHandlers;
+    %       if iscell(handlers) && ~isempty(handlers)
+    %         for i = 1:numel(handlers)
+    %           try
+    %             handlers{i}.resizeComponent();
+    %           end
+    %         end
+    %       end
+    %     end
     
     
     function resizeComponent(obj)
@@ -75,9 +75,9 @@ classdef GraphicsEventHandler < EventHandler & KeyEventHandler & MouseEventHandl
     
     function delete(obj)
       try
-%         if ~isOn(obj.IsDestructing)
-          obj.IsDestructing = true;
-          try delete(obj.Handle); end
+        %         if ~isOn(obj.IsDestructing)
+        obj.IsDestructing = true;
+        try delete(obj.Handle); end
       catch err
         try debugStamp(obj.ID); end
         disp(err);

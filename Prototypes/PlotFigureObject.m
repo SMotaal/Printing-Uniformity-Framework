@@ -20,7 +20,7 @@ classdef PlotFigureObject < FigureObject
   
   properties
     TitleText, PlotAxes, OverlayAxes, ColorBar
-  end  
+  end
   
   methods (Hidden)
     function obj = PlotFigureObject(varargin)
@@ -42,7 +42,7 @@ classdef PlotFigureObject < FigureObject
     end
     
     function updatePlotTitle(obj)
-      obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')']; 
+      obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')'];
     end
     
     function set.Title(obj, value)
@@ -57,7 +57,7 @@ classdef PlotFigureObject < FigureObject
   
   methods (Access=protected, Hidden)
     function createComponent(obj, type)
-      obj.createComponent@GrasppeComponent(type);
+      obj.createComponent@FigureObject(type);
       obj.OverlayAxes = OverlayAxesObject.Create(obj);
       obj.TitleText   = TitleTextObject.Create(obj.OverlayAxes);
       obj.PlotAxes    = PlotAxesObject.Create(obj);
@@ -72,7 +72,7 @@ classdef PlotFigureObject < FigureObject
     %% Title Text
     function handle = get.TitleTextHandle(obj)
       handle = []; try handle = obj.TitleText.Handle; end
-    end    
+    end
     
     %% Plot Axes
     function handle = get.PlotAxesHandle(obj)
@@ -101,14 +101,33 @@ classdef PlotFigureObject < FigureObject
     
     function consumed = keyPress(obj, event, source)
       consumed = false;
-      if (stropt(event.Modifier, 'control command'))
+      shiftKey = stropt('shift', event.Modifier);
+      commandKey = stropt('command', event.Modifier) || stropt('control', event.Modifier);
+      
+      if commandKey
         switch event.Key
           case 'w'
             obj.closeComponent();
             consumed = true;
+          case 'm'
+            if shiftKey
+              try obj.JavaObject.setMaximized(true); end
+            else
+              try obj.JavaObject.setMinimized(true); end
+            end
+            consumed = true;
+          case 'd'
+            try
+              if strcmp(obj.WindowStyle, 'docked')
+                obj.WindowStyle = 'normal';
+              else
+                obj.WindowStyle = 'docked';
+              end
+            end
+            consumed = true;
         end
       end
-      consumed = obj.keyPress@FigureObject(event);   
+      consumed = obj.keyPress@FigureObject(event);
     end
   end
   

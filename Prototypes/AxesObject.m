@@ -5,41 +5,41 @@ classdef AxesObject < InFigureObject & DecoratedObject
   properties
   end
   
-  properties (Transient, Hidden)    
+  properties (Transient, Hidden)
     
     CommonProperties = { ...
-     'Box', 'Color', 'Units', 'Projection', ... % 'View', ...
-     ...
-     'XScale', 'XDir', 'XColor', 'XLabel', 'XAxisLocation', ...
-     'XGrid', 'XMinorGrid', 'XMinorTick', ...
-     ...
-     'YScale', 'YDir', 'YColor', 'YLabel', 'YAxisLocation', ...
-     'YGrid', 'YMinorGrid', 'YMinorTick', ...
-     ...
-     'ZScale', 'ZDir', 'ZColor', 'ZLabel', ...
-     'ZGrid', 'ZMinorGrid', 'ZMinorTick', ...
-     };
-   
-%     ComponentEvents = { };
-
-%     ComponentType = 'axes';
-%     
-%     ComponentProperties = { ...
-%      'Box', 'Color', 'Units', 'Projection', 'View', ...
-%      ...
-%      'FontName', 'FontSize', 'FontAngle', 'FontWeight', 'FontUnits', ...
-%      ...
-%      'XScale', 'XDir', 'XColor', 'XLabel', 'XAxisLocation', ...
-%      'XGrid', 'XMinorGrid', 'XMinorTick', ...
-%      ...
-%      'YScale', 'YDir', 'YColor', 'YLabel', 'YAxisLocation', ...
-%      'YGrid', 'YMinorGrid', 'YMinorTick', ...
-%      ...
-%      'ZScale', 'ZDir', 'ZColor', 'ZLabel', ...
-%      'ZGrid', 'ZMinorGrid', 'ZMinorTick', ...
-%      };
-%    
-%     ComponentEvents = { };
+      'Box', 'Color', 'Units', 'Projection', ... % 'View', ...
+      ...
+      'XScale', 'XDir', 'XColor', 'XLabel', 'XAxisLocation', ...
+      'XGrid', 'XMinorGrid', 'XMinorTick', ...
+      ...
+      'YScale', 'YDir', 'YColor', 'YLabel', 'YAxisLocation', ...
+      'YGrid', 'YMinorGrid', 'YMinorTick', ...
+      ...
+      'ZScale', 'ZDir', 'ZColor', 'ZLabel', ...
+      'ZGrid', 'ZMinorGrid', 'ZMinorTick', ...
+      };
+    
+    %     ComponentEvents = { };
+    
+    %     ComponentType = 'axes';
+    %
+    %     ComponentProperties = { ...
+    %      'Box', 'Color', 'Units', 'Projection', 'View', ...
+    %      ...
+    %      'FontName', 'FontSize', 'FontAngle', 'FontWeight', 'FontUnits', ...
+    %      ...
+    %      'XScale', 'XDir', 'XColor', 'XLabel', 'XAxisLocation', ...
+    %      'XGrid', 'XMinorGrid', 'XMinorTick', ...
+    %      ...
+    %      'YScale', 'YDir', 'YColor', 'YLabel', 'YAxisLocation', ...
+    %      'YGrid', 'YMinorGrid', 'YMinorTick', ...
+    %      ...
+    %      'ZScale', 'ZDir', 'ZColor', 'ZLabel', ...
+    %      'ZGrid', 'ZMinorGrid', 'ZMinorTick', ...
+    %      };
+    %
+    %     ComponentEvents = { };
     
   end
   
@@ -53,17 +53,17 @@ classdef AxesObject < InFigureObject & DecoratedObject
     
     Projection, % View
     
-%     FontName, FontSize, FontAngle, FontWeight, FontUnits
+    %     FontName, FontSize, FontAngle, FontWeight, FontUnits
     
     XScale, XDir, XColor, XLabel, XAxisLocation
     XGrid, XMinorGrid, XMinorTick
-       
+    
     YScale, YDir, YColor, YLabel, YAxisLocation
-    YGrid, YMinorGrid, YMinorTick    
+    YGrid, YMinorGrid, YMinorTick
     
     ZScale, , ZDir, ZColor, ZLabel
     ZGrid, ZMinorGrid, ZMinorTick
-  
+    
   end
   
   properties (Dependent)
@@ -73,7 +73,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     %CLimMode   ALimMode
     CLim,       ALim
     
-    %XLimMode   XTickMode,  XTickLabelMode    
+    %XLimMode   XTickMode,  XTickLabelMode
     XLim,       XTick,      XTickLabel
     
     %YLimMode   YTickMode,  YTickLabelMode
@@ -88,7 +88,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function obj = AxesObject(varargin)
       obj = obj@DecoratedObject();
       obj = obj@InFigureObject(varargin{:});
-
+      
       AxesViewDecorator(obj);
       FontDecorator(obj);
     end
@@ -101,7 +101,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
   end
   
   methods
-        
+    
     function position = get.Position(obj)
       position = obj.handleGet('Position');
     end
@@ -116,16 +116,16 @@ classdef AxesObject < InFigureObject & DecoratedObject
       obj.OuterPosition = value;
     end
     
-%     function set.DataAspectRatio(obj, value)
-%       if isequal(value &&
-%     end
-
+    %     function set.DataAspectRatio(obj, value)
+    %       if isequal(value &&
+    %     end
+    
     %DataAspectRatioMode
-%     function set.(obj, value)
-%     end
-%     function =get.(obj)
-%     end
-
+    %     function set.(obj, value)
+    %     end
+    %     function =get.(obj)
+    %     end
+    
     %% AspectRatio / DataAspectRatio
     function set.AspectRatio(obj, value)
       obj.autoSet('DataAspectRatio', value);
@@ -134,7 +134,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.AspectRatio(obj)
       value = obj.autoGet('DataAspectRatio');
     end
-
+    
     %% CLim
     function set.CLim(obj, value)
       obj.autoSet('CLim', value);
@@ -143,7 +143,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.CLim(obj)
       value = obj.autoGet('DataAspectRatio');
     end
-
+    
     %% ALim
     function set.ALim(obj, value)
       obj.autoSet('ALim', value);
@@ -152,7 +152,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.ALim(obj)
       value = obj.autoGet('ALim');
     end
-
+    
     %% XLim
     function set.XLim(obj, value)
       obj.autoSet('XLim', value);
@@ -161,7 +161,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.XLim(obj)
       value = obj.autoGet('XLim');
     end
-
+    
     % XTick
     function set.XTick(obj, value)
       obj.autoSet('XTick', value);
@@ -170,7 +170,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.XTick(obj)
       value = obj.autoGet('XTick');
     end
-
+    
     % XTickLabel
     function set.XTickLabel(obj, value)
       obj.autoSet('XTickLabel', value);
@@ -179,7 +179,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.XTickLabel(obj)
       value = obj.autoGet('XTickLabel');
     end
-
+    
     %% YLim
     function set.YLim(obj, value)
       obj.autoSet('YLim', value);
@@ -188,7 +188,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.YLim(obj)
       value = obj.autoGet('YLim');
     end
-
+    
     % YTick
     function set.YTick(obj, value)
       obj.autoSet('YTick', value);
@@ -197,7 +197,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.YTick(obj)
       value = obj.autoGet('YTick');
     end
-
+    
     % YTickLabel
     function set.YTickLabel(obj, value)
       obj.autoSet('YTickLabel', value);
@@ -206,7 +206,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.YTickLabel(obj)
       value = obj.autoGet('YTickLabel');
     end
-
+    
     %% ZLim
     function set.ZLim(obj, value)
       obj.autoSet('ZLim', value);
@@ -215,7 +215,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.ZLim(obj)
       value = obj.autoGet('ZLim');
     end
-
+    
     % ZTick
     function set.ZTick(obj, value)
       obj.autoSet('ZTick', value);
@@ -224,7 +224,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     function value=get.ZTick(obj)
       value = obj.autoGet('ZTick');
     end
-
+    
     % ZTickLabel
     function set.ZTickLabel(obj, value)
       obj.autoSet('ZTickLabel', value);
@@ -232,7 +232,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     
     function value=get.ZTickLabel(obj)
       value = obj.autoGet('ZTickLabel');
-    end    
+    end
     
   end
   
@@ -252,7 +252,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
         end
       end
       
-%       obj.set('ActivePositionProperty', mode);
+      %       obj.set('ActivePositionProperty', mode);
       
       numeric   = isnumeric(value);
       relative  = ~isinteger(value) && numeric && all(value>=0) && all(value<=1);
@@ -279,7 +279,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     options  = DefaultOptions()
     obj = Create()
   end
-
+  
   
 end
 

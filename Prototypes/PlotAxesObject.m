@@ -5,7 +5,7 @@ classdef PlotAxesObject < AxesObject
   properties (Transient, Hidden)
     ComponentType = 'axes';
     ComponentProperties = { };
-    ComponentEvents = { };    
+    ComponentEvents = { };
   end
   
   methods (Access=protected, Hidden)
@@ -18,7 +18,7 @@ classdef PlotAxesObject < AxesObject
       
       obj.OuterPosition = [0.1 0.1 0.8 0.8];
     end
-        
+    
   end
   
   methods
@@ -32,7 +32,7 @@ classdef PlotAxesObject < AxesObject
           try delete (i); end
         end
       end
-    end    
+    end
   end
   
   methods (Hidden)
@@ -45,7 +45,7 @@ classdef PlotAxesObject < AxesObject
       position = [padding([1 2]) size];
       
       obj.handleSet('Units', 'pixels', 'outerposition', position);
-    end    
+    end
   end
   
   methods (Static, Hidden)
@@ -69,7 +69,7 @@ classdef PlotAxesObject < AxesObject
   methods (Static)
     function obj = Create(parentFigure, varargin)
       obj = PlotAxesObject(parentFigure, varargin{:});
-    end    
+    end
   end
   
   

@@ -29,7 +29,7 @@ classdef OverlayAxesObject < AxesObject
       padding=20;
       obj.handleSet('Units', 'pixels', 'position', ...
         [padding padding parentPosition([3 4])-2*padding]);
-    end    
+    end
   end
   
   methods (Static, Hidden)
@@ -38,8 +38,8 @@ classdef OverlayAxesObject < AxesObject
       IsVisible     = false;
       IsClickable   = false;
       Box           = 'off';
-%       Position      = [0 0 1 1];
-%       Parent        = 0;
+      %       Position      = [0 0 1 1];
+      %       Parent        = 0;
       Color         = 'none';
       
       options = WorkspaceVariables(true);
@@ -50,7 +50,7 @@ classdef OverlayAxesObject < AxesObject
   methods (Static)
     function obj = Create(parentFigure, varargin)
       obj = OverlayAxesObject(parentFigure, varargin{:});
-    end    
+    end
   end
   
   

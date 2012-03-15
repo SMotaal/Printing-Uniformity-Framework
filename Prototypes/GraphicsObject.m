@@ -126,7 +126,7 @@ classdef GraphicsObject < GrasppeComponent & GraphicsEventHandler
     function setVisible(obj, value)
       obj.IsVisible = value;
     end
-  end    
+  end
   
   methods % Getters / Setters
     
@@ -134,7 +134,7 @@ classdef GraphicsObject < GrasppeComponent & GraphicsEventHandler
       obj.IsVisible = changeSet(obj.IsVisible, value);
       obj.pushUpdates('Visibility');
     end
-        
+    
     function set.Parent(obj, value)
       obj.Parent = changeSet(obj.Parent, value);
       obj.pushUpdates('Parent');

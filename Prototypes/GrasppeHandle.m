@@ -27,6 +27,11 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   end
   
   methods
+    function obj = GrasppeHandle()
+      obj = obj@dynamicprops;
+      obj = obj@hgsetget;
+      return;
+    end
     
     function state = get.IsHandled(obj)
       handle = obj.Primitive;
@@ -291,15 +296,15 @@ classdef GrasppeHandle < dynamicprops & hgsetget
                 obj.(args{i}) = values{i};
               end
             catch err
-%               try
-%                 disp({obj.ID, args{i}, values{i}});        
-%               end
-%               halt(err, 'obj.ID');
+              %               try
+              %                 disp({obj.ID, args{i}, values{i}});
+              %               end
+              %               halt(err, 'obj.ID');
               if ~strcontains(err.identifier, 'noSetMethod')
                 try debugStamp(obj.ID, 5); end
                 disp(['Could not set ' args{i} ' for ' class(obj)]);
               end
-%               rethrow(err);
+              %               rethrow(err);
             end
           end
           
@@ -392,8 +397,8 @@ classdef GrasppeHandle < dynamicprops & hgsetget
           %           otherwise
           %         end
         end
-%       catch err
-%         halt(err, 'obj.ID');
+        %       catch err
+        %         halt(err, 'obj.ID');
       end
     end
     

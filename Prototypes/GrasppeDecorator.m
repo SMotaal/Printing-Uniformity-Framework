@@ -43,7 +43,7 @@ classdef GrasppeDecorator < GrasppeHandle
       if isstruct(properties)
         obj.DecorationProperties = properties;
       end
-    end    
+    end
     
     function setDecoratorProperty(obj, source, event)
       
@@ -51,20 +51,20 @@ classdef GrasppeDecorator < GrasppeHandle
       
       handleValue   = obj.Component.handleGet(propertyName);
       
-%       try currentValue  = obj.(propertyName);
-%       catch err, currentValue  = []; end
+      %       try currentValue  = obj.(propertyName);
+      %       catch err, currentValue  = []; end
       
       try componentValue  = obj.Component.(propertyName);
-      catch err, currentValue  = []; end      
+      catch err, currentValue  = []; end
       
-%       if ~isequal(currentValue, handleValue) || ~isequal(handleValue, componentValue)
-%         disp(sprintf('\t%s.%s(%s) = %s', obj.ID, propertyName, class(currentValue), toString(currentValue)));
-        obj.Component.handleSet(propertyName, componentValue); %obj.Component.(propertyName));
-%       end     
-%       disp('done!');
+      %       if ~isequal(currentValue, handleValue) || ~isequal(handleValue, componentValue)
+      %         disp(sprintf('\t%s.%s(%s) = %s', obj.ID, propertyName, class(currentValue), toString(currentValue)));
+      obj.Component.handleSet(propertyName, componentValue); %obj.Component.(propertyName));
+      %       end
+      %       disp('done!');
       obj.DecorationProperties.(propertyName) = obj.Component.handleGet(propertyName);
-%       obj.(propertyName) = obj.Component.handleGet(propertyName);
-
+      %       obj.(propertyName) = obj.Component.handleGet(propertyName);
+      
     end
     
     function getDecoratorProperty(obj, source, event)
@@ -73,39 +73,39 @@ classdef GrasppeDecorator < GrasppeHandle
       
       handleValue   = obj.Component.handleGet(propertyName);
       
-      try currentValue  = obj.DecorationProperties.(propertyName); 
+      try currentValue  = obj.DecorationProperties.(propertyName);
       catch err, currentValue  = []; end
       
       if ~isequal(currentValue, handleValue)
-        obj.DecorationProperties.(propertyName) = currentValue;        
+        obj.DecorationProperties.(propertyName) = currentValue;
         obj.Component.(propertyName) = handleValue;
       end
-            
+      
     end
   end
   
   methods(Static, Hidden)
     function preSetDecoratorProperty(source, event)
       obj = event.AffectedObject;
-    
+      
       currentValue = obj.(source.Name);
-            
+      
       if GrasppeDecorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
-%             obj.(source.Name) = currentValue;
+            %             obj.(source.Name) = currentValue;
             obj.Decorators{i}.(source.Name) = currentValue;
           end
         end
       end
-
+      
     end
     
     function postSetDecoratorProperty(source, event)
       obj = event.AffectedObject;
-    
+      
       currentValue = obj.(source.Name);
-            
+      
       if GrasppeDecorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
@@ -113,10 +113,10 @@ classdef GrasppeDecorator < GrasppeHandle
           end
         end
       end
-
       
-    end    
-
+      
+    end
+    
     function GetDecoratorProperty(source, event)
       obj = event.AffectedObject;
       if GrasppeDecorator.checkInheritence(obj) && isvalid(obj)

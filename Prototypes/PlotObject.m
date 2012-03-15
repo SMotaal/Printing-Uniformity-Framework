@@ -3,11 +3,11 @@ classdef PlotObject < InAxesObject
   %   Detailed explanation goes here
   
   properties
-    IsRefreshing = false; 
+    IsRefreshing = false;
   end
   
   properties (Dependent)
-    SourceID, SetID, SampleID    
+    SourceID, SetID, SampleID
   end
   
   methods (Access=protected)
@@ -38,7 +38,7 @@ classdef PlotObject < InAxesObject
     end
   end
   
-  methods    
+  methods
     function set.SampleID(obj, value)
       obj.setSheet(value);
     end
@@ -66,27 +66,28 @@ classdef PlotObject < InAxesObject
       obj.updatePlotTitle;
     end
     
-    function updatePlotTitle(obj, base, sample)      
+    function updatePlotTitle(obj, base, sample)
       try
         obj.ParentFigure.BaseTitle = base;
       catch
-        try obj.ParentFigure.BaseTitle = obj.SourceID; end;            
+        try obj.ParentFigure.BaseTitle = obj.SourceID; end;
       end
       try
         obj.ParentFigure.SampleTitle = int2str(sample);
-      catch      
-        try obj.ParentFigure.SampleTitle = int2str(obj.SampleID); end;      
+      catch
+        try obj.ParentFigure.SampleTitle = int2str(obj.SampleID); end;
       end
     end
   end
   
   methods
     function consumed = keyPress(obj, event, source)
-      consumed = false;
+      
       if event.consumed == true
         return;
       end
-      if (stropt(event.Modifier, 'control command'))
+      consumed = true;
+      if isequal(event.Modifier, {'control'}) || isequal(event.Modifier, {'command'})
         consumed = true;
         switch event.Key
           case 'uparrow'
@@ -96,8 +97,38 @@ classdef PlotObject < InAxesObject
           otherwise
             consumed = false;
         end
+      elseif isequal(event.Modifier, {'alt'}) %(stropt(event.Modifier, 'alt') && ~stropt(event.Modifier, 'shift'))
+        consumed = true;
+        parentView  = round(obj.ParentAxes.View);
+        switch event.Key
+          case 'rightarrow'
+            obj.ParentAxes.View = parentView + [-5 0];
+          case 'leftarrow'
+            obj.ParentAxes.View = parentView + [+5 0];
+          case 'uparrow'
+            obj.ParentAxes.View = parentView + [0 -5];
+          case 'downarrow'
+            obj.ParentAxes.View = parentView + [0 +5];
+          otherwise
+            consumed = false;
+        end
+      elseif isequal(event.Modifier, {'shift', 'alt'})
+        consumed = true;
+        parentView  = round(obj.ParentAxes.View);
+        switch event.Key
+          case 'rightarrow'
+            obj.ParentAxes.View = parentView + [-1 0];
+          case 'leftarrow'
+            obj.ParentAxes.View = parentView + [+1 0];
+          case 'uparrow'
+            obj.ParentAxes.View = parentView + [0 -1];
+          case 'downarrow'
+            obj.ParentAxes.View = parentView + [0 +1];
+          otherwise
+            consumed = false;
+        end
       end
-    end  
+    end
     
     function refreshPlot(obj, dataSource)
       try debugStamp(obj.ID); catch, debugStamp(); end;
@@ -117,7 +148,7 @@ classdef PlotObject < InAxesObject
         try
           obj.(char(property)) = dataSource.(char(property));
         catch err
-          try debugStamp(obj.ID); end                      
+          try debugStamp(obj.ID); end
           if strcmp(err.identifier, 'MATLAB:noSuchMethodOrField')
             try disp(sprintf('\t%s ==> %s',err.identifier, char(property))); end
           else
@@ -173,7 +204,7 @@ classdef PlotObject < InAxesObject
         if ischar(value) && ~isempty(value)
           return;
         end
-      end      
+      end
       try
         value  = obj.handleGet([property 'Mode']);
         if isequal(lower(value), 'auto')
@@ -187,26 +218,26 @@ classdef PlotObject < InAxesObject
   
   methods (Static)
     function settingDataProperty(source, event)
-%       try
-%         obj = event.AffectedObject;
-%         property = source.name;
-%         value = event.
-%         obj.handleSet(
+      %       try
+      %         obj = event.AffectedObject;
+      %         property = source.name;
+      %         value = event.
+      %         obj.handleSet(
       try debugStamp(); catch, debugStamp(); end;
-%       disp(event);
-    end       
+      %       disp(event);
+    end
     function gettingDataProperty(source, event)
       try debugStamp(); catch, debugStamp(); end;
-%       disp(event);
-    end      
-%       if ~(isobject(source))
-%         obj = event.AffectedObject.UserData;
-%       else
-%         obj = event.AffectedObject;
-%       end
-%       if GrasppeComponent.checkInheritence(obj) && isvalid(obj)
-%         obj.handlePropertyUpdate(source, event);
-%       end
+      %       disp(event);
+    end
+    %       if ~(isobject(source))
+    %         obj = event.AffectedObject.UserData;
+    %       else
+    %         obj = event.AffectedObject;
+    %       end
+    %       if GrasppeComponent.checkInheritence(obj) && isvalid(obj)
+    %         obj.handlePropertyUpdate(source, event);
+    %       end
   end
   
 end

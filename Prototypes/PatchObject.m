@@ -2,7 +2,7 @@ classdef PatchObject < PlotObject
   %SURFACEOBJECT Superclass for patch plot objects
   %   Detailed explanation goes here
   
-  properties (Transient, Hidden)    
+  properties (Transient, Hidden)
     %  AlphaDataMapping, Annotation, CData, CDataMapping, DisplayName,
     %  FaceVertexAlphaData, FaceVertexCData, EdgeAlpha, EdgeColor, FaceAlpha,
     %  FaceColor, Faces, LineStyle, LineWidth, Marker, MarkerEdgeColor,
@@ -19,12 +19,12 @@ classdef PatchObject < PlotObject
       'CData', 'CDataMapping', ...
       'XData', 'YData', 'ZData', ...
       {'AntiAliasing' 'LineSmoothing'} ...
-      };    
-
+      };
+    
     ComponentEvents = {};
     
     DataProperties = {'XData', 'YData', 'ZData'}; %, 'SampleID', 'SourceID', 'SetID'};
-
+    
   end
   
   properties (SetObservable, GetObservable)
@@ -35,8 +35,8 @@ classdef PatchObject < PlotObject
   methods (Access=protected)
     function obj = PatchObject(parentAxes, varargin)
       obj = obj@PlotObject(parentAxes, varargin{:});
-    end    
-  end  
+    end
+  end
   
   methods (Static, Hidden)
     function options  = DefaultOptions( )
@@ -48,6 +48,6 @@ classdef PatchObject < PlotObject
     end
     
   end
-    
+  
 end
 

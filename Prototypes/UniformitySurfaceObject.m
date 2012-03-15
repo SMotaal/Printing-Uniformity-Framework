@@ -3,45 +3,31 @@ classdef UniformitySurfaceObject < SurfaceObject & UniformityPlotObject
   %   Detailed explanation goes here
   
   properties
-      ExtendedDataProperties = {};
+    ExtendedDataProperties = {};
   end
   
   properties (Dependent)
   end
-    
+  
   methods (Access=protected)
     function obj = UniformitySurfaceObject(parentAxes, varargin)
-      obj = obj@SurfaceObject(parentAxes, varargin{:});      
-      obj = obj@UniformityPlotObject();      
+      obj = obj@SurfaceObject(parentAxes, varargin{:});
+      obj = obj@UniformityPlotObject();
     end
     function createComponent(obj, type)
       obj.createComponent@SurfaceObject(type);
-      obj.createComponent@UniformityPlotObject(type);      
-    end    
+      obj.createComponent@UniformityPlotObject(type);
+      obj.handleSet('EdgeAlpha', 0.5);
+    end
   end
   
   
   methods
     function refreshPlot(obj, dataSource)
-      dataProperties = obj.ExtendedDataProperties;
-      try
-        if isempty(obj.XDataSource)
-          dataProperties = {dataProperties{:}, 'XData'};
-        end
-        if isempty(obj.YDataSource)
-          dataProperties = {dataProperties{:}, 'YData'};
-        end
-        if isempty(obj.ZDataSource)
-          dataProperties = {dataProperties{:}, 'ZData'};
-        end
-        obj.DataProperties = dataProperties;
-        if ~isempty(dataProperties) && ~isempty(obj.DataSource)
-          obj.refreshPlot@SurfaceObject();
-        end
-      catch err
-        try debugStamp(obj.ID); catch, debugStamp(); end;
-      end
-      try obj.updatePlotTitle(obj.DataSource.SourceID, obj.DataSource.SampleID); end
+      
+      try obj.ParentAxes.ZLim = dataSource.ZLim; end
+      try obj.ParentAxes.CLim = dataSource.CLim; end
+      
     end
     
     function refreshPlotData(obj, source, event)
@@ -54,7 +40,7 @@ classdef UniformitySurfaceObject < SurfaceObject & UniformityPlotObject
         try debugStamp(obj.ID); end
         disp(err);
       end
-    end    
+    end
   end
   
   methods (Static)

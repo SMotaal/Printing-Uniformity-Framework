@@ -9,7 +9,15 @@ for i = 1:4
   s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), 'DataSource', d);
 end
 
-ColorBarObject.Create(x.getPlotAxes(1));
+% ColorBarObject.Create(x.getPlotAxes(1));
+
+% xp = FigureObject('WindowStyle', 'normal', 'Menubar', 'none', 'Toolbar', 'none'); 
+% 
+% tp = PropertiesTableObject.Create(xp); ...
+%   tp.attachProperty(x,'WindowStyle'); tp.attachProperty(x,'Color'); ...
+%   tp.attachProperty(x,'IsVisible');
+% 
+% xp.setVisible(true); pause(0.5);
 
 commandwindow;
 

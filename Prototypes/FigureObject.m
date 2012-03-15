@@ -22,14 +22,21 @@ classdef FigureObject < GraphicsObject & EventHandler
     end
   end
   
+  methods (Access=protected, Hidden=false)
+    function createComponent(obj, type, varargin)
+      obj.createComponent@GraphicsObject(type);
+      obj.JavaObject = get(handle(obj.Handle), 'JavaFrame');
+    end
+  end
+  
   properties (SetObservable, GetObservable)
     
     %% Figure
     WindowTitle, Renderer, Toolbar, Menubar, WindowStyle
     
     %% Labels
-%     Title
-%     
+    %     Title
+    %
     %% Style
     Color, Units
     
@@ -43,7 +50,7 @@ classdef FigureObject < GraphicsObject & EventHandler
   end
   
   
-  methods(Static, Hidden)   
+  methods(Static, Hidden)
     options  = DefaultOptions()
   end
   

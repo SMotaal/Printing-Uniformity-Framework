@@ -20,6 +20,8 @@ classdef GrasppeComponent < GrasppeHandle
     ComponentAliases;
     
     DebugPropertySynching = false;
+    
+    JavaObject
   end
   
   methods
@@ -30,6 +32,7 @@ classdef GrasppeComponent < GrasppeHandle
   
   methods (Hidden=false)
     function obj = GrasppeComponent(varargin)
+      obj = obj@GrasppeHandle;
       if isValid('obj.Defaults','struct')
         obj.setOptions(obj.Defaults, varargin{:});
       else
@@ -37,7 +40,7 @@ classdef GrasppeComponent < GrasppeHandle
       end
       
       obj.createComponent([]);
-    end    
+    end
     
     function [name alias] = lookupOptionName(obj, name, reverse)
       default reverse false;
@@ -86,7 +89,7 @@ classdef GrasppeComponent < GrasppeHandle
       try properties = [properties obj.CommonProperties]; end
       try properties = [properties obj.HandleProperties]; end
     end
-        
+    
     function [fields aliases] = getComponentFields(obj, names)
       try
         if isempty(obj.ComponentFields)
@@ -98,8 +101,8 @@ classdef GrasppeComponent < GrasppeHandle
         end
         fields = obj.ComponentFields;
         if nargout==2
-            [fields aliases] = obj.getOptionNames(fields);
-        end          
+          [fields aliases] = obj.getOptionNames(fields);
+        end
       catch err
         halt(err, 'obj.ID');
         try debugStamp(obj.ID, 4); catch, debugStamp('', 4); end
@@ -129,6 +132,8 @@ classdef GrasppeComponent < GrasppeHandle
           parent = [];
         case {'text'}
           graphicHandle = true;
+        case {'uitable'}
+          graphicHandle = true;
         otherwise
           graphicHandle = false;
       end
@@ -151,8 +156,9 @@ classdef GrasppeComponent < GrasppeHandle
       end
       
       obj.Handle = handle;
-            
+      
       try obj.attachEvents(); end
+      
       
       try obj.attachListeners(handle, handledOptions(1:2:end)); end
       
@@ -164,15 +170,15 @@ classdef GrasppeComponent < GrasppeHandle
     function attachListeners(obj, handle, handleProperties)
       try
         %% Attach handle listeners
-
+        
         if isValidHandle('handle'), handle = obj.Primitive; end %~exists('handle') || length(handle)~=1 || ~ishandle(handle)
-
+        
         if isValidHandle('handle')
           if ~exists('handleProperties') || isempty(handleProperties)
             handledOptions = obj.getHandleOptions([], false);
             handleProperties = handledOptions(1:2:end);
           end
-
+          
           if ~isempty(handleProperties)
             addlistener(handle, handleProperties,  'PostSet', @GrasppeComponent.refreshHandleProperty);
           end
@@ -185,7 +191,7 @@ classdef GrasppeComponent < GrasppeHandle
         try debugStamp(obj.ID); end
         disp(err); %dealwith(err);
       end
-
+      
     end
     
     function attachObjectListeners(obj)
@@ -195,7 +201,7 @@ classdef GrasppeComponent < GrasppeHandle
         setObservable = [obj.MetaClass.PropertyList.SetObservable];
         getObservable = [obj.MetaClass.PropertyList.GetObservable];
         obvProperties = objProperties([setObservable | getObservable]);
-
+        
         if ~isempty(obvProperties)
           addlistener(obj, obvProperties, 'PreGet',  @GrasppeComponent.refreshHandleProperty);
           addlistener(obj, obvProperties, 'PostSet', @GrasppeComponent.refreshObjectProperty);
@@ -242,19 +248,19 @@ classdef GrasppeComponent < GrasppeHandle
       end
     end
     
-%     function forceSet(obj, varargin)
-% %       if obj.IsSetting, return; else obj.IsSetting = true; end
-%       
-%       obj.forceSetOptions(varargin{:});
-%       
-% %       if obj.IsHandled %&& ~obj.IsUpdating
-% %         %obj.IsUpdating = true;
-% %         obj.pushHandleOptions();	obj.pullHandleOptions();
-%         %obj.IsUpdating = false;
-% %       end
-%       
-% %       obj.IsSetting = false;      
-%     end
+    %     function forceSet(obj, varargin)
+    % %       if obj.IsSetting, return; else obj.IsSetting = true; end
+    %
+    %       obj.forceSetOptions(varargin{:});
+    %
+    % %       if obj.IsHandled %&& ~obj.IsUpdating
+    % %         %obj.IsUpdating = true;
+    % %         obj.pushHandleOptions();	obj.pullHandleOptions();
+    %         %obj.IsUpdating = false;
+    % %       end
+    %
+    % %       obj.IsSetting = false;
+    %     end
     
     
     function setOptions(obj, varargin)
@@ -269,7 +275,7 @@ classdef GrasppeComponent < GrasppeHandle
             value   = varargin{i*2};
             obj.setOptions@GrasppeHandle(option, value);
           catch err
-%             halt(err, 'obj.ID');
+            halt(err, 'obj.ID');
           end
         end
       end
@@ -285,11 +291,11 @@ classdef GrasppeComponent < GrasppeHandle
     
     function handlePropertyUpdate(obj, source, event)
       
-%       persistent debugging;
-%       
-%       if isempty(debugging)
-%         debugging = obj.DebugPropertySynching;
-%       end
+      %       persistent debugging;
+      %
+      %       if isempty(debugging)
+      %         debugging = obj.DebugPropertySynching;
+      %       end
       
       obj.pullEvents = obj.pullEvents + 1;
       if ~obj.IsUpdating && ~obj.IsPushing

@@ -18,7 +18,7 @@ classdef EventHandler < GrasppeHandle
       if ~iscell(handlers)
         handlers = {};
       end
-            
+      
       if ~any(handlers==handler)
         handlers{end+1} = handler;
         obj.(hanldersGroup) = handlers;
@@ -27,30 +27,39 @@ classdef EventHandler < GrasppeHandle
     
     function attachEvents(obj, hooks)
       try
-      if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
+        if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
           [names aliases] = obj.getOptionNames(obj.getComponentHooks);
           hooks = aliases;
-      end
-      
-      if ~iscell(hooks), return; end
-      
-      callbacks = cell(size(hooks));
-      for i = 1:numel(hooks)
-        hook  = hooks{i};
-        callback = obj.(hook);
-        if isempty(callback)
-          callback = obj.callbackFunction(hook);
-        else
-          if ~isClass(callback,'EventHandler.callbackEvent')
-            callback = obj.callbackFunction(hook, callback);
-          end
         end
-        callbacks{i} = callback;
-      end
-      
-      finalHooks = reshape({hooks{:}; callbacks{:}},1,[]);
-      
-      obj.setOptions(finalHooks{:});
+        
+        if ~iscell(hooks), return; end
+        
+        callbacks = cell(size(hooks));
+        for i = 1:numel(hooks)
+          hook  = hooks{i};
+          callback = obj.(hook);
+          if isempty(callback)
+            callback = obj.callbackFunction(hook);
+          else
+            if ~(iscell(callback) && length(callback)>1 && isequal(callback{1}, @EventHandler.callbackEvent)) %~isClass(callback,'EventHandler.callbackEvent')
+              callback = obj.callbackFunction(hook, callback);
+            end
+          end
+          callbacks{i} = callback;
+          
+          %           disp(toString(callback{2}))
+        end
+        
+        finalHooks = reshape({hooks{:}; callbacks{:}},1,[]);
+        
+        obj.setOptions(finalHooks{:});
+        
+        try
+          handleHooks = finalHooks;
+          handleHooks(1:2:end) = names;
+          obj.handleSet(handleHooks{:});
+        end
+        
       catch err
         halt(err, 'obj.ID');
         try debugStamp(obj.ID, 4); end
@@ -129,66 +138,60 @@ classdef EventHandler < GrasppeHandle
       end
       
       try
-      switch callsign
-        case 'UpdateView'
-%           if (objectFound)
+        switch callsign
+          case 'UpdateView'
             stop(source); delete(source);
             object.updateView();
-%           end
-        case 'DisableRotation'
-          stop(source);
-          object.toggleRotation('callback');
-        case 'CloseRequestFcn'
-%           if isSourceObject
+          case 'DisableRotation'
+            stop(source);
+            object.toggleRotation('callback');
+          case 'CloseRequestFcn'
             object.closeComponent();
-%           else
-%             delete(source);
-%           end
-        case 'ResizeFcn'
-%           if isSourceObject
+          case 'ResizeFcn'
             object.windowResize(event);
-%           end
-        case 'DeleteFcn'
+          case 'DeleteFcn'
             object.deleteComponent();
-        case {'KeyPressFcn', 'WindowKeyPressFcn'}
-%           if isSourceObject
+          case {'KeyPressFcn', 'WindowKeyPressFcn'}
+            %             disp([callsign ' ' toString(event) ' Source: ' toString(source)]);
             object.keyPress(event);
-%           end         
-        case {'KeyReleaseFcn', 'WindowKeyReleaseFcn'};
-%           if isSourceObject
+          case {'KeyReleaseFcn', 'WindowKeyReleaseFcn'};
+            %             disp([callsign ' ' toString(event)]);
             object.keyRelease(event);
-%         case {'WindowButtonDownFcn', 'WindowButtonMotionFcn', 'WindowButtonUpFcn', 'WindowKeyPressFcn', 'WindowKeyReleaseFcn', 'WindowScrollWheelFcn'}
-        case {'ButtonUpFcn', 'WindowButtonUpFcn'}
-          object.mouseUp(event);
-        case {'ButtonDownFcn', 'WindowButtonDownFcn'}
-          object.mouseDown(event);
-        otherwise
-          desc = sprintf('');
-          if (~isempty(callback))
-            try
-              feval(callback{:});
-            catch err
-              warning('Grasppe:Component:CallbackError', err.message);
+          case {'ButtonUpFcn', 'WindowButtonUpFcn'}
+            object.mouseUp(event);
+          case {'ButtonDownFcn', 'WindowButtonDownFcn'}
+            object.mouseDown(event);
+          case {'CellEditCallback'}
+            object.cellEdit(event);
+          case {'CellSelectionCallback'}
+            object.cellSelect(event);
+          otherwise
+            desc = sprintf('');
+            if (~isempty(callback))
+              try
+                feval(callback{:});
+              catch err
+                warning('Grasppe:Component:CallbackError', err.message);
+              end
             end
-          end
+        end
       end
+      try
+        if (objectFound)
+          event.target = [int2str(source) '>' object.ID];
+        else
+          event.target = source;
+        end
+        event.action =  [callsign ': ' caller]; %disp(token);
+        %           disp(toString(flat(structList(event))));
       end
-      try      
-          if (objectFound)
-            event.target = [int2str(source) '>' object.ID];
-          else
-            event.target = source;
-          end
-          event.action =  [callsign ': ' caller]; %disp(token);
-%           disp(toString(flat(structList(event))));
-      end
-
+      
     end
   end
   
   methods(Abstract, Static, Hidden)
     options  = DefaultOptions()
-  end  
+  end
   
 end
 

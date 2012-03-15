@@ -32,6 +32,20 @@ classdef UniformityDataSource < GrasppeComponent
     SetIndex, SampleIndex,
     SampleSummary = false
     
+    %DataAspectRatioMode
+    AspectRatio
+    
+    %CLimMode   ALimMode
+    CLim,       ALim
+    
+    %XLimMode   XTickMode,  XTickLabelMode
+    XLim,       XTick,      XTickLabel
+    
+    %YLimMode   YTickMode,  YTickLabelMode
+    YLim,       YTick,      YTickLabel
+    
+    %ZLimMode   ZTickMode,  ZTickLabelMode
+    ZLim,       ZTick,      ZTickLabel
   end
   
   properties (Dependent)
@@ -51,6 +65,27 @@ classdef UniformityDataSource < GrasppeComponent
       end
       
       obj = obj@GrasppeComponent(args{:});
+    end
+    
+    function optimizePlotLimits(obj)
+      if obj.IsRetrieved
+        setData = obj.SetData;
+        
+        zData   = [setData.data(:).zData];
+        zMean   = nanmean(zData);
+        zStd    = nanstd(zData,1);
+        zSigma  = [-3 +3] * zStd;
+        
+        
+        zMedian = round(zMean*2)/2;
+        zRange  = [-3 +3];
+        zLim    = zMedian + zRange;
+        
+        cLim    = zLim;
+        
+        obj.ZLim  = zLim;
+        obj.CLim  = cLim;
+      end
     end
     
     function attachPlotObject(obj, plotObject)
@@ -77,7 +112,7 @@ classdef UniformityDataSource < GrasppeComponent
             obj.LinkedPlotObjects(end+1) = plotObject;
           catch
             obj.LinkedPlotObjects = plotObject;
-          end       
+          end
         end
       end
       try
@@ -90,7 +125,6 @@ classdef UniformityDataSource < GrasppeComponent
     
     function refreshPlot(obj, plotObject)
       plotObject.refreshPlot(obj);
-      obj.refreshPlotData();
     end
     
     function refreshLinkedPlots(obj, linkedPlots)
@@ -108,11 +142,12 @@ classdef UniformityDataSource < GrasppeComponent
         halt(err, 'obj.ID');
         try debugStamp(obj.ID, 4); end
       end
+      %       obj.refreshPlotData();
     end
     
     function refreshPlotData(obj, varargin)
       plotObjects = {};
-     
+      
       if isempty(varargin)
         plotObjects = obj.PlotObjects;
       else
@@ -214,6 +249,8 @@ classdef UniformityDataSource < GrasppeComponent
       
       obj.IsRetrieved   = true;
       obj.IsRetrieving  = false;
+      
+      obj.optimizePlotLimits();
       
       obj.refreshPlotData();
     end

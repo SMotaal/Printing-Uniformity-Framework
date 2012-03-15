@@ -5,11 +5,11 @@ classdef DecoratedObject < GrasppeHandle
   properties
     Decorators = {};
     DecoratorNames = {};
-    Decorations 
+    Decorations
   end
   
   methods
-   
+    
     function decorate(obj, decorator)
       
       if ~(GrasppeDecorator.checkInheritence(decorator) && isvalid(decorator))
@@ -18,7 +18,7 @@ classdef DecoratedObject < GrasppeHandle
       
       decorators          = obj.Decorators;
       decoratorProperties = decorator.MetaClass.PropertyList;
-
+      
       decorations         = decorator.ComponentDecorations;
       nDecorations        = length(decorations);
       
@@ -33,8 +33,8 @@ classdef DecoratedObject < GrasppeHandle
         decorator.(decorations{i}) = obj.(decorations{i});
       end
       
-        obj.Decorators = {obj.Decorators{:}, decorator};
-        obj.DecoratorNames = {obj.DecoratorNames{:}, decorator.ClassName};
+      obj.Decorators = {obj.Decorators{:}, decorator};
+      obj.DecoratorNames = {obj.DecoratorNames{:}, decorator.ClassName};
       
     end
     
@@ -51,7 +51,7 @@ classdef DecoratedObject < GrasppeHandle
       metaProperty.GetObservable = true;
       metaProperty.SetObservable = true;
       
-%       mb1.SetMethod = {@setView, ;
+      %       mb1.SetMethod = {@setView, ;
       
       addlistener(obj, decoration, 'PreGet', @GrasppeDecorator.GetDecoratorProperty);
       addlistener(obj, decoration, 'PreSet', @GrasppeDecorator.preSetDecoratorProperty);
@@ -59,13 +59,13 @@ classdef DecoratedObject < GrasppeHandle
       
       try
         defaultValue      = obj.Defaults.(decoration);
-%         obj.(decoration)  = defaultValue;
+        %         obj.(decoration)  = defaultValue;
         set(obj.Handle, decoration, defaultValue);
-%         obj.handleSet(decoration, obj.(decoration));
+        %         obj.handleSet(decoration, obj.(decoration));
         disp(sprintf('\t%s.%s(%s) = %s', obj.ID, decoration, class(defaultValue), toString(defaultValue)));
       end
       
-%       obj.(decoration) = obj.(decoration);
+      %       obj.(decoration) = obj.(decoration);
       
     end
     
