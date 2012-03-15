@@ -13,7 +13,7 @@ classdef TableEventHandler < EventHandler
     end
     
     
-    function cellEdit(obj, event, source)
+    function cellEdit(obj, source, event)
       handlers = obj.TableEventHandlers;
       if iscell(handlers) && ~isempty(handlers)
         for i = 1:numel(handlers)
@@ -24,7 +24,7 @@ classdef TableEventHandler < EventHandler
       end
     end
     
-    function cellSelect(obj, event, source)
+    function cellSelect(obj, source, event)
       handlers = obj.TableEventHandlers;
       if iscell(handlers) && ~isempty(handlers)
         for i = 1:numel(handlers)

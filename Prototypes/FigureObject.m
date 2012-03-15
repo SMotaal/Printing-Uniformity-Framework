@@ -13,7 +13,7 @@ classdef FigureObject < GraphicsObject & EventHandler
       'CloseRequestFcn', 'ResizeFcn', 'CreateFcn',    'DeleteFcn', ...
       {'KeyPressFcn', 'WindowKeyPressFcn'}, {'KeyReleaseFcn', 'WindowKeyReleaseFcn'}, ...
       {'ButtonDownFcn', 'WindowButtonDownFcn'}, {'ButtonUpFcn', 'WindowButtonUpFcn'}, ...
-      {'ButtonMotionFcn', 'WindowButtonMotionFcn'}};
+      {'ButtonMotionFcn', 'WindowButtonMotionFcn'}, {'ScrollWheelFcn', 'WindowScrollWheelFcn'}};
   end
   
   methods (Hidden)
@@ -45,7 +45,7 @@ classdef FigureObject < GraphicsObject & EventHandler
   %% Hooks
   properties (Hidden)
     ResizeFcn, CloseRequestFcn,  % CreateFcn, DeleteFcn,
-    ButtonUpFcn, ButtonMotionFcn
+    ButtonUpFcn, ButtonMotionFcn, ScrollWheelFcn,
     KeyPressFcn, KeyReleaseFcn
   end
   

@@ -99,7 +99,7 @@ classdef PlotFigureObject < FigureObject
       try obj.TitleText.resizeComponent; end
     end
     
-    function consumed = keyPress(obj, event, source)
+    function consumed = keyPress(obj, source, event)
       consumed = false;
       shiftKey = stropt('shift', event.Modifier);
       commandKey = stropt('command', event.Modifier) || stropt('control', event.Modifier);
@@ -127,7 +127,7 @@ classdef PlotFigureObject < FigureObject
             consumed = true;
         end
       end
-      consumed = obj.keyPress@FigureObject(event);
+      consumed = obj.keyPress@FigureObject(source, event);
     end
   end
   

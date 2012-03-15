@@ -172,17 +172,17 @@ classdef PropertiesTableObject < TableObject
       try component.(property) = value; end
     end
     
-    function cellSelect(obj, event, varargin)
-      obj.cellSelect@TableObject(event, varargin{:});
+    function cellSelect(obj, source, event, varargin)
+      obj.cellSelect@TableObject(source, event, varargin{:});
       %       try
       %         name = obj.Data(event.Indices(1),1);
       %       end
       %       disp(event);
     end
     
-    function cellEdit(obj, event, varargin)
+    function cellEdit(obj, source, event, varargin)
       
-      obj.cellEdit@TableObject(event, varargin{:});
+      obj.cellEdit@TableObject(source, event, varargin{:});
       
       %       if ~obj.IsUpdatingTable
       obj.IsUpdatingTable = true;

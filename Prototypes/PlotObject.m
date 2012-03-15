@@ -81,7 +81,7 @@ classdef PlotObject < InAxesObject
   end
   
   methods
-    function consumed = keyPress(obj, event, source)
+    function consumed = keyPress(obj, source, event)
       
       if event.consumed == true
         return;

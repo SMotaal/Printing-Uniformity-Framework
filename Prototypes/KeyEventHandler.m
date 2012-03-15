@@ -14,7 +14,7 @@ classdef KeyEventHandler < EventHandler
       obj.registerEventHandler('KeyEventHandlers', handler);
     end
     
-    function consumed = keyPress(obj, event, source)
+    function consumed = keyPress(obj, source, event)
       %       persistent lastTrigger
       
       %       if isscalar(lastTrigger) && toc(lastTrigger)<0.35
@@ -38,7 +38,7 @@ classdef KeyEventHandler < EventHandler
       consumed = event.consumed;
     end
     
-    function consumed = keyRelease(obj, event, source)
+    function consumed = keyRelease(obj, source, event)
       consumed = false;
       handlers = obj.KeyEventHandlers;
       if iscell(handlers) && ~isempty(handlers)

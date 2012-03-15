@@ -25,6 +25,18 @@ classdef EventHandler < GrasppeHandle
       end
     end
     
+    function callEventHandlers(obj, group, name, source, event)
+      handlers = obj.([group EventHandlers]);
+      if iscell(handlers) && ~isempty(handlers)
+        for i = 1:numel(handlers)
+          try
+            eval([ 'handlers{i}.' name '(source, event, obj);']);
+          end
+        end
+      end
+    end
+    
+    
     function attachEvents(obj, hooks)
       try
         if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
@@ -148,23 +160,25 @@ classdef EventHandler < GrasppeHandle
           case 'CloseRequestFcn'
             object.closeComponent();
           case 'ResizeFcn'
-            object.windowResize(event);
+            object.windowResize(source, event);
           case 'DeleteFcn'
-            object.deleteComponent();
+%             object.deleteComponent(source, event);
           case {'KeyPressFcn', 'WindowKeyPressFcn'}
-            %             disp([callsign ' ' toString(event) ' Source: ' toString(source)]);
-            object.keyPress(event);
+            object.keyPress(source, event);       % disp([callsign ' ' toString(event) ' Source: ' toString(source)]);
           case {'KeyReleaseFcn', 'WindowKeyReleaseFcn'};
-            %             disp([callsign ' ' toString(event)]);
-            object.keyRelease(event);
+            object.keyRelease(source, event);     % disp([callsign ' ' toString(event)]);
           case {'ButtonUpFcn', 'WindowButtonUpFcn'}
-            object.mouseUp(event);
+            object.processMouseEvent(source, 'up');       % object.mouseUp(source, event);
           case {'ButtonDownFcn', 'WindowButtonDownFcn'}
-            object.mouseDown(event);
+            object.processMouseEvent(source, 'down');     % object.mouseDown(source, event);
+          case {'ButtonMotionFcn', 'WindowButtonMotionFcn'}
+            object.processMouseEvent(source, 'motion');   % object.mouseMotion(source, event);
+          case {'ScrollWheelFcn', 'WindowScrollWheelFcn'}
+            object.processMouseEvent(source, 'wheel');    % object.mouseWheel(source, event);
           case {'CellEditCallback'}
-            object.cellEdit(event);
+            object.cellEdit(source, event);
           case {'CellSelectionCallback'}
-            object.cellSelect(event);
+            object.cellSelect(source, event);
           otherwise
             desc = sprintf('');
             if (~isempty(callback))
