@@ -23,9 +23,10 @@ function [ sourceData ] = supLoad( source, forced )
   [supPath, supFilename, supExt] = fileparts(supFilename);
   sourceData.Filename = supFilename;
   
+  sourceSpace     = upper(supFilename);
   
   sourceMatrixID  = [upper(supFilename) 'Alpha'];
-  sourceMatrix    = Data.dataSources(sourceMatrixID);  
+  sourceMatrix    = Data.dataSources(sourceMatrixID, sourceMatrixID);  
     
   
   if (forced || isempty(sourceMatrix))
@@ -51,7 +52,7 @@ function [ sourceData ] = supLoad( source, forced )
     supFileMatrix = load(supFilePath,supFileVar);
     sourceMatrix = supFileMatrix.(supFileVar);
     
-    Data.dataSources(sourceMatrixID, sourceMatrix);
+    Data.dataSources(sourceMatrixID, sourceMatrix, true, sourceMatrixID);
     
   end
   

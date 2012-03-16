@@ -17,6 +17,8 @@ function [ dataSource stats ] = generateUPStats( dataSource, dataSet  )
     'source',  dataSet.sourceName,  'set', dataSet.patchSet, ...
     'metrics', metrics, 'masks', masks, 'regions', regions);
   
+  sourceSpace   = dataSet.sourceName;
+  
   stats.run   = generateRunStats  ( stats );
   
   stats.data  = eliminateOutliers ( stats );
@@ -28,11 +30,11 @@ function [ dataSource stats ] = generateUPStats( dataSource, dataSet  )
     regionName      = char(regionNames{r});
     regionID        = Data.generateUPID([],dataSet, regionName);
     
-    regionStatsData = Data.dataSources(regionID);
+    regionStatsData = Data.dataSources(regionID, sourceSpace);
     
     if (isempty(regionStatsData))
       regionStatsData = calculateStats(data, regions.(regionName), stats.run);
-      Data.dataSources(regionID, regionStatsData, true);
+      Data.dataSources(regionID, regionStatsData, true, sourceSpace);
     end
     
     stats.(regionName)  = regionStatsData;

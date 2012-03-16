@@ -58,7 +58,9 @@ function [ sourceStruct ] = loadSource( source )
     
     sourceID      = source; %Data.generateUPID(source,[],[]);
     
-    sourceStruct  = Data.dataSources(sourceID);
+    sourceSpace   = sourceID;
+    
+    sourceStruct  = Data.dataSources(sourceID, sourceSpace);
     
     if (isempty(sourceStruct))
       %       sourceStruct = Data.dataSources(source);
@@ -108,7 +110,7 @@ function [ sourceStruct ] = loadSource( source )
       end
       
       %       sourceID      = Data.generateUPID(sourceName);
-      Data.dataSources(sourceID, sourceStruct, true);
+      Data.dataSources(sourceID, sourceStruct, true, sourceSpace);
       
       %     source = struct('name', sourceName, 'path', sourcePath, );
     end

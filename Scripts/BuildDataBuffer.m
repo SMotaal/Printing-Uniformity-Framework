@@ -16,7 +16,7 @@ function [ output_args ] = BuildDataBuffer( input_args )
   
   rt = tic;
   for source = SourceIDs
-    parfor p = 1:numel(PatchValues)
+    for p = 1:numel(PatchValues)
       
       patchValue = PatchValues(p);
       
@@ -26,19 +26,29 @@ function [ output_args ] = BuildDataBuffer( input_args )
       src = params.dataSourceName;
       rsrc = [src blanks(10-numel(src))];
       tv = params.dataPatchSet;
-      dsrc = Data.dataSources;
-      names = dsrc.names;
-      rnames = strrep(names,'rit','');
-      rnames = strrep(rnames,'sm','');
-      rnames = strrep(rnames,'hp','');
-      elements = dsrc.elements;
-      megabytes = dsrc.megabytes;
-      fprintf([ '\t' '%s' '\t' '% 4.0f' '\t' '%5.2f' '\t' '%2.0f' '\t' '% 7.2f' '' '\t' '%s' '\n'],rsrc, tv, et, elements, megabytes, rnames);
+      
+      try
+        dsrc = Data.dataSources('', src);
+        dfields = fieldnames(dsrc);
+        names = toString(dfields);
+        rnames = strrep(names,'rit','');
+        rnames = strrep(rnames,'sm','');
+        rnames = strrep(rnames,'hp','');
+        rnames = strrep(names,',','');
+        
+        elements = numel(dfields);
+        whosDetails = whos('dsrc');
+        megabytes = whosDetails.bytes/2^20;
+        
+        fprintf([ '\t' '%s' '\t' '% 4.0f' '\t' '%5.2f' '\t' '%2.0f' '\t' '% 7.2f' '' '\t' '%s' '\n'],rsrc, tv, et, elements, megabytes, rnames);
+      catch err
+        halt(err, src);
+      end
       
     end
   end
   toc(rt);
-  disp('Saving PersistentSources Buffer');  
+  disp('Saving PersistentSources Buffer');
   PersistentSources force save;
   PersistentSources 'readonly';
   

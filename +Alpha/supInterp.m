@@ -32,6 +32,12 @@ function [ sourceData ] = supInterp( source, forcebuild, forcesave, forceclear, 
   else
     statusUpdate(['Restoring ' sourcename ' from persistent store... '], 2);
     sourceData  = supDataBuffer(source);
+    if isempty(sourceData)
+      statusUpdate(['Could not restore: Loading ' sourcename '... '], 1);
+      sourceData  = supLoad(source);
+      modified    = true;
+      statusUpdate();
+    end
     modified    = false;
     statusUpdate();
   end

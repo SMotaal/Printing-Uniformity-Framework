@@ -9,13 +9,14 @@ function [ data SID MID ] = supDataBuffer( source )
     source = data.Filename;    
   end    
   
-  MID   = [ upper(source) 'Alpha' ];
-  SID   = [ MID           'Data'  ];
+  SRC   = upper(source);
+  MID   = [ SRC 'Alpha' ];
+  SID   = [ MID 'Data'  ];
   
   if isempty(data)
-    data  = Data.dataSources(SID);
+    data  = Data.dataSources(SID, MID);
   elseif (nargout==0)
-    Data.dataSources(SID, data, true);
+    Data.dataSources(SID, data, true, MID);
   end
   
 end

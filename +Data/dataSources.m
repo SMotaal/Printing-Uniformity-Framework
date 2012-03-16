@@ -10,14 +10,14 @@ function [ data ] = dataSources( sourceName, varargin )
   
   persistent verbose sizeLimit;
   
-%   mlock;
+  %   mlock;
   try
     sources = PersistentSources('dataSources');
-%     disp(sources);
+    %     disp(sources);
   catch
     sources = [];
   end
-%   onCleanup(@() PersistentSources('dataSources', sources));
+  %   onCleanup(@() PersistentSources('dataSources', sources));
   
   defaults.verbose=false;
   defaults.sizeLimit=1024; % defaults.sizeLimit =  200 * (2^20);
@@ -31,7 +31,7 @@ function [ data ] = dataSources( sourceName, varargin )
     %     disp(whos('sources'));
     whosDetails = whos('sources');
     sourcesDetails.name = whosDetails.name;
-    sourcesDetails.megabytes = whosDetails.bytes/2^20;  
+    sourcesDetails.megabytes = whosDetails.bytes/2^20;
     
     if isstruct(sources) && ~isempty(sources)
       sourcesDetails.elements = numel(fieldnames(sources));
@@ -51,21 +51,21 @@ function [ data ] = dataSources( sourceName, varargin )
     return;
   else
     if ~isempty(sourceName)
-    switch (lower(sourceName))
-      case 'clear'
-        PersistentSources('dataSources', []); % clear sources;
-        return;
-      case 'lock'
-        mlock;
-        return;
-      case 'unlock'
-        munlock;
-        return;
-      case 'reset'
-        Data.dataSources([], 'verbose', 'reset', 'sizeLimit', 'reset');
-        return;
-      otherwise
-    end
+      switch (lower(sourceName))
+        case 'clear'
+          PersistentSources('dataSources', []); % clear sources;
+          return;
+        case 'lock'
+          mlock;
+          return;
+        case 'unlock'
+          munlock;
+          return;
+        case 'reset'
+          Data.dataSources([], 'verbose', 'reset', 'sizeLimit', 'reset');
+          return;
+        otherwise
+      end
     else
       disp([]);
     end
@@ -78,9 +78,11 @@ function [ data ] = dataSources( sourceName, varargin )
   
   preCondition = ~isempty(sourceName) || isempty(varargin);
   
-  parser.addConditional(preCondition, 'data',      [],     @(x) true);
-  parser.addConditional(preCondition, 'protected', false,  @(x) isValid(x,'logical'));
-  parser.addConditional(preCondition, 'space',     '',     @(x) ischar(x));
+  %   if nargout == 0
+  parser.addConditional(preCondition && nargout==0, 'data',      [],     @(x) true);
+  parser.addConditional(preCondition && nargout==0, 'protected', false,  @(x) isValid(x,'logical'));
+  %   end
+  parser.addConditional(preCondition || (isempty(sourceName) && nargin==2), 'space',     '',     @(x) ischar(x));
   
   parser.addParamValue('verbose',     [],     @(x) isempty(x) || isValid(x,'logical') || strcmpi(x,'reset'));
   parser.addParamValue('sizeLimit',   [],     @(x) isempty(x) || isValid(x,'double')  || strcmpi(x,'reset'));
@@ -105,49 +107,105 @@ function [ data ] = dataSources( sourceName, varargin )
       inputParams.sizeLimit = sizeLimit;
     else
       sizeLimit   = inputParams.sizeLimit;
-    end    
+    end
     warning('Grasppe:DataSources:Preferences', 'DataSources size limit: %5.2f MB\n', sizeLimit);
   end
   
-  if isempty(inputParams.name)
+  if isempty(inputParams.name) && isempty(inputParams.space)
     return;
+  end
+  
+  if (isempty(inputParams.space))
+    inputParams.space = 'base';
+    space = inputParams.space;
+  else
+    inputParams.space = upper(genvarname(inputParams.space));
+    space = inputParams.space;
+    
+    spaceFilename     = datadir('Sources', [space '.mat']);
+    
+    spaces = [];
+    try spaces = PersistentSources('dataSpaces'); end
+    if isempty(spaces)
+      spaces = struct();
+    end
+    
+    spaceSources        = [];
+    try spaceSources    = spaces.(space); end
+    if isempty(spaceSources)
+      try spaceSources  = load(spaceFilename); end
+    end
+    
+    if isempty(inputParams.name)
+      data = spaceSources;
+      return;
+    end
   end
   
   inputParams.name = genvarname(inputParams.name);
   
-  if (isempty(inputParams.space))
-    inputParams.space = 'base';
-  else
-    inputParams.space = genvarname(inputParams.space);
-  end
-  
-  space = inputParams.space;
-  
-  
+  hasChanged = false;
   if (~isempty(inputParams.data))
     %% Set source data
     source = inputParams;
     source.added = now;
     source.lastCall = now;
     source.calls = 0;
-    sources.(source.name) = source;
+    
+    hasChanged = true;
+    if isequal(space, 'base')
+      try hasChanged = ~isequal(sources.(source.name).data, source.data); end
+      sources.(source.name) = source;       % if hasChanged
+    else
+      try hasChanged = ~isequal(spaceSources.(source.name).data, source.data); end
+      spaceSources.(source.name) = source;  % if hasChanged
+      %       saveSources.(source.name) = source;
+      try
+        save(spaceFilename, '-append', '-struct', 'spaceSources', source.name);
+      catch
+        try
+          save(spaceFilename, '-struct', 'spaceSources', source.name);
+        catch err
+          if ~isequal(err.identifier, 'MATLAB:save:permissionDenied')
+            halt(err, 'Data.dataSources');
+          end
+        end
+      end
+    end
+    
   else
-    if (numel(varargin)==1)
+    if (numel(varargin)==1) && isempty(varargin{1})
+      source = []; data = [];
       %% Remove variable if data is empty
       try
-        sources = rmfield(sources,inputParams.name);
-      catch err
+        if isequal(space, 'base')
+          sources = rmfield(sources,inputParams.name);
+          hasChanged = true;
+        else
+          spaceSources.(inputParams.name) = [];
+          try
+            save(spaceFilename, '-append', '-struct', 'spaceSources', inputParams.name);
+          catch
+            try
+              save(spaceFilename, '-struct', 'spaceSources', inputParams.name);
+            catch err
+              if ~isequal(err.identifier, 'MATLAB:save:permissionDenied')
+                halt(err, 'Data.dataSources');
+              end
+            end
+          end
+          spaceSources = rmfield(spaceSources, inputParams.name);
+          hasChanged = true;
+        end
       end
-      source = [];
-      data = [];
-      PersistentSources('dataSources', sources); return;
-    else
+      
+      
+      source = [];  data = [];
       %% Get source data
-      try
-        source = sources.(inputParams.name);
-      catch err
-        source = [];
-        data = [];
+      if isequal(space, 'base')
+        try source = sources.(inputParams.name); end
+      else
+        try source = spaceSources.(inputParams.name); end
       end
       
       if (~isempty(source))
@@ -156,12 +214,32 @@ function [ data ] = dataSources( sourceName, varargin )
         source.calls = source.calls + 1;
         source.lastCall = now;
         
-        sources.(source.name) = source;
+        if isequal(space, 'base')
+          sources.(source.name) = source;
+        else
+          spaceSources.(source.name) = source;
+        end
       end
       
     end
   end
   
+  
+  if hasChanged
+    if isequal(space, 'base')
+      PersistentSources('dataSources', sources); return;
+    else
+      % try save(spaceFilename, '-struct', 'spaceSources'); end
+      spaces.(space) = spaceSources;
+      PersistentSources('dataSpaces', spaces);
+    end
+    
+    return;
+  end
+  
+  if ~isequal(space, 'base')
+    return;
+  end
   
   sourcesDetails = whos('sources');
   sourcesSize = sourcesDetails.bytes/2^20;
@@ -190,7 +268,7 @@ function [ data ] = dataSources( sourceName, varargin )
     bufferWarning = 'Buffered data exceeding memory limit (%5.2f / %5.2f MB)';
     
     try
-      fieldName = sourcesFields{I(1)};      
+      fieldName = sourcesFields{I(1)};
       if isnan(B(I))
         error('Grasppe:DataSources:CollectingGarbageError', 'Cannot clear buffered %s since it is protected', fieldName);
       end
@@ -210,5 +288,6 @@ function [ data ] = dataSources( sourceName, varargin )
     sourcesSize = sourcesDetails.bytes/2^20;
   end
   PersistentSources('dataSources', sources); return;
+  
 end
 

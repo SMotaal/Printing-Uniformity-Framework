@@ -84,11 +84,13 @@ function [ dataSet ] = filterUPDataSet( dataSource, sourceName, patchSet )
 %     
     setID = camelString(dataSet.sourceName, dataSet.patchSet);
     
-    setStruct = Data.dataSources(setID);
+    sourceSpace = dataSet.sourceName;
+    
+    setStruct = Data.dataSources(setID, sourceSpace);
     
     if (isempty(setStruct))
       dataSet.data = Data.interpUPDataSet(dataSource, dataSet.patchFilter);
-      Data.dataSources(setID, dataSet.data, true);
+      Data.dataSources(setID, dataSet.data, true, sourceSpace);
     else
       dataSet.data = setStruct;
     end
