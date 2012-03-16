@@ -11,6 +11,8 @@ classdef MouseEventData < event.EventData
     ObjectLocation
     FigureLocation
     SelectionType
+    consumed = false;
+    PanVector;
   end
   
   methods

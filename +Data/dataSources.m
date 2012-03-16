@@ -134,6 +134,8 @@ function [ data ] = dataSources( sourceName, varargin )
     try spaceSources    = spaces.(space); end
     if isempty(spaceSources)
       try spaceSources  = load(spaceFilename); end
+      spaces.(space) = spaceSources;
+      PersistentSources('dataSpaces', spaces);
     end
     
     if isempty(inputParams.name)
@@ -174,7 +176,8 @@ function [ data ] = dataSources( sourceName, varargin )
     end
     
   else
-    if (numel(varargin)==1) && isempty(varargin{1})
+    if (numel(varargin)==1)
+      if isempty(varargin{1})
       source = []; data = [];
       %% Remove variable if data is empty
       try
@@ -199,28 +202,28 @@ function [ data ] = dataSources( sourceName, varargin )
         end
       end
       
-      
-      source = [];  data = [];
-      %% Get source data
-      if isequal(space, 'base')
-        try source = sources.(inputParams.name); end
-      else
-        try source = spaceSources.(inputParams.name); end
-      end
-      
-      if (~isempty(source))
-        data = source.data;
-        
-        source.calls = source.calls + 1;
-        source.lastCall = now;
-        
+      else 
+        source = [];  data = [];
+        %% Get source data
         if isequal(space, 'base')
-          sources.(source.name) = source;
+          try source = sources.(inputParams.name); end
         else
-          spaceSources.(source.name) = source;
+          try source = spaceSources.(inputParams.name); end
+        end
+
+        if (~isempty(source))
+          data = source.data;
+
+          source.calls = source.calls + 1;
+          source.lastCall = now;
+
+          if isequal(space, 'base')
+            sources.(source.name) = source;
+          else
+            spaceSources.(source.name) = source;
+          end
         end
       end
-      
     end
   end
   

@@ -6,6 +6,7 @@ classdef MouseEventHandler < EventHandler
     MouseEventHandlers
     MouseDownStartPosition = [];
     MousePosition = [];
+    MouseButtonState = [];
   end
   
   events
@@ -26,50 +27,94 @@ classdef MouseEventHandler < EventHandler
       obj.registerEventHandler('MouseEventHandlers', handler);
     end
     
-    function mouseUp(obj, source, event)
+    function consumed = mouseUp(obj, source, event)
+      disp(sprintf('%s <== %s', obj.ID, 'MouseUp'));
       notify(obj, 'MouseUp', event);
-      callEventHandlers('Mouse', 'mouseUp', source, event);
+      consumed = obj.callEventHandlers('Mouse', 'mouseUp', source, event);
     end
     
-    function mouseWheel(obj, source, event)
-      notify(obj, 'MouseWheel', event);
-      callEventHandlers('Mouse', 'mouseWheel', source, event);
-    end
-    
-    function mouseDown(obj, source, event)
+    function consumed = mouseDown(obj, source, event)
+      disp(sprintf('%s <== %s', obj.ID, 'MouseDown'));
       notify(obj, 'MouseDown', event);
-      callEventHandlers('Mouse', 'mouseDown', source, event);
+      consumed = obj.callEventHandlers('Mouse', 'mouseDown', source, event);
+    end    
+    
+    function consumed = mouseWheel(obj, source, event)
+      disp(sprintf('%s <== %s', obj.ID, 'MouseWheel'));
+      notify(obj, 'MouseWheel', event);
+      consumed = obj.callEventHandlers('Mouse', 'mouseWheel', source, event);
     end
     
-    function mouseMotion(obj, source, event)
+    function consumed = mouseMotion(obj, source, event)
       notify(obj, 'MouseMotion', event);
       obj.processMouseEvent(source, 'motion');
-      callEventHandlers('Mouse', 'mouseMotion', source, event);
+      consumed = obj.callEventHandlers('Mouse', 'mouseMotion', source, event);
     end
     
-    function mouseClick(obj, source, event)
-      notify(obj, 'MouseClick', event);
-      callEventHandlers('Mouse', 'mouseMotion', source, event);
+    function mouseClickCallback(obj, src, evt, source, event)
+      consumed = obj.mouseClick(source, event);
     end
     
-    function mouseDoubleClick(obj, source, event)
+    function consumed = mouseClick(obj, source, event)
+      disp(sprintf('%s <== %s', obj.ID, 'MouseClick'));
+      try
+        notify(obj, 'MouseClick', event);
+      end
+      consumed = obj.callEventHandlers('Mouse', 'mouseMotion', source, event);
+    end
+    
+    function consumed = mouseDoubleClick(obj, source, event)
+      disp(sprintf('%s <== %s', obj.ID, 'MouseDoubleClick'));
       notify(obj, 'MouseDoubleClick', event);
-      callEventHandlers('Mouse', 'mouseDoubleClick', source, event);
+      consumed = obj.callEventHandlers('Mouse', 'mouseDoubleClick', source, event);
     end
     
-    function mousePan(obj, source, event)
-      notify(obj, 'MouseDown', event);
-      callEventHandlers('Mouse', 'mousePan', source, event);
+    function consumed = mousePan(obj, source, event)
+      persistent lastPanTic lastPanXY
+%       disp(sprintf('%s <== %s (%s)', obj.ID, 'MousePan', toString(event.PanVector)));
+
+      panMultiplierRate   = 45;     % per second
+      panStickyThreshold  = 5;
+      panStickyAngle      = 45;
+      
+      lastPanToc  = 0;
+      try lastPanToc = toc(lastPanTic); end
+      
+      if isempty(lastPanXY) || event.PanVector.Length==0;
+        deltaPanXY  = [0 0];
+      else
+        deltaPanXY  = event.PanVector.Current - lastPanXY;
+      end
+      
+      try
+        newView = obj.PlotAxes.View - deltaPanXY;
+        
+        if panStickyAngle-mod(newView(1), panStickyAngle)<panStickyThreshold || ...
+          mod(newView(1), panStickyAngle)<panStickyThreshold
+          newView(1) = round(newView(1)/panStickyAngle)*panStickyAngle;
+        end
+        if panStickyAngle-mod(newView(2), panStickyAngle)<panStickyThreshold || ...
+          mod(newView(2), panStickyAngle)<panStickyThreshold
+          newView(2) = round(newView(2)/panStickyAngle)*panStickyAngle; % - mod(newView(2), 90)
+        end
+          obj.PlotAxes.View = newView;
+      end
+      
+      lastPanXY   = event.PanVector.Current;
+      lastPanTic  = tic;
+      
+      notify(obj, 'MousePan', event);
+      consumed = obj.callEventHandlers('Mouse', 'mousePan', source, event);
     end
     
     function processMouseEvent(obj, source, type)
       persistent lastDownTic lastUpTic ...
         lastDownID lastUpID ...
         lastDownXY lastUpXY ...
+        lastPanTic ...
         fireClickTimer;
       
-      doubleClickRate     = 0.25;
-      panMultiplierRate   = 45;     % per second
+      doubleClickRate     = 0.5;
       
       currentXY           = get(0,'PointerLocation');
       
@@ -81,31 +126,25 @@ classdef MouseEventHandler < EventHandler
       
       lastUpToc           = 0;
       try lastUpToc       = toc(lastUpTic); end
-      
+            
       lastDownSameID      = false;
       try lastDownSameID  = isequal(lastDownID, obj.ID); end
       
       lastUpSameID        = false;
       try lastUpSameID    = isequal(lastUpID, obj.ID); end
       
-      try
-        if isequal(obj.ComponentType,  'figure')
-          disp(sprintf('Selection type is %s.', obj.handleGet('SelectionType')));
-        else
-          disp(sprintf('Selection type is %s.', obj.ParentFigure.handleGet('SelectionType')));
-        end
-      end
       
       if isempty(fireClickTimer) || ~isvalid(fireClickTimer)
         fireClickTimer = timer( 'StartDelay', doubleClickRate);
       end
       
-      event = varStruct(type, doubleClickRate, panMultiplierRate, ...
+      event = varStruct(type, doubleClickRate, ...
         currentXY, lastDownDeltaXY, lastDownToc, lastUpToc, lastDownSameID, lastUpSameID);
       
       switch lower(type)
         case 'down'
-          if isempty(lastDownTic)
+          obj.MouseButtonState = 'down';
+          if isempty(lastDownTic) || lastDownToc>1
             lastDownTic = tic;
           end
 
@@ -114,27 +153,60 @@ classdef MouseEventHandler < EventHandler
           lastDownID  = obj.ID;
           lastDownXY  = currentXY;
           
+          try
+            if isequal(obj.ComponentType,  'figure')
+              disp(sprintf('Selection type is %s.', obj.handleGet('SelectionType')));
+            else
+              disp(sprintf('Selection type is %s.', obj.ParentFigure.handleGet('SelectionType')));
+            end
+          end
+          
+          
           obj.mouseDown(source, MouseEventData('down'));
         case 'up'
+          obj.MouseButtonState = 'up';
           lastUpTic = tic;
           lastUpID  = obj.ID;
           lastUpXY  = currentXY;
+          lastPanTic = [];          
+          
+%           x.ldt = lastDownToc;
+%           x.dcr = doubleClickRate;
+%           x.lut = lastUpToc;
+%           x.cca = lastDownToc < doubleClickRate;
+%           x.ccb = lastUpToc > doubleClickRate;
+%           x.dca = lastDownToc < doubleClickRate;
+%           x.dcb = lastUpToc < doubleClickRate;
+%           disp(toString(x));
           
           if lastDownToc < doubleClickRate && lastUpToc > doubleClickRate;
+            lastDownTic = [];
+            fireClickTimer.TimerFcn = {@obj.mouseClickCallback, source, event};            
             try start(fireClickTimer); end
-            fireClickTimer.TimerFcn = {@obj.mouseClick, source, event};
+          elseif lastDownToc < doubleClickRate && lastUpToc < doubleClickRate &&  lastUpToc>0;
             lastDownTic = [];
-          elseif lastDownToc < doubleClickRate && lastUpToc < doubleClickRate;
             obj.mouseDoubleClick(source, event);
-            lastDownTic = [];
           end
         case 'motion'
-          if lastDownToc > lastUpToc
-            obj.mousePan(obj, source, event)
+          if isequal(obj.MouseButtonState, 'down')
+            if isempty(lastPanTic)
+              lastPanTic = tic;
+              event.PanVector.Length  = 0;
+            else
+              lastPanToc = 0;
+              try lastPanToc = toc(lastPanTic); end
+              event.PanVector.Length  = lastPanToc;              
+            end
+            event.PanVector.Start   = lastDownXY;
+            event.PanVector.Current = currentXY;
+            event.PanVector.Delta   = lastDownDeltaXY;
+%             event.PanVector.Rate    = panMultiplierRate;
+            obj.mousePan(source, event);
+          else
+            obj.mouseMotion(source, event);
           end
-          obj.mouseMotion(obj, source, event)
         case 'wheel'
-          obj.mouseWheel(obj, source, event)
+          obj.mouseWheel(source, event);
         otherwise
       end
       

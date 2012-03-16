@@ -5,7 +5,7 @@ classdef KeyEventHandler < EventHandler
   properties
     KeyEventHandlers
     LastKeyEvent
-    
+    KeyPressEvents = 0;
   end
   
   methods
@@ -15,40 +15,27 @@ classdef KeyEventHandler < EventHandler
     end
     
     function consumed = keyPress(obj, source, event)
-      %       persistent lastTrigger
-      
-      %       if isscalar(lastTrigger) && toc(lastTrigger)<0.35
-      %         return;
-      %       end
-      %
-      %       lastTrigger = tic;
-      
-      consumed = false; event.consumed = false;
-      handlers = obj.KeyEventHandlers;
-      if iscell(handlers) && ~isempty(handlers)
-        for i = 1:numel(handlers)
-          try
-            consumed = handlers{i}.keyPress(event, obj);
-            if consumed
-              event.consumed = true;
-            end
-          end
-        end
+      if obj.KeyPressEvents >5
+        return;
       end
-      consumed = event.consumed;
+      obj.KeyPressEvents = obj.KeyPressEvents + 1;
+      consumed = obj.callEventHandlers('Key', 'keyPress', source, event);
+      obj.KeyPressEvents = obj.KeyPressEvents - 1;
     end
     
     function consumed = keyRelease(obj, source, event)
-      consumed = false;
-      handlers = obj.KeyEventHandlers;
-      if iscell(handlers) && ~isempty(handlers)
-        for i = 1:numel(handlers)
-          try
-            consumed = handlers{i}.keyRelease(event, obj);
-            if consumed, return; end
-          end
-        end
-      end
+      
+      consumed = obj.callEventHandlers('Key', 'keyRelease', source, event);
+%       consumed = false;
+%       handlers = obj.KeyEventHandlers;
+%       if iscell(handlers) && ~isempty(handlers)
+%         for i = 1:numel(handlers)
+%           try
+%             consumed = handlers{i}.keyRelease(obj, event);
+%             if consumed, return; end
+%           end
+%         end
+%       end
     end
     
   end

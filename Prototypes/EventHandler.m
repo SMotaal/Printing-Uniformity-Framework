@@ -25,15 +25,29 @@ classdef EventHandler < GrasppeHandle
       end
     end
     
-    function callEventHandlers(obj, group, name, source, event)
-      handlers = obj.([group EventHandlers]);
-      if iscell(handlers) && ~isempty(handlers)
-        for i = 1:numel(handlers)
-          try
-            eval([ 'handlers{i}.' name '(source, event, obj);']);
+    function consumed = callEventHandlers(obj, group, name, source, event)
+      try
+        try event.consumed = event.consumed;
+        catch
+          event.consumed = false; end
+        handlers = obj.([group 'EventHandlers']);
+        if iscell(handlers) && ~isempty(handlers)
+          for i = 1:numel(handlers)
+            try
+              consumed = eval([ 'handlers{i}.' name '(obj, event);']);
+              if consumed
+                event.consumed = true;
+              end
+            catch err
+              halt(err, obj.ID);
+            end
           end
         end
+        consumed = event.consumed;
+      catch err
+        halt(err, obj.ID);
       end
+      
     end
     
     
@@ -162,7 +176,7 @@ classdef EventHandler < GrasppeHandle
           case 'ResizeFcn'
             object.windowResize(source, event);
           case 'DeleteFcn'
-%             object.deleteComponent(source, event);
+            %             object.deleteComponent(source, event);
           case {'KeyPressFcn', 'WindowKeyPressFcn'}
             object.keyPress(source, event);       % disp([callsign ' ' toString(event) ' Source: ' toString(source)]);
           case {'KeyReleaseFcn', 'WindowKeyReleaseFcn'};

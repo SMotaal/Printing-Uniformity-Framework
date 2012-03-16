@@ -79,8 +79,8 @@ function [ dataSource ] = processUPMetrics( dataSource )
     try
       metrics = zoneMetrics (dataSource, metrics);
     catch err
-      warning('Grasppe:UniPrint:Metrics:ZoneUndefined', ...
-        'Zone metrics are not defined in dataSource and will not be generated');
+%       warning('Grasppe:UniPrint:Metrics:ZoneUndefined', ...
+%         'Zone metrics are not defined in dataSource and will not be generated');
     end
 
     metrics.SourceMetrics = dataSource.metrics;
