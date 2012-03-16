@@ -51,6 +51,16 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       end
       obj.Primitive = changeSet(obj.Primitive, handle);
       
+%         try
+%           if ~isequal(get(handle,'UserData'), obj)
+%             try
+%               set(handle, 'UserData', obj);
+%             catch err
+%               disp(['Failed to set UserData for ' obj.ID]);
+%             end
+%           end
+%         end
+      
       try obj.pullHandleOptions; end
     end
     
@@ -90,6 +100,8 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   methods (Hidden)
     
     function handleSet(obj, varargin)
+      %try if obj.IsDestructing, return; end; end;
+      
       try
         if nargin>1 && isValidHandle('varargin{1}')
           handle = varargin{1};
@@ -115,6 +127,8 @@ classdef GrasppeHandle < dynamicprops & hgsetget
     
     function values = handleGet(obj, varargin)
       values = {};
+      %try if obj.IsDestructing, return; end; end;
+      
       if nargin>1 && isValidHandle('varargin{1}')
         handle = varargin{1};
         args = varargin(2:end);
@@ -162,6 +176,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   methods (Access=protected, Hidden)
     
     function pushHandleOptions(obj, names, emptyValues)
+      %try if obj.IsDestructing, return; end; end;
       
       try debugStamp(obj.ID, 5); catch, debugStamp('', 5); end;
       try
@@ -194,6 +209,19 @@ classdef GrasppeHandle < dynamicprops & hgsetget
         end
         
         obj.handleSet(options{:});
+        
+%         try
+%           if ~isequal(obj.handleGet('UserData'))
+%             %             obj.handleSet('UserData', obj);
+%             try
+%               GrasppeHandle.VerboseSet(handle, 'UserData', obj);
+%             catch err
+%               disp(['Failed to set UserData for ' obj.ID]);
+%             end
+%           end
+%           
+%         end
+        
       catch err
         halt(err, 'obj.ID');
         
@@ -202,6 +230,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
     end
     
     function [options handleOptions] = getHandleOptions(obj, names, readonly)
+      
       default readonly true;
       
       options={}; handleOptions={};
@@ -222,6 +251,9 @@ classdef GrasppeHandle < dynamicprops & hgsetget
     end
     
     function handleOptions = pullHandleOptions (obj, names, updateLocal)
+%       handleOptions = [];
+      %try if obj.IsDestructing, return; end; end;
+      
       default updateLocal true;
       
       options = cell(1,2*numel(names));
@@ -251,6 +283,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
     end
     
     function [options] = removeEmptyOptions(obj, options)
+      
       finalOptions = cell(size(options));
       p = 0;
       for i = 1:numel(options)/2

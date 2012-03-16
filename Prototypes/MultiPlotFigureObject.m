@@ -7,7 +7,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
   properties
     PlotAxesTargets = []; % = struct('id', [], 'idx', [], 'object', []);
     PlotAxesStack   = [];
-    PlotAxesLimit   = 4;
+    PlotAxesLength   = 4;
     PlotRows;
     PlotColumns;
     PlotWidth;
@@ -46,7 +46,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
   methods
     function preparePlotAxesStack(obj)
       try debugStamp(obj.ID); catch, debugStamp(); end;
-      plotLimit   = obj.PlotAxesLimit;
+      plotLimit   = obj.PlotAxesLength;
       plotStack   = obj.PlotAxesStack;
       plotTargets = obj.PlotAxesTargets;
       
@@ -181,9 +181,9 @@ classdef MultiPlotFigureObject < PlotFigureObject
       try
         
         %%
-        %       cells           = 7; % obj.PlotAxesLimit;
+        %       cells           = 7; % obj.PlotAxesLength;
         %       parentPosition  = [0 0 1600 1000];
-        cells           = obj.PlotAxesLimit;
+        cells           = sum(~cellfun(@isempty,obj.PlotAxes));
         parentPosition  = pixelPosition(obj.Handle);
         margins         = [20 20 20 20]; % L/B/R/T
         spacing         = 60; %-50;
@@ -317,7 +317,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
     
     %     function layoutPlotAxes1(obj)
     %       try
-    %         nAxes = obj.PlotAxesLimit;
+    %         nAxes = obj.PlotAxesLength;
     %
     %         parentPosition  = pixelPosition(obj.Handle);
     %         margins         = [20 20 20 40]; % L/B/R/T

@@ -132,11 +132,11 @@ function [ data ] = dataSources( sourceName, varargin )
     
     spaceSources        = [];
     try spaceSources    = spaces.(space); end
-    if isempty(spaceSources)
-      try spaceSources  = load(spaceFilename); end
-      spaces.(space) = spaceSources;
-      PersistentSources('dataSpaces', spaces);
-    end
+    %   if isempty(spaceSources)
+    %     try spaceSources  = load(spaceFilename); end
+    %     spaces.(space) = spaceSources;
+    %     PersistentSources('dataSpaces', spaces);
+    %   end
     
     if isempty(inputParams.name)
       data = spaceSources;
@@ -161,18 +161,7 @@ function [ data ] = dataSources( sourceName, varargin )
     else
       try hasChanged = ~isequal(spaceSources.(source.name).data, source.data); end
       spaceSources.(source.name) = source;  % if hasChanged
-      %       saveSources.(source.name) = source;
-      try
-        save(spaceFilename, '-append', '-struct', 'spaceSources', source.name);
-      catch
-        try
-          save(spaceFilename, '-struct', 'spaceSources', source.name);
-        catch err
-          if ~isequal(err.identifier, 'MATLAB:save:permissionDenied')
-            halt(err, 'Data.dataSources');
-          end
-        end
-      end
+      saveSpaceData(space, source.name, spaceSources.(source.name).data);
     end
     
   else
@@ -186,17 +175,7 @@ function [ data ] = dataSources( sourceName, varargin )
           hasChanged = true;
         else
           spaceSources.(inputParams.name) = [];
-          try
-            save(spaceFilename, '-append', '-struct', 'spaceSources', inputParams.name);
-          catch
-            try
-              save(spaceFilename, '-struct', 'spaceSources', inputParams.name);
-            catch err
-              if ~isequal(err.identifier, 'MATLAB:save:permissionDenied')
-                halt(err, 'Data.dataSources');
-              end
-            end
-          end
+          saveSpaceData(space, inputParams.name, []);
           spaceSources = rmfield(spaceSources, inputParams.name);
           hasChanged = true;
         end
@@ -209,6 +188,13 @@ function [ data ] = dataSources( sourceName, varargin )
           try source = sources.(inputParams.name); end
         else
           try source = spaceSources.(inputParams.name); end
+          if isempty(source)
+            source = inputParams;
+            source.added = now;
+            source.lastCall = now;
+            source.calls = 0;            
+            source.data = loadSpaceData(space, inputParams.name);
+          end
         end
 
         if (~isempty(source))
@@ -221,6 +207,7 @@ function [ data ] = dataSources( sourceName, varargin )
             sources.(source.name) = source;
           else
             spaceSources.(source.name) = source;
+            hasChanged = true;
           end
         end
       end
@@ -294,3 +281,41 @@ function [ data ] = dataSources( sourceName, varargin )
   
 end
 
+function name = getSpaceFilename(space)
+  name = datadir('Sources', [space '.mat']);
+end
+
+function data = loadSpaceData(space, name)
+  data = [];
+  spaceFilename = getSpaceFilename(space);
+  s = warning('off', 'MATLAB:load:variableNotFound');
+  try
+    loadStruct = load(spaceFilename, '-mat', name);
+    data = loadStruct.(name);
+    if ~isempty(data)
+        disp(sprintf('Loading %s:%s.', space, name));
+    end
+  end
+  warning(s);
+end
+
+function saveSpaceData(space, name, data)
+  
+  saveStruct.(name) = data;
+  
+  spaceFilename = getSpaceFilename(space);
+%   disp(sprintf('Saving %s:%s.', space, name));
+  try
+    save(spaceFilename, '-append', '-struct', 'saveStruct', name);
+    disp(sprintf('Appending %s:%s.', space, name));
+  catch
+    try
+      save(spaceFilename, '-struct', 'saveStruct', name);
+      disp(sprintf('Saving %s:%s.', space, name));
+    catch err
+      if ~isequal(err.identifier, 'MATLAB:save:permissionDenied')
+        halt(err, 'Data.dataSources');
+      end
+    end
+  end
+end

@@ -113,55 +113,57 @@ classdef GrasppeComponent < GrasppeHandle
   methods (Access=protected, Hidden=false)
     
     function createComponent(obj, type, varargin)
-      if obj.IsHandled, return; end
-      
-      if isempty(type), type    = obj.getComponentType(); end
-      
-      if isValidHandle('obj.Parent'), parent = obj.Parent;
-      else parent = []; end
-      
-      handledOptions = obj.getHandleOptions([], false);
-      
-      switch lower(type)
-        case {'figure'}
-          graphicHandle = true;
-        case {'axes', 'plot', 'patch', 'surface', 'surf', 'surfc'}
-          graphicHandle = true;
-        case {'colorbar'}
-          graphicHandle = true;
-          parent = [];
-        case {'text'}
-          graphicHandle = true;
-        case {'uitable'}
-          graphicHandle = true;
-        otherwise
-          graphicHandle = false;
-      end
-      
-      if graphicHandle
-        options = obj.removeEmptyOptions(handledOptions);
-        args = {type, obj.ID, parent, options{:}, 'UserData', obj, varargin{:}};
+      try
+        if obj.IsHandled, return; end
+        
+        if isempty(type), type    = obj.getComponentType(); end
+        
+        if isValidHandle('obj.Parent'), parent = obj.Parent;
+        else parent = []; end
+        
+        handledOptions = obj.getHandleOptions([], false);
+        
         switch lower(type)
+          case {'figure'}
+            graphicHandle = true;
+          case {'axes', 'plot', 'patch', 'surface', 'surf', 'surfc'}
+            graphicHandle = true;
           case {'colorbar'}
-            idx   = find(strcmp(args,'peer'));
-            peer  = args{idx+1};
-            args  = args([1:idx-1 idx+2:end]);
-            handle = colorbar('peer', peer);
-            obj.handleSet(handle, args{6:end});
+            graphicHandle = true;
+            parent = [];
+          case {'text'}
+            graphicHandle = true;
+          case {'uitable'}
+            graphicHandle = true;
           otherwise
-            handle = Components.CreateHandleObject(args{:});
+            graphicHandle = false;
         end
-      else
-        handle = [];
+        
+        if graphicHandle
+          options = obj.removeEmptyOptions(handledOptions);
+          args = {type, obj.ID, parent, options{:}, 'UserData', obj, varargin{:}};
+          switch lower(type)
+            case {'colorbar'}
+              idx   = find(strcmp(args,'peer'));
+              peer  = args{idx+1};
+              args  = args([1:idx-1 idx+2:end]);
+              handle = colorbar('peer', peer);
+              obj.handleSet(handle, args{6:end});
+            otherwise
+              handle = Components.CreateHandleObject(args{:});
+          end
+        else
+          handle = [];
+        end
+        
+        obj.Handle = handle;
+        
+        try obj.attachEvents(); end
+        try obj.attachListeners(handle, handledOptions(1:2:end)); end
+        
       end
       
-      obj.Handle = handle;
-      
-      try obj.attachEvents(); end
-      
-      
-      try obj.attachListeners(handle, handledOptions(1:2:end)); end
-      
+      obj.handleSet(obj.Handle, 'UserData', obj);
       %       np = {mc.PropertyList.Name}; np(cell2mat({mc.PropertyList.SetObservable}))
       %
       
@@ -180,7 +182,7 @@ classdef GrasppeComponent < GrasppeHandle
           end
           
           if ~isempty(handleProperties)
-            addlistener(handle, handleProperties,  'PostSet', @GrasppeComponent.refreshHandleProperty);
+            addlistener(handle, handleProperties,  'PostSet', @obj.handlePropertyUpdate);  %GrasppeComponent.refreshHandleProperty);
           end
         end
         
@@ -191,6 +193,8 @@ classdef GrasppeComponent < GrasppeHandle
         try debugStamp(obj.ID); end
         disp(err); %dealwith(err);
       end
+      
+      try addlistener(handle, 'UserData',  'PreGet', @obj.updateHandleData); end
       
     end
     
@@ -214,8 +218,11 @@ classdef GrasppeComponent < GrasppeHandle
     
     
     function handleOptions = pullHandleOptions(obj, names) %, names, emptyValues)
+      %try if obj.IsDestructing, return; end; end;
+      
       default emptyValues true;
       default names;
+      
       if isempty(names)
         names = obj.getComponentFields;
       end
@@ -224,6 +231,8 @@ classdef GrasppeComponent < GrasppeHandle
     end
     
     function pushHandleOptions(obj, names)
+      %try if obj.IsDestructing, return; end; end;
+      
       default emptyValues true;
       default names;
       if isempty(names)
@@ -264,6 +273,7 @@ classdef GrasppeComponent < GrasppeHandle
     
     
     function setOptions(obj, varargin)
+      %try if obj.IsDestructing, return; end; end;
       if obj.IsSetting, return; else obj.IsSetting = true; end
       
       try
@@ -289,13 +299,22 @@ classdef GrasppeComponent < GrasppeHandle
       obj.IsSetting = false;
     end
     
+    function updateHandleData(obj, source, event)
+        try
+          if ~isequal(event.AffectedObject.UserData, obj)
+            try
+              event.AffectedObject.UserData = obj;
+            catch err
+              try disp(['Failed to set UserData for ' obj.ID]); end
+            end
+          end
+        catch err
+          disp(err);
+        end
+    end
+    
     function handlePropertyUpdate(obj, source, event)
-      
-      %       persistent debugging;
-      %
-      %       if isempty(debugging)
-      %         debugging = obj.DebugPropertySynching;
-      %       end
+      %try if obj.IsDestructing, return; end; end;
       
       obj.pullEvents = obj.pullEvents + 1;
       if ~obj.IsUpdating && ~obj.IsPushing
@@ -333,7 +352,7 @@ classdef GrasppeComponent < GrasppeHandle
   methods(Static, Hidden)
     function refreshHandleProperty(source, event)
       if ~(isobject(source))
-        obj = event.AffectedObject.UserData;
+        obj = get(event.AffectedObject, 'UserData');
       else
         obj = event.AffectedObject;
       end

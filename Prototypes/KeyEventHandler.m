@@ -8,6 +8,13 @@ classdef KeyEventHandler < EventHandler
     KeyPressEvents = 0;
   end
   
+  properties
+    IsAltDown
+    IsControlDown
+    IsCommandDown
+    IsShiftDown
+  end
+  
   methods
     
     function registerKeyEventHandler(obj, handler)

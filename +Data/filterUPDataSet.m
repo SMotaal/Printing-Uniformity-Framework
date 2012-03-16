@@ -2,6 +2,8 @@ function [ dataSet ] = filterUPDataSet( dataSource, sourceName, patchSet )
   %FILTERUPDATASET buffered dataset for specific patch set
   %   Detailed explanation goes here
   
+  Forced = true;
+  
   %% Exceptions
   ExIdent = 'Grasppe:UniPrint:filterUPDataSet';
   
@@ -82,17 +84,21 @@ function [ dataSet ] = filterUPDataSet( dataSource, sourceName, patchSet )
 %       setCode = 200-setCode;
 %     end
 %     
-    setID = camelString(dataSet.sourceName, dataSet.patchSet);
+    setID     = camelString(dataSet.sourceName, dataSet.patchSet);
+    filterID  = [setID 'Filters'];
     
     sourceSpace = dataSet.sourceName;
     
-    setStruct = Data.dataSources(setID, sourceSpace);
+    setStruct     = Data.dataSources(setID,     sourceSpace);
+    filterStruct  = Data.dataSources(filterID,  sourceSpace);
     
-    if (isempty(setStruct))
-      dataSet.data = Data.interpUPDataSet(dataSource, dataSet.patchFilter);
-      Data.dataSources(setID, dataSet.data, true, sourceSpace);
+    if (isempty(setStruct) || isempty(filterStruct)) || Forced
+      [dataSet.data dataSet.filterData] = Data.interpUPDataSet(dataSource, dataSet.patchSet);
+      Data.dataSources(setID,     dataSet.data,       true, sourceSpace);
+      Data.dataSources(filterID,  dataSet.filterData, true, sourceSpace);
     else
-      dataSet.data = setStruct;
+      dataSet.data        = setStruct;
+      dataSet.filterData  = filterStruct;
     end
   
 end

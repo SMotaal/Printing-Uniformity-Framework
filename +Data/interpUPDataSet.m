@@ -1,4 +1,4 @@
-function [ setData ] = interpUPDataSet( dataSource, setFilter )
+function [ setData filterData] = interpUPDataSet( dataSource, setFilter )
   %SUPINTERP Summary of this function goes here
   %   Detailed explanation goes here
   
@@ -23,13 +23,15 @@ function [ setData ] = interpUPDataSet( dataSource, setFilter )
   
   %% Prepare Set Filter
   try
+    targetSize    = dataSource.metrics.sampleSize;
+
     if islogical(setFilter)
-      targetSize    = dataSource.metrics.sampleSize;
       filterSize    = size(setFilter);
       filterRepeat  = targetSize ./ filterSize;
     else
       if isValid(setFilter, 'double')
-        setFilter= dataSource.sampling.masks.(['TV' int2str(setFilter)]);
+        maskID    = ['TV' int2str(setFilter)];
+        setFilter = dataSource.sampling.masks.(maskID);
       end
       
       if isValid('setFilter','char') && ...
@@ -70,6 +72,7 @@ function [ setData ] = interpUPDataSet( dataSource, setFilter )
     throw(addCause(sourceException, err));
   end
   
+  filterData = varStruct(dataFilter, dataRows, dataColumns, gridRows, gridColumns, maskID, setFilter, targetSize, filterSize, filterRepeat);
     
   %% Process Source Colorimetry
   try  % colorimetry = dataSource.colorimetry;

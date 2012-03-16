@@ -16,10 +16,12 @@ classdef PlotFigureObject < FigureObject
   %% Plot Objects
   properties (Dependent, Hidden)
     TitleTextHandle, PlotAxesHandle, OverlayAxesHandle, ColorBarHandle
+    ViewLabelHandle
   end
   
   properties
     TitleText, PlotAxes, OverlayAxes, ColorBar
+    ViewLabel;
   end
   
   methods (Hidden)
@@ -72,6 +74,18 @@ classdef PlotFigureObject < FigureObject
     %% Title Text
     function handle = get.TitleTextHandle(obj)
       handle = []; try handle = obj.TitleText.Handle; end
+    end
+    
+    function set.PlotAxes(obj, plotAxes)
+      obj.PlotAxes = plotAxes;
+%       if isempty(obj.ActiveObject) || isempty(obj.ActivePlot)
+%         if isobject(plotAxes)
+%           if numel(plotAxes)>1
+%               try obj.ActivePlot    = plotAxes(1); end % , 'UserData'); end
+%               try obj.ActiveObject  = get(obj.ActivePlot.Children(1), 'UserData'); end
+%           end
+%         end
+%       end
     end
     
     %% Plot Axes

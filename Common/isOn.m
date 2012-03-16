@@ -10,7 +10,7 @@ function [ state ] = isOn( state, onState, offState )
 %   end
   
   switch lower(state)
-  case {1, true, 'yes', 'on'};
+  case {1, true, 'yes', 'on', 'true'};
     state = true;
     if exist('onState', 'var')
       state = onState;  

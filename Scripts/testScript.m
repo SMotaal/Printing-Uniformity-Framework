@@ -1,15 +1,34 @@
 x = MultiPlotFigureObject();
 x.setVisible(true);
 
-d = RegionsUniformityDataSource(); 
+d     = LocVarUniformityDataSource('SourceID', 'rithp5501');
+d(2)  = LocVarUniformityDataSource('SourceID', 'rithp7k01');
 
-% s = UniformitySurfaceObject.Create(x.getPlotAxes(1), 'DataSource', d);
-
-for i = 1:4
-  s(i) = UniformitySurfaceObject.Create(x.getPlotAxes(i), 'DataSource', d);
+for i = 1:numel(d)
+  p(i)  = x.getPlotAxes(i);
+  s(i)  = UniformitySurfaceObject.Create(p(i), 'DataSource', d(i));
+  
+  
+%   xp(i) = FigureObject('WindowTitle', [d(i).SourceID ' Properties'], ...
+%     'WindowStyle', 'normal', 'Menubar', 'none', 'Toolbar', 'none');
+%   
+%   tp(i) = PropertiesTableObject.Create(xp(i));
+%   
+%   try tp(i).attachProperty(s(i), 'DataSource');   end
+%   try tp(i).attachProperty(d(i), 'SourceID');     end
+%   try tp(i).attachProperty(d(i), 'SetID');        end
+%   try tp(i).attachProperty(d(i), 'SampleID');     end
+%   try tp(i).attachProperty(d(i), 'ZLim');         end
+%   try tp(i).attachProperty(d(i), 'CLim');         end
+%   try tp(i).attachProperty(p(i), 'View');         end
+%   
+%   xp(i).setVisible(true);
 end
 
-% ColorBarObject.Create(x.getPlotAxes(1));
+cb    = ColorBarObject.Create(x.getPlotAxes(1));
+
+
+
 
 % xp = FigureObject('WindowStyle', 'normal', 'Menubar', 'none', 'Toolbar', 'none'); 
 % 

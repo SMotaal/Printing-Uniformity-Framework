@@ -16,6 +16,8 @@ function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargi
   options.statField   = {'all', {'mean', 'std', 'lim'}};
   defaults.statField  = {'all'};
   
+%   options.rebuildData = {'none', {'filterData, setData, 
+  
   options.mode        = {options.plotMode{:},options.statMode{:}, options.exportMode{2}{:}};
   defaults.mode       = {defaults.plotMode{:},defaults.statMode{:}, options.exportMode{2}{:}};
   

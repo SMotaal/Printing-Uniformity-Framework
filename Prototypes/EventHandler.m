@@ -38,14 +38,14 @@ classdef EventHandler < GrasppeHandle
               if consumed
                 event.consumed = true;
               end
-            catch err
-              halt(err, obj.ID);
+%             catch err
+%               halt(err, obj.ID);
             end
           end
         end
         consumed = event.consumed;
-      catch err
-        halt(err, obj.ID);
+%       catch err
+%         halt(err, obj.ID);
       end
       
     end
@@ -165,12 +165,12 @@ classdef EventHandler < GrasppeHandle
       
       try
         switch callsign
-          case 'UpdateView'
-            stop(source); delete(source);
-            object.updateView();
-          case 'DisableRotation'
-            stop(source);
-            object.toggleRotation('callback');
+%           case 'UpdateView'
+%             stop(source); delete(source);
+%             object.updateView();
+%           case 'DisableRotation'
+%             stop(source);
+%             object.toggleRotation('callback');
           case 'CloseRequestFcn'
             object.closeComponent();
           case 'ResizeFcn'

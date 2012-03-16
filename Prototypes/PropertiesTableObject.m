@@ -6,6 +6,7 @@ classdef PropertiesTableObject < TableObject
     ComponentProperties = { };
     Properties
     IsUpdatingTable = false;
+    UpdateTimer = [];
     Timers;
   end
   
@@ -74,7 +75,7 @@ classdef PropertiesTableObject < TableObject
       
       try
         data        = {obj.RowName{:}; obj.Data{:,1}}';
-      catch
+      catch err
         data = {};
       end
       
@@ -92,6 +93,8 @@ classdef PropertiesTableObject < TableObject
           row     = find(strcmp(name, names));
           
           newData(row, 2) = value;
+        catch err
+          disp(err);
         end
       end
       
@@ -101,10 +104,21 @@ classdef PropertiesTableObject < TableObject
           value   = properties.(name).Value; % Target.(name);
           row     = i;
           
-          if isnumeric(value) || islogical(value)
-            value = regexprep(num2str(value), '\s', ' ');
+          switch class(value)
+            case {'logical', 'single', 'double', 'int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64'}
+              value = regexprep(num2str(value), '\s', ' ');
+            case {'char'}
+            otherwise
+              if isobject(value)
+                try value = [value.ID ' (' class(value) ')'];
+                catch, value = ['(' class(value) ')']; end;
+              else
+                value = toString(value);
+              end
           end
           newData{row, 2} = value;
+        catch err
+          disp(err);          
         end
       end
       
@@ -117,8 +131,12 @@ classdef PropertiesTableObject < TableObject
       property  = source.Name;
       component = event.AffectedObject;
       
-      start(timer('TimerFcn',{@obj.updatePropertyValue, property}, ...
-        'Period', 0.25, 'StartDelay', 0.25));
+      if isempty(obj.UpdateTimer) || ~isvalid(obj.UpdateTimer)
+        obj.UpdateTimer = timer('TimerFcn',{@obj.updatePropertyValue, property}, ...
+        'Period', 0.25, 'StartDelay', 0.25);
+      end
+      
+      start(obj.UpdateTimer);
       
       %         obj.updatePropertyValue(property);
       
@@ -137,7 +155,7 @@ classdef PropertiesTableObject < TableObject
       end
       try
         if ~obj.IsUpdatingTable
-          try stop(source); delete(source); end
+          try stop(source); end %delete(source); end
           
           try obj.Properties.(property).Value = obj.Properties.(property).Target.(property); end
           try obj.updatePropertyTable; end
@@ -163,12 +181,15 @@ classdef PropertiesTableObject < TableObject
         switch type
           case 'double'
             try value = str2num(value); end
+          case 'logical'
+            % try value = isOn(value); end
+            try value = str2num(value)==1; end
           case 'char'
           otherwise
-            disp(sprintf('Setting %s.%s(%s): %s', component.ID, property, type, toString(value)));
+            return;
         end
       end
-      
+      disp(sprintf('Setting %s.%s(%s): %s', component.ID, property, type, toString(value)));      
       try component.(property) = value; end
     end
     
@@ -193,6 +214,8 @@ classdef PropertiesTableObject < TableObject
         
         try obj.Properties.(name).Value = value; end
         try obj.pushPropertyValue(name); end
+      catch err
+        disp(err);
       end
       obj.IsUpdatingTable = false;
       %       end
@@ -226,6 +249,8 @@ classdef PropertiesTableObject < TableObject
         for t = 1:numel(timers)
           try stop(timers{t}); delete(timers{t}); end
         end
+      catch err
+        disp(err);
       end
       
       obj.delete@TableObject;

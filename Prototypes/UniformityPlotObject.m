@@ -2,7 +2,7 @@ classdef UniformityPlotObject < GrasppeHandle
   %UNIFORMITYPLOTOBJECT Co-superclass for printing uniformity plot objects
   %   Detailed explanation goes here
   
-  properties
+  properties (SetObservable, GetObservable)
     DataSource
     LinkedProperties
   end

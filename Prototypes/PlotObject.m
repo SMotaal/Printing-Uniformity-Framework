@@ -19,7 +19,10 @@ classdef PlotObject < InAxesObject
     function createComponent(obj, type)
       try debugStamp(obj.ID); catch, debugStamp(); end;
       obj.createComponent@GrasppeComponent(type);
-      obj.ParentFigure.registerKeyEventHandler(obj);
+      try obj.ParentFigure.registerKeyEventHandler(obj); end
+      try obj.ParentFigure.ActivePlot = obj.ParentAxes; end
+      try obj.ParentFigure.ActiveObject = obj; end
+%       obj.ParentFigure.registerMouseEventHandler(obj);
     end
     
     function attachDataListeners(obj)
@@ -82,11 +85,23 @@ classdef PlotObject < InAxesObject
   
   methods
     function consumed = keyPress(obj, source, event)
-      
+      consumed = true;
       if event.consumed == true
         return;
       end
-      consumed = true;
+      
+      currentObject   = obj.ID;
+      activeObject    = class(obj.ParentFigure.ActiveObject);
+      try activeObject  = obj.ParentFigure.ActiveObject.ID; end
+        
+      if ~isequal(currentObject, activeObject)
+        %disp(['Current object ' currentObject ' is not the Active object ' activeObject '.']);
+        consumed = false;
+        return;
+      else
+        %disp(['Current object ' currentObject ' is the Active object.']);
+      end
+
       if isequal(event.Modifier, {'control'}) || isequal(event.Modifier, {'command'})
         consumed = true;
         switch event.Key

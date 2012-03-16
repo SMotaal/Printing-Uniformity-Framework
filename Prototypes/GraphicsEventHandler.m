@@ -74,14 +74,15 @@ classdef GraphicsEventHandler < EventHandler & KeyEventHandler & MouseEventHandl
     end
     
     function delete(obj, source, event)
+      s = warning('off', 'MATLAB:hg');
       try
-        %         if ~isOn(obj.IsDestructing)
         obj.IsDestructing = true;
         try delete(obj.Handle); end
       catch err
         try debugStamp(obj.ID); end
         disp(err);
       end
+      warning(s);
     end
     
   end
