@@ -5,7 +5,7 @@ classdef PlotFigureObject < FigureObject
   %#ok<*MCSUP>
   
   properties (Transient, Hidden)
-    BaseTitle, SampleTitle
+    BaseTitle, SampleTitle, Status
   end
   
   %% Functional Properties
@@ -16,12 +16,12 @@ classdef PlotFigureObject < FigureObject
   %% Plot Objects
   properties (Dependent, Hidden)
     TitleTextHandle, PlotAxesHandle, OverlayAxesHandle, ColorBarHandle
-    ViewLabelHandle
+    StatusTextHandle
   end
   
   properties
     TitleText, PlotAxes, OverlayAxes, ColorBar
-    ViewLabel;
+    StatusText;
   end
   
   methods (Hidden)
@@ -60,10 +60,15 @@ classdef PlotFigureObject < FigureObject
   methods (Access=protected, Hidden)
     function createComponent(obj, type)
       obj.createComponent@FigureObject(type);
+      obj.preparePlotAxes;
       obj.OverlayAxes = OverlayAxesObject.Create(obj);
+      obj.StatusText  = OverlayTextObject.Create(obj.OverlayAxes);
       obj.TitleText   = TitleTextObject.Create(obj.OverlayAxes);
-      obj.PlotAxes    = PlotAxesObject.Create(obj);
       obj.TitleText.updateTitle;
+    end
+    
+    function preparePlotAxes(obj)
+      obj.PlotAxes    = PlotAxesObject.Create(obj);
     end
     
   end
@@ -75,6 +80,11 @@ classdef PlotFigureObject < FigureObject
     function handle = get.TitleTextHandle(obj)
       handle = []; try handle = obj.TitleText.Handle; end
     end
+    
+    function handle = get.StatusTextHandle(obj)
+      handle = []; try handle = obj.StatusText.Handle; end
+    end
+    
     
     function set.PlotAxes(obj, plotAxes)
       obj.PlotAxes = plotAxes;

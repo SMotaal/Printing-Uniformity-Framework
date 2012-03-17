@@ -29,9 +29,13 @@ classdef TextObject < InAxesObject & DecoratedObject
       obj = obj@DecoratedObject();
       obj = obj@InAxesObject(varargin{:});
       
-      FontDecorator(obj);
+%       FontDecorator(obj);
     end
     
+    function decorateComponent(obj)
+      obj.decorateComponent@DecoratedObject();
+      FontDecorator(obj);
+    end
   end
   
   

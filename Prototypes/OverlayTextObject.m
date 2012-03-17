@@ -14,17 +14,15 @@ classdef OverlayTextObject < TextObject
       obj.createComponent@GrasppeComponent(type);
       
       position = obj.Position;
-      position([1 2]) = [0 1];
+      position([1 2]) = [0 0];
       obj.handleSet('Position', position);
       obj.handleSet('HorizontalAlignment', 'Left');
+      
+      obj.FontSize = 8;
     end
   end
   
   methods
-    
-    function updateTitle(obj)
-      obj.Text = obj.ParentFigure.Title;
-    end
   end
   
   methods (Static)
@@ -32,14 +30,14 @@ classdef OverlayTextObject < TextObject
       
       IsVisible     = true;
       IsClickable   = false;
-      Text          = 'Title';
+      Text          = '';
       Parent        = 0;
       
       options = WorkspaceVariables(true);
     end
     
     function obj = Create(parentAxes, varargin)
-      obj = TitleTextObject(parentAxes, varargin{:});
+      obj = OverlayTextObject(parentAxes, varargin{:});
     end
   end
   

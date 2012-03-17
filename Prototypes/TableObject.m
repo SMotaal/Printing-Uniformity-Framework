@@ -39,13 +39,18 @@ classdef TableObject < InFigureObject & DecoratedObject & TableEventHandler
       obj = obj@DecoratedObject();
       obj = obj@InFigureObject(varargin{:});
       
-      FontDecorator(obj);
+%       FontDecorator(obj);
     end
   end
   
   methods (Access=protected)
     function createComponent(obj, type)
       obj.createComponent@InFigureObject(type);
+    end
+    
+    function decorateComponent(obj)
+      obj.decorateComponent@DecoratedObject();
+      FontDecorator(obj);
     end
   end
   

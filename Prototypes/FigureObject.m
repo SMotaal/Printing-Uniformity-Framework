@@ -26,7 +26,7 @@ classdef FigureObject < GraphicsObject & EventHandler
       obj = obj@GraphicsObject(varargin{:});
     end
     
-    function consumed = mouseDoubleClick(obj, source, event)
+    function consumed = mouseDown(obj, source, event)
       try
         activeObject      = obj.handleGet('CurrentObject');
         if ishandle(activeObject) && isobject(get(activeObject, 'UserData'))
@@ -44,7 +44,7 @@ classdef FigureObject < GraphicsObject & EventHandler
 %       %         end
 %       %         obj.ActiveAxes    = activeAxes;
 %       %       end
-      obj.mouseDoubleClick@GraphicsObject(source, event);
+      consumed = obj.mouseDown@GraphicsObject(source, event);
     end
     
     function consumed = mousePan(obj, source, event)
@@ -68,6 +68,12 @@ classdef FigureObject < GraphicsObject & EventHandler
       
       try
         newView = plotAxes.View - deltaPanXY;
+        
+        if newView(2) < 0
+          newView(2) = 0;
+        elseif newView(2) > 90
+          newView(2) = 90;
+        end
         
         if panStickyAngle-mod(newView(1), panStickyAngle)<panStickyThreshold || ...
             mod(newView(1), panStickyAngle)<panStickyThreshold

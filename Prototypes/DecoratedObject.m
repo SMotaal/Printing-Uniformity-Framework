@@ -9,7 +9,18 @@ classdef DecoratedObject < GrasppeHandle
   end
   
   methods
-    
+    function obj = DecoratedObject()
+      obj = obj@GrasppeHandle;
+      decorateComponent(obj);
+    end
+  end
+  
+  methods (Access=protected, Hidden)
+    function decorateComponent(obj)
+    end
+  end
+  
+  methods
     function decorate(obj, decorator)
       
       if ~(GrasppeDecorator.checkInheritence(decorator) && isvalid(decorator))
@@ -68,10 +79,6 @@ classdef DecoratedObject < GrasppeHandle
       %       obj.(decoration) = obj.(decoration);
       
     end
-    
-    
-    
-    
   end
   
 end

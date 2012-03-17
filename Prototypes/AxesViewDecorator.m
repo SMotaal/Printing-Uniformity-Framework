@@ -15,9 +15,15 @@ classdef AxesViewDecorator < GrasppeDecorator
       obj@GrasppeDecorator(varargin{:});
     end
     
-    function value = getView(obj)
-    end
-    function setView(obj, value)
+    %     function value = getView(obj)
+    %     end
+    %     function setView(obj, value)
+    %       beep;
+    %     end
+    
+    function set.View(obj, value)
+      obj.View = value;
+      try obj.Component.ParentFigure.StatusText.Text = toString(value); end
     end
   end
   

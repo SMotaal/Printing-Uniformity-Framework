@@ -33,18 +33,16 @@ classdef MultiPlotFigureObject < PlotFigureObject
   
   methods (Access=protected, Hidden)
     function createComponent(obj, type)
-      obj.createComponent@GrasppeComponent(type);
-      obj.OverlayAxes = OverlayAxesObject.Create(obj);
-      obj.TitleText   = TitleTextObject.Create(obj.OverlayAxes);
-      
-      obj.preparePlotAxesStack();
-      
-      obj.TitleText.updateTitle;
+      obj.createComponent@PlotFigureObject(type);
+%       obj.OverlayAxes = OverlayAxesObject.Create(obj);
+%       obj.TitleText   = TitleTextObject.Create(obj.OverlayAxes);
+%       
+%       obj.preparePlotAxes();
+%       
+%       obj.TitleText.updateTitle;
     end
-  end
-  
-  methods
-    function preparePlotAxesStack(obj)
+    
+    function preparePlotAxes(obj)
       try debugStamp(obj.ID); catch, debugStamp(); end;
       plotLimit   = obj.PlotAxesLength;
       plotStack   = obj.PlotAxesStack;
@@ -80,6 +78,10 @@ classdef MultiPlotFigureObject < PlotFigureObject
       obj.PlotAxes        = plotTargets.object;
       
     end
+    
+  end
+  
+  methods
     
     function [plotAxes idx id] = getPlotAxes(obj, target)
       try debugStamp(obj.ID); catch, debugStamp(); end;

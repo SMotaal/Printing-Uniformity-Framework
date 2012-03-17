@@ -2,7 +2,7 @@ function [ dataSet ] = filterUPDataSet( dataSource, sourceName, patchSet )
   %FILTERUPDATASET buffered dataset for specific patch set
   %   Detailed explanation goes here
   
-  Forced = true;
+  Forced = false;
   
   %% Exceptions
   ExIdent = 'Grasppe:UniPrint:filterUPDataSet';

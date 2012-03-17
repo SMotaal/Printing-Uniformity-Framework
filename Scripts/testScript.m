@@ -38,7 +38,7 @@ cb    = ColorBarObject.Create(x.getPlotAxes(1));
 % 
 % xp.setVisible(true); pause(0.5);
 
-commandwindow;
+% commandwindow;
 
 
 % x = PlotFigureObject('WindowStyle', 'docked'); x.setVisible(true); p =
