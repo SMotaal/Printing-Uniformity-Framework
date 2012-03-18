@@ -1,8 +1,12 @@
 x = MultiPlotFigureObject();
 x.setVisible(true);
 
-d     = LocVarUniformityDataSource('SourceID', 'rithp5501');
-d(2)  = LocVarUniformityDataSource('SourceID', 'rithp7k01');
+% d     = LocVarUniformityDataSource('SourceID', 'rithp5501');
+% d(2)  = LocVarUniformityDataSource('SourceID', 'rithp7k01');
+
+d     = LocVarUniformityDataSource('SourceID', 'ritsm7402a');
+d(2)  = LocVarUniformityDataSource('SourceID', 'ritsm7402b');
+d(3)  = LocVarUniformityDataSource('SourceID', 'ritsm7402c');
 
 for i = 1:numel(d)
   p(i)  = x.getPlotAxes(i);

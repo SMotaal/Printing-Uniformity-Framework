@@ -10,6 +10,10 @@ classdef InFigureObject < GraphicsObject
     Padding = [20 20 20 20]
   end
   
+  properties (Dependent)
+%     HasParentFigure
+  end
+  
   methods
     function value = get.Padding(obj)
       value = obj.Padding;
@@ -26,9 +30,15 @@ classdef InFigureObject < GraphicsObject
       obj = obj@GraphicsObject(varargin{:});
     end
     
+%     function check = get.HasParentFigure(obj)
+%       check = false;
+%       try check = InFigureObject.checkInheritence(obj.ParentFigure, 'FigureObject'); end
+%     end
+    
     function set.ParentFigure(obj, parentFigure)
-      try
-        if ~AxesObject.checkInheritence(parentFigure, 'FigureObject')
+      try  
+        if isempty(parentFigure), return; end
+        if ~InFigureObject.checkInheritence(parentFigure, 'FigureObject')
           error('Grasppe:ParentFigure:NotFigure', 'Attempt to set parent figure to a non-figure object.');
         end
         obj.ParentFigure = parentFigure;

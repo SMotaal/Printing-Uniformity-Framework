@@ -17,7 +17,7 @@ classdef UniformityPlotObject < GrasppeHandle
     %     end
     
     function createComponent(obj, type)
-      if ~InAxesObject.checkInheritence(obj.DataSource, 'UniformityDataSource')
+      if ~UniformityPlotObject.checkInheritence(obj.DataSource, 'UniformityDataSource')
         obj.DataSource = RawUniformityDataSource.Create(obj);
       end
       obj.DataSource.attachPlotObject(obj);

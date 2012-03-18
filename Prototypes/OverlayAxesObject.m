@@ -25,6 +25,7 @@ classdef OverlayAxesObject < AxesObject
   
   methods (Hidden)
     function obj = resizeComponent(obj)
+      if ~obj.HasParentFigure, return; end
       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
       padding=20;
       obj.handleSet('Units', 'pixels', 'position', ...

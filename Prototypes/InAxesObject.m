@@ -8,6 +8,7 @@ classdef InAxesObject < GraphicsObject
   
   properties (Dependent)
     ParentFigure
+%     HasParentAxes
   end
   
   
@@ -20,6 +21,7 @@ classdef InAxesObject < GraphicsObject
   methods
     function set.ParentAxes(obj, parentAxes)
       try
+        if isempty(parentAxes), return; end        
         if ~InAxesObject.checkInheritence(parentAxes, 'AxesObject')
           error('Grasppe:ParentAxes:NotAxes', 'Attempt to set parent axes to a non-axes object.');
         end
@@ -33,8 +35,19 @@ classdef InAxesObject < GraphicsObject
       
     end
     
+%     function check = get.HasParentFigure(obj)
+%       check = false;
+%       try check = HasParentAxes && InAxesObject.checkInheritence(obj.ParentAxes.ParentFigure, 'FigureObject'); end
+%     end    
+%     
+%     function check = get.HasParentAxes(obj)
+%       check = false;
+%       try check = InAxesObject.checkInheritence(obj.ParentAxes, 'AxesObject'); end
+%     end
+    
     function parentFigure = get.ParentFigure(obj)
-      parentFigure = [];
+      parentFigure = [];       
+      if ~obj.HasParentAxes return; end
       try parentFigure = obj.ParentAxes.ParentFigure; end
     end
     

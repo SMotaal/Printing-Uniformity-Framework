@@ -4,6 +4,8 @@ classdef GrasppeComponent < GrasppeHandle
   
   properties (Dependent, Hidden)
     Defaults
+    HasParentFigure
+    HasParentAxes
   end
   
   properties (Hidden=false)
@@ -28,6 +30,17 @@ classdef GrasppeComponent < GrasppeHandle
     function defaults = get.Defaults(obj)
       defaults = obj.DefaultOptions;
     end
+    
+    function check = get.HasParentFigure(obj)
+      check = false;
+      try check = GrasppeComponent.checkInheritence(obj.ParentFigure, 'FigureObject'); end
+    end
+    
+    function check = get.HasParentAxes(obj)
+      check = false;
+      try check = InAxesObject.checkInheritence(obj.ParentAxes, 'AxesObject'); end
+    end
+    
   end
   
   methods (Hidden=false)

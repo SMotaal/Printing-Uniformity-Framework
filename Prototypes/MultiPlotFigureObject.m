@@ -102,7 +102,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
         end
       catch err
       end
-      if isempty(plotAxes) || ~PlotAxesObject.checkInheritence(plotAxes)
+      if isempty(plotAxes) || ~MultiPlotFigureObject.checkInheritence(plotAxes)
         [plotAxes idx id] = obj.createPlotAxes(idx, id);
       end
       

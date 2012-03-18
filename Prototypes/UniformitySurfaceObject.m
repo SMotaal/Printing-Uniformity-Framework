@@ -24,6 +24,8 @@ classdef UniformitySurfaceObject < SurfaceObject & UniformityPlotObject
   
   methods
     function refreshPlot(obj, dataSource)
+
+      if ~obj.HasParentAxes, return; end
       
       try obj.ParentAxes.ZLim = dataSource.ZLim; end
       try obj.ParentAxes.CLim = dataSource.CLim; end

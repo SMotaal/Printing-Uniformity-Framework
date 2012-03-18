@@ -135,6 +135,9 @@ classdef PlotFigureObject < FigureObject
             consumed = true;
           case 'm'
             if shiftKey
+              if strcmp(obj.WindowStyle, 'docked')
+                obj.WindowStyle = 'normal';
+              end
               try obj.JavaObject.setMaximized(true); end
             else
               try obj.JavaObject.setMinimized(true); end

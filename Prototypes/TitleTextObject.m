@@ -23,6 +23,9 @@ classdef TitleTextObject < TextObject
   methods
     
     function updateTitle(obj)
+      if ~obj.HasParentFigure, 
+        return; 
+      end
       obj.Text = obj.ParentFigure.Title;
     end
   end

@@ -1,4 +1,4 @@
-classdef AxesObject < InFigureObject & DecoratedObject
+classdef AxesObject < InFigureObject
   %AXESOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -86,7 +86,6 @@ classdef AxesObject < InFigureObject & DecoratedObject
   methods (Access=protected)
     
     function obj = AxesObject(varargin)
-      obj = obj@DecoratedObject();
       obj = obj@InFigureObject(varargin{:});
       
     end
@@ -97,7 +96,7 @@ classdef AxesObject < InFigureObject & DecoratedObject
     end
     
     function decorateComponent(obj)
-      obj.decorateComponent@DecoratedObject();
+      obj.decorateComponent@InFigureObject();
       AxesViewDecorator(obj);
       FontDecorator(obj);
     end

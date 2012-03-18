@@ -19,6 +19,8 @@ classdef PlotObject < InAxesObject
     function createComponent(obj, type)
       try debugStamp(obj.ID); catch, debugStamp(); end;
       obj.createComponent@GrasppeComponent(type);
+
+      if ~obj.HasParentFigure, return; end
       try obj.ParentFigure.registerKeyEventHandler(obj); end
       try obj.ParentFigure.ActivePlot = obj.ParentAxes; end
       try obj.ParentFigure.ActiveObject = obj; end
@@ -70,6 +72,9 @@ classdef PlotObject < InAxesObject
     end
     
     function updatePlotTitle(obj, base, sample)
+      % hasParentFigure = obj.HasParentFigure, hasParentAxes = obj.HasParentAxes
+      
+      if ~obj.HasParentFigure, return; end
       try
         obj.ParentFigure.BaseTitle = base;
       catch
@@ -85,10 +90,14 @@ classdef PlotObject < InAxesObject
   
   methods
     function consumed = keyPress(obj, source, event)
-      consumed = true;
-      if event.consumed == true
+      % hasParentFigure = obj.HasParentFigure, hasParentAxes = obj.HasParentAxes
+      
+      if ~obj.HasParentFigure || ~obj.HasParentAxes || event.consumed
+        consumed = event.consumed;  
         return;
       end
+      
+      consumed = true;
       
       currentObject   = obj.ID;
       activeObject    = class(obj.ParentFigure.ActiveObject);

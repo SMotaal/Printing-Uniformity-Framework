@@ -100,7 +100,17 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   methods (Hidden)
     
     function handleSet(obj, varargin)
-      %try if obj.IsDestructing, return; end; end;
+      try 
+        if isobject(obj) && isOn(obj.IsDestructing)
+          return;
+        end
+      catch err
+        if ~any(strcmp(err.identifier, {'MATLAB:nonStrucReference', 'MATLAB:noSuchMethodOrField'}))
+          try debugStamp(obj.ID, 4); end;
+          disp(err);
+        end
+        return;
+      end
       
       try
         if nargin>1 && isValidHandle('varargin{1}')

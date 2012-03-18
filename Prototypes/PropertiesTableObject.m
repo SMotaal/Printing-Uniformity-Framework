@@ -27,6 +27,9 @@ classdef PropertiesTableObject < TableObject
       obj.ColumnName = '';
       obj.ColumnWidth = {400};
       
+      if ~obj.HasParentFigure
+        return;
+      end
       obj.ParentFigure.registerWindowEventHandler(obj);
       
       

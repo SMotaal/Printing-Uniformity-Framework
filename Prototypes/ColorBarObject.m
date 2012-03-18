@@ -73,7 +73,8 @@ classdef ColorBarObject < AxesObject
       %       obj.handleSet('Units', 'pixels', 'position', position);
     end
     
-    function resizeToFigure(obj)
+    function resizeToFigure(obj)           
+      if ~obj.HasParentFigure, return; end
       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
       peerPosition    = pixelPosition(obj.PeerAxes.Handle);
       
@@ -84,7 +85,8 @@ classdef ColorBarObject < AxesObject
       
     end
     
-    function resizeToAxes(obj)
+    function resizeToAxes(obj)            
+      if ~obj.HasParentFigure, return; end
       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
       peerPosition    = pixelPosition(obj.PeerAxes.Handle);
       

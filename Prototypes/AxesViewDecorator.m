@@ -23,7 +23,9 @@ classdef AxesViewDecorator < GrasppeDecorator
     
     function set.View(obj, value)
       obj.View = value;
-      try obj.Component.ParentFigure.StatusText.Text = toString(value); end
+      if obj.Component.HasParentFigure
+        try obj.Component.ParentFigure.StatusText.Text = toString(value); end
+      end
     end
   end
   

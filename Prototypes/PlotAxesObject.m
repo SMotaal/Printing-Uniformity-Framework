@@ -37,6 +37,7 @@ classdef PlotAxesObject < AxesObject
   
   methods (Hidden)
     function obj = resizeComponent(obj)
+      if ~obj.HasParentFigure, return; end
       parentPosition  = pixelPosition(obj.ParentFigure.Handle);
       
       padding=obj.Padding;
