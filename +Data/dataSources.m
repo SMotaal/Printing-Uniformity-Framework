@@ -293,7 +293,7 @@ function data = loadSpaceData(space, name)
     loadStruct = load(spaceFilename, '-mat', name);
     data = loadStruct.(name);
     if ~isempty(data)
-        disp(sprintf('Loading %s:%s.', space, name));
+        statusbar(0, sprintf('Loading %s:%s.', space, name));
     end
   end
   warning(s);
@@ -307,11 +307,11 @@ function saveSpaceData(space, name, data)
 %   disp(sprintf('Saving %s:%s.', space, name));
   try
     save(spaceFilename, '-append', '-struct', 'saveStruct', name);
-    disp(sprintf('Appending %s:%s.', space, name));
+    statusbar(0, sprintf('Appending %s:%s.', space, name));
   catch
     try
       save(spaceFilename, '-struct', 'saveStruct', name);
-      disp(sprintf('Saving %s:%s.', space, name));
+      statusbar(0, sprintf('Saving %s:%s.', space, name));
     catch err
       if ~isequal(err.identifier, 'MATLAB:save:permissionDenied')
         halt(err, 'Data.dataSources');

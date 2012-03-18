@@ -28,6 +28,7 @@ classdef GrasppeHandle < dynamicprops & hgsetget
   
   methods
     function obj = GrasppeHandle()
+      GrasppeHandle.InitializeGrasppePrototypes();
       obj = obj@dynamicprops;
       obj = obj@hgsetget;
       return;
@@ -488,6 +489,27 @@ classdef GrasppeHandle < dynamicprops & hgsetget
       catch err
         %         dealwith(err);
       end
+    end
+    
+    function InitializeGrasppePrototypes()
+%       persistent initialized;
+      
+%       if ~isequal(initialized, true)
+%       end
+        [currentPath] = fileparts(mfilename('fullpath'));
+
+        folders     = dir(currentPath);
+        folderNames = {folders([folders.isdir]).name};
+        subNames    = folderNames(~cellfun('isempty', ...
+          regexp(folderNames,'^[A-Z].*')));
+        
+        subPaths    = strcat(currentPath,filesep,subNames);
+
+        addpath(subPaths{:});
+        
+%         initialized = true;
+%         toc;
+%       end
     end
     
     
