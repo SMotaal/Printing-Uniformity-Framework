@@ -1,4 +1,4 @@
-classdef TableEventHandler < EventHandler
+classdef TableEventHandler < GrasppePrototype & EventHandler
   %MOUSEEVENTHANDLER Summary of this class goes here
   %   Detailed explanation goes here
   

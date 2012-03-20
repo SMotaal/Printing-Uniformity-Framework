@@ -1,4 +1,4 @@
-classdef AxesViewDecorator < GrasppeDecorator
+classdef AxesViewDecorator < GrasppePrototype & GrasppeDecorator
   %AXESVIEWDECORATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -12,6 +12,7 @@ classdef AxesViewDecorator < GrasppeDecorator
   
   methods
     function obj = AxesViewDecorator(varargin)
+      obj = obj@GrasppePrototype;
       obj@GrasppeDecorator(varargin{:});
     end
     

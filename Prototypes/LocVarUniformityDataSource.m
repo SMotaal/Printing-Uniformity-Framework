@@ -1,4 +1,4 @@
-classdef LocVarUniformityDataSource < UniformityDataSource
+classdef LocVarUniformityDataSource < GrasppePrototype & UniformityDataSource
   %SURFACEUNIFORMITYDATASOURCE Raw printing uniformity data source
   %   Detailed explanation goes here
   
@@ -7,6 +7,7 @@ classdef LocVarUniformityDataSource < UniformityDataSource
   
   methods (Hidden)
     function obj = LocVarUniformityDataSource(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@UniformityDataSource(varargin{:});
     end
     

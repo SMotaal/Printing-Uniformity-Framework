@@ -1,4 +1,4 @@
-classdef UniformityDataSource < GrasppeComponent
+classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
   %UNIFORMITYDATASOURCE Superclass for surface uniformity data sources
   %   Detailed explanation goes here
   
@@ -55,6 +55,7 @@ classdef UniformityDataSource < GrasppeComponent
   
   methods (Hidden)
     function obj = UniformityDataSource(varargin)
+      obj = obj@GrasppePrototype;
       args = varargin;
       plotObject = [];
       try

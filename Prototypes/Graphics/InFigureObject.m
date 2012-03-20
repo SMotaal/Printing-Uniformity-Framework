@@ -1,4 +1,4 @@
-classdef InFigureObject < GraphicsObject
+classdef InFigureObject < GrasppePrototype & GraphicsObject
   %INFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -27,6 +27,7 @@ classdef InFigureObject < GraphicsObject
   
   methods
     function obj = InFigureObject(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@GraphicsObject(varargin{:});
     end
     

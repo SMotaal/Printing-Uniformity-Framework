@@ -1,4 +1,4 @@
-classdef MultiPlotFigureObject < PlotFigureObject
+classdef MultiPlotFigureObject < GrasppePrototype & PlotFigureObject
   %UPFIGUREOBJECTSMODEL Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -18,6 +18,7 @@ classdef MultiPlotFigureObject < PlotFigureObject
   
   methods (Hidden)
     function obj = MultiPlotFigureObject(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@PlotFigureObject(varargin{:});
     end
   end

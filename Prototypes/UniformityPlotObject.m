@@ -1,4 +1,4 @@
-classdef UniformityPlotObject < GrasppeHandle
+classdef UniformityPlotObject < GrasppePrototype & GrasppeHandle
   %UNIFORMITYPLOTOBJECT Co-superclass for printing uniformity plot objects
   %   Detailed explanation goes here
   

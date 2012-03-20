@@ -1,4 +1,4 @@
-classdef ColorBarObject < AxesObject
+classdef ColorBarObject < GrasppePrototype & AxesObject
   %COLORBAROBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -23,6 +23,7 @@ classdef ColorBarObject < AxesObject
   
   methods (Access=protected, Hidden)
     function obj = ColorBarObject(peerAxes, varargin)
+      obj = obj@GrasppePrototype;
       parentFigure = peerAxes.ParentFigure;
       
       obj = obj@AxesObject(varargin{:}, 'PeerAxes', peerAxes ,'ParentFigure', parentFigure);

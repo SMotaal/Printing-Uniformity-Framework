@@ -1,4 +1,4 @@
-classdef PropertiesTableObject < TableObject
+classdef PropertiesTableObject < GrasppePrototype & TableObject
   %PROPERTIESTABLEOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -15,6 +15,7 @@ classdef PropertiesTableObject < TableObject
   
   methods (Access=protected, Hidden)
     function obj = PropertiesTableObject(parentFigure, varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@TableObject(varargin{:},'ParentFigure', parentFigure );
     end
     

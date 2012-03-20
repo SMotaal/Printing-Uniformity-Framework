@@ -1,4 +1,4 @@
-classdef DecoratedObject < GrasppeHandle
+classdef DecoratedObject < GrasppePrototype & GrasppeHandle
   %DECORATEDOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -10,6 +10,7 @@ classdef DecoratedObject < GrasppeHandle
   
   methods
     function obj = DecoratedObject()
+      obj = obj@GrasppePrototype;
       obj = obj@GrasppeHandle;
       decorateComponent(obj);
     end

@@ -1,4 +1,4 @@
-classdef RegionsUniformityDataSource < UniformityDataSource
+classdef RegionsUniformityDataSource < GrasppePrototype & UniformityDataSource
   %SURFACEUNIFORMITYDATASOURCE Raw printing uniformity data source
   %   Detailed explanation goes here
   
@@ -10,6 +10,7 @@ classdef RegionsUniformityDataSource < UniformityDataSource
   
   methods (Hidden)
     function obj = RegionsUniformityDataSource(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@UniformityDataSource(varargin{:});
     end
     

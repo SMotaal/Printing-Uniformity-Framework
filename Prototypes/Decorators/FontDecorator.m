@@ -1,4 +1,4 @@
-classdef FontDecorator < GrasppeDecorator
+classdef FontDecorator < GrasppePrototype & GrasppeDecorator
   %AXESVIEWDECORATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -12,6 +12,7 @@ classdef FontDecorator < GrasppeDecorator
   
   methods
     function obj = FontDecorator(varargin)
+      obj = obj@GrasppePrototype;
       obj@GrasppeDecorator(varargin{:});
     end
     

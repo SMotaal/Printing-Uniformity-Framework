@@ -1,4 +1,4 @@
-classdef EventHandler < GrasppeHandle
+classdef EventHandler < GrasppePrototype & GrasppeHandle
   %UPEVENTHANDLER Summary of this class goes here
   %   Detailed explanation goes here
   

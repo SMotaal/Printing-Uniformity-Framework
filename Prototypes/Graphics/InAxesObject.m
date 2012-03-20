@@ -1,4 +1,4 @@
-classdef InAxesObject < GraphicsObject
+classdef InAxesObject < GrasppePrototype & GraphicsObject
   %INAXESOBJECT Superclass for plot and annotation objects
   %   Detailed explanation goes here
   
@@ -14,6 +14,7 @@ classdef InAxesObject < GraphicsObject
   
   methods (Hidden)
     function obj = InAxesObject(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@GraphicsObject(varargin{:});
     end
   end

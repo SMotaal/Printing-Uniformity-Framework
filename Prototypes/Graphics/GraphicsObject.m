@@ -1,4 +1,4 @@
-classdef GraphicsObject < GrasppeComponent & GraphicsEventHandler & DecoratedObject
+classdef GraphicsObject < GrasppePrototype & GrasppeComponent & GraphicsEventHandler & DecoratedObject
   %HANDLEGRAPHICSOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -46,6 +46,7 @@ classdef GraphicsObject < GrasppeComponent & GraphicsEventHandler & DecoratedObj
   
   methods
     function obj = GraphicsObject(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@DecoratedObject();      
       obj = obj@GrasppeComponent(varargin{:});
     end

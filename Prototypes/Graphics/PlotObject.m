@@ -1,4 +1,4 @@
-classdef PlotObject < InAxesObject
+classdef PlotObject < GrasppePrototype & InAxesObject
   %PLOTOBJECT Superclass for plot objects
   %   Detailed explanation goes here
   
@@ -12,6 +12,7 @@ classdef PlotObject < InAxesObject
   
   methods (Access=protected)
     function obj = PlotObject(parentAxes, varargin)
+      obj = obj@GrasppePrototype;
       try parentAxes.clearAxes; end
       obj = obj@InAxesObject(varargin{:},'ParentAxes', parentAxes);
     end

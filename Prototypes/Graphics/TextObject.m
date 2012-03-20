@@ -1,4 +1,4 @@
-classdef TextObject < InAxesObject & DecoratedObject
+classdef TextObject < GrasppePrototype & InAxesObject & DecoratedObject
   %TEXTOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -16,6 +16,17 @@ classdef TextObject < InAxesObject & DecoratedObject
     Text, Color, Units, Position
   end
   
+    methods (Access=protected, Hidden)
+    
+    function obj = TextObject(varargin)
+      obj = obj@GrasppePrototype;
+      obj = obj@DecoratedObject();
+      obj = obj@InAxesObject(varargin{:});
+      
+%       FontDecorator(obj);
+    end
+end
+  
   methods
     function set.Text(obj, value)
       obj.Text = value;
@@ -23,15 +34,7 @@ classdef TextObject < InAxesObject & DecoratedObject
     end
   end
   
-  methods (Access=protected, Hidden)
-    
-    function obj = TextObject(varargin)
-      obj = obj@DecoratedObject();
-      obj = obj@InAxesObject(varargin{:});
-      
-%       FontDecorator(obj);
-    end
-    
+  methods (Access=protected, Hidden)    
     function decorateComponent(obj)
       obj.decorateComponent@DecoratedObject();
       FontDecorator(obj);

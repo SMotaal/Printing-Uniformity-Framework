@@ -1,4 +1,4 @@
-classdef OverlayAxesObject < AxesObject
+classdef OverlayAxesObject < GrasppePrototype & AxesObject
   %OVERLAYAXESOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -10,6 +10,7 @@ classdef OverlayAxesObject < AxesObject
   
   methods (Access=protected, Hidden)
     function obj = OverlayAxesObject(parentFigure, varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@AxesObject(varargin{:},'ParentFigure', parentFigure );
     end
     

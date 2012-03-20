@@ -1,4 +1,4 @@
-classdef PlotAxesObject < AxesObject
+classdef PlotAxesObject < GrasppePrototype & AxesObject
   %PLOTAXESOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -10,6 +10,7 @@ classdef PlotAxesObject < AxesObject
   
   methods (Access=protected, Hidden)
     function obj = PlotAxesObject(parentFigure, varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@AxesObject(varargin{:},'ParentFigure', parentFigure );
     end
     

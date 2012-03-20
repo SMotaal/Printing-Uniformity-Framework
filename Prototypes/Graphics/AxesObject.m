@@ -1,4 +1,4 @@
-classdef AxesObject < InFigureObject
+classdef AxesObject < GrasppePrototype & InFigureObject
   %AXESOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -86,6 +86,7 @@ classdef AxesObject < InFigureObject
   methods (Access=protected)
     
     function obj = AxesObject(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@InFigureObject(varargin{:});
       
     end

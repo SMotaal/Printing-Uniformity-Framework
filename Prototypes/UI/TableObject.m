@@ -1,4 +1,4 @@
-classdef TableObject < InFigureObject & DecoratedObject & TableEventHandler
+classdef TableObject < GrasppePrototype & InFigureObject & DecoratedObject & TableEventHandler
   %TABLEOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -36,6 +36,7 @@ classdef TableObject < InFigureObject & DecoratedObject & TableEventHandler
   
   methods
     function obj = TableObject(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@DecoratedObject();
       obj = obj@InFigureObject(varargin{:});
       

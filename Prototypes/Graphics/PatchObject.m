@@ -1,4 +1,4 @@
-classdef PatchObject < PlotObject
+classdef PatchObject < GrasppePrototype & PlotObject
   %SURFACEOBJECT Superclass for patch plot objects
   %   Detailed explanation goes here
   
@@ -34,6 +34,7 @@ classdef PatchObject < PlotObject
   
   methods (Access=protected)
     function obj = PatchObject(parentAxes, varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@PlotObject(parentAxes, varargin{:});
     end
   end

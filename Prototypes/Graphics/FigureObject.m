@@ -1,4 +1,4 @@
-classdef FigureObject < GraphicsObject & EventHandler
+classdef FigureObject < GrasppePrototype & GraphicsObject & EventHandler
   %UPFIGUREOBJECTSMODEL Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -23,6 +23,7 @@ classdef FigureObject < GraphicsObject & EventHandler
   
   methods (Hidden)
     function obj = FigureObject(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@GraphicsObject(varargin{:});
     end
     

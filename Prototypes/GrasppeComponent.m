@@ -1,4 +1,4 @@
-classdef GrasppeComponent < GrasppeHandle
+classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
   %GRASPPECOMPONENTOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -45,6 +45,7 @@ classdef GrasppeComponent < GrasppeHandle
   
   methods (Hidden=false)
     function obj = GrasppeComponent(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@GrasppeHandle;
       if isValid('obj.Defaults','struct')
         obj.setOptions(obj.Defaults, varargin{:});

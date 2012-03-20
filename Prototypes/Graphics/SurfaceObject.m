@@ -1,4 +1,4 @@
-classdef SurfaceObject < PlotObject
+classdef SurfaceObject < GrasppePrototype & PlotObject
   %SURFACEOBJECT Superclass for surface plot objects
   %   Detailed explanation goes here
   
@@ -22,6 +22,7 @@ classdef SurfaceObject < PlotObject
   
   methods (Access=protected)
     function obj = SurfaceObject(parentAxes, varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@PlotObject(parentAxes, varargin{:});
     end
     

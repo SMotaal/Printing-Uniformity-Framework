@@ -1,4 +1,4 @@
-classdef UniformityPatchObject < UniformityPlotObject & PatchObject
+classdef UniformityPatchObject < GrasppePrototype & UniformityPlotObject & PatchObject
   %UNIFORMITYSURFACEPLOT Summary of this class goes here
   %   Detailed explanation goes here
 
@@ -7,6 +7,7 @@ classdef UniformityPatchObject < UniformityPlotObject & PatchObject
   
   methods (Access=protected)
     function obj = UniformityPatchObject(parentAxes, varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@UniformityPlotObject();      
       obj = obj@PatchObject(parentAxes, varargin{:});
     end

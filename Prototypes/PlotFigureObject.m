@@ -1,4 +1,4 @@
-classdef PlotFigureObject < FigureObject
+classdef PlotFigureObject < GrasppePrototype & FigureObject
   %UPFIGUREOBJECTSMODEL Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -26,6 +26,7 @@ classdef PlotFigureObject < FigureObject
   
   methods (Hidden)
     function obj = PlotFigureObject(varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@FigureObject(varargin{:});
     end
   end

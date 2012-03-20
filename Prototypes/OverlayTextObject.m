@@ -1,4 +1,4 @@
-classdef OverlayTextObject < TextObject
+classdef OverlayTextObject < GrasppePrototype & TextObject
   %TITLETEXTOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -8,6 +8,7 @@ classdef OverlayTextObject < TextObject
   
   methods (Access=protected)
     function obj = OverlayTextObject(parentAxes, varargin)
+      obj = obj@GrasppePrototype;
       obj = obj@TextObject(varargin{:},'ParentAxes', parentAxes);
     end
     function createComponent(obj, type)

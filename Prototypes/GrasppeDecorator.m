@@ -1,4 +1,4 @@
-classdef GrasppeDecorator < GrasppeHandle
+classdef GrasppeDecorator < GrasppePrototype & GrasppeHandle
   %HANDLEDECORATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -11,6 +11,7 @@ classdef GrasppeDecorator < GrasppeHandle
   methods
     
     function obj = GrasppeDecorator(component)
+      obj = obj@GrasppePrototype;
       try
         obj.Component = component;
         component.decorate(obj);

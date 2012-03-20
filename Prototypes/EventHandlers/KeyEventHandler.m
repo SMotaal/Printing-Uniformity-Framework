@@ -1,4 +1,4 @@
-classdef KeyEventHandler < EventHandler
+classdef KeyEventHandler < GrasppePrototype & EventHandler
   %KEYEVENTHANDLER Summary of this class goes here
   %   Detailed explanation goes here
   
