@@ -12,25 +12,24 @@ classdef GrasppePrototype < handle
   end
   
   methods (Static, Hidden)
-    function InitializeGrasppePrototypes()
-%       persistent initialized;
+    function InitializeGrasppePrototypes(forced)
+      persistent initialized;
+      try  if forced, initialized = false; end, end
       
-%       if ~isequal(initialized, true)
-%       end
+      if ~isequal(initialized, true)
         [currentPath] = fileparts(mfilename('fullpath'));
-
+        
         folders     = dir(currentPath);
         folderNames = {folders([folders.isdir]).name};
         subNames    = folderNames(~cellfun('isempty', ...
           regexp(folderNames,'^[A-Z].*')));
         
         subPaths    = strcat(currentPath,filesep,subNames);
-
-        addpath(subPaths{:});        
-%         initialized = true;
-%         toc;
-%       end
-    end    
+        
+        addpath(subPaths{:});
+        initialized = true;
+      end
+    end
   end
   
 end

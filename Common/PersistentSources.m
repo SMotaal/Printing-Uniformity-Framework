@@ -45,19 +45,19 @@ function varargout = PersistentSources(varargin)
       if ischar(firstArg)
         switch lower(firstArg)
           case 'clear'
-            clear datastore;	touchdata(true); 	cleared = true
+            clear datastore;	touchdata(true);  % cleared = true;
           case 'load'
             datastore = loaddata(datastore);
           case 'save'
             if (~readonly), savedata(datastore); end
           case {'readonly', 'ro', 'r'};
-            readonly  = true
+            readonly  = true;
           case {'readwrite', 'rw', 'r/w'};
-            readonly  = false
+            readonly  = false;
           case 'lock'
-            mlock;    locked    = true
+            mlock;    locked    = true;
           case 'unlock'
-            munlock;  locked    = false
+            munlock;  locked    = false;
           otherwise
             handled  = false;
         end
@@ -78,9 +78,10 @@ function varargout = PersistentSources(varargin)
         case 'filename'
           datafile(secondArg);
         case {'force', 'forced'}
-          forced      = true
+          forced      = true;
         case {'readonly',  'r'}
-          overwrite   = true; readonly    = true
+          overwrite   = true;
+          readonly    = true;
         case {'readwrite', 'rw', 'r/w'}
           readonly    = false;
         otherwise
@@ -255,7 +256,7 @@ function filename = datafile(filename)
   
   if exists('filename') && ischar(filename)
     [pathstr filename ext] = fileparts(filename);
-    dataFile = filename
+    dataFile = filename;
   end
   
   if isempty(dataFile)
