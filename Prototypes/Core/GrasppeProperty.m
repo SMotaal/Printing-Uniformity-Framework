@@ -1,4 +1,4 @@
-classdef GrasppeProperty
+classdef GrasppeProperty < GrasppePrototype
   %MEDIATEDPROPERTY Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -22,6 +22,13 @@ classdef GrasppeProperty
   end
   
   methods
+    function obj = GrasppeProperty (Component, Name, DisplayName, Description, Type, EditorContext, Category, Editable, Value)
+      MetaClass   = meta.class.fromName(Component);
+      NativeMeta = m.PropertyList(find(strcmp(Name, {m.PropertyList.Name})));
+      obj = GrasppeMetaProperty.Define(Name, DefiningClass, Type, DisplayName, Category, Description, Editable, EditorContext, NativeMeta);
+      obj.Value = Value;
+    end
+    
     function set.Value(obj, value)
       if obj.RedundantSet || ~isempty(obj.Value, value)
         if obj.Revertable
@@ -59,11 +66,18 @@ classdef GrasppeProperty
     function value = get.Editable(obj)
       value = obj.MetaProperty.Name
     end
-    
-    % function value = get.Name(obj)
-    %   value = obj.MetaProperty.Name
-    % end
   end
+  
+  methods (Static)
+    function obj = DefineByStruct(metaStruct, Component, Name, Alias, DisplayName, Description, Type, EditorContext, Category, Editable, Value, MetaProperty, MetaMediation)
+      if ~isempty(metaStruct) && isstruct(metaStruct)
+        [Component, Name, Alias, DisplayName, Description, Type, EditorContext, Category, Editable, Value, MetaProperty, MetaMediation] = deal([]);
+        structVars(metaStruct);
+      end
+      obj = GrasppeProperty(Component, Name, Alias, DisplayName, Description, Type, EditorContext, Category, Editable, Value, MetaProperty, MetaMediation);
+    end
+  end
+  
   
 end
 

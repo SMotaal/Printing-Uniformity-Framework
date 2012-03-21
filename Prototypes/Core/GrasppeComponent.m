@@ -45,15 +45,22 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
   
   methods (Hidden=false)
     function obj = GrasppeComponent(varargin)
+      t = tic;
       obj = obj@GrasppePrototype;
       obj = obj@GrasppeHandle;
+      % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Initialized Supers', eval(CLASS), obj.ClassName, toc(t));
       if isValid('obj.Defaults','struct')
+        t = tic;
         obj.setOptions(obj.Defaults, varargin{:});
+        % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Set Options with Defaults', eval(CLASS), obj.ClassName, toc(t));
       else
+        t = tic;
         obj.setOptions(varargin{:});
+        % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Set Options', eval(CLASS), obj.ClassName, toc(t));
       end
-      
+      t = tic;
       obj.createComponent([]);
+      % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Created Component', eval(CLASS), obj.ClassName, toc(t));
     end
     
     function [name alias] = lookupOptionName(obj, name, reverse)

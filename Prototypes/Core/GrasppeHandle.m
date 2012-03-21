@@ -5,8 +5,10 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
   properties (Hidden=false)
     IsUpdating  = false;
     Debugging   = false;
-    %     Reforced    = false;
-    %     ForceQueue  = {};
+    
+  end
+  
+  properties (SetAccess=immutable)
     InstanceID
   end
   
@@ -32,7 +34,25 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       obj = obj@GrasppePrototype;
       obj = obj@dynamicprops;
       obj = obj@hgsetget;
-      return;
+      
+      obj.GenerateInstanceID;
+
+    end
+    
+    function GenerateInstanceID(obj)
+      % t = tic;
+      try
+        instanceID = obj.InstanceID;
+        if (isempty(instanceID) || ~ischar(instanceID))
+          instanceID = GrasppeHandle.InstanceRecord(obj);
+          if (isempty(instanceID) || ~ischar(instanceID))
+            obj.InstanceID = genvarname([obj.ClassName '_' int2str(rand*10^12)]);
+          else
+            obj.InstanceID = instanceID;
+          end
+        end
+      end
+      % toc(t);      
     end
     
     function state = get.IsHandled(obj)
@@ -53,29 +73,20 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       end
       obj.Primitive = changeSet(obj.Primitive, handle);
       
-%         try
-%           if ~isequal(get(handle,'UserData'), obj)
-%             try
-%               set(handle, 'UserData', obj);
-%             catch err
-%               disp(['Failed to set UserData for ' obj.ID]);
-%             end
-%           end
-%         end
+      %         try
+      %           if ~isequal(get(handle,'UserData'), obj)
+      %             try
+      %               set(handle, 'UserData', obj);
+      %             catch err
+      %               disp(['Failed to set UserData for ' obj.ID]);
+      %             end
+      %           end
+      %         end
       
       try obj.pullHandleOptions; end
     end
     
     function id = get.ID(obj)
-      instanceID = obj.InstanceID;
-      if (isempty(instanceID) || ~ischar(instanceID))
-        instanceID = GrasppeHandle.InstanceRecord(obj);
-        if (isempty(instanceID) || ~ischar(instanceID))
-          obj.InstanceID = genvarname([obj.ClassName '_' int2str(rand*10^12)]);
-        else
-          obj.InstanceID = instanceID;
-        end
-      end
       id = obj.InstanceID;
     end
     
@@ -102,7 +113,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
   methods (Hidden)
     
     function handleSet(obj, varargin)
-      try 
+      try
         if isobject(obj) && isOn(obj.IsDestructing)
           return;
         end
@@ -222,17 +233,17 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
         
         obj.handleSet(options{:});
         
-%         try
-%           if ~isequal(obj.handleGet('UserData'))
-%             %             obj.handleSet('UserData', obj);
-%             try
-%               GrasppeHandle.VerboseSet(handle, 'UserData', obj);
-%             catch err
-%               disp(['Failed to set UserData for ' obj.ID]);
-%             end
-%           end
-%           
-%         end
+        %         try
+        %           if ~isequal(obj.handleGet('UserData'))
+        %             %             obj.handleSet('UserData', obj);
+        %             try
+        %               GrasppeHandle.VerboseSet(handle, 'UserData', obj);
+        %             catch err
+        %               disp(['Failed to set UserData for ' obj.ID]);
+        %             end
+        %           end
+        %
+        %         end
         
       catch err
         halt(err, 'obj.ID');
@@ -263,7 +274,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
     end
     
     function handleOptions = pullHandleOptions (obj, names, updateLocal)
-%       handleOptions = [];
+      %       handleOptions = [];
       %try if obj.IsDestructing, return; end; end;
       
       default updateLocal true;
@@ -490,7 +501,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       catch err
         %         dealwith(err);
       end
-    end    
+    end
     
     function [ID instance] = InstanceRecord(object)
       persistent instances hashmap

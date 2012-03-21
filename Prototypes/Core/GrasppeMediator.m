@@ -12,7 +12,7 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
       obj = obj@GrasppePrototype;
     end
     
-    function attachMediatorProperty(obj, component, property, alias)
+    function attachMediatorProperty(obj, property, alias)
       %% Determine mediator-alias for target property
       if ~exists('alias'), alias = property;
         
@@ -34,20 +34,27 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
         metaMediator.SetObservable = true;
         
         mediatedMeta      = GrasppeMetaProperty(class(component), property);
-        mediatedProperty  = GrasppeProperty;
+        
+        mediatedProperty  = GrasppeMediatedProperty.DefineByStruct(struct( ...
+          'Component', [], 'Name', '', 'Alias', '', 'DisplayName', '', ...
+          'Description', '', 'Type', '', 'EditorContext', [], 'Category', '', ...
+          'Editable', true, 'Value', [], component.(property) ...
+          'MetaProperty', component.findprop(property), 'MetaMediation', obj.findprop(alias) ...
+          ));
+%         mediatedProperty  = GrasppeProperty;
                 
-        mediatedProperty.Component      = component;
-        mediatedProperty.Name           = property;
-        mediatedProperty.DisplayName    = '';
-        mediatedProperty.Description    = '';
-        mediatedProperty.Type           = '';
-        mediatedProperty.DisplayName    = '';
-        mediatedProperty.EditorContext  = '';
-        mediatedProperty.Category       = '';
-        mediatedProperty.Editable       = '';
-        mediatedProperty.Value          = component.(property);
-        mediatedProperty.MetaComponent  = component.findprop(property);
-        mediatedProperty.MetaMediator   = obj.findprop(alias);
+%         mediatedProperty.Component      = component;
+%         mediatedProperty.Name           = property;
+%         mediatedProperty.Alias          = alias;
+%         mediatedProperty.DisplayName    = '';
+%         mediatedProperty.Description    = '';
+%         mediatedProperty.Type           = '';
+%         mediatedProperty.EditorContext  = '';
+%         mediatedProperty.Category       = '';
+%         mediatedProperty.Editable       = '';
+%         mediatedProperty.Value          = component.(property);
+%         mediatedProperty.MetaProperty   = component.findprop(property);
+%         mediatedProperty.MetaMediation  = obj.findprop(alias);
         
         obj.MediationProperties.(alias) = mediatedProperty;
         

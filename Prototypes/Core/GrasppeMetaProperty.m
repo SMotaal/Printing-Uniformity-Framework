@@ -1,4 +1,4 @@
-classdef GrasppeMetaProperty
+classdef GrasppeMetaProperty < GrasppePrototype
   %GRASPPEMETAPROPERTY Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -19,11 +19,11 @@ classdef GrasppeMetaProperty
   
   methods (Static)
     
-    function properties = GetMeta(varargin)
+    function properties = Get(varargin)
       properties = MetaProperties(varargin{:});
     end
     
-    function DefineMeta(Name, DefiningClass, Type, DisplayName, Category, Description, Editable, EditorContext, NativeMeta)
+    function Define(Name, DefiningClass, Type, DisplayName, Category, Description, Editable, EditorContext, NativeMeta)
       metaProperty = GrasppeMetaProperty;
       
       metaProperty.Name           = Name;
