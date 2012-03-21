@@ -8,6 +8,25 @@ classdef GrasppePrototype < handle
   methods
     function obj = GrasppePrototype()
       GrasppePrototype.InitializeGrasppePrototypes;
+      obj.processMetaData;
+    end
+    
+    function processMetaData(obj)
+      try
+        if iscell(obj.MetaProperties) && size(obj.MetaProperties, 2)==5
+          metaProperties   = struct;
+          for i = 1:size(obj.MetaProperties, 1)
+            property    = obj.MetaProperties{i,1};
+            metaData    = obj.MetaProperties(i,2:end);
+            
+            metaProperties.(property) = GrasppeMetaProperty.Declare( ...
+              property, class(obj), metaData{:});
+          end
+          obj.MetaProperties = metaProperties;
+        end
+      catch err
+%         disp(err);
+      end
     end
   end
   
