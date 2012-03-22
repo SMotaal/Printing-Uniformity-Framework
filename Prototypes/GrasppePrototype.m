@@ -40,24 +40,26 @@ classdef GrasppePrototype < handle
         metaProperties =  obj.MetaProperties;
       else
         metaProperties = {};
-        tree = vertcat(obj.ClassName, superclasses(obj));
-        
-        for i = 1:numel(tree)
-          className     = tree{i};
-          propertyMeta  = metaProperty(className, 'metaProperties');
-          
-          if length(propertyMeta) > 0
-            try
-              if isempty(metaProperties)
-                metaProperties = propertyMeta.DefaultValue;
-              else
-                metaProperties = vertcat(metaProperties, propertyMeta.DefaultValue);
+        try
+          tree = vertcat(obj.ClassName, superclasses(obj));
+
+          for i = 1:numel(tree)
+            className     = tree{i};
+            propertyMeta  = metaProperty(className, 'metaProperties');
+
+            if length(propertyMeta) > 0
+              try
+                if isempty(metaProperties)
+                  metaProperties = propertyMeta.DefaultValue;
+                else
+                  metaProperties = vertcat(metaProperties, propertyMeta.DefaultValue);
+                end
               end
             end
           end
+
+          obj.MetaProperties = metaProperties;
         end
-        
-        obj.MetaProperties = metaProperties;
       end
     end
     

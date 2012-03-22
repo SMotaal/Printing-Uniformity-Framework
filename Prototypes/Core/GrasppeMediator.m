@@ -5,6 +5,8 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
   properties
     MediationProperties
     Colleagues
+    SettingProperty = '';
+    GettingProperty = '';
   end
   
   methods
@@ -15,40 +17,47 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
     function attachMediatorProperty(obj, subject, property, alias)
       %% Determine mediator-alias for target property
       
-      [validSubje] = deal(false);
+      [validSubject]  = deal(false);
       
-      mediatorMeta  = [];
-      nativeMeta    = [];
+      mediatorMeta    = [];
+      nativeMeta      = [];
       
-      subjectID   = subject.ID;
-      mediatorID    = obj.ID;
+      subjectID       = subject.ID;
+      mediatorID      = obj.ID;
       
       try
         % Get component metaproperty / value
-        subjectMeta  = subject.MetaProperties.(property);
-        subjectValue = subject.(property);
-        validSubject = isa(subject.MetaProperties.(property), 'GrasppeMetaProperty');
+        subjectMeta   = subject.MetaProperties.(property);
+        subjectValue  = subject.(property);
+        validSubject  = isa(subject.MetaProperties.(property), 'GrasppeMetaProperty');
                 
         % Look for mediator metaproperty
-        if ~exists('alias'), alias = [subjeID '_' subjectMeta.Name]; end
-        nativeMeta  = metaProperty(obj.ClassName, alias);
+        if ~exists('alias'), alias = [subjectID '_' subjectMeta.Name]; end
+        nativeMeta    = obj.findprop(alias); %metaProperty(obj.ClassName, alias);
         
         % Add mediator property if not found or amend components if found
         if isempty(nativeMeta)
           obj.addprop(alias);
           
+          nativeMeta        = obj.findprop(alias);
+          
           mediationMeta     = GrasppeMetaProperty.CreateDuplicate(subjectMeta, 'Grouping', mediatorID);
           
-          mediatorProperty  = GrasppeMediatedProperty(subject, subjectMeta, mediationMeta);
+          mediatorProperty  = GrasppeMediatedProperty(obj, subject, subjectMeta, mediationMeta);
           
           % Attach Mediator Listeners
+          
           nativeMeta.GetObservable = true; ...
             nativeMeta.SetObservable = true;
           
-          addlistener(obj,  property,   'PreGet',   @obj.mediatorPreGet);  ...  % Pull
-            addlistener(obj,  property,   'PreSet',   @obj.mediatorPreSet);  ...
-            addlistener(obj,  property,   'PostGet',  @obj.mediatorPostGet); ...
-            addlistener(obj,  property,   'PostSet',  @obj.mediatorPostSet);   % Push
+          addlistener(obj,  alias,   'PreGet',   @obj.mediatorPreGet);  ...  % Pull
+            addlistener(obj,  alias,   'PreSet',   @obj.mediatorPreSet);  ...
+            addlistener(obj,  alias,   'PostGet',  @obj.mediatorPostGet); ...
+            addlistener(obj,  alias,   'PostSet',  @obj.mediatorPostSet);   % Push
+          
+          nativeMeta.AbortSet = true;
+          
+          nativeMeta.SetMethod = @mediationSet;
           
           obj.MediationProperties.(alias) = mediatorProperty;
           
@@ -57,47 +66,88 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
         end
         
         % Attach Subject Listeners
-        subjectMeta.GetObservable = true; ...
-          subjectMeta.SetObservable = true;
+%         subjectMeta.NativeMeta.GetObservable = true; ...
+%           subjectMeta.NativeMeta.SetObservable = true; end
         
         addlistener(subject,  property,   'PreGet',   @obj.subjectPreGet);  ...  % Pull
           addlistener(subject,  property,   'PreSet',   @obj.subjectPreSet);  ...
           addlistener(subject,  property,   'PostGet',  @obj.subjectPostGet); ...
           addlistener(subject,  property,   'PostSet',  @obj.subjectPostSet);   % Push
       catch err
-        disp(err);
+        disp(err.message);
+        keyboard;
       end
       
     end
     
     function mediatorPreGet(obj, source, event)
+      mediationID       = source.Name;
+      
+      mediationProperty = obj.MediationProperties.(mediationID);
+      
+      subjectName       = mediationProperty.SubjectMeta.Name;
+      subjectValue      = mediationProperty.Subject.(subjectName);
+      
+      mediationProperty.Value = mediationProperty.Subject.(subjectName);
+      
+      obj.(mediationID) = mediationProperty.Value;
+
+      return;
     end
     
     function mediatorPreSet(obj, source, event)
+      if isempty(obj.SettingProperty)
+        obj.SettingProperty = source.Name;
+      else
+        alreadySetting = {obj.SettingProperty, source.Name};
+      end
+      return;
     end
     
-    function mediatorPostGet(obj, source, event)
+    function mediationSet(obj, value)
+      mediationID = obj.SettingProperty;
+      mediationProperty = obj.MediationProperties.(mediationID);
+      try
+        if ~isequal(mediationProperty, value)
+          mediationProperty.Value = value;
+        end
+        if ~isequal(obj.(mediationID), value)
+          obj.(mediationID) = value;
+        end
+      end
     end
     
     function mediatorPostSet(obj, source, event)
+      obj.SettingProperty = '';
+      return;
+    end    
+    
+    function mediatorPostGet(obj, source, event)
+      return;
     end
     
     function subjectPreGet(obj, source, event)
+      return;
     end
     
     function subjectPreSet(obj, source, event)
+      return;
     end
     
     function subjectPostGet(obj, source, event)
+      return;
     end
     
     function subjectPostSet(obj, source, event)
+      return;
     end
     
     function pullProperty(obj, alias)
+      return;
     end
     
     function pushProperty(obj, alias)
+      return;
     end
     
   end

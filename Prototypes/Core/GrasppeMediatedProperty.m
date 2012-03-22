@@ -3,8 +3,7 @@ classdef GrasppeMediatedProperty < GrasppePrototype & GrasppeProperty
   %   Detailed explanation goes here
   
   properties
-    Mediator
-    MediatorMeta
+%     Mediator
     
     Subject
     SubjectMeta
@@ -16,46 +15,64 @@ classdef GrasppeMediatedProperty < GrasppePrototype & GrasppeProperty
   end
   
   methods
-    function obj = GrasppeMediatedProperty (component, propertyMeta, alias)
+    function obj = GrasppeMediatedProperty(mediator, subject, propertyMeta, alias)
       obj = obj@GrasppePrototype();
-      obj = obj@GrasppeProperty();
+      obj = obj@GrasppeProperty(mediator, [], []);
       
-      obj.Subject     = component;
+%       obj.Mediator    = mediator;
+      
+      obj.Subject     = subject;
       obj.SubjectMeta = propertyMeta;
       
-      if isa(alias,'GrasppeMetaProperty')
-        obj.MediatorMeta  = alias;
+      propertyName    = propertyMeta.Name;
+      propertyValue   = subject.(propertyName);
+      
+      if isa(alias, 'GrasppeMetaProperty')
+        obj.MetaProperty  = alias;
+        
+        obj.Value         = propertyValue;
+        
       elseif isa(alias,'char')
         name              = propertyMeta.Name;
         displayName       = propertyMeta.DisplayName;
         category          = propertyMeta.Category;
         mode              = propertyMeta.Mode;
         description       = propertyMeta.Description;
-
-        value             = component.(name);
-
-        obj.MediatorMeta  = GrasppeMetaProperty.Declare( ...
+        
+        obj.MetaProperty  = GrasppeMetaProperty.Declare( ...
           alias, class(obj), displayName, category, mode, description);
+        
+        obj.Value         = propertyValue;
       else
         error('Grasppe:MediatedProperty:MissingMeta', 'Unable to construct a GrasppeMediatedProperty without a valid MediatorMeta.');
       end
     end
     
     function components = get.Subjects(obj)
-      components = {{obj.Subject}, obj.Subjects{:}};
+      subject = {obj.Subject};
+      components = {subject{:}, obj.Subjects{:}};
       %if isempty(obj.Components), components = obj.Component; end
     end
+    
+    function addSubject(obj, subject)
+      subjects = obj.Subjects;
+      for i = 1:numel(subjects)
+        s = subjects{i};
+        if isequal(s, subject), return; end
+      end
+      obj.Subjects = {subjects{:}, subject};
+    end
+    
+    function [value changed] = newValue(obj, value, currentValue)
+      [value changed] = obj.newValue@GrasppeProperty(value, currentValue);
+      if changed
+        subject         = obj.Subject;
+        propertyName    = obj.SubjectMeta.Name;
+        obj.Subject.(propertyName) = value;
+      end
+    end
+
   end
-  
-%   methods (Static)
-%     function obj = DefineByStruct(metaStruct, component, name, alias, displayName, description, type, editorContext, category, editable, value, metaProperty, metaMediation)
-%       if ~isempty(metaStruct) && isstruct(metaStruct)
-%         [component, ame, alias, displayName, description, type, editorContext, category, editable, value, metaProperty, metaMediation] = deal([]);
-%         structVars(metaStruct);
-%       end
-%       obj = GrasppeMediatedProperty(component, ame, alias, displayName, description, type, editorContext, category, editable, value, metaProperty, metaMediation);
-%     end
-%   end
-  
+    
 end
 
