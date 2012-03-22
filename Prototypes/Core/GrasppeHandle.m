@@ -35,20 +35,21 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       obj = obj@dynamicprops;
       obj = obj@hgsetget;
       
-      obj.GenerateInstanceID;
+      if (isempty(obj.InstanceID))
+        obj.InstanceID = obj.generateInstanceID;
+      end
 
     end
     
-    function GenerateInstanceID(obj)
+    function instanceID = generateInstanceID(obj)
+      instanceID = [];
       % t = tic;
       try
         instanceID = obj.InstanceID;
         if (isempty(instanceID) || ~ischar(instanceID))
           instanceID = GrasppeHandle.InstanceRecord(obj);
           if (isempty(instanceID) || ~ischar(instanceID))
-            obj.InstanceID = genvarname([obj.ClassName '_' int2str(rand*10^12)]);
-          else
-            obj.InstanceID = instanceID;
+            instanceID = genvarname([obj.ClassName '_' int2str(rand*10^12)]);
           end
         end
       end
