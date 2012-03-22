@@ -12,78 +12,60 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
       obj = obj@GrasppePrototype;
     end
     
-    function attachMediatorProperty(obj, property, alias)
+    function attachMediatorProperty(obj, subject, property, alias)
       %% Determine mediator-alias for target property
-      if ~exists('alias'), alias = property;
+      
+      [validSubje] = deal(false);
+      
+      mediatorMeta  = [];
+      nativeMeta    = [];
+      
+      subjectID   = subject.ID;
+      mediatorID    = obj.ID;
+      
+      try
+        % Get component metaproperty / value
+        subjectMeta  = subject.MetaProperties.(property);
+        subjectValue = subject.(property);
+        validSubject = isa(subject.MetaProperties.(property), 'GrasppeMetaProperty');
+                
+        % Look for mediator metaproperty
+        if ~exists('alias'), alias = [subjeID '_' subjectMeta.Name]; end
+        nativeMeta  = metaProperty(obj.ClassName, alias);
         
-        %% Attach a property by meta class
-        mediatorProperties  = obj.MetaClass.PropertyList;
-        componentProperties = component.MetaClass.PropertyList;
-        
-        if ~stropt(alias, {componentProperties.Name})
-          error('Grasppe:Mediator:UndefinedComponentProperty', 'Could not find the property %s in the mediated component.', property);
-        end
-        
-        if ~stropt(alias, {mediatorProperties.Name})
+        % Add mediator property if not found or amend components if found
+        if isempty(nativeMeta)
           obj.addprop(alias);
+          
+          mediationMeta     = GrasppeMetaProperty.CreateDuplicate(subjectMeta, 'Grouping', mediatorID);
+          
+          mediatorProperty  = GrasppeMediatedProperty(subject, subjectMeta, mediationMeta);
+          
+          % Attach Mediator Listeners
+          nativeMeta.GetObservable = true; ...
+            nativeMeta.SetObservable = true;
+          
+          addlistener(obj,  property,   'PreGet',   @obj.mediatorPreGet);  ...  % Pull
+            addlistener(obj,  property,   'PreSet',   @obj.mediatorPreSet);  ...
+            addlistener(obj,  property,   'PostGet',  @obj.mediatorPostGet); ...
+            addlistener(obj,  property,   'PostSet',  @obj.mediatorPostSet);   % Push
+          
+          obj.MediationProperties.(alias) = mediatorProperty;
+          
         else
           error('Grasppe:Mediator:PredefinedPropertyAlias', 'Could not define the alias %s for the property %s since it is already defined.', alias, property);
         end
-                
-        metaMediator.GetObservable = true;
-        metaMediator.SetObservable = true;
         
-        mediatedMeta      = GrasppeMetaProperty(class(component), property);
+        % Attach Subject Listeners
+        subjectMeta.GetObservable = true; ...
+          subjectMeta.SetObservable = true;
         
-        mediatedProperty  = GrasppeMediatedProperty.DefineByStruct(struct( ...
-          'Component', [], 'Name', '', 'Alias', '', 'DisplayName', '', ...
-          'Description', '', 'Type', '', 'EditorContext', [], 'Category', '', ...
-          'Editable', true, 'Value', [], component.(property) ...
-          'MetaProperty', component.findprop(property), 'MetaMediation', obj.findprop(alias) ...
-          ));
-%         mediatedProperty  = GrasppeProperty;
-                
-%         mediatedProperty.Component      = component;
-%         mediatedProperty.Name           = property;
-%         mediatedProperty.Alias          = alias;
-%         mediatedProperty.DisplayName    = '';
-%         mediatedProperty.Description    = '';
-%         mediatedProperty.Type           = '';
-%         mediatedProperty.EditorContext  = '';
-%         mediatedProperty.Category       = '';
-%         mediatedProperty.Editable       = '';
-%         mediatedProperty.Value          = component.(property);
-%         mediatedProperty.MetaProperty   = component.findprop(property);
-%         mediatedProperty.MetaMediation  = obj.findprop(alias);
-        
-        obj.MediationProperties.(alias) = mediatedProperty;
-        
-        mediatedProperty.MetaMediator.GetObservable = true;
-        mediatedProperty.MetaMediator.SetObservable = true;
-        
-        addlistener(obj,        alias,      'PreGet',   @obj.mediatorPreGet);   ...   % Pull
-          addlistener(obj,        alias,      'PreSet',   @obj.mediatorPreSet);   ...
-          addlistener(obj,        alias,      'PostGet',  @obj.mediatorPostGet);  ...
-          addlistener(obj,        alias,      'PostSet',  @obj.mediatorPostSet);   % Push
-        
-        
-        mediatedProperty.MetaComponent.GetObservable = true;
-        mediatedProperty.MetaComponent.SetObservable = true;
-        
-        addlistener(component,  property,   'PreGet',   @obj.componentPreGet);  ...  % Pull
-          addlistener(component,  property,   'PreSet',   @obj.componentPreSet);  ...
-          addlistener(component,  property,   'PostGet',  @obj.componentPostGet); ...
-          addlistener(component,  property,   'PostSet',  @obj.componentPostSet);   % Push
-        
-        % try
-        %   defaultValue      = obj.Defaults.(property);
-        %   % obj.(decoration)  = defaultValue;
-        %   if ishandle(obj.Handle)
-        %     set(obj.Handle, decoration, defaultValue);
-        %     disp(sprintf('\t%s.%s(%s) = %s', obj.ID, decoration, class(defaultValue), toString(defaultValue)));
-        %   end
-        % end
-        
+        addlistener(subject,  property,   'PreGet',   @obj.subjectPreGet);  ...  % Pull
+          addlistener(subject,  property,   'PreSet',   @obj.subjectPreSet);  ...
+          addlistener(subject,  property,   'PostGet',  @obj.subjectPostGet); ...
+          addlistener(subject,  property,   'PostSet',  @obj.subjectPostSet);   % Push
+      catch err
+        disp(err);
       end
       
     end
@@ -100,16 +82,16 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
     function mediatorPostSet(obj, source, event)
     end
     
-    function componentPreGet(obj, source, event)
+    function subjectPreGet(obj, source, event)
     end
     
-    function componentPreSet(obj, source, event)
+    function subjectPreSet(obj, source, event)
     end
     
-    function componentPostGet(obj, source, event)
+    function subjectPostGet(obj, source, event)
     end
     
-    function componentPostSet(obj, source, event)
+    function subjectPostSet(obj, source, event)
     end
     
     function pullProperty(obj, alias)
@@ -119,4 +101,5 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
     end
     
   end
+end
   

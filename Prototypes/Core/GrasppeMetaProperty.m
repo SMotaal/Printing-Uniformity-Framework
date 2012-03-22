@@ -6,12 +6,19 @@ classdef GrasppeMetaProperty < GrasppePrototype
     Name            % Interal property name, not necessarily displayed, used as a key to identify the property.
     DisplayName     % A short property name shown in the left column of the property grid.
     Description     % A concise description of the property, shown at the bottom of the property pane, below the grid.
-    Class            % The Java type associated with the property, used to invoke the appropriate renderer or editor.
-    EditorContext   % An editor context object. If set, both the type and the context are used to look up the renderer or editor to use. This lets, for instance, one flag value to display as a true/false label, while another as a checkbox.
+    %     Class           % The Java type associated with the property, used to invoke the appropriate renderer or editor.
+    Mode            % Grasppe property type tag
+    %     EditorContext   % An editor context object. If set, both the type and the context are used to look up the renderer or editor to use. This lets, for instance, one flag value to display as a true/false label, while another as a checkbox.
     Category        % A string specifying the property?s category, for grouping purposes.
     Editable        % Specifies whether the property value is modifiable or read-only.
     DefiningClass   % Defining class;
-    NativeMeta      % MatLab Meta Property;
+    NativeMeta      % MatLab Meta Property
+    Grouping        % Group ID separating
+  end
+  
+  properties (Dependent)
+    Class
+    EditorContext
   end
   
   methods
@@ -19,104 +26,140 @@ classdef GrasppeMetaProperty < GrasppePrototype
   
   methods (Static)
     
-    function properties = Get(varargin)
-      properties = MetaProperties(varargin{:});
+    function properties = Get(grouping, varargin)
+      properties = GrasppeMetaProperty.MetaPropertiesRecord(grouping, varargin{:});
     end
     
-    function metaProperty = Declare(Name, DefiningClass, DisplayName, Category, Mode, Description)
-      % DefiningClass = dbstack('-completenames');
-      ClassMeta     = meta.class.fromName(DefiningClass);
-      MetaIndex     = find( strcmp( Name, {ClassMeta.PropertyList.Name} ));
-      NativeMeta    = ClassMeta.PropertyList(MetaIndex);
-      Editable      = isequal(NativeMeta.SetAccess, 'public') && ...
-        ~NativeMeta.Constant && ~NativeMeta.Abstract;
+    function propertyMeta = Declare(name, definingClass, displayName, category, mode, description)
       
-      switch lower(Mode)
-       case {'string', 'char'}
-         Class = 'char';
-       case {'single', 'double', 'logical', ... 
-           'int8', 'int16', 'int32', 'unit8', 'uint16', 'uint32', 'uint64'}
-         Class = lower(Mode);
-      end
+      nativeMeta    = metaProperty( definingClass, name );
+      editable      = isequal(nativeMeta.SetAccess, 'public') && ~nativeMeta.Constant && ~nativeMeta.Abstract;
       
-      EditorContext = [];
-      
-      metaProperty  = GrasppeMetaProperty.Define( ...
-        Name, DefiningClass, Class, DisplayName, Category, Description, ... 
-        Editable, EditorContext, NativeMeta);
-    end
-    
-    function metaProperty = Define(Name, DefiningClass, Class, DisplayName, Category, Description, Editable, EditorContext, NativeMeta)
-      metaProperty = GrasppeMetaProperty;
-      
-      metaProperty.Name           = Name;
-      metaProperty.DefiningClass  = DefiningClass;
-      metaProperty.Class          = Class;
-      metaProperty.DisplayName    = DisplayName;
-      metaProperty.Category       = Category;
-      metaProperty.Description    = Description;
-      metaProperty.Editable       = Editable;
-      metaProperty.EditorContext  = EditorContext;
-      metaProperty.NativeMeta     = NativeMeta;
-      
-      GrasppeMetaProperty.MetaPropertiesRecord(metaProperty);
+      propertyMeta  = GrasppeMetaProperty.Define( ...
+        [], name, definingClass, mode, displayName, category, description, editable, nativeMeta);
       
     end
     
-    function properties = MetaPropertiesRecord(varargin)
-      persistent Properties;
+    function propertyMeta = CreateDuplicate(source, varargin)
       
-      if isempty(Properties), Properties = struct(); end
+      propertyMeta = GrasppeMetaProperty;
       
-      if nargout==0 && nargin>0 % Setting
-        if nargin==1 && isa(varargin{1}, 'GrasppeMetaProperty')
-          for i = 1:numel(varargin{1})
-            property = varargin{1}(i);
-            Properties.(property.DefiningClass).(property.Name) = property;
-          end
+      fields = {'Grouping', 'Name', 'DefiningClass', ...
+        'Mode', 'DisplayName', 'Category', 'Description', ...
+        'Editable', 'NativeMeta'};
+      
+      [pairs paired args values ] = pairedArgs(varargin{:});
+      
+      for i = 1:numel(fields)
+        field = fields{i};
+        narg  = find(strcmpi(field, args));
+        
+        if narg > 0
+          propertyMeta.(field)  = values{narg};
+        else
+          propertyMeta.(field)  = source.(field);
         end
       end
       
-      if nargout==1
-        properties = Properties;
+      GrasppeMetaProperty.MetaPropertiesRecord(propertyMeta.Grouping, propertyMeta);
+    end
+    
+    function propertyMeta = Define(grouping, name, definingClass, mode, displayName, category, description, editable, nativeMeta)
+      
+      propertyMeta = GrasppeMetaProperty;
+      
+      propertyMeta.Grouping       = grouping;
+      propertyMeta.Name           = name;
+      propertyMeta.DefiningClass  = definingClass;
+      propertyMeta.Mode           = mode;
+      propertyMeta.DisplayName    = displayName;
+      propertyMeta.Category       = category;
+      propertyMeta.Description    = description;
+      propertyMeta.Editable       = editable;
+      propertyMeta.NativeMeta     = nativeMeta;
+      
+      GrasppeMetaProperty.MetaPropertiesRecord(propertyMeta.Grouping, propertyMeta);
+      
+    end
+    
+    
+    function properties = MetaPropertiesRecord(mediatorID, varargin)
+      persistent MetaProperties MediatorProperties;
+      
+      try
         
-        if nargin==0
-          return;
-        end
+        if isempty(MetaProperties),     MetaProperties      = struct(); end
+        if isempty(MediatorProperties), MediatorProperties  = struct(); end
         
-        propertyName  = [];
+        mediatorMode = false;
+        try mediatorMode = ischar(mediatorID); end
         
-        if nargin>0 && ischar(varargin{1})
-          className     = varargin{1};
-          
-          nameArgs      = regexp(className, '[^\.]+', 'match');
-          
-          if nargin==1 && numel(nameArgs)>1
-            className     = nameArgs{1};
-            propertyName  = nameArgs{2};
-          elseif nargin>1 && ischar(varargin{2}) %isempty(propertyName) &&
-            propertyName  = varargin{2};
+        nargs = numel(varargin);
+        
+        if nargout==0 && nargs>0
+          if nargs==1 && isa(varargin{1}, 'GrasppeMetaProperty')
+            for i = 1:numel(varargin{1})
+              property = varargin{1}(i);
+              if mediatorMode
+                MediatorProperties.(mediatorID).(property.Name) = property;
+              else
+                MetaProperties.(property.DefiningClass).(property.Name) = property;
+              end
+            end
           end
-%         elseif nargin>0 && isa(varargin{1}, 'GrasppeMetaProperty')
-%           metaProperty = varargin{1};
-%           className     = metaProperty.DefiningClass;
-%           propertyName  = metaProperty.Name;
         end
         
-        
-        if ~isempty(className)
-          if isempty(propertyName)
-            properties = Properties.(className);
+        if nargout==1
+          if mediatorMode
+            properties = MediatorProperties;
           else
-            properties = Properties.(className).(propertyName);
+            properties = MetaProperties;
           end
+          
+          if nargs==0
+            return;
+          end
+          
+          propertyName  = [];
+          
+          if nargs>0 && ischar(varargin{1})
+            groupName     = varargin{1};
+            
+            nameArgs      = regexp(groupName, '[^\.]+', 'match');
+            
+            if nargs==1 && numel(nameArgs)>1
+              groupName     = nameArgs{1};
+              propertyName  = nameArgs{2};
+            elseif nargs>1 && ischar(varargin{2}) %isempty(propertyName) &&
+              propertyName  = varargin{2};
+            end
+          end
+          
+          
+          if ~isempty(groupName)
+            if isempty(propertyName)
+              if mediatorMode
+                properties = MediatorProperties.(groupName);
+              else
+                properties = MetaProperties.(groupName);
+              end
+            else
+              if mediatorMode
+                properties = MediatorProperties.(groupName).(propertyName);
+              else
+                properties = MetaProperties.(groupName).(propertyName);
+              end
+            end
+          end
+          
         end
         
+        return;
+      catch err
+        disp(err);
       end
       
-      return;
     end
     
   end
-  
 end

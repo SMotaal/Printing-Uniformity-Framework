@@ -33,20 +33,12 @@ classdef FigureObject < GrasppePrototype & GraphicsObject & EventHandler
         if ishandle(activeObject) && isobject(get(activeObject, 'UserData'))
           try obj.ActiveObject  = get(activeObject, 'UserData'); end
           try obj.ActivePlot    = obj.ActiveObject.ParentAxes; end
-%         else
-%           obj.ActiveObject      = activeObject;
-%           obj.ActivePlot        = obj.handleGet('CurrentAxes');
         end
       end
-%       %       try
-%       %         activeAxes        = obj.handleGet('CurrentAxes');
-%       %         if ishandle(activeAxes) && isobject(get(activeAxes, 'UserData'))
-%       %           activeAxes      = get(activeAxes, 'UserData');
-%       %         end
-%       %         obj.ActiveAxes    = activeAxes;
-%       %       end
       consumed = obj.mouseDown@GraphicsObject(source, event);
     end
+    
+    %function consumed = mouseMotion(obj, source, event)
     
     function consumed = mousePan(obj, source, event)
       persistent lastPanTic lastPanXY

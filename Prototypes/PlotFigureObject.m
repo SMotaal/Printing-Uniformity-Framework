@@ -2,10 +2,9 @@ classdef PlotFigureObject < GrasppePrototype & FigureObject
   %UPFIGUREOBJECTSMODEL Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (Transient, Hidden)
-    MetaProperties = {% DisplayName,      Category,     Mode,       Description 
-      'Title',        'Plot Title',     'Labels',     'String',   '';  ...
-      'BaseTitle',    'Plot Prefix',    'Labels',     'String',   '';   ...
+  properties (Access=private, Transient, Hidden)
+    metaProperties = {% DisplayName,      Category,     Mode,       Description 
+      'BaseTitle',    'Plot Title',       'Labels',     'string',   '';   ...
       };
   end
   

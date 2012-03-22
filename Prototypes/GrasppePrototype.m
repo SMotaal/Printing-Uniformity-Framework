@@ -3,6 +3,7 @@ classdef GrasppePrototype < handle
   %   Detailed explanation goes here
   
   properties
+    MetaProperties
   end
   
   methods
@@ -11,13 +12,18 @@ classdef GrasppePrototype < handle
       obj.processMetaData;
     end
     
+    function dup = CreateDuplicate(obj)
+      dup = [];
+    end
+    
     function processMetaData(obj)
       try
-        if iscell(obj.MetaProperties) && size(obj.MetaProperties, 2)==5
+        definedProperties = obj.MetaProperties;
+        if iscell(definedProperties) && size(definedProperties, 2)==5
           metaProperties   = struct;
-          for i = 1:size(obj.MetaProperties, 1)
-            property    = obj.MetaProperties{i,1};
-            metaData    = obj.MetaProperties(i,2:end);
+          for i = 1:size(definedProperties, 1)
+            property    = definedProperties{i,1};
+            metaData    = definedProperties(i,2:end);
             
             metaProperties.(property) = GrasppeMetaProperty.Declare( ...
               property, class(obj), metaData{:});
@@ -25,9 +31,37 @@ classdef GrasppePrototype < handle
           obj.MetaProperties = metaProperties;
         end
       catch err
-%         disp(err);
+        % disp(err);
       end
     end
+    
+    function metaProperties = get.MetaProperties(obj)
+      if ~isempty(obj.MetaProperties)
+        metaProperties =  obj.MetaProperties;
+      else
+        metaProperties = {};
+        tree = vertcat(obj.ClassName, superclasses(obj));
+        
+        for i = 1:numel(tree)
+          className     = tree{i};
+          propertyMeta  = metaProperty(className, 'metaProperties');
+          
+          if length(propertyMeta) > 0
+            try
+              if isempty(metaProperties)
+                metaProperties = propertyMeta.DefaultValue;
+              else
+                metaProperties = vertcat(metaProperties, propertyMeta.DefaultValue);
+              end
+            end
+          end
+        end
+        
+        obj.MetaProperties = metaProperties;
+      end
+    end
+    
+    
   end
   
   methods (Static, Hidden)

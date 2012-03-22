@@ -182,13 +182,13 @@ classdef EventHandler < GrasppePrototype & GrasppeHandle
           case {'KeyReleaseFcn', 'WindowKeyReleaseFcn'};
             object.keyRelease(source, event);     % disp([callsign ' ' toString(event)]);
           case {'ButtonUpFcn', 'WindowButtonUpFcn'}
-            object.processMouseEvent(source, 'up');       % object.mouseUp(source, event);
+            object.processMouseEvent(source, 'up', event);       % object.mouseUp(source, event);
           case {'ButtonDownFcn', 'WindowButtonDownFcn'}
-            object.processMouseEvent(source, 'down');     % object.mouseDown(source, event);
+            object.processMouseEvent(source, 'down', event);     % object.mouseDown(source, event);
           case {'ButtonMotionFcn', 'WindowButtonMotionFcn'}
-            object.processMouseEvent(source, 'motion');   % object.mouseMotion(source, event);
+            object.processMouseEvent(source, 'motion', event);   % object.mouseMotion(source, event);
           case {'ScrollWheelFcn', 'WindowScrollWheelFcn'}
-            object.processMouseEvent(source, 'wheel');    % object.mouseWheel(source, event);
+            object.processMouseEvent(source, 'wheel', event);    % object.mouseWheel(source, event);
           case {'CellEditCallback'}
             object.cellEdit(source, event);
           case {'CellSelectionCallback'}

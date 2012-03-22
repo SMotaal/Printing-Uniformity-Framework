@@ -20,16 +20,17 @@ classdef UniformityPlotObject < GrasppePrototype & GrasppeHandle
       if ~UniformityPlotObject.checkInheritence(obj.DataSource, 'UniformityDataSource')
         obj.DataSource = RawUniformityDataSource.Create(obj);
       end
+      
       obj.DataSource.attachPlotObject(obj);
     end
   end
-  
+    
   methods
     function set.DataSource(obj, value)
       try obj.DataSource = value; end
       value.attachPlotObject(obj);
       %       try value.attachPlotObject(obj); end
-    end
+    end    
   end
   
 end

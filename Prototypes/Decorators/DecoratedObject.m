@@ -58,10 +58,10 @@ classdef DecoratedObject < GrasppePrototype & GrasppeHandle
         obj.addprop(decoration);
       end
       
-      metaProperty = obj.findprop(decoration);
+      propertyMeta = obj.findprop(decoration);
       
-      metaProperty.GetObservable = true;
-      metaProperty.SetObservable = true;
+      propertyMeta.GetObservable = true;
+      propertyMeta.SetObservable = true;
       
       %       mb1.SetMethod = {@setView, ;
       

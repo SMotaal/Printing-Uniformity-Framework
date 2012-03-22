@@ -2,6 +2,12 @@ classdef ColorBarObject < GrasppePrototype & AxesObject
   %COLORBAROBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
+  properties (Access=private, Transient, Hidden)
+    metaProperties = {% DisplayName,      Category,         Mode,       Description 
+      'Location',     'Location',         'Plot Layout',    'anchor',   '';   ...
+      };
+  end  
+  
   properties (Transient, Hidden)
     ComponentType = 'colorbar';
     ComponentProperties = { 'Location' };

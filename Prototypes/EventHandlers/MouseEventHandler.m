@@ -5,12 +5,12 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
   properties
     MouseEventHandlers
     MouseButtonState;
-%     MouseDownStartPosition = [];
-%     MousePosition = [];
+    %     MouseDownStartPosition = [];
+    %     MousePosition = [];
   end
   
   properties (Constant)
-%     
+    %
   end
   
   events
@@ -32,27 +32,30 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
     end
     
     function consumed = mouseUp(obj, source, event)
-%       disp(sprintf('%s <== %s', obj.ID, 'MouseUp'));
+      %       disp(sprintf('%s <== %s', obj.ID, 'MouseUp'));
       consumed = obj.callEventHandlers('Mouse', 'mouseUp', source, event);
-%       notify(obj, 'MouseUp', event);      
+      %       notify(obj, 'MouseUp', event);
     end
     
     function consumed = mouseDown(obj, source, event)
-%       disp(sprintf('%s <== %s', obj.ID, 'MouseDown'));
+      %       disp(sprintf('%s <== %s', obj.ID, 'MouseDown'));
       consumed = obj.callEventHandlers('Mouse', 'mouseDown', source, event);
-%       notify(obj, 'MouseDown', event);
-    end    
+      %       notify(obj, 'MouseDown', event);
+    end
     
     function consumed = mouseWheel(obj, source, event)
-%       disp(sprintf('%s <== %s', obj.ID, 'MouseWheel'));
+      %       disp(sprintf('%s <== %s', obj.ID, 'MouseWheel'));
+      %       if ~event.ScrollingMomentum
+      %         disp(toString(event));
+      %       end
       consumed = obj.callEventHandlers('Mouse', 'mouseWheel', source, event);
-%       notify(obj, 'MouseWheel', event);      
+      %       notify(obj, 'MouseWheel', event);
     end
     
     function consumed = mouseMotion(obj, source, event)
-%       obj.processMouseEvent(source, 'motion');
+      %       obj.processMouseEvent(source, 'motion');
       consumed = obj.callEventHandlers('Mouse', 'mouseMotion', source, event);
-%       notify(obj, 'MouseMotion', event);      
+      %       notify(obj, 'MouseMotion', event);
     end
     
     function mouseClickCallback(obj, src, evt, source, event)
@@ -60,30 +63,32 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
     end
     
     function consumed = mouseClick(obj, source, event)
-%       disp(sprintf('%s <== %s', obj.ID, 'MouseClick'));
+      %       disp(sprintf('%s <== %s', obj.ID, 'MouseClick'));
       consumed = obj.callEventHandlers('Mouse', 'MouseClick', source, event);
-%       notify(obj, 'MouseClick', event);
+      %       notify(obj, 'MouseClick', event);
     end
     
     function consumed = mouseDoubleClick(obj, source, event)
-%       disp(sprintf('%s <== %s', obj.ID, 'MouseDoubleClick'));
+      %       disp(sprintf('%s <== %s', obj.ID, 'MouseDoubleClick'));
       consumed = obj.callEventHandlers('Mouse', 'mouseDoubleClick', source, event);
-%       notify(obj, 'MouseDoubleClick', event);      
+      %       notify(obj, 'MouseDoubleClick', event);
     end
     
-    function consumed = mousePan(obj, source, event)      
+    function consumed = mousePan(obj, source, event)
       consumed = obj.callEventHandlers('Mouse', 'mousePan', source, event);
-%       notify(obj, 'MousePan', event);      
+      %       notify(obj, 'MousePan', event);
     end
     
-    function processMouseEvent(obj, source, type)
+    function processMouseEvent(obj, source, type, event)
       persistent lastDownTic lastUpTic ...
         lastDownID lastUpID ...
         lastDownXY lastUpXY ...
-        lastPanTic ...
+        lastPanTic lastScrollSwipeTic lastScrollSwipeToc  ...
         fireClickTimer lastMouseStateHandle MouseButtonState;
       
       doubleClickRate     = 0.5;
+      
+      scrollingThreshold  = 0.275;
       
       currentXY           = get(0,'PointerLocation');
       
@@ -95,7 +100,7 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
       
       lastUpToc           = 0;
       try lastUpToc       = toc(lastUpTic); end
-            
+      
       lastDownSameID      = false;
       try lastDownSameID  = isequal(lastDownID, obj.ID); end
       
@@ -107,20 +112,20 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
         fireClickTimer = timer( 'StartDelay', doubleClickRate);
       end
       
-      event = varStruct(type, doubleClickRate, ...
+      event = varStruct(event, type, doubleClickRate, ...
         currentXY, lastDownDeltaXY, lastDownToc, lastUpToc, lastDownSameID, lastUpSameID);
       
-       
+      
       figureObject = [];
       try
         if isequal(obj.ComponentType,  'figure')
           figureObject = obj;
-%           selectionType = obj.handleGet('SelectionType');
-%           currentObject = obj.handleGet('CurrentObject');
+          %           selectionType = obj.handleGet('SelectionType');
+          %           currentObject = obj.handleGet('CurrentObject');
         else
           figureObject = obj.ParentFigure;
-%           selectionType = obj.ParentFigure.handleGet('SelectionType');
-%           currentObject = obj.ParentFigure.handleGet('CurrentObject');
+          %           selectionType = obj.ParentFigure.handleGet('SelectionType');
+          %           currentObject = obj.ParentFigure.handleGet('CurrentObject');
         end
       end
       
@@ -135,8 +140,8 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
           lastDownXY  = currentXY;
           
           obj.mouseDown(source, MouseEventData('down'));
-
-%           disp(sprintf('Down type is %s.', figureObject.handleGet('SelectionType')));
+          
+          %           disp(sprintf('Down type is %s.', figureObject.handleGet('SelectionType')));
           
         case 'up'
           
@@ -177,7 +182,21 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
             obj.mouseMotion(source, event);
           end
         case 'wheel'
+          lastScrollToc = 0;
+          try lastScrollToc = toc(lastScrollSwipeTic); end;
+          
+          % try disp([lastScrollToc lastScrollSwipeToc lastScrollToc/lastScrollSwipeToc]); end
+          
+          lastScrollSwipeTic = tic;
+          % lastScrollSwipeToc = lastScrollToc;
+          
+          event.Scrolling.Length        = lastScrollToc;
+          % event.Scrolling.Swipe         = lastScrollSwipeToc;
+          event.Scrolling.Vertical      = [event.event.VerticalScrollCount event.event.VerticalScrollAmount];
+          event.Scrolling.Momentum      = lastScrollToc < scrollingThreshold;
+          
           obj.mouseWheel(source, event);
+          
         otherwise
       end
       
