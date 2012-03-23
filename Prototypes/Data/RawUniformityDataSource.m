@@ -22,7 +22,7 @@ classdef RawUniformityDataSource < GrasppePrototype & UniformityDataSource
         
         rows      = sourceData.metrics.sampleSize(1);
         columns   = sourceData.metrics.sampleSize(2);
-        sheet     = obj.SampleID;
+        sheet     = obj.SheetID;
         
       catch err
         return;
@@ -53,7 +53,7 @@ classdef RawUniformityDataSource < GrasppePrototype & UniformityDataSource
   
   methods (Static, Hidden)
     function options  = DefaultOptions()
-      SourceID        = 'ritsm7402a';
+      CaseID        = 'ritsm7402a';
       
       options = WorkspaceVariables(true);
     end

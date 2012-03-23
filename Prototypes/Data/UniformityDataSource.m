@@ -8,16 +8,12 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
     ComponentType = 'UniformityDataSource';
     ComponentProperties = '';
     
-    DataProperties = {'XData', 'YData', 'ZData', 'SampleID', 'SourceID', 'SetID'};
+    DataProperties = {'CaseID', 'SetID', 'XData', 'YData', 'ZData', 'SheetID'};
     
   end
   
   
   properties (Hidden)
-    IsRetrieving      = false;
-    IsRetrieved       = false;
-    IsSettingSource   = false;
-    
     LinkedPlotObjects = [];
     LinkedPlotHandles = [];
     PlotObjects       = [];
@@ -28,8 +24,7 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
     ExtendedParameters,
     DataParameters, DataSource, SourceData, SetData, SampleData
     XData, YData, ZData
-    SourceID, SetID, SampleID
-    SetIndex, SampleIndex,
+    CaseID, SetID, SheetID
     SampleSummary = false
     
     %DataAspectRatioMode
@@ -48,14 +43,18 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
     ZLim,       ZTick,      ZTickLabel
   end
   
+  properties (GetAccess=protected, SetAccess=protected)
+    currentParameters = UniformitySampleDataParameters;
+  end
+  
   properties (Dependent)
-    SourceName, SetName, Sets, SampleName, Samples
-    Rows, Columns, Regions, Zones
+    CaseName, SetName, SheetName,
   end
   
   methods (Hidden)
     function obj = UniformityDataSource(varargin)
       obj = obj@GrasppePrototype;
+      
       args = varargin;
       plotObject = [];
       try
@@ -66,30 +65,17 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
       end
       
       obj = obj@GrasppeComponent(args{:});
-    end
-    
-    function optimizePlotLimits(obj)
-      if obj.IsRetrieved
-        setData = obj.SetData;
-        
-        zData   = [setData.data(:).zData];
-        zMean   = nanmean(zData);
-        zStd    = nanstd(zData,1);
-        zSigma  = [-3 +3] * zStd;
-        
-        
-        zMedian = round(zMean*2)/2;
-        zRange  = [-3 +3];
-        zLim    = zMedian + zRange;
-        
-        cLim    = zLim;
-        
-        obj.ZLim  = zLim;
-        obj.CLim  = cLim;
-      end
+      
+      obj.attachPlotObject(plotObject);
+      
     end
     
     function attachPlotObject(obj, plotObject)
+      
+      if isempty(plotObject) || ~isa(plotObject, 'PlotObject')
+        return;
+      end
+      
       try debugStamp(obj.ID); catch, debugStamp(); end;
       plotObjects = obj.PlotObjects;
       if ~any(plotObjects==plotObject)
@@ -99,16 +85,16 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
           obj.PlotObjects = plotObject;
         end
       end
-      obj.linkPlotObject(plotObject);
-      obj.refreshPlot(plotObject);
+      obj.linkPlot(plotObject);
+      
     end
     
-    function linkPlotObject(obj, plotObject)
+    function linkPlot(obj, plotObject)
       try
-        if isobject(plotObject)
-          plotObject.XData = 'xData';
-          plotObject.YData = 'yData';
-          plotObject.ZData = 'zData';
+        if isa(plotObject, 'PlotObject')
+          plotObject.XData    = 'xData'; ...
+            plotObject.YData  = 'yData'; ...
+            plotObject.ZData  = 'zData';
           try
             obj.LinkedPlotObjects(end+1) = plotObject;
           catch
@@ -116,165 +102,263 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
           end
         end
       end
-      try
-        obj.LinkedPlotObjects = unique(obj.LinkedPlotObjects);
-      end
-      try
-        obj.LinkedPlotHandles = unique([obj.LinkedPlotObjects.Handle]);
-      end
+      obj.validatePlots();
+      obj.updatePlots(plotObject.Handle);
     end
     
-    function refreshPlot(obj, plotObject)
-      plotObject.refreshPlot(obj);
+    function validatePlots(obj)
+      try obj.LinkedPlotObjects = unique(obj.LinkedPlotObjects); end
+      try obj.LinkedPlotHandles = unique([obj.LinkedPlotObjects.Handle]); end
     end
     
-    function refreshLinkedPlots(obj, linkedPlots)
+    function updatePlots(obj, linkedPlots)
       xData = obj.XData; yData = obj.YData; zData = obj.ZData;
+      
       try
         linkedPlots = unqiue(linkedPlots);
+        if isa(plotObject, 'PlotObject'), linkedPlots = linkedPlots.Handle; end
       catch err
-        obj.linkPlotObject();
-        linkedPlots = unique(obj.LinkedPlotHandles);
+        obj.validatePlots;
+        linkedPlots = obj.LinkedPlotHandles;
       end
-      linkedPlots = linkedPlots(ishandle(linkedPlots));
+      
+      linkedPlots = linkedPlots(ishandle(obj.LinkedPlotHandles));
       try
         refreshdata(linkedPlots, 'caller');
       catch err
         halt(err, 'obj.ID');
         try debugStamp(obj.ID, 4); end
       end
-      %       obj.refreshPlotData();
+      
+      for h = linkedPlots
+        plotObject = get(h, 'UserData');
+        try plotObject.refreshPlot(obj); end        
+        try plotObject.updatePlotTitle; end
+      end
     end
     
-    function refreshPlotData(obj, varargin)
-      plotObjects = {};
-      
-      if isempty(varargin)
-        plotObjects = obj.PlotObjects;
-      else
-        plotObjects = varargin;
-      end
-      
-      obj.refreshLinkedPlots();
-      
-      if ~isempty(plotObjects), debugStamp(obj.ID); end
-      
-      for i = 1:numel(plotObjects)
-        try
-          obj.refreshPlot(plotObjects{i});
-        end
-      end
-    end
   end
   
-  %% Configurative Setters
+  %% Data Source Getters & Setters
   methods
-    function set.SourceID(obj, value)
-      obj.SourceID = changeSet(obj.SourceID, value);
-      try debugStamp(obj.ID); catch, debugStamp(); end;
-      obj.resetSource;
+    
+    %% CaseID & SourceName
+    
+    function set.CaseID(obj, value)
+      [obj.CaseID changed] = changeSet(obj.CaseID, value);
+      changed = changed && ~isequal(value, obj.currentParameters.CaseID);
+      if changed, obj.updateSourceParameters; end
+      obj.CaseID = obj.currentParameters.CaseID;
+      try debugStamp(obj.ID); catch, debugStamp(); end
     end
+    
+    function caseName = get.CaseName(obj)
+      caseName = []; pressName = []; runCode = [];
+      
+      try pressName = obj.SourceData.metadata.testrun.press.name; end
+
+      try runCode   = obj.SourceData.name; end
+      try runCode   = sprintf('#%s', char(regexpi(runCode, '[0-9]{2}[a-z]?$', 'match'))); end
+
+      try caseName  = strtrim([pressName ' ' runCode]); end
+    end
+    
+    %% SetID & SetName
     
     function set.SetID(obj, value)
-      obj.SetID = changeSet(obj.SetID, value);
+      [obj.SetID changed] = changeSet(obj.SetID, value);
+      changed = changed && ~isequal(value, obj.currentParameters.SetID);
+      if changed, obj.updateSourceParameters; end
+      obj.SetID = obj.currentParameters.SetID;
+      try debugStamp(obj.ID); catch, debugStamp(); end
+    end
+    
+    function setName = get.SetName(obj)
+      setName = [];
+      %try setName = obj.SetData.setLabel; end
+      try
+        setName = [int2str(obj.SetData.patchSet) '%'];
+      end
+      if isnumeric(setName), setName = int2str(setName); end
+    end
+    
+    %% SheetID & SheetName
+    
+    function set.SheetID(obj, value)
+      [obj.SheetID changed] = changeSet(obj.SheetID, value);
+      changed = changed && ~isequal(value, obj.currentParameters.SheetID);
+      if changed, obj.updateSourceParameters; end
+      obj.SheetID = obj.currentParameters.SheetID;
       try debugStamp(obj.ID); catch, debugStamp(); end;
     end
     
-    function set.SampleID(obj, value)
-      obj.SampleID = changeSet(obj.SampleID, value);
-      try debugStamp(obj.ID); catch, debugStamp(); end;
-      if ~obj.IsRetrieving
-        try obj.processPlotData(); end
-      end
+    function sampleName = get.SheetName(obj)
+      sampleName = [];
+      try sampleName = obj.SourceData.index.Sheets(obj.currentParameters.SheetID); end
+      if isnumeric(sampleName), sampleName = int2str(sampleName); end
     end
+    
+    %% SetCount, SheetCount, Rows, Columns, RegionCount, ZoneCount
+    
+    function sets = getSetCount(obj)
+      sets = [];
+      try sets = obj.SourceData.Datasets.Length; end
+    end
+    
+    function samples = getSheetCount(obj)
+      samples = [];
+      try samples = obj.SourceData.length.Sheets; end
+    end    
+    
+    function rows = getRowCount(obj)
+      rows = [];
+      try rows    = obj.SourceData.metrics.sampleSize(1); end
+    end
+    
+    function columns = getColumnCount(obj)
+      columns = [];
+      try columns = obj.SourceData.metrics.sampleSize(2); end
+    end
+    
+    function regions = getRegionCount(obj)
+      regions = [];
+      % try regions    = obj.SourceData.metrics.sampleSize(1); end
+    end
+    
+    function zones = getZoneCount(obj)
+      zones = [];
+      % try zones    = obj.SourceData.metrics.sampleSize(1); end
+    end
+    
   end
   
-  %% Configurative Methods
+  %% Data Source Update Routines
   methods
     
-    function setSource(obj, sourceID)
-      
-    end
-    
-    function resetSource(obj)
+    function updateSourceParameters(obj)
       try debugStamp(obj.ID); catch, debugStamp(); end;
-      obj.IsSettingSource = true;
-      obj.clearSourceData();
-      obj.retrieveSourceData();
-      obj.IsSettingSource = false;
-    end
-    
-    function clearSourceData(obj)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
-      obj.IsRetrieved = false;  obj.IsRetrieving = false;
-      if ~obj.IsSettingSource
-        obj.SourceID = [];
-        return;
-      end
-      obj.SourceData  = [];
-      obj.SetData     = [];
-      obj.ExtendedParameters = [];
-      obj.SampleID    = [];
-    end
-    
-    function retrieveSourceData(obj)
-      if obj.IsRetrieving || obj.IsRetrieved, return; else obj.IsRetrieving=true; end
+      parameters = obj.currentParameters;
       
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      [parameters.CaseID  updateSource] = changeSet(parameters.CaseID,  obj.CaseID);
+      [parameters.SetID   updateSet   ] = changeSet(parameters.SetID,   obj.SetID);
+      [parameters.SheetID updateSheet ] = changeSet(parameters.SheetID, obj.SheetID);
       
-      source = obj.SourceID;
-      
-      if ~isValid(source, 'char')
-        return;
+      if updateSource || updateSet
+        obj.updateSourceData();
       end
       
-      obj.SourceData  = [];
-      obj.SetData     = [];
-      obj.ExtendedParameters = [];
-      obj.SampleID    = [];
-      
-      args = {source};
-      
-      parameters = obj.DataParameters;
-      
-      if isClass(parameters, 'cell') && ~isempty(parameters);
-        args = {args{:}, parameters{:}};
+      if updateSheet || updateSet || updateSource
+        obj.updateSheetData();
       end
       
-      [sourceData setData parameters] = Plots.plotUPStats(args{:});
-      
-      obj.SourceData    = sourceData;
-      obj.SetData       = setData;
-      obj.ExtendedParameters = parameters;
-      obj.SampleID      = 1;
-      
-      obj.IsRetrieved   = true;
-      obj.IsRetrieving  = false;
-      
-      obj.optimizePlotLimits();
-      
-      obj.refreshPlotData();
+      [obj.CaseID  updateSource] = changeSet(obj.CaseID,  parameters.CaseID);
+      [obj.SetID   updateSet   ] = changeSet(obj.SetID,   parameters.SetID);
+      [obj.SheetID updateSheet ] = changeSet(obj.SheetID, parameters.SheetID);
     end
     
+    function updateSourceData(obj)
+      parameters  = obj.currentParameters;
+      
+      sourceID    = parameters.CaseID; ...
+        setID     = parameters.SetID; ...
+        sheetID   = parameters.SheetID;
+      
+      if ~isnumeric(setID)
+        setID = [];
+      end
+      
+      args = {sourceID, setID};
+      
+      dataParameters  = obj.DataParameters;
+      
+      if isempty(dataParameters)
+        dataParameters = {};
+      end
+      
+      if ~iscell(dataParameters)
+        dataParameters = {dataParameters};
+      end
+      
+      args = {args{:}, dataParameters{:}};
+      
+      [sourceData setData extendedParameters] = Plots.plotUPStats(args{:});
+      
+      obj.SourceData            = sourceData; ...
+        obj.SetData             = setData; ...
+        obj.ExtendedParameters  = extendedParameters;
+      
+      parameters.SetID          = obj.SetData.patchSet;     
+      parameters.SheetID        = limit(sheetID, 1, obj.getSheetCount);
+              
+      obj.optimizeSetLimits;
+      
+    end
+    
+    function updateSheetData(obj)
+      parameters  = obj.currentParameters;
+      
+      sourceID  = parameters.CaseID; ...
+        setID   = parameters.SetID; ...
+        sheetID = parameters.SheetID;
+      
+      rows      = obj.getRowCount;
+      columns   = obj.getColumnCount;
+      
+      [X Y Z]   = obj.processSheetData(sheetID);
+      
+      obj.setPlotData(X, Y, Z);
+      
+    end
+    
+    function [X Y Z] = processSheetData(obj, sheetID)
+      rows    = obj.getRowCount;
+      columns = obj.getColumnCount;
+      
+      [X Y Z] = meshgrid(1:columns, 1:rows, 1);
+    end
     
     function setPlotData(obj, XData, YData, ZData)
       try debugStamp(obj.ID); catch, debugStamp(); end;
-      %       obj.forceSet('XData', XData, 'YData', YData, 'ZData', ZData);
-      % %       obj.set('XData', XData, 'YData', YData, 'ZData', ZData);
       obj.XData = XData;
       obj.YData = YData;
       obj.ZData = ZData;
       
-      obj.refreshPlotData();
+      obj.updatePlots();
     end
+    
+    
+    function optimizeSetLimits(obj)
+      zLim = 'auto';
+      cLim = 'auto';
+      
+      try
+        setData   = obj.SetData;
+
+        zData     = [setData.data(:).zData];
+        zMean     = nanmean(zData);
+        zStd      = nanstd(zData,1);
+        zSigma    = [-3 +3] * zStd;
+
+
+        zMedian   = round(zMean*2)/2;
+        zRange    = [-3 +3];
+        zLim      = zMedian + zRange;
+
+        cLim      = zLim;
+      end
+      
+      obj.ZLim  = zLim;
+      obj.CLim  = cLim;
+    end
+
     
     function sheet = setSheet (obj, sheet)
       
       try debugStamp(obj.ID); catch, debugStamp(); end;
       
-      currentSheet  = obj.SampleID;
+      currentSheet  = obj.SheetID;
       firstSheet    = 1;
-      lastSheet     = obj.Samples;
+      lastSheet     = obj.getSheetCount;
       nextSheet     = currentSheet;
       
       %Parse sheet
@@ -308,38 +392,8 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
         end
       end
       
-      obj.SampleID = nextSheet;
+      obj.SheetID = nextSheet;
       
-    end
-    
-    
-  end
-  
-  %% Informative Getters
-  methods
-    function sourceName = get.SourceName(obj)
-      sourceName = [];
-      try sourceName = obj.SourceData.Name; end
-    end
-    
-    function setName = get.SetName(obj)
-      setName = [];
-      try setName = obj.SetData.Name; end
-    end
-    
-    function sampleName = get.SampleName(obj)
-      sampleName = [];
-      try sampleName = obj.SampleData.Name; end
-    end
-    
-    function sets = get.Sets(obj)
-      sets = 0;
-      try sets = obj.SourceData.Datasets.Length; end
-    end
-    
-    function samples = get.Samples(obj)
-      samples = 0;
-      try samples = obj.SourceData.length.Sheets; end
     end
     
   end
@@ -347,7 +401,7 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
   %% Static Component Methods
   
   methods(Abstract, Static, Hidden)
-    processPlotData(obj)
+    % processPlotData(obj)
     options  = DefaultOptions()
     obj = Create()
   end

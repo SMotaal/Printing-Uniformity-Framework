@@ -8,7 +8,7 @@ classdef SurfaceObject < GrasppePrototype & PlotObject
     ComponentProperties = { 'Clipping', 'DisplayName', {'AntiAliasing' 'LineSmoothing'}};
     ComponentEvents = {};
     
-    DataProperties = {'AData', 'CData', 'XData', 'YData', 'ZData'}; %, 'CData', 'AData'}; %, 'SampleID', 'SourceID', 'SetID'};
+    DataProperties = {'AData', 'CData', 'XData', 'YData', 'ZData'}; %, 'CData', 'AData'}; %, 'SheetID', 'CaseID', 'SetID'};
     
   end
   

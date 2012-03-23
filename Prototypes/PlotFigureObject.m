@@ -8,7 +8,7 @@ classdef PlotFigureObject < GrasppePrototype & FigureObject
       };
   end
   
-  properties (Transient, Hidden)
+  properties (Transient, Hidden, SetObservable, GetObservable)
     BaseTitle, SampleTitle, Status
   end
   

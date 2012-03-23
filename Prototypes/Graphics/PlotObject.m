@@ -4,9 +4,9 @@ classdef PlotObject < GrasppePrototype & InAxesObject
 
   properties (Access=private, Transient, Hidden)
     metaProperties = {% DisplayName,      Category,         Mode,       Description 
-      'SourceID',     'Source',           'Plot Data',      'string',   '';   ...
+      'CaseID',       'Source',           'Plot Data',      'string',   '';   ...
       'SetID',        'Set',              'Plot Data',      'string',   '';   ...
-      'SampleID',     'Sample',           'Plot Data',      'integer',  '';   ...
+      'SheetID',      'Sample',           'Plot Data',      'integer',  '';   ...
       };
   end    
   
@@ -15,7 +15,7 @@ classdef PlotObject < GrasppePrototype & InAxesObject
   end
   
   properties (Dependent)
-    SourceID, SetID, SampleID
+    CaseID, SetID, SheetID
   end
   
   methods (Access=protected)
@@ -53,23 +53,23 @@ classdef PlotObject < GrasppePrototype & InAxesObject
   end
   
   methods
-    function set.SampleID(obj, value)
+    function set.SheetID(obj, value)
       obj.setSheet(value);
     end
     
-    function value = get.SampleID(obj)
+    function value = get.SheetID(obj)
       value = [];
-      try value = obj.DataSource.SampleID; end
+      try value = obj.DataSource.SheetID; end
     end
     
-    function set.SourceID(obj, value)
-      try obj.DataSource.SourceID = changeSet(obj.DataSource.SourceID, value); end;
+    function set.CaseID(obj, value)
+      try obj.DataSource.CaseID = changeSet(obj.DataSource.CaseID, value); end;
       obj.updatePlotTitle;
     end
     
-    function value = get.SourceID(obj)
+    function value = get.CaseID(obj)
       value = [];
-      try value = obj.DataSource.SourceID; end
+      try value = obj.DataSource.CaseID; end
     end
   end
   
@@ -84,16 +84,22 @@ classdef PlotObject < GrasppePrototype & InAxesObject
       % hasParentFigure = obj.HasParentFigure, hasParentAxes = obj.HasParentAxes
       
       if ~obj.HasParentFigure, return; end
-      try
-        obj.ParentFigure.BaseTitle = base;
-      catch
-        try obj.ParentFigure.BaseTitle = obj.SourceID; end;
-      end
-      try
-        obj.ParentFigure.SampleTitle = int2str(sample);
-      catch
-        try obj.ParentFigure.SampleTitle = int2str(obj.SampleID); end;
-      end
+      caseName  = obj.DataSource.CaseName;
+      setName   = obj.DataSource.SetName;
+      sheetName = obj.DataSource.SheetName;
+      
+      try obj.ParentFigure.BaseTitle    = [caseName ' ' setName]; end;
+      try obj.ParentFigure.SampleTitle  = sheetName; end;
+%       try
+%         obj.ParentFigure.BaseTitle = base;
+%       catch
+        
+%       end
+%       try
+%         obj.ParentFigure.SampleTitle = int2str(sample);
+%       catch
+        
+%       end
     end
   end
   
@@ -192,7 +198,7 @@ classdef PlotObject < GrasppePrototype & InAxesObject
         try obj.IsUpdating = updating; end
       end
       
-      obj.updatePlotTitle(dataSource.SourceID, dataSource.SampleID);
+      obj.updatePlotTitle; %(dataSource.CaseID, dataSource.SheetID);
       
       try obj.IsRefreshing = false; end
     end

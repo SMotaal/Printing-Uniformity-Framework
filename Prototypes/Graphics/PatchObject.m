@@ -23,7 +23,7 @@ classdef PatchObject < GrasppePrototype & PlotObject
     
     ComponentEvents = {};
     
-    DataProperties = {'XData', 'YData', 'ZData'}; %, 'SampleID', 'SourceID', 'SetID'};
+    DataProperties = {'XData', 'YData', 'ZData'}; %, 'SheetID', 'CaseID', 'SetID'};
     
   end
   

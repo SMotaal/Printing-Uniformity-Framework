@@ -74,16 +74,6 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       end
       obj.Primitive = changeSet(obj.Primitive, handle);
       
-      %         try
-      %           if ~isequal(get(handle,'UserData'), obj)
-      %             try
-      %               set(handle, 'UserData', obj);
-      %             catch err
-      %               disp(['Failed to set UserData for ' obj.ID]);
-      %             end
-      %           end
-      %         end
-      
       try obj.pullHandleOptions; end
     end
     
@@ -137,12 +127,11 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
         if ~isempty(handle)
           try
             set(handle, args{:});
-            %             GrasppeHandle.HandleSet(handle, args{:});
           catch err
             GrasppeHandle.VerboseSet(handle, args{:});
           end
         else
-          %           disp(varargin);
+          % disp(varargin);
         end
       catch err
         dealwith(err);
@@ -151,7 +140,6 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
     
     function values = handleGet(obj, varargin)
       values = {};
-      %try if obj.IsDestructing, return; end; end;
       
       if nargin>1 && isValidHandle('varargin{1}')
         handle = varargin{1};
@@ -161,7 +149,6 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
         args = varargin;
       end
       if ~isempty(handle)
-        %         getting = args
         try
           values = get(handle, args{:});
         catch
@@ -200,7 +187,6 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
   methods (Access=protected, Hidden)
     
     function pushHandleOptions(obj, names, emptyValues)
-      %try if obj.IsDestructing, return; end; end;
       
       try debugStamp(obj.ID, 5); catch, debugStamp('', 5); end;
       try
@@ -234,18 +220,6 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
         
         obj.handleSet(options{:});
         
-        %         try
-        %           if ~isequal(obj.handleGet('UserData'))
-        %             %             obj.handleSet('UserData', obj);
-        %             try
-        %               GrasppeHandle.VerboseSet(handle, 'UserData', obj);
-        %             catch err
-        %               disp(['Failed to set UserData for ' obj.ID]);
-        %             end
-        %           end
-        %
-        %         end
-        
       catch err
         halt(err, 'obj.ID');
         
@@ -275,8 +249,6 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
     end
     
     function handleOptions = pullHandleOptions (obj, names, updateLocal)
-      %       handleOptions = [];
-      %try if obj.IsDestructing, return; end; end;
       
       default updateLocal true;
       
@@ -322,25 +294,6 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       options = finalOptions(1:p*2);
     end
     
-    %     function forceSetOptions(obj, varargin)
-    %       [args values paired pairs] = obj.parseOptions(varargin{:});
-    %       if (paired)
-    %         for i=1:numel(args)
-    % %           if obj.Reforced, break; end
-    %           try
-    %             if ~isequal(obj.(args{i}), values{i})
-    %               obj.(args{i}) = values{i};
-    %             end
-    %           catch err
-    %             if ~strcontains(err.identifier, 'noSetMethod')
-    %               rethrow(err);
-    %             end
-    %           end
-    %         end
-    %
-    %       end
-    %     end
-    
     function setOptions(obj, varargin)
       try
         if obj.IsUpdating, return; else obj.IsUpdating = true; end
@@ -353,15 +306,10 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
                 obj.(args{i}) = values{i};
               end
             catch err
-              %               try
-              %                 disp({obj.ID, args{i}, values{i}});
-              %               end
-              %               halt(err, 'obj.ID');
               if ~strcontains(err.identifier, 'noSetMethod')
                 try debugStamp(obj.ID, 5); end
                 disp(['Could not set ' args{i} ' for ' class(obj)]);
               end
-              %               rethrow(err);
             end
           end
           
@@ -394,8 +342,6 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       args = [extraArgs, args];
       
       [pairs paired args values ] = pairedArgs(args{:});
-      
-      % nargs even names values
       
     end
     
@@ -446,16 +392,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       try
         if all(name(1:2)=='Is') %regexp(name, ['(^Is[A-Z])' '|' '(\w+Enabled$)' '|' '(\w+Visible$)'], 'Once'))
           value = isOn(value, 'on', 'off');
-          %         switch value
-          %           case {0, false, 'no'}
-          %             value = 'off';
-          %           case {1, true, 'yes'};
-          %             value = 'on';
-          %           otherwise
-          %         end
         end
-        %       catch err
-        %         halt(err, 'obj.ID');
       end
     end
     
@@ -470,13 +407,11 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       end
       
       try
-        objClass  = class(obj);
-        objSuper  = superclasses(objClass);
-        
-        checks = stropt(classname, {objClass, objSuper{:}});
+        checks = isa(obj, classname);
       catch
         checks = false;
       end
+
     end
     
     function VerboseSet(hg, varargin)
