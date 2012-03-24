@@ -6,6 +6,13 @@ classdef ColorBarObject < GrasppePrototype & AxesObject
     metaProperties = {% DisplayName,      Category,         Mode,       Description 
       'Location',     'Location',         'Plot Layout',    'anchor',   '';   ...
       };
+    
+  end
+  
+  properties (Transient, Hidden)
+    ColorBarObjectProperties = {
+      'Location',     'Location',         'Plot Layout',    'anchor',   '';   ...
+      };
   end  
   
   properties (Transient, Hidden)

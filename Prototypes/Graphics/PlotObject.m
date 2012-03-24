@@ -3,12 +3,21 @@ classdef PlotObject < GrasppePrototype & InAxesObject
   %   Detailed explanation goes here
 
   properties (Access=private, Transient, Hidden)
-    metaProperties = {% DisplayName,      Category,         Mode,       Description 
+    metaProperties = {
       'CaseID',       'Source',           'Plot Data',      'string',   '';   ...
       'SetID',        'Set',              'Plot Data',      'string',   '';   ...
       'SheetID',      'Sample',           'Plot Data',      'integer',  '';   ...
       };
   end    
+  
+  properties (Transient, Hidden)
+    PlotObjectProperties = {
+      'CaseID',       'Source',           'Plot Data',      'string',   '';   ...
+      'SetID',        'Set',              'Plot Data',      'string',   '';   ...
+      'SheetID',      'Sample',           'Plot Data',      'integer',  '';   ...
+      };
+  end    
+  
   
   properties
     IsRefreshing = false;
@@ -76,7 +85,30 @@ classdef PlotObject < GrasppePrototype & InAxesObject
   methods
     function setSheet(obj, value)
       try debugStamp(obj.ID); end
-      try obj.DataSource.setSheet(value); end
+      z1 = get(obj.Handle, 'ZData');
+      try
+        obj.DataSource.setSheet(value);
+      catch err
+        disp(err);
+      end
+      z2 = get(obj.Handle, 'ZData');
+      
+      cparams = [];
+      try cparams = obj.DataSource.currentParameters; end
+      try cparams = sprintf('%s:%d:%d:%d', ...
+          cparams.CaseID, cparams.SetID, cparams.SheetID, cparams.VariableID); 
+%       catch err
+%         disp(err.message);
+%         disp(err);
+      end
+      
+%       if ~isequal(z1, z2)
+%         disp(sprintf('Sheet %s >> %s (%d) >> %s (%s)', toString(value), ...
+%           obj.ID, round(obj.Handle), obj.DataSource.ID, cparams));
+%       else
+%         disp(sprintf('No Change >> %s (%d) >> %s (%s)', ...
+%           obj.ID, round(obj.Handle), obj.DataSource.ID, cparams));
+%       end
       obj.updatePlotTitle;
     end
     
@@ -170,37 +202,37 @@ classdef PlotObject < GrasppePrototype & InAxesObject
     end
     
     function refreshPlot(obj, dataSource)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
-      try obj.IsRefreshing = true; end
-      
-      if ~exists('dataSource')
-        dataSource = [];
-        try dataSource = obj.DataSource; end
-      end
-      
-      try updating = obj.IsUpdating; end
-      
-      try properties = obj.DataProperties; end
-      
-      for property = obj.DataProperties
-        try obj.IsUpdating = false; end
-        try
-          obj.(char(property)) = dataSource.(char(property));
-        catch err
-          try debugStamp(obj.ID); end
-          if strcmp(err.identifier, 'MATLAB:noSuchMethodOrField')
-            try disp(sprintf('\t%s ==> %s',err.identifier, char(property))); end
-          else
-            try debugStamp(obj.ID); end
-            disp(err);
-          end
-        end
-        try obj.IsUpdating = updating; end
-      end
-      
-      obj.updatePlotTitle; %(dataSource.CaseID, dataSource.SheetID);
-      
-      try obj.IsRefreshing = false; end
+%       try debugStamp(obj.ID); catch, debugStamp(); end;
+%       try obj.IsRefreshing = true; end
+%       
+%       if ~exists('dataSource')
+%         dataSource = [];
+%         try dataSource = obj.DataSource; end
+%       end
+%       
+%       try updating = obj.IsUpdating; end
+%       
+%       try properties = obj.DataProperties; end
+%       
+%       for property = obj.DataProperties
+%         try obj.IsUpdating = false; end
+%         try
+%           obj.(char(property)) = dataSource.(char(property));
+%         catch err
+%           try debugStamp(obj.ID); end
+%           if strcmp(err.identifier, 'MATLAB:noSuchMethodOrField')
+%             try disp(sprintf('\t%s ==> %s',err.identifier, char(property))); end
+%           else
+%             try debugStamp(obj.ID); end
+%             disp(err);
+%           end
+%         end
+%         try obj.IsUpdating = updating; end
+%       end
+%       
+%       obj.updatePlotTitle; %(dataSource.CaseID, dataSource.SheetID);
+%       
+%       try obj.IsRefreshing = false; end
     end
     
     function refreshPlotData(obj, source, event)

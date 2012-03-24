@@ -190,8 +190,17 @@ end
 
 function datastore = loaddata(datastore, forced)
   persistent loaded;
-  default loaded false;
-  default forced false;
+  
+  if ~isequal(loaded, true), loaded = false; end
+  
+  try
+    forced = ~isequal(forced, true);
+  catch
+    forced = false;
+  end
+  
+  %default loaded false;
+  %default forced false;
   if (~loaded || forced)
     if exist(datafile, 'file') > 0
       try
@@ -211,7 +220,13 @@ function datastore = loaddata(datastore, forced)
 end
 
 function [] = savedata(datastore, forced)
-  default forced false;
+  %default forced false;
+  
+  try
+    forced = ~isequal(forced, true);
+  catch
+    forced = false;
+  end
   
   mlock;
   
@@ -237,7 +252,9 @@ end
 
 function touched = touchdata(reset)
   persistent modified;
-  default modified false;
+  %default modified false;
+  
+  if ~isequal(modified, true), modified = false; end
   
   mlock;
   

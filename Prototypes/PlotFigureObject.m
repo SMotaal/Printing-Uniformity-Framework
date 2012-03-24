@@ -7,6 +7,15 @@ classdef PlotFigureObject < GrasppePrototype & FigureObject
       'BaseTitle',    'Plot Title',       'Labels',     'string',   '';   ...
       };
   end
+
+  properties (Access=private, Transient, Hidden)
+    PlotFigureObjectProperties = {
+      'BaseTitle',    'Plot Title',       'Labels',     'string',   '';   ...
+      };
+  end
+  
+  
+  
   
   properties (Transient, Hidden, SetObservable, GetObservable)
     BaseTitle, SampleTitle, Status

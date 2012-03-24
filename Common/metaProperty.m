@@ -6,8 +6,8 @@ function [ propertyMeta ] = metaProperty( className, propertyName )
   elseif isobject(className)
     metaClass   = metaclass(className);
   end
-  properties    = {metaClass.PropertyList.Name};
-  propertyIndex = find(strcmp(propertyName, properties));
+  propertyNames    = {metaClass.PropertyList.Name};
+  propertyIndex = find(strcmp(propertyName, propertyNames));
   propertyMeta  = metaClass.PropertyList(propertyIndex);
 end
 

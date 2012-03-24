@@ -45,26 +45,49 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
   
   methods (Hidden=false)
     function obj = GrasppeComponent(varargin)
-      t = tic;
+%       t = tic;
       obj = obj@GrasppePrototype;
       obj = obj@GrasppeHandle;
       % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Initialized Supers', eval(CLASS), obj.ClassName, toc(t));
-      if isValid('obj.Defaults','struct')
-        t = tic;
+%       try
+      if isValid(obj.Defaults,'struct')
+%         t = tic;
         obj.setOptions(obj.Defaults, varargin{:});
         % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Set Options with Defaults', eval(CLASS), obj.ClassName, toc(t));
       else
-        t = tic;
+%       catch
+%         t = tic;
         obj.setOptions(varargin{:});
         % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Set Options', eval(CLASS), obj.ClassName, toc(t));
       end
-      t = tic;
+%       t = tic;
       obj.createComponent([]);
       % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Created Component', eval(CLASS), obj.ClassName, toc(t));
     end
     
+    function processMetaData(obj)
+      try
+        definedProperties = obj.MetaProperties;
+        if iscell(definedProperties) && size(definedProperties, 2)==5
+          metaProperties   = struct;
+          for i = 1:size(definedProperties, 1)
+            property    = definedProperties{i,1};
+            metaData    = definedProperties(i,2:end);
+            
+            metaProperties.(property) = GrasppeMetaProperty.Declare( ...
+              property, class(obj), metaData{:});
+          end
+          obj.MetaProperties = metaProperties;
+        end
+      catch err
+        % disp(err);
+      end
+    end
+    
+    
     function [name alias] = lookupOptionName(obj, name, reverse)
-      default reverse false;
+      if (nargin<3), reverse = false; end
+%       reverse = ~(nargin<3 || isequal(reverse, true));
       
       if isempty(obj.OptionsTable)
         [names aliases] = obj.getComponentFields();
@@ -73,7 +96,8 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
       
       OptionsTable = obj.OptionsTable;
       
-      if isValid('name', 'char')
+      if isa(name, 'char')
+
         switch reverse
           case {true, 'reverse', 'rev', 'r'}
             column = 2;
@@ -111,7 +135,7 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
       try properties = [properties obj.HandleProperties]; end
     end
     
-    function [fields aliases] = getComponentFields(obj, names)
+    function [fields aliases] = getComponentFields(obj) %, names)
       try
         if isempty(obj.ComponentFields)
           hooks       = obj.getComponentHooks;
@@ -142,7 +166,7 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
         if isValidHandle('obj.Parent'), parent = obj.Parent;
         else parent = []; end
         
-        handledOptions = obj.getHandleOptions([], false);
+        handledOptions = obj.getAllHandleOptions(); %[], false);
         
         switch lower(type)
           case {'figure'}
@@ -198,7 +222,7 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
         
         if isValidHandle('handle')
           if ~exists('handleProperties') || isempty(handleProperties)
-            handledOptions = obj.getHandleOptions([], false);
+            handledOptions = obj.getAllHandleOptions(); %[], false);
             handleProperties = handledOptions(1:2:end);
           end
           
@@ -241,42 +265,58 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
     function handleOptions = pullHandleOptions(obj, names) %, names, emptyValues)
       %try if obj.IsDestructing, return; end; end;
       
-      default emptyValues true;
-      default names;
+      %default emptyValues true;
+%       default names;
+%       
+%       if isempty(names)
+%         names = obj.getComponentFields;
+%       end
       
-      if isempty(names)
-        names = obj.getComponentFields;
-      end
+      mnames = [];
+      try mnames = names; end
+      if isempty(mnames), mnames = obj.getComponentFields; end
       
-      handleOptions = obj.pullHandleOptions@GrasppeHandle(names);
+      handleOptions = obj.pullHandleOptions@GrasppeHandle(mnames);
     end
     
     function pushHandleOptions(obj, names)
       %try if obj.IsDestructing, return; end; end;
       
-      default emptyValues true;
-      default names;
-      if isempty(names)
-        try debugStamp(obj.ID, 5); catch, debugStamp('', 5); end
-        names = obj.getComponentFields;
-      end
+      %default emptyValues true;
+%       default names;
+      mnames = [];
+      try mnames = names; end
+      if isempty(mnames), mnames = obj.getComponentFields; end
       
-      obj.pushHandleOptions@GrasppeHandle(names);
+%       if isempty(names)
+%         try debugStamp(obj.ID, 5); catch, debugStamp('', 5); end
+%         names = obj.getComponentFields;
+%       end
+      
+      obj.pushHandleOptions@GrasppeHandle(mnames);
     end
     
-    function [options handleOptions] = getHandleOptions(obj, names, readonly)
-      default names;
-      default readonly true;
-      if isempty(names)
-        names = obj.getComponentFields;
-      end
-      
-      if nargout==1
-        options = obj.getHandleOptions@GrasppeHandle(names, readonly);
-      elseif nargout == 2
-        [options handleOptions] = obj.getHandleOptions@GrasppeHandle(names, readonly);
-      end
+    function options = getAllHandleOptions(obj)
+      options = obj.getHandleOptions(obj.getComponentFields, false);
     end
+    
+%     function options = getHandleOptions(obj) %, names, readonly)
+%       % default names;
+%       
+%       readonly  = false; %(nargin<3 || isequal(readonly, true));
+%       names     = obj.getComponentFields;
+% %       try
+% %         if isempty(names), names = obj.getComponentFields; end
+% %       catch
+% %         names = obj.getComponentFields;
+% %       end
+%       
+% %       if nargout==1
+%         options = obj.getHandleOptions@GrasppeHandle(names, readonly);
+% %       elseif nargout == 2
+% %         [options handleOptions] = obj.getHandleOptions@GrasppeHandle(names, readonly);
+% %       end
+%     end
     
     %     function forceSet(obj, varargin)
     % %       if obj.IsSetting, return; else obj.IsSetting = true; end
@@ -313,7 +353,8 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
       
       if obj.IsHandled && ~obj.IsUpdating
         obj.IsUpdating = true;
-        obj.pushHandleOptions();	obj.pullHandleOptions();
+        obj.pushHandleOptions([]);
+        obj.pullHandleOptions([]);
         obj.IsUpdating = false;
       end
       

@@ -14,24 +14,21 @@ function [ result ] = isClass( object, expectedClass )
 %   params = parser.Results;
   
   %% Validation
-  
+  result = false;
   try
-    switch lower(expectedClass)
-      case 'handle'
-        validClass = ishandle(object);
-      case 'object'
-        validClass = isobject(object);
-      case 'numeric'
-        validClass = isnumeric(object);
-      case 'cellstr'
-        validClass = iscellstr(object);
-      otherwise
-        validClass = isa(object, expectedClass);
+    result = isa(object, expectedClass);
+    
+    if ~result
+      switch lower(expectedClass)
+        case 'object'
+          result = isobject(object);
+        case 'numeric'
+          result = isnumeric(object);
+        case 'cellstr'
+          result = iscellstr(object);
+      end
     end
     
-    result = ~isempty(validClass) && all(validClass);
-  catch err
-    result = false;
   end
   
 end

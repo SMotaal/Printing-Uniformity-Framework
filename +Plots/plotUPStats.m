@@ -160,8 +160,8 @@ function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargi
   params.dataSource = dataSource;
   params.dataSet    = dataSet;
   
-  parser.parse(params.dataSource, params);
-  params = parser.Results;
+%   parser.parse(params.dataSource, [], [] params);
+%   params = parser.Results;
   
 end
 

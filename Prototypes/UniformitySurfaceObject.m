@@ -28,7 +28,7 @@ classdef UniformitySurfaceObject < GrasppePrototype & SurfaceObject & Uniformity
   methods
     function refreshPlot(obj, dataSource)
 
-      if ~obj.HasParentAxes, return; end
+      % if ~obj.HasParentAxes, return; end
       
       try obj.ParentAxes.ZLim = dataSource.ZLim; end
       try obj.ParentAxes.CLim = dataSource.CLim; end
@@ -38,8 +38,11 @@ classdef UniformitySurfaceObject < GrasppePrototype & SurfaceObject & Uniformity
     function refreshPlotData(obj, source, event)
       try debugStamp(obj.ID); catch, debugStamp(); end;
       try
-        dataSource = event.AffectedObject;
-        dataField = source.Name;
+        dataSource  = event.AffectedObject;
+        dataField   = source.Name;
+        
+        % disp(sprintf('Refreshing %s.%s', dataSource.ID, dataField));
+        
         obj.handleSet(dataField, dataSource.(dataField));
       catch err
         try debugStamp(obj.ID); end

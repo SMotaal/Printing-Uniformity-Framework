@@ -19,7 +19,7 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
     function attachMediatorProperty(obj, subject, property, alias)
       %% Determine mediator-alias for target property
       
-      [validSubject]  = deal(false);
+      validSubject    = false;
       
       mediatorMeta    = [];
       nativeMeta      = [];
@@ -143,7 +143,7 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
     function subjectPostSet(obj, source, event)
       if isempty(obj.SettingProperty)
         mediationProperty = obj.MediationReferences.(event.AffectedObject.ID).(source.Name);
-        obj.(mediationProperty.Name) = event.AffectedObject.(source.Name)
+        obj.(mediationProperty.Name) = event.AffectedObject.(source.Name);
       end
       return;
     end

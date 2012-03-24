@@ -149,25 +149,27 @@ function [surfs] = surfData(dataSource, dataSet, regions, fields, summary)
         nMasks      = size(localMasks,1);
         nValues     = numel(localStats(1,1).(field));
         
-        localSubs   = zeros(nSheets, nMasks, nValues, nRows, nColumns);
-        localSurfs  = zeros(nSheets,nValues,nRows,nColumns);
-        localSurfs  = NaN;
+        localSubs   = NaN(nSheets, nMasks, nValues, nRows, nColumns);
+%         localSubs   = NaN;        
+        
+        localSurfs  = NaN(nSheets,nValues,nRows,nColumns);
+%         localSurfs  = NaN;
         
         for m = 1:nMasks
           localMask = squeeze(localMasks(m,:,:))==1;
-          if(all(localMask==0))
-            localSubs(:,m,:,:) = NaN;
-          else
+          if any(localMask)
             for s = 1:nSheets+1
+              
               if (s==1) && exists('summary')
                 fieldStats = summaryStats(m).(field);
               else
                 fieldStats = localStats(m,s-1).(field);
               end
+              
               for v = 1:nValues
-                localSubs(s,m,v,localMask)    = fieldStats(v);
-                localSubs(s,m,v,localMask==0) = NaN;
-                localSurfs(s,v,localMask) = fieldStats(v);
+                localSubs(s,m,v,localMask)  = fieldStats(v);
+                
+                localSurfs(s,v,localMask)   = fieldStats(v);
               end
             end
           end

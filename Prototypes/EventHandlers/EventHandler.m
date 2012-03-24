@@ -52,11 +52,14 @@ classdef EventHandler < GrasppePrototype & GrasppeHandle
     
     
     function attachEvents(obj, hooks)
+      p = 0;
       try
         if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
           [names aliases] = obj.getOptionNames(obj.getComponentHooks);
           hooks = aliases;
         end
+        
+        p = p+1;
         
         if ~iscell(hooks), return; end
         
@@ -76,16 +79,24 @@ classdef EventHandler < GrasppePrototype & GrasppeHandle
           %           disp(toString(callback{2}))
         end
         
+        p = p+1;
+        
         finalHooks = reshape({hooks{:}; callbacks{:}},1,[]);
         
-        obj.setOptions(finalHooks{:});
+        p = p+1;
         
-        try
+        obj.setOptions(finalHooks{:});
+%         
+        p = p+1;
+%         
+%         try
           handleHooks = finalHooks;
           handleHooks(1:2:end) = names;
           obj.handleSet(handleHooks{:});
-        end
-        
+%         catch err
+%           
+%         end
+%         
       catch err
         halt(err, 'obj.ID');
         try debugStamp(obj.ID, 4); end
@@ -100,21 +111,33 @@ classdef EventHandler < GrasppePrototype & GrasppeHandle
     
     function [token fcn] = createCallbackToken(object, name, callback)
       
-      if (~isValid('object',    'object'))
+      if (~isValid(object,    'object'))
         object    = [];
       end
       
-      if (~isValid('name',      'char'))
+      if (~isValid(name,      'char'))
         name      = [];
       end
       
-      if (~isValid('callback','cell'))
-        if (isValid('callback',  'char'))
+      try
+        if isa(callback, 'char') && ~isempty(callback)
           callback  = {callback};
-        else
+        end
+          
+        if ~isa(callback, 'cell')
           callback  = [];
         end
+      catch
+        callback  = [];
       end
+      
+%       if (~isValid('callback','cell'))
+%         if (isValid('callback',  'char'))
+%           callback  = {callback};
+%         else
+%           callback  = [];
+%         end
+%       end
       
       token = struct('Object', object, 'Name', name, 'Callback', callback);
       
@@ -125,10 +148,7 @@ classdef EventHandler < GrasppePrototype & GrasppeHandle
     function callbackEvent(source, event, varargin)
       
       objectFound = false;
-      object    = [];
-      callsign  = [];
-      callback  = [];
-      caller    = [];
+      object    = []; callsign  = []; callback  = []; caller    = [];
       isSourceObject  = false;
       
       if isstruct(varargin{1})
@@ -138,12 +158,12 @@ classdef EventHandler < GrasppePrototype & GrasppeHandle
           object = token.Object;
           objectFound = true;
         end
-        if isValid('token.Name', 'char')
-          callsign = token.Name;
-        end
-        if isValid('token.callback','cell')
-          callback = token.callback;
-        end
+        %if isValid('token.Name', 'char')
+        try callsign = token.Name; end
+        %end
+        %if isValid('token.callback','cell')
+        try callback = token.callback; end
+        %end
         
         token.ObjectID = object.ID;
       end

@@ -1,29 +1,31 @@
-function [ result exception ] = isValid( object, expectedClass, varargin )
+function [ result exception ] = isValid( object, expectedClass, expectedSize )
   %ISVALID Validate class and check size
   %   Detailed explanation goes here
   
-  parser = inputParser;
+%   parser = inputParser;
+%   
+%   %% Parameters
+%   parser.addRequired('object'); %, @(x) ischar(x) | isobject(x));
+%   
+%   parser.addRequired('expectedClass', @ischar);
+%   
+%   parser.addOptional('expectedSize', [1 1], ...
+%     @(x) isnumeric(x) && ...
+%     ( (size(x,1)==1 && ndims(x)==2) || (numel(x)==1)  ) );
+%   
+%   parser.parse(object, expectedClass, varargin{:});
+%   
+%   params = parser.Results;
+% 
+%   object          = params.object;
+%   expectedClass   = params.expectedClass;
+%   expectedSize    = params.expectedSize;
   
-  %% Parameters
-  parser.addRequired('object'); %, @(x) ischar(x) | isobject(x));
-  
-  parser.addRequired('expectedClass', @ischar);
-  
-  parser.addOptional('expectedSize', [1 1], ...
-    @(x) isnumeric(x) && ...
-    ( (size(x,1)==1 && ndims(x)==2) || (numel(x)==1)  ) );
-  
-  parser.parse(object, expectedClass, varargin{:});
-  
-  params = parser.Results;
+  if (nargin<3), expectedSize = [1 1]; end
   
   result    = false;
   exception = [];
-  
-  object          = params.object;
-  expectedClass   = params.expectedClass;
-  expectedSize    = params.expectedSize;
-  
+   
   if (ischar(object) && isempty(inputname(1))) %~isempty(regexp(object,'^=[^=]*$'))
     try
       object = evalin('caller', object);

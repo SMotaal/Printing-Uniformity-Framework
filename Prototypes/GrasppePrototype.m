@@ -17,22 +17,22 @@ classdef GrasppePrototype < handle
     end
     
     function processMetaData(obj)
-      try
-        definedProperties = obj.MetaProperties;
-        if iscell(definedProperties) && size(definedProperties, 2)==5
-          metaProperties   = struct;
-          for i = 1:size(definedProperties, 1)
-            property    = definedProperties{i,1};
-            metaData    = definedProperties(i,2:end);
-            
-            metaProperties.(property) = GrasppeMetaProperty.Declare( ...
-              property, class(obj), metaData{:});
-          end
-          obj.MetaProperties = metaProperties;
-        end
-      catch err
-        % disp(err);
-      end
+%       try
+%         definedProperties = obj.MetaProperties;
+%         if iscell(definedProperties) && size(definedProperties, 2)==5
+%           metaProperties   = struct;
+%           for i = 1:size(definedProperties, 1)
+%             property    = definedProperties{i,1};
+%             metaData    = definedProperties(i,2:end);
+%             
+%             metaProperties.(property) = GrasppeMetaProperty.Declare( ...
+%               property, class(obj), metaData{:});
+%           end
+%           obj.MetaProperties = metaProperties;
+%         end
+%       catch err
+%         % disp(err);
+%       end
     end
     
     function metaProperties = get.MetaProperties(obj)
@@ -45,17 +45,16 @@ classdef GrasppePrototype < handle
 
           for i = 1:numel(tree)
             className     = tree{i};
-            propertyMeta  = metaProperty(className, 'metaProperties');
-
-            if length(propertyMeta) > 0
-              try
-                if isempty(metaProperties)
-                  metaProperties = propertyMeta.DefaultValue;
-                else
-                  metaProperties = vertcat(metaProperties, propertyMeta.DefaultValue);
-                end
+                        
+            try
+              classProperties = obj.([className 'Properties']);
+              if isempty(metaProperties)
+                metaProperties = classProperties;
+              else
+                metaProperties = vertcat(metaProperties, classProperties);
               end
             end
+              
           end
 
           obj.MetaProperties = metaProperties;

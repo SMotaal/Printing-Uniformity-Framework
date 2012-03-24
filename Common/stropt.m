@@ -24,7 +24,8 @@ function [ result ] = stropt( strings,  list, length)
 %   if ~exist('length','var')
 %     length = 0;
 %   end
-default length 0;
+% default length 0;
+if (nargin<3) length = 0; end
   
   result = false;
   
@@ -48,7 +49,7 @@ default length 0;
       length = 0;
     end
     
-    if (iscellstr(strings) && any(length~=0) && all(length~=numel(strings)))
+    if (iscellstr(strings) && any(length~=0) && any(length==numel(strings))) %all(length~=numel(strings)))
       return;
     end
     

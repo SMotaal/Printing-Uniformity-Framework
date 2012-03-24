@@ -171,14 +171,20 @@ function [valid single] = validTokenStructure(tokenStructure)
       valid = validTokenFields(tokenStructure);
     end
   catch err
-    [valid single] = deal(false);
+    valid   = false;
+    single  = false;
   end
 
 end
 
 function [valid id title text callback] = validTokenFields(token)
   if numel(token)~=1
-    [valid id title text callback] = deal(false);
+    valid     = false;
+    id        = false;
+    title     = false;
+    text      = false;
+    callback  = false;
+    % [valid id title text callback] = deal(false);
   else
     [valid id title text callback] = validTokenValues( ...
       token.id, token.title, token.text, token.callback);

@@ -3,7 +3,12 @@ function [ value ] = default( var, varargin) % , flag, space)
 
 space = 'caller';
 
+% value = true;
+% try value = evalin(space, ['isempty(' var ')']); end
+% 
+% if ~isempty(value) %
 if evalin(space,['~exist(''' var ''', ''var'') || isempty(' var ')'])
+% if value
   value = flatcat(varargin);
   try
     eValue = eval(value);

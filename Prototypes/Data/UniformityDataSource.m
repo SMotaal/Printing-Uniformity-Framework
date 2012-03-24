@@ -43,8 +43,8 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
     ZLim,       ZTick,      ZTickLabel
   end
   
-  properties (GetAccess=protected, SetAccess=protected)
-    currentParameters = UniformitySampleDataParameters;
+  properties (GetAccess=public, SetAccess=protected)
+    currentParameters = [];
   end
   
   properties (Dependent)
@@ -125,14 +125,16 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
       linkedPlots = linkedPlots(ishandle(obj.LinkedPlotHandles));
       try
         refreshdata(linkedPlots, 'caller');
+        % disp(['Refreshing Data for ' toString(linkedPlots(:))]);
       catch err
+        disp(['Refreshing Data FAILED for ' toString(linkedPlots(:))]);
         halt(err, 'obj.ID');
         try debugStamp(obj.ID, 4); end
       end
       
       for h = linkedPlots
         plotObject = get(h, 'UserData');
-        try plotObject.refreshPlot(obj); end        
+        try plotObject.refreshPlot(obj); end     
         try plotObject.updatePlotTitle; end
       end
     end
@@ -141,6 +143,18 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
   
   %% Data Source Getters & Setters
   methods
+    
+    %% currentParameters
+    
+    function parameters = get.currentParameters(obj)
+      parameters = [];
+      try
+        if isempty(obj.currentParameters)
+          obj.currentParameters = UniformitySampleDataParameters();
+        end
+      end
+      try parameters = obj.currentParameters; end
+    end
     
     %% CaseID & SourceName
     
@@ -392,6 +406,7 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
         end
       end
       
+      % disp(sprintf('Sheet #%d >> %s', round(nextSheet), obj.ID));
       obj.SheetID = nextSheet;
       
     end
