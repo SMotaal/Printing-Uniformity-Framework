@@ -38,7 +38,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       if (isempty(obj.InstanceID))
         obj.InstanceID = obj.generateInstanceID;
       end
-
+      
     end
     
     function instanceID = generateInstanceID(obj)
@@ -53,7 +53,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
           end
         end
       end
-      % toc(t);      
+      % toc(t);
     end
     
     function state = get.IsHandled(obj)
@@ -186,12 +186,12 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
   
   methods (Access=protected, Hidden)
     
-    function pushHandleOptions(obj, names, emptyValues)
+    function pushHandleOptions(obj, names) %, emptyValues)
       
       try debugStamp(obj.ID, 5); catch, debugStamp('', 5); end;
       try
         
-        default emptyValues true;
+        %         default emptyValues true;
         
         if ~isempty(names)
           if ischar(names)
@@ -214,10 +214,8 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
           [options] = obj.getHandleOptions(names, false);
         end
         
-        if ~emptyValues
-          options = obj.removeEmptyOptions(options);
-        end
-        
+        options = obj.removeEmptyOptions(options);
+        %
         obj.handleSet(options{:});
         
       catch err
@@ -229,7 +227,8 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
     
     function [options handleOptions] = getHandleOptions(obj, names, readonly)
       
-      default readonly true;
+      %default readonly true;
+      if (nargin<3 || ~isequal(readonly, false)), readonly = true; end
       
       options={}; handleOptions={};
       
@@ -248,9 +247,10 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       end
     end
     
-    function handleOptions = pullHandleOptions (obj, names, updateLocal)
+    function handleOptions = pullHandleOptions (obj, names) %, updateLocal)
       
-      default updateLocal true;
+      %default updateLocal true;
+      %       updateLocal = (nargin<2 || isequal(updateLocal, true));
       
       options = cell(1,2*numel(names));
       
@@ -261,9 +261,9 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       options(1:2:end) = aliases;
       options(2:2:end) = handleOptions;
       
-      if updateLocal
-        obj.setOptions(options{:});
-      end
+      %       if updateLocal
+      %         obj.setOptions(options{:});
+      %       end
     end
     
     function [options handleOptions] = getOptions(obj, names)
@@ -347,41 +347,39 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
     
     
     function [names aliases] = getOptionNames(obj, list, readonly)
-      default readonly true;
+      % default readonly true;
+      if (nargin<3 || ~isequal(readonly, false)), readonly = true; end
       
-      names   = {}; aliases = {}; n = 1;
-      
-      if ischar(list)
-        list = {list};
+      if isa(list, 'char')
+        names = {list};
+        aliases = {list};
+        return;
+      else
+        names   = cell(size(list));
+        n = 1;
       end
+      
+      aliases = names;
       
       for i = 1:numel(list)
         try
           item = list{i};
-          ilength  = length(item);
-          if ischar(item) % object property name is same as alias!
-            aliases{n}  = item;
-            names{n}    = item;
-          elseif ilength==1
-            aliases{n}  = char(item);
+          
+          if isa(item, 'char') || length(item)==1
             names{n}    = char(item);
-          elseif ilength==2
-            aliases{n}  = item{1};
-            names{n}    = item{2};
-          elseif ilength==3
-            if (readonly || ~strcmpi(item{3}, 'readonly'))
-              aliases{n}  = item{1};
-              names{n}    = item{2};
-            else
-              continue;
-            end
-          else
-            continue;
+            aliases{n}  = char(item);
+            n = n + 1;
+          elseif isa(item, 'cell') && ...
+              (length(item)==2 || (length(item)==3 && (readonly || ~isequal(item{3}, 'readonly'))))
+            aliases(n)  = item(1);
+            names(n)    = item(2);
+            n = n + 1;
           end
+          
         end
-        n = n + 1;
       end
-      
+      names = names(1:n-1);
+      aliases = aliases(1:n-1);
     end
     
     function value = getOptionValue(obj, name)
@@ -402,16 +400,17 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
   methods (Static, Hidden)
     
     function checks = checkInheritence(obj, classname)
-      if ~isValid('classname', 'char')
-        classname = eval(CLASS);
-      end
+      %       if ~isValid('classname', 'char')
+      %         classname = eval(CLASS);
+      %       end
       
+      checks = false;
       try
         checks = isa(obj, classname);
       catch
-        checks = false;
+        try checks = isa(obj, eval(CLASS)); end
       end
-
+      
     end
     
     function VerboseSet(hg, varargin)
