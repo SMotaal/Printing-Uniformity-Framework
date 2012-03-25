@@ -87,7 +87,7 @@ classdef GraphicsObject < GrasppePrototype & GrasppeComponent & GraphicsEventHan
     
     function updateVisibility(obj)
       
-      obj.pushHandleOptions('Visible');
+      obj.pushHandleOptions({'IsVisible'});
     end
     
     function updatePosition(obj)

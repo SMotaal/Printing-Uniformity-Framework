@@ -55,7 +55,7 @@ classdef EventHandler < GrasppePrototype & GrasppeHandle
       p = 0;
       try
         if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
-          [names aliases] = obj.getOptionNames(obj.getComponentHooks);
+          [names aliases] = obj.getOptionNames(obj.getComponentHooks, true);
           hooks = aliases;
         end
         

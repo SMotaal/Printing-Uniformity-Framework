@@ -4,36 +4,40 @@ classdef GrasppePrototype < handle
   
   properties
     MetaProperties
+    ClassName
+    ClassPath
+    MetaClass
   end
   
   methods
     function obj = GrasppePrototype()
       GrasppePrototype.InitializeGrasppePrototypes;
-      obj.processMetaData;
+      % obj.processMetaData;
     end
     
     function dup = CreateDuplicate(obj)
       dup = [];
     end
     
-    function processMetaData(obj)
-%       try
-%         definedProperties = obj.MetaProperties;
-%         if iscell(definedProperties) && size(definedProperties, 2)==5
-%           metaProperties   = struct;
-%           for i = 1:size(definedProperties, 1)
-%             property    = definedProperties{i,1};
-%             metaData    = definedProperties(i,2:end);
-%             
-%             metaProperties.(property) = GrasppeMetaProperty.Declare( ...
-%               property, class(obj), metaData{:});
-%           end
-%           obj.MetaProperties = metaProperties;
-%         end
-%       catch err
-%         % disp(err);
-%       end
+    
+    function className = get.ClassName(obj)
+      % superName = eval(CLASS);
+      className = class(obj);
+      % if (strcmpi(superName, className))
+      %   warning('Grasppe:Component:ClassName:Unexpected', ...
+      %     ['Attempting to access a component''s super class (%s) instead of the ' ...
+      %     'actual component. Make sure this is the intended behaviour.'], superName);
+      % end
     end
+    
+    function classPath = get.ClassPath(obj)
+      classPath = fullfile(which(obj.ClassName));
+    end
+    
+    function metaClass = get.MetaClass(obj)
+      metaClass = metaclass(obj);
+    end    
+    
     
     function metaProperties = get.MetaProperties(obj)
       if ~isempty(obj.MetaProperties)
@@ -84,6 +88,16 @@ classdef GrasppePrototype < handle
         initialized = true;
       end
     end
+    
+    function checks = checkInheritence(obj, classname)     
+      checks = false;
+      try
+        checks = isa(obj, classname);
+      catch
+        try checks = isa(obj, eval(CLASS)); end
+      end
+    end
+    
   end
   
 end

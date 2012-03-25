@@ -1,27 +1,15 @@
-classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
+classdef GrasppeHandle < GrasppeInstance & dynamicprops & hgsetget
   %GRASPPEHANDLE Summary of this class goes here
   %   Detailed explanation goes here
   
   properties (Hidden=false)
     IsUpdating  = false;
     Debugging   = false;
-    
-  end
-  
-  properties (SetAccess=immutable)
-    InstanceID
-  end
-  
-  properties (Dependent)
-    ID
   end
   
   properties (Dependent, Hidden=false)
     Handle
     IsHandled
-    ClassName
-    ClassPath
-    MetaClass
   end
   
   properties (SetAccess=private, GetAccess=public, Hidden)
@@ -30,30 +18,9 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
   
   methods
     function obj = GrasppeHandle()
-      %GrasppeHandle.InitializeGrasppePrototypes();
-      obj = obj@GrasppePrototype;
+      obj = obj@GrasppeInstance;
       obj = obj@dynamicprops;
       obj = obj@hgsetget;
-      
-      if (isempty(obj.InstanceID))
-        obj.InstanceID = obj.generateInstanceID;
-      end
-      
-    end
-    
-    function instanceID = generateInstanceID(obj)
-      instanceID = [];
-      % t = tic;
-      try
-        instanceID = obj.InstanceID;
-        if (isempty(instanceID) || ~ischar(instanceID))
-          instanceID = GrasppeHandle.InstanceRecord(obj);
-          if (isempty(instanceID) || ~ischar(instanceID))
-            instanceID = genvarname([obj.ClassName '_' int2str(rand*10^12)]);
-          end
-        end
-      end
-      % toc(t);
     end
     
     function state = get.IsHandled(obj)
@@ -75,28 +42,6 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       obj.Primitive = changeSet(obj.Primitive, handle);
       
       try obj.pullHandleOptions; end
-    end
-    
-    function id = get.ID(obj)
-      id = obj.InstanceID;
-    end
-    
-    function className = get.ClassName(obj)
-      superName = eval(CLASS);
-      className = class(obj);
-      if (strcmpi(superName, className))
-        warning('Grasppe:Component:ClassName:Unexpected', ...
-          ['Attempting to access a component''s super class (%s) instead of the ' ...
-          'actual component. Make sure this is the intended behaviour.'], superName);
-      end
-    end
-    
-    function classPath = get.ClassPath(obj)
-      classPath = fullfile(which(obj.ClassName));
-    end
-    
-    function metaClass = get.MetaClass(obj)
-      metaClass = metaclass(obj);
     end
     
   end
@@ -149,9 +94,17 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
         args = varargin;
       end
       if ~isempty(handle)
+        
+        while isa(args, 'cell') && length(args)==1
+          args = args{1};
+        end
+        
         try
           values = get(handle, args{:});
         catch
+          if isempty(args)
+            return;
+          end
           try
             values = get(handle, args);
           catch err
@@ -207,7 +160,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
           
           for i = 1:numel(names)
             if ischar(names{i})
-              [name alias]  = obj.lookupOptionName(names{i}, 'all');
+              [name alias]  = obj.reverseOptionLookup(names{i});
               names{i} = {alias, name};
             end
           end
@@ -215,7 +168,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
         end
         
         options = obj.removeEmptyOptions(options);
-        %
+        
         obj.handleSet(options{:});
         
       catch err
@@ -228,7 +181,9 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
     function [options handleOptions] = getHandleOptions(obj, names, readonly)
       
       %default readonly true;
-      if (nargin<3 || ~isequal(readonly, false)), readonly = true; end
+      if (nargin<3) % || ~isequal(readonly, false)), readonly = true; end
+        keyboard;
+      end
       
       options={}; handleOptions={};
       
@@ -239,10 +194,10 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       
       if nargout==2 && obj.IsHandled
         try
-          handleOptions = cell(1,2*numel(names));
-          handleValues = get(obj.Handle, names);
-          handleOptions(1:2:end) = aliases;
-          handleOptions(2:2:end) = handleValues;
+          handleOptions           = cell(1,2*numel(names));
+          handleValues            = get(obj.Handle, names);
+          handleOptions(1:2:end)  = aliases;
+          handleOptions(2:2:end)  = handleValues;
         end
       end
     end
@@ -254,12 +209,14 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
       
       options = cell(1,2*numel(names));
       
-      [names aliases] = obj.getOptionNames(names);
+      [names aliases] = obj.getOptionNames(names, true);
       
       handleOptions = obj.handleGet(names);
       
       options(1:2:end) = aliases;
       options(2:2:end) = handleOptions;
+      
+      obj.setOptions(options{:});
       
       %       if updateLocal
       %         obj.setOptions(options{:});
@@ -348,11 +305,13 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
     
     function [names aliases] = getOptionNames(obj, list, readonly)
       % default readonly true;
-      if (nargin<3 || ~isequal(readonly, false)), readonly = true; end
+      if (nargin<3) % || ~isequal(readonly, false)), readonly = true; end
+        readonly = true; %keyboard
+      end
       
       if isa(list, 'char')
-        names = {list};
-        aliases = {list};
+        names   = {list};
+        aliases = names;
         return;
       else
         names   = cell(size(list));
@@ -367,7 +326,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
           
           if isa(item, 'char') || length(item)==1
             names{n}    = char(item);
-            aliases{n}  = char(item);
+            aliases(n)  = names(n);  % aliases{n}  = char(item);
             n = n + 1;
           elseif isa(item, 'cell') && ...
               (length(item)==2 || (length(item)==3 && (readonly || ~isequal(item{3}, 'readonly'))))
@@ -388,7 +347,7 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
         value = obj.(name);
       end
       try
-        if all(name(1:2)=='Is') %regexp(name, ['(^Is[A-Z])' '|' '(\w+Enabled$)' '|' '(\w+Visible$)'], 'Once'))
+        if all(name(1:2)=='Is')
           value = isOn(value, 'on', 'off');
         end
       end
@@ -400,17 +359,12 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
   methods (Static, Hidden)
     
     function checks = checkInheritence(obj, classname)
-      %       if ~isValid('classname', 'char')
-      %         classname = eval(CLASS);
-      %       end
-      
       checks = false;
       try
         checks = isa(obj, classname);
       catch
         try checks = isa(obj, eval(CLASS)); end
       end
-      
     end
     
     function VerboseSet(hg, varargin)
@@ -423,82 +377,20 @@ classdef GrasppeHandle < GrasppePrototype & dynamicprops & hgsetget
             value = values{i};
             set(hg, property, value);
           catch err
-            if ~isempty(strfind(err.identifier, 'BadHandle')) %ishandle(hg)
-              %               dealwith(err);
+            if ~isempty(strfind(err.identifier, 'BadHandle'))
+              dealwith(err);
             elseif ~isempty(strfind(err.identifier, 'hg:set_chck')) && ~isempty(value)
               disp([property '=' toString(value) ' [' err.message ']']);
-              %               dealwith(err);
             else
-              return;
+              continue;
             end
           end
         end
       catch err
-        %         dealwith(err);
+        dealwith(err);
       end
     end
     
-    function [ID instance] = InstanceRecord(object)
-      persistent instances hashmap
-      
-      if (~exist('object','var')), return; end
-      
-      instance = struct( 'class', class(object), 'created', now(), 'object', object );
-      
-      if (isempty(hashmap) || ~iscell(hashmap))
-        hashmap = {};
-      end
-      
-      row = [];
-      
-      GetInstance = @(r)  instances.(hashmap(r, 2))(hashmap(r, 3));
-      
-      SafeName    = @(t)  genvarname(regexprep(t,'[^\w]+','_'));
-      
-      if (~isempty(object.InstanceID) && ischar(object.ID) && size(hashmap,1)>0) % Rows
-        row = find(strcmpi(hashmap(:, 1),object.ID));
-      end
-      
-      if (numel(row)>1)
-        warning('Grasppe:Componenet:InvalidInstanceRecords', ...
-          ['Instance records are out of sync and showing duplicates ' ...
-          'for the instance %s. A new ID will be created for this object.'], object.ID);
-      end
-      
-      if (numel(row)==1)
-        try
-          stored  = GetInstance(row);
-          
-          if (~strcmpi(stored.class, instance.class) || stored.object ~= instance.object)
-            row = [];
-          else
-            instance = stored;
-          end
-        catch err
-          row   = [];
-        end
-      end
-      
-      group 	= SafeName(instance.class);                                 %genvarname(strrep(instance.class,',','_'));
-      
-      if (numel(row)~=1)
-        try
-          groupInstances  = instances.(group);
-          index   = numel(groupInstances) + 1;
-        catch err
-          index   = 1;
-        end
-        
-        id = SafeName([instance.class '.' int2str(index)]);
-        
-        instances.(group)(index) = instance;
-        hashmap(end+1,:) = {id, group, index};
-        
-      end
-      
-      ID  = id;
-      
-    end
   end
   
   methods(Abstract, Static, Hidden)

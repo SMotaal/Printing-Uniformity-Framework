@@ -2,17 +2,19 @@ function [ output_args ] = debugStamp( tag, level )
   %DEBUGSTAMP Summary of this function goes here
   %   Detailed explanation goes here
   
+  debugmode     = false;
+  if ~debugmode, return; end
+  
   persistent debugtimer debugstack stackdups stackloops stacktime;
   
   try
-  debugmode     = false;
+  
   verbose       = false;
   intrusive     = false;
   detailed      = false;
   stackLimit    = 5;
   latencyLimit  = stackLimit * 100;
-  
-  if ~debugmode, return; end
+
   
   if ~isInteger('level') || ~isscalar(level)
     level       = 5;

@@ -66,17 +66,9 @@ classdef GrasppeProperty < GrasppePrototype
       value = obj.MetaProperty.Description;
     end
     
-%     function value = get.Class(obj)
-%       value = obj.MetaProperty.Class;
-%     end        
-%     
     function value = get.Mode(obj)
       value = obj.MetaProperty.Mode;
-    end    
-    
-%     function value = get.EditorContext(obj)
-%       value = obj.MetaProperty.EditorContext;
-%     end
+    end
     
     function value = get.Category(obj)
       value = obj.MetaProperty.Category;

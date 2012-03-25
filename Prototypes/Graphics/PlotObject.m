@@ -2,13 +2,13 @@ classdef PlotObject < GrasppePrototype & InAxesObject
   %PLOTOBJECT Superclass for plot objects
   %   Detailed explanation goes here
 
-  properties (Access=private, Transient, Hidden)
-    metaProperties = {
-      'CaseID',       'Source',           'Plot Data',      'string',   '';   ...
-      'SetID',        'Set',              'Plot Data',      'string',   '';   ...
-      'SheetID',      'Sample',           'Plot Data',      'integer',  '';   ...
-      };
-  end    
+%   properties (Access=private, Transient, Hidden)
+%     metaProperties = {
+%       'CaseID',       'Source',           'Plot Data',      'string',   '';   ...
+%       'SetID',        'Set',              'Plot Data',      'string',   '';   ...
+%       'SheetID',      'Sample',           'Plot Data',      'integer',  '';   ...
+%       };
+%   end    
   
   properties (Transient, Hidden)
     PlotObjectProperties = {
