@@ -1,7 +1,7 @@
 function [ str ] = camelCase (str)
   %CAMELCASE convert normal text to camelCase
   
-  if ~isValid(str, 'char')
+  if ~validCheck(str, 'char')
     error('Grasppe:CamelCase:InvalidInput', 'The argument must be a valid string of type char');
   end
    

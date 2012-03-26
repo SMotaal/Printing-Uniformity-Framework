@@ -20,7 +20,7 @@ classdef upFigureObject < Plots.upViewComponent
     end
     
     function obj = set.ParentFigureObject(obj, parentFigure)
-      if isValid('parentFigure', 'Plots.upPlotFigure')
+      if validCheck('parentFigure', 'Plots.upPlotFigure')
         obj.ParentFigureObject = parentFigure;
         obj.Parent = obj.ParentFigureObject.Primitive;
       else
@@ -30,7 +30,7 @@ classdef upFigureObject < Plots.upViewComponent
     end
     
     function hFigure = get.ParentFigure(obj)
-      if isValid(obj.ParentFigureObject, 'Plots.upPlotFigure')
+      if validCheck(obj.ParentFigureObject, 'Plots.upPlotFigure')
         hFigure = obj.ParentFigureObject.Primitive;
       else
         hFigure = [];
@@ -39,7 +39,7 @@ classdef upFigureObject < Plots.upViewComponent
     
     function obj = set.ParentFigure(obj, hFigure)
       parentFigure = getUserData(hFigure);
-      if isValidHandle('hFigure') && isValid(parentFigure, 'Plots.upPlotFigure')
+      if isValidHandle('hFigure') && validCheck(parentFigure, 'Plots.upPlotFigure')
           obj.setParentFigure(parentFigure);
           return;
       else

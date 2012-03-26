@@ -93,16 +93,16 @@ classdef upEventHandler < Plots.upGrasppeHandle
     
     function [token fcn] = createCallbackToken(object, name, callback)
       
-      if (~isValid('object',    'object'))
+      if (~validCheck('object',    'object'))
         object    = [];
       end
       
-      if (~isValid('name',      'char'))
+      if (~validCheck('name',      'char'))
         name      = [];
       end
       
-      if (~isValid('callback','cell'))
-        if (isValid('callback',  'char'))
+      if (~validCheck('callback','cell'))
+        if (validCheck('callback',  'char'))
           callback  = {callback};
         else
           callback  = [];
@@ -131,10 +131,10 @@ classdef upEventHandler < Plots.upGrasppeHandle
           object = token.Object;
           objectFound = true;
         end
-        if isValid('token.Name', 'char')
+        if validCheck('token.Name', 'char')
           callsign = token.Name;
         end
-        if isValid('token.callback','cell')
+        if validCheck('token.callback','cell')
           callback = token.callback;
         end
         
@@ -142,7 +142,7 @@ classdef upEventHandler < Plots.upGrasppeHandle
       end
       
       
-      if isValid('source.Name', 'char'  )
+      if validCheck('source.Name', 'char'  )
         caller  = source.Name;
       elseif isValidHandle('source')
         try

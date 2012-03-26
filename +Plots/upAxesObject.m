@@ -17,7 +17,7 @@ classdef upAxesObject < Plots.upFigureObject
     
     
     function hAxes = get.PlotAxes(obj)
-      if isValid(obj.ParentFigureObject, 'Plots.upPlotFigure')
+      if validCheck(obj.ParentFigureObject, 'Plots.upPlotFigure')
         hAxes = obj.ParentFigureObject.PlotAxes;
       else
         hAxes = [];

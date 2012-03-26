@@ -70,7 +70,7 @@ end
 function [ data ] = eliminateOutliers( stats )
   data = stats.data;
   
-  if isValid('stats.run.Lim', 'double')
+  if validCheck('stats.run.Lim', 'double')
     
     runLimits = stats.run.Lim;
     
@@ -105,7 +105,7 @@ function [localStats] = calculateStats( data,  masks, population )
   % data is Row-First
   
   %% Run Statistics
-  if isValid('population', 'struct')
+  if validCheck('population', 'struct')
     iMean = firstMatch(fieldnames(population), '^Mean$' );
     iStd  = firstMatch(fieldnames(population), '^Std$'  );
     iLim  = firstMatch(fieldnames(population), '^Lim$'  );
@@ -144,11 +144,11 @@ function [localStats] = calculateStats( data,  masks, population )
       localStats(m,si).(tStd ) = nanstd(regionData);
       localStats(m,si).(tLim ) = localStats(m,si).(tMean) + [-3 +3].*localStats(m,si).(tStd);
 
-      if isValid('rMean', 'double')
+      if validCheck('rMean', 'double')
         localStats(m,si).(tRMean) = localStats(m,si).(tMean) - rMean;
       end
 
-      if isValid('rLim',  'double')
+      if validCheck('rLim',  'double')
         localStats(m,si).(tRLim) = localStats(m,si).(tLim)-rLim;
         localStats(m,si).(tPLim) = nanmax(localStats(m,si).(tRLim),[],2);
       end

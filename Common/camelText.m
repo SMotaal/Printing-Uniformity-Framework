@@ -4,7 +4,7 @@ function [ str ] = camelText( str )
   %   * camelText('A12B') = 'A 12 $1$2'       % Ending UC after Num
   %   * camelText('A12b') = 'A 12 $1$2'       % Ending LC after Num
   
-  if ~isValid(str, 'char')
+  if ~validCheck(str, 'char')
     error('Grasppe:CamelCase:InvalidInput', 'The argument must be a valid string of type char');
   end
   

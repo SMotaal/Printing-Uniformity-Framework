@@ -8,7 +8,7 @@ function [ mmValues values unit ] = millimeters( values, unit )
   %   matrix to and require that a unit be specified as char (in, cm, m,
   %   inches, pica, point, pt, px... etc.).
   
-  if (~isValid('unit','char'))
+  if (~validCheck('unit','char'))
     [values unit] = splitUnitValues( values );
   end
   
@@ -30,11 +30,11 @@ function [values units] = splitUnitValues( unitValues )
     try
       thisValue = unitValues{i};
       values(i) = NaN;      
-      if isValid(thisValue,'char')
+      if validCheck(thisValue,'char')
         unitValue = textscan(thisValue,'%f %s');
         values(i) = unitValue{1};
         units(i)  = unitValue{2};        
-      elseif isValid(thisValue, 'double')
+      elseif validCheck(thisValue, 'double')
         values(i) = thisValue;
 %       else
 %         values(i) = NaN;
@@ -68,15 +68,15 @@ function [ multiplier ] = getUnitMultiplier (fromUnit, toUnit)
   %
   %   strfind(siLengthTable,'in')
   
-  if (isValid(fromUnit,'char'))
+  if (validCheck(fromUnit,'char'))
     fromUnit = {fromUnit};
   elseif (~isClass(fromUnit,'cellstr') && ~numel(fromUnit)>0)
     error('Grasppe:Units:InvalidUnit', 'Unable to determin multipler due to invalid fromUnit class.');
   end
   
-  if isValid(toUnit,'char')
+  if validCheck(toUnit,'char')
     toFactor = lookupValue(toUnit, siLengthTable);
-    if (~isValid(toFactor,'double'))
+    if (~validCheck(toFactor,'double'))
       error('Grasppe:Units:InvalidUnit', 'Unable to determin multipler due to invalid toUnit identifier.');
     end
   else

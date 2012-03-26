@@ -2,11 +2,11 @@ function [ parser ] = conditionalParameter( parser, condition, varargin )
   %ADDCONDITIONAL Summary of this function goes here
   %   Detailed explanation goes here
   
-  if isValid(condition,'char')
+  if validCheck(condition,'char')
     condition = evalin('caller', [condition ';']);
   end
   
-  if ~isValid(condition,'logical')
+  if ~validCheck(condition,'logical')
     condition = ~isempty(condition);
   end
   

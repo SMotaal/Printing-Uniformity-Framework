@@ -9,7 +9,7 @@ function [ nargs even names values ] = varargs(firstArg)
     
     nargs = numel(args);
     
-    if (isValid('firstArg','double') && firstArg > 0 && firstArg < nargs)
+    if (validCheck('firstArg','double') && firstArg > 0 && firstArg < nargs)
       args  = args(firstArg:end);
       nargs = numel(args);
     end

@@ -13,9 +13,9 @@ function check = isValidHandle( object )
     
 
 %   if isnumeric(object)
-%     check = isValid(object,'handle');
+%     check = validCheck(object,'handle');
 %   elseif ischar(object)
-%     check = evalin('caller', ['isValid(''' object ''', ''handle'')']);
+%     check = evalin('caller', ['validCheck(''' object ''', ''handle'')']);
 %   end
 end
 

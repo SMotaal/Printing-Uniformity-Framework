@@ -258,7 +258,7 @@ function touched = touchdata(reset)
   
   mlock;
   
-  if isValid('reset','logical')
+  if validCheck('reset','logical')
     modified = reset;
   end
   

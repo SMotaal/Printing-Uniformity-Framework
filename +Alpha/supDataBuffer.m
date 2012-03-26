@@ -4,7 +4,7 @@ function [ data SID MID ] = supDataBuffer( source )
   
   if ischar(source)
     data    = [];
-  elseif isstruct(source) && isValid('source.Filename','char')  % Setting
+  elseif isstruct(source) && validCheck('source.Filename','char')  % Setting
     data    = source;
     source = data.Filename;    
   end    

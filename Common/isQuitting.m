@@ -3,12 +3,12 @@ function [ result ] = isQuitting( newState )
   
   persistent state;
   
-  if (isValid('newState','logical'))
+  if (validCheck('newState','logical'))
     state = newState;
     return;
   end
   
-  if (~isValid('state','logical'))
+  if (~validCheck('state','logical'))
     state = false;
   end
   

@@ -25,7 +25,7 @@ function [ result args ] = upPlot( dataSourceName, patchSet, varargin )
     args = {varargin{:}};
   end
   
-  if isValid(patchSet, 'double')
+  if validCheck(patchSet, 'double')
     args = {patchSet, args{:}};
   end
   

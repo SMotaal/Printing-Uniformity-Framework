@@ -129,7 +129,7 @@ end
 function [mask rect] = rectMask (rows, columns, startRow, endRow, startColumn, endColumn)
   mask = [];
   
-  if (isValid(rows,'double') && isValid(columns,'double'))
+  if (validCheck(rows,'double') && validCheck(columns,'double'))
     
     default startRow    1;
     default startColumn 1;

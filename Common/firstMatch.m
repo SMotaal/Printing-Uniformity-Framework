@@ -12,7 +12,7 @@ function [str] = firstMatch(strs, pattern, varargin)
   [str idx] = regexpi(strs(:),pattern,'match','once');  
   idx = find(cellfun(@(x) ~isempty(x),str),1, findArg);
   
-  if isValid(idx, 'double')
+  if validCheck(idx, 'double')
     str = str{idx};
   else
     str = '';

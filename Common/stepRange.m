@@ -3,7 +3,7 @@ function [ range length] = stepRange( steps )
   %   Detailed explanation goes here
   
   try
-    if isValid(steps,  'double')
+    if validCheck(steps,  'double')
       length = steps;
     else
       length = numel(steps);

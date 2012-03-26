@@ -31,7 +31,7 @@ classdef upThreadedComponent
 %       
 %       persistent stateNames;
 %       
-%       if ~isValid('states','struct')
+%       if ~validCheck('states','struct')
 %         states = emptyStruct('initializing', 'idling', ...
 %           'active', 'waiting', 'buffering', 'retrieving', 'updating', ...
 %           'rendering', 'exporting');
@@ -39,7 +39,7 @@ classdef upThreadedComponent
 %       
 %       default stateNames = fieldnames(states);
 %       
-%       if (isValid('state', 'char') && stropt(state, stateNames))
+%       if (validCheck('state', 'char') && stropt(state, stateNames))
 %         %% Change Request
 %         
 %         %% Change State

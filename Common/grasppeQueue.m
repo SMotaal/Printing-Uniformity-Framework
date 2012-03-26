@@ -7,7 +7,7 @@ function [ token ] = grasppeQueue( token, title, text, callback)
     return;
   end
     
-  if isValid('token','numeric')
+  if validCheck('token','numeric')
     [token] = persistentQueue(token);
     try
       feval(token.callback{:});
@@ -96,7 +96,7 @@ function [token tokens] = checkToken(token, tokens)
   
   if (valid && single)
     [token tokens] = pushToken(token, tokens);
-  elseif isValid(token,'numeric')
+  elseif validCheck(token,'numeric')
     token = getToken(token, tokens);
   end
     
@@ -106,7 +106,7 @@ function [tokens] = checkTokens(tokens)
   
   [valid single] = validTokenStructure(tokens);
   
-  if isValid(tokens,'struct')
+  if validCheck(tokens,'struct')
     if ~isempty(tokens)
       tokenFields = fieldnames(tokens);
       validFields = {'id', 'title', 'text', 'callback'};
@@ -192,10 +192,10 @@ function [valid id title text callback] = validTokenFields(token)
 end
 
 function [valid id title text callback] = validTokenValues(id, title, text, callback)
-  id        = (isempty(id) || isValid(id,'numeric'));
-  title     = isValid(title, 'char');
-  text      = isValid(text, 'char');
-  callback  = iscell(callback) || isValid(callback, 'char');
+  id        = (isempty(id) || validCheck(id,'numeric'));
+  title     = validCheck(title, 'char');
+  text      = validCheck(text, 'char');
+  callback  = iscell(callback) || validCheck(callback, 'char');
   valid     = id && title && text && callback;
 end
 

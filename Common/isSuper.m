@@ -1,7 +1,7 @@
 function [ check level ] = isSuper( super, subclass )
   %ISSUPER Verify class inheritance relation
   
-  if ~isValid(subclass, 'char')
+  if ~validCheck(subclass, 'char')
     subclass = class(subclass);
   end
   

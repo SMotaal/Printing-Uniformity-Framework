@@ -30,7 +30,7 @@ classdef upInstanceComponent < handle
     end
     
     function type = getComponentType(obj, type)
-      if isValid('type','char')
+      if validCheck('type','char')
         return;
       end
       try

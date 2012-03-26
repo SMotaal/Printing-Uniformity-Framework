@@ -19,7 +19,7 @@ classdef upGrasppeHandle < dynamicprops
     
     %% Property Functions
     function options = getComponentOptions(obj, options)
-      if isValid('options','cell') && ~isempty(options)
+      if validCheck('options','cell') && ~isempty(options)
         return;
       end
       try
@@ -227,11 +227,11 @@ classdef upGrasppeHandle < dynamicprops
       
       args = {}; hobj = [];
       
-      if (isValid('tag', 'char'))
+      if (validCheck('tag', 'char'))
         args = {args{:}, 'Tag', tag};
       end
       
-      if (isValid('type', 'char'))
+      if (validCheck('type', 'char'))
         args = {args{:}, 'Type', type};
       end
       

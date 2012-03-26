@@ -8,7 +8,7 @@ function [ result ] = stropt( string,  cellstr )
     errx = erra;
     
     try
-      assert(isValid(string,'char'), 'Grasppe:StrOpt:WrongStringClass', ...
+      assert(validCheck(string,'char'), 'Grasppe:StrOpt:WrongStringClass', ...
         'First argument must be a string.');
     catch errn
       errx = stackCause(errx, errn);

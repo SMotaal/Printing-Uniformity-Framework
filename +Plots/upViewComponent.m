@@ -20,7 +20,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
     
     function obj = upViewComponent(varargin)
       
-      if isValid('obj.Defaults','struct')
+      if validCheck('obj.Defaults','struct')
         obj.setOptions(obj.Defaults, varargin{:});
       else
         obj.setOptions(varargin{:});
@@ -108,7 +108,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
     
     function hObj = createHandleObject (obj, type, tag, parent, varargin)
       
-      if ~(isValid('obj','object') && isValid('type','char'))
+      if ~(validCheck('obj','object') && validCheck('type','char'))
         error('Grasppe:CreateHandleObject:InvalidParamters', ...
           'Attempting to create a handle object without a valid object or type.');
       end
@@ -165,7 +165,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       
       try
       
-      if ~isValid('hObj', 'handle')
+      if ~validCheck('hObj', 'handle')
         hObj = obj.Primitive;
         
       end
@@ -225,7 +225,7 @@ classdef upViewComponent < Plots.upGrasppeHandle & ...
       try
         h = Plots.upViewComponent.showHandle(obj.Primitive);
 %         if (h==0)
-%           if isValid('obj.ComponentType', 'char')
+%           if validCheck('obj.ComponentType', 'char')
 %             obj.createComponent(obj.ComponentType);
 %           end
 %         end

@@ -29,12 +29,12 @@ function [ setData filterData] = interpUPDataSet( dataSource, setFilter )
       filterSize    = size(setFilter);
       filterRepeat  = targetSize ./ filterSize;
     else
-      if isValid(setFilter, 'double')
+      if validCheck(setFilter, 'double')
         maskID    = ['TV' int2str(setFilter)];
         setFilter = dataSource.sampling.masks.(maskID);
       end
       
-      if isValid('setFilter','char') && ...
+      if validCheck('setFilter','char') && ...
           isVerified('all(islogical(dataSource.sampling.masks.(setFilter)))',1)
         setFilter = dataSource.sampling.masks.(setFilter);
       end

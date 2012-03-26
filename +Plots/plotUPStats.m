@@ -55,17 +55,17 @@ function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargi
     parser  = getInputParser(options, defaults);
     optargs = {};
     
-    if (isValid('varargin{1}','struct') && isVerified('varargin{1}.plotMode'))
+    if (validCheck('varargin{1}','struct') && isVerified('varargin{1}.plotMode'))
       inputParams = varargin{1};
     end
         
-    if (isValid('varargin{1}','double') && isValid('varargin{2}','struct') && isVerified('varargin{2}.plotMode'))
+    if (validCheck('varargin{1}','double') && validCheck('varargin{2}','struct') && isVerified('varargin{2}.plotMode'))
       inputParams = varargin{2};
       inputParams.dataPatchSet = varargin{1};
       optargs = varargin(3:end);
     end
     
-    if (isValid('inputParams','struct'))
+    if (validCheck('inputParams','struct'))
       if ischar(dataSource)
         inputParams = deleteFields(inputParams, 'dataSource', 'dataSourceName');
       else
@@ -291,20 +291,20 @@ function [parser] = getInputParser(options, defaults)
     parser.addParamValue('exportMode', defaults.exportMode, ...
       @(x) (isempty(x) || stropt(x, options.exportMode)));
     
-    parser.addParamValue('exportShots', false, @(x) isempty(x) || isValid(x,'logical'));  ...
-      parser.addParamValue('exportPNG', [], @(x) isempty(x) || isValid(x,'logical'));  ...
-      parser.addParamValue('exportEPS', [], @(x) isempty(x) || isValid(x,'logical'));
+    parser.addParamValue('exportShots', false, @(x) isempty(x) || validCheck(x,'logical'));  ...
+      parser.addParamValue('exportPNG', [], @(x) isempty(x) || validCheck(x,'logical'));  ...
+      parser.addParamValue('exportEPS', [], @(x) isempty(x) || validCheck(x,'logical'));
     
-    parser.addParamValue('exportVideo', false, @(x) isempty(x) || isValid(x,'logical'));  ...
-      parser.addParamValue('exportMOV', [], @(x) isempty(x) || isValid(x,'logical'));  ...
-      parser.addParamValue('exportAVI', [], @(x) isempty(x) || isValid(x,'logical'));
+    parser.addParamValue('exportVideo', false, @(x) isempty(x) || validCheck(x,'logical'));  ...
+      parser.addParamValue('exportMOV', [], @(x) isempty(x) || validCheck(x,'logical'));  ...
+      parser.addParamValue('exportAVI', [], @(x) isempty(x) || validCheck(x,'logical'));
     
     %% Parameters: Data Filtering & Processsing
     parser.addParamValue('dataSourceName', [], @(x) isempty(x) || ischar(x));
-    parser.addParamValue('dataLoading',     false, @(x) isValid(x,'logical'));
+    parser.addParamValue('dataLoading',     false, @(x) validCheck(x,'logical'));
     
     parser.addParamValue('dataSet', [], @(x) isempty(x) || isstruct(x));
-    parser.addParamValue('dataProcessing',  false, @(x) isValid(x,'logical'));
+    parser.addParamValue('dataProcessing',  false, @(x) validCheck(x,'logical'));
     
     
     %% Parameters: Plot
@@ -312,7 +312,7 @@ function [parser] = getInputParser(options, defaults)
     parser.addParamValue('statMode',  defaults.statMode,  @(x)stropt(x, options.statMode     ));
     parser.addParamValue('statField', defaults.statField, @(x)stropt(x, options.statField    ));
     
-    parser.addParamValue('plotSummary', true, @(x) isValid(x,'logical'));
+    parser.addParamValue('plotSummary', true, @(x) validCheck(x,'logical'));
     
     return;
   

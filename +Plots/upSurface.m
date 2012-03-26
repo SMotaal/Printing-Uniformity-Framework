@@ -242,7 +242,7 @@ classdef upSurface < Plots.upAxesObject
       
       source = obj.DataSource;
       
-      if isValid(source, 'char')
+      if validCheck(source, 'char')
         args = {source, args{:}};
       else
         obj.DataSource = [];

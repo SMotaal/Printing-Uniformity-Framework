@@ -49,7 +49,7 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
       obj = obj@GrasppePrototype;
       obj = obj@GrasppeHandle;
       % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Initialized Supers', eval(CLASS), obj.ClassName, toc(t));
-      if isValid('obj.Defaults','struct')
+      if validCheck('obj.Defaults','struct')
         t = tic;
         obj.setOptions(obj.Defaults, varargin{:});
         % debugPrint(6, '%s in %s for %s %5.2f seconds.', 'Set Options with Defaults', eval(CLASS), obj.ClassName, toc(t));
@@ -73,7 +73,7 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
     %
     %       OptionsTable = obj.OptionsTable;
     %
-    %       if isValid('name', 'char')
+    %       if validCheck('name', 'char')
     %         switch reverse
     %           case {true, 'reverse', 'rev', 'r'}
     %             column = 2;
@@ -136,7 +136,7 @@ classdef GrasppeComponent < GrasppePrototype & GrasppeHandle
 %       
 %       OptionsTable = obj.OptionsTable;
 %       
-%       if isValid('name', 'char')
+%       if validCheck('name', 'char')
 %         switch reverse
 %           case {true, 'reverse', 'rev', 'r'}
 %             column = 2;

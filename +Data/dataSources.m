@@ -80,12 +80,12 @@ function [ data ] = dataSources( sourceName, varargin )
   
   %   if nargout == 0
   parser.addConditional(preCondition && nargout==0, 'data',      [],     @(x) true);
-  parser.addConditional(preCondition && nargout==0, 'protected', false,  @(x) isValid(x,'logical'));
+  parser.addConditional(preCondition && nargout==0, 'protected', false,  @(x) validCheck(x,'logical'));
   %   end
   parser.addConditional(preCondition || (isempty(sourceName) && nargin==2), 'space',     '',     @(x) ischar(x));
   
-  parser.addParamValue('verbose',     [],     @(x) isempty(x) || isValid(x,'logical') || strcmpi(x,'reset'));
-  parser.addParamValue('sizeLimit',   [],     @(x) isempty(x) || isValid(x,'double')  || strcmpi(x,'reset'));
+  parser.addParamValue('verbose',     [],     @(x) isempty(x) || validCheck(x,'logical') || strcmpi(x,'reset'));
+  parser.addParamValue('sizeLimit',   [],     @(x) isempty(x) || validCheck(x,'double')  || strcmpi(x,'reset'));
   
   parser.parse(sourceName, varargin{:});
   

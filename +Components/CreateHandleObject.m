@@ -28,7 +28,7 @@ function [ handle ] = CreateHandleObject (type, tag, parent, varargin)
     end    
   end
 
-  if isValid('tag','char')
+  if validCheck('tag','char')
     args = [args, 'Tag', tag];
   end
   

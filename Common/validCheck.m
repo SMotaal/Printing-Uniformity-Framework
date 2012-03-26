@@ -1,4 +1,4 @@
-function [ result exception ] = isValid( object, expectedClass, expectedSize )
+function [ result exception ] = validCheck( object, expectedClass, expectedSize )
   %ISVALID Validate class and check size
   %   Detailed explanation goes here
   

@@ -4,11 +4,11 @@ function [ handles ] = FindObjects(tag, type, parent, varargin)
   
   args = {}; handles = [];
   
-  if (isValid('tag', 'char'))
+  if (validCheck('tag', 'char'))
     args = {args{:}, 'Tag', tag};
   end
   
-  if (isValid('type', 'char'))
+  if (validCheck('type', 'char'))
     args = {args{:}, 'Type', type};
   end
   

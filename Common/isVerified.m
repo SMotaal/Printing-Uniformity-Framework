@@ -9,7 +9,7 @@ function [ result ] = isVerified( expression, expected )
   result = false;
   
   try
-    if isValid('expression','char')
+    if validCheck('expression','char')
       actual = evalin('caller', expression);
     else
       acutal = expression;

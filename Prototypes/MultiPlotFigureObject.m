@@ -88,7 +88,7 @@ classdef MultiPlotFigureObject < GrasppePrototype & PlotFigureObject
       try debugStamp(obj.ID); catch, debugStamp(); end;
       idx = []; id = ''; plotAxes =[];
       try
-        if isValid('target', 'char')
+        if validCheck('target', 'char')
           try
             id = target;
             idx = strcmpi(target, {obj.PlotAxesTargets.id});

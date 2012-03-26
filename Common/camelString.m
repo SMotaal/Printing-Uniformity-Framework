@@ -11,7 +11,7 @@ function [ str ] = camelString(varargin)
         arg(1) = upper(arg(1));
       end
       str = [str ' ' arg];
-    elseif isValid(arg, 'numeric')
+    elseif validCheck(arg, 'numeric')
       if arg<0
         str = [str ' 0' int2str(arg)];
       else
