@@ -12,7 +12,56 @@ classdef GrasppePrototype < handle
   methods
     function obj = GrasppePrototype()
       GrasppePrototype.InitializeGrasppePrototypes;
-      % obj.processMetaData;
+      
+      obj.createMetaPropertyTable;
+    end
+    
+%    function processMetaData(obj)
+%        try
+% -        if iscell(obj.MetaProperties) && size(obj.MetaProperties, 2)==5
+% +        definedProperties = obj.MetaProperties;
+% +        if iscell(definedProperties) && size(definedProperties, 2)==5
+%            metaProperties   = struct;
+% -          for i = 1:size(obj.MetaProperties, 1)
+% -            property    = obj.MetaProperties{i,1};
+% -            metaData    = obj.MetaProperties(i,2:end);
+% +          for i = 1:size(definedProperties, 1)
+% +            property    = definedProperties{i,1};
+% +            metaData    = definedProperties(i,2:end);
+%              
+%              metaProperties.(property) = GrasppeMetaProperty.Declare( ...
+%                property, class(obj), metaData{:});
+% @@ -25,9 +31,37 @@ classdef GrasppePrototype < handle
+%            obj.MetaProperties = metaProperties;
+%          end
+%        catch err
+% -%         disp(err);
+% +        % disp(err);
+%        end
+%      end
+    
+    
+    function createMetaPropertyTable(obj)
+      if isempty(obj.MetaProperties)
+        definedProperties = obj.getRecursiveProperty('Properties');
+        definedProperties = vertcat(definedProperties{:});
+        tableSize = size(definedProperties);
+        
+        if isa(definedProperties, 'cell') && tableSize(2)==5
+          metaProperties   = struct;
+
+          for m = 1:tableSize(1)
+            property    = definedProperties{m,1};
+            metaData    = definedProperties(m,2:5);
+            
+            metaProperties.(property) = GrasppeMetaProperty.Declare( ...
+              property, class(obj), metaData{:});
+          end
+          obj.MetaProperties = metaProperties;
+%         else
+%           obj.MetaProperties = NaN;
+        end
+      end      
     end
     
     function dup = CreateDuplicate(obj)
@@ -37,39 +86,55 @@ classdef GrasppePrototype < handle
     function metaClass = get.MetaClass(obj)
       metaClass = metaclass(obj);
     end    
-    
-    
-    function metaProperties = get.MetaProperties(obj)
-      if ~isempty(obj.MetaProperties)
-        metaProperties =  obj.MetaProperties;
-      else
-        metaProperties = {};
+      
+    function propertyTable = getRecursiveProperty(obj, suffix)
+        propertyTable = {};
         try
-          tree = vertcat(obj.ClassName, superclasses(obj));
+          tree = vertcat(class(obj), superclasses(obj));
 
-          for i = 1:numel(tree)
-            className     = tree{i};
+          for m = 1:numel(tree)
+            prefix = tree{m};
                         
             try
-              classProperties = obj.([className 'Properties']);
-              if isempty(metaProperties)
-                metaProperties = classProperties;
-              else
-                metaProperties = vertcat(metaProperties, classProperties);
-              end
+              classProperties = obj.([prefix suffix]);
+              propertyTable{end+1} = classProperties;
+%               if isempty(propertyTable)
+%                 propertyTable = classProperties;
+%               else
+%                 propertyTable = vertcat(propertyTable, classProperties);
+%               end
             end
               
           end
-
-          obj.MetaProperties = metaProperties;
-        end
-      end
+        end      
     end
     
     
   end
   
   methods (Static, Hidden)
+  
+%     function propertyTable = getRecursiveProperty(className, suffix)
+%         propertyTable = {};
+%         try
+%           tree = vertcat(className, superclasses(className));
+% 
+%           for m = 1:numel(tree)
+%             prefix = tree{m};
+%                         
+%             try
+%               classProperties = obj.([prefix suffix]);
+%               if isempty(propertyTable)
+%                 propertyTable = classProperties;
+%               else
+%                 propertyTable = vertcat(propertyTable, classProperties);
+%               end
+%             end
+%               
+%           end
+%         end      
+%     end
+  
     function InitializeGrasppePrototypes(forced)
       persistent initialized;
       try  if forced, initialized = false; end, end

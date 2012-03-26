@@ -3,6 +3,11 @@ classdef LocVarUniformityDataSource < GrasppePrototype & UniformityDataSource
   %   Detailed explanation goes here
   
   properties
+    LocVarUniformityDataSourceProperties = {
+      'TestProperty', 'Test Property', 'Labels', 'string', '';   ...
+      };    
+    
+    TestProperty
   end
   
   methods (Hidden)

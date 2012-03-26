@@ -1,4 +1,4 @@
-classdef GraphicsObject < GrasppePrototype & GrasppeComponent & GraphicsEventHandler & DecoratedObject
+classdef GraphicsObject < GrasppePrototype & GraphicsEventHandler & DecoratedObject % & GrasppeComponent
   %HANDLEGRAPHICSOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   

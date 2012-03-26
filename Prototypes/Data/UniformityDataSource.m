@@ -1,4 +1,4 @@
-classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
+classdef UniformityDataSource < GrasppePrototype % & GrasppeComponent
   %UNIFORMITYDATASOURCE Superclass for surface uniformity data sources
   %   Detailed explanation goes here
   
@@ -10,6 +10,10 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
     
     DataProperties = {'CaseID', 'SetID', 'XData', 'YData', 'ZData', 'SheetID'};
     
+    UniformityDataSourceProperties = {
+      'CLim', 'Color Map Limits', 'Labels', 'string', '';   ...
+      };    
+        
   end
   
   
@@ -64,7 +68,7 @@ classdef UniformityDataSource < GrasppePrototype & GrasppeComponent
         end
       end
       
-      obj = obj@GrasppeComponent(args{:});
+      % obj = obj@GrasppeComponent(args{:});
       
       obj.attachPlotObject(plotObject);
       

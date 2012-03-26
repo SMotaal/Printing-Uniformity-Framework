@@ -1,4 +1,4 @@
-classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
+classdef GrasppeMediator < GrasppePrototype % & GrasppeComponent
   %GRASPPEMEDIATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -13,7 +13,7 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
   methods
     function obj = GrasppeMediator()
       obj = obj@GrasppePrototype;
-      obj = obj@GrasppeComponent;
+      % obj = obj@GrasppeComponent;
     end
     
     function attachMediatorProperty(obj, subject, property, alias)
@@ -29,7 +29,7 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
       
       try
         % Get component metaproperty / value
-        subjectMeta   = subject.MetaProperties.(property);
+        subjectMeta   = subject.MetaProperties.(property); % obj.getMetaProperties;
         subjectValue  = subject.(property);
         validSubject  = isa(subject.MetaProperties.(property), 'GrasppeMetaProperty');
         
@@ -80,6 +80,10 @@ classdef GrasppeMediator < GrasppePrototype & GrasppeComponent
         keyboard;
       end
       
+    end
+    
+    function propertyMeta = getSubjectMetaProperties(obj, component, property)
+      propertyMeta = component.MetaProperties.(property);
     end
     
     function mediatorPreGet(obj, source, event)
