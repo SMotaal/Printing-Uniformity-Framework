@@ -1,4 +1,4 @@
-classdef GraphicsEventHandler < GrasppePrototype & EventHandler & KeyEventHandler & MouseEventHandler
+classdef WindowEventHandler < GrasppePrototype & EventHandler & KeyEventHandler & MouseEventHandler
   %GRASPPECOMPONENTEVENTS Summary of this class goes here
   %   Detailed explanation goes here
   

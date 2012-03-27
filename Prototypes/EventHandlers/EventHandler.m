@@ -50,59 +50,62 @@ classdef EventHandler < GrasppePrototype & GrasppeHandle
       
     end
     
-    
-    function attachEvents(obj, hooks)
-      p = 0;
-      try
-        if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
-          [names aliases] = obj.getOptionNames(obj.getComponentHooks, true);
-          hooks = aliases;
-        end
-        
-        p = p+1;
-        
-        if ~iscell(hooks), return; end
-        
-        callbacks = cell(size(hooks));
-        for i = 1:numel(hooks)
-          hook  = hooks{i};
-          callback = obj.(hook);
-          if isempty(callback)
-            callback = obj.callbackFunction(hook);
-          else
-            if ~(iscell(callback) && length(callback)>1 && isequal(callback{1}, @EventHandler.callbackEvent)) %~isClass(callback,'EventHandler.callbackEvent')
-              callback = obj.callbackFunction(hook, callback);
-            end
-          end
-          callbacks{i} = callback;
-          
-          %           disp(toString(callback{2}))
-        end
-        
-        p = p+1;
-        
-        finalHooks = reshape({hooks{:}; callbacks{:}},1,[]);
-        
-        p = p+1;
-        
-        obj.setOptions(finalHooks{:});
-%         
-        p = p+1;
-%         
-%         try
-          handleHooks = finalHooks;
-          handleHooks(1:2:end) = names;
-          obj.handleSet(handleHooks{:});
-%         catch err
-%           
-%         end
-%         
-      catch err
-        halt(err, 'obj.ID');
-        try debugStamp(obj.ID, 4); end
-      end
+    function attachComponentCallbacks(obj)
       
     end
+    
+%     function attachEvents(obj, hooks)
+%       p = 0;
+%       try
+%         if ~exists('hooks') || isempty(hooks) || ~iscell(hooks)
+%           [names aliases] = obj.getOptionNames(obj.getComponentHooks, true);
+%           hooks = aliases;
+%         end
+%         
+%         p = p+1;
+%         
+%         if ~iscell(hooks), return; end
+%         
+%         callbacks = cell(size(hooks));
+%         for i = 1:numel(hooks)
+%           hook  = hooks{i};
+%           callback = obj.(hook);
+%           if isempty(callback)
+%             callback = obj.callbackFunction(hook);
+%           else
+%             if ~(iscell(callback) && length(callback)>1 && isequal(callback{1}, @EventHandler.callbackEvent)) %~isClass(callback,'EventHandler.callbackEvent')
+%               callback = obj.callbackFunction(hook, callback);
+%             end
+%           end
+%           callbacks{i} = callback;
+%           
+%           %           disp(toString(callback{2}))
+%         end
+%         
+%         p = p+1;
+%         
+%         finalHooks = reshape({hooks{:}; callbacks{:}},1,[]);
+%         
+%         p = p+1;
+%         
+%         obj.setOptions(finalHooks{:});
+% %         
+%         p = p+1;
+% %         
+% %         try
+%           handleHooks = finalHooks;
+%           handleHooks(1:2:end) = names;
+%           obj.handleSet(handleHooks{:});
+% %         catch err
+% %           
+% %         end
+% %         
+%       catch err
+%         halt(err, 'obj.ID');
+%         try debugStamp(obj.ID, 4); end
+%       end
+%       
+%     end
     
     
   end

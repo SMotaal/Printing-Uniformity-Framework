@@ -1,53 +1,49 @@
-classdef GraphicsObject < GrasppePrototype & GraphicsEventHandler & DecoratedObject % & GrasppeComponent
+classdef GraphicsObject < GrasppeHandleComponent & EventHandler %GrasppePrototype & WindowEventHandler & DecoratedObject % & GrasppeComponent
   %HANDLEGRAPHICSOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
   properties (Transient, Hidden)
-    HandleProperties = { ...
-      'Parent', {'Children', 'Children', 'readonly'}, ...
-      {'ID', 'Tag'}, {'Type','Type','readonly'} , 'HandleVisibility', ...
-      {'CallbackQueueMode', 'BusyAction'}, {'CallbackInterruption', 'Interruptible'}, ...
-      {'IsHighlightable', 'SelectionHighlight'}, {'IsClickable', 'HitTest'}, {'ContextMenu', 'UIContextMenu'}, ...
-      {'IsDestructing','BeingDeleted', 'readonly'}, {'IsVisible', 'Visible'}, {'IsSelected', 'Selected'}, ...
+    GrasppeHandleComponentHandleProperties = {'Parent', {'Children', 'Children', 'readonly'}, ...
+      {'CallbackQueueMode', 'BusyAction'}, {'CallbackInterruption', 'Interruptible'}, ...      
+      'HandleVisibility', {'IsDestructing','BeingDeleted', 'readonly'}, ...
+      {'IsHighlightable', 'SelectionHighlight'}, {'ContextMenu', 'UIContextMenu'}, ...
+      {'IsVisible', 'Visible'}, {'IsSelected', 'Selected'}, {'IsClickable', 'HitTest'}, ...
       };
     
-    HandleEvents = {'CreateFcn', 'DeleteFcn', 'ButtonDownFcn'};
+    
+    GrasppeHandleComponentHandleFunctions = {{'Create', 'CreateFcn'}, ...
+      {'Delete', 'DeleteFcn'}, {'ButtonDown', 'ButtonDownFcn'}};
     
   end
   
-  properties (SetObservable, GetObservable)
-    Parent
-    IsClickable=true
-    IsVisible=true
-    IsSelected=false
+  events
+    Create, Delete, ButtonDown
   end
   
-  properties (SetObservable, GetObservable)
-    Type
-    HandleVisibility='on'
-    Children
-    IsDestructing=false
-    IsHighlightable=true
+  properties (SetObservable, GetObservable, AbortSet)
+    Parent
+    Children    
+    IsClickable           = true
+    IsVisible             = true
+    IsSelected            = false
+    HandleVisibility      = true
+    IsDestructing         = false
+    IsHighlightable       = true
     CallbackQueueMode
     CallbackInterruption
     ContextMenu
   end
   
-  %% Hooks
-  properties (Hidden)
-    CreateFcn, DeleteFcn, ButtonDownFcn,
-  end
-  
-  properties (Hidden=false)
-    Object
-    UpdateQueue
+  properties (SetObservable, GetObservable, AbortSet, Hidden)
+%     CreateFunction
+%     DeleteFunction
+%     ButtonDownFunction
   end
   
   methods
     function obj = GraphicsObject(varargin)
-      obj = obj@GrasppePrototype;
-      obj = obj@DecoratedObject();      
-      obj = obj@GrasppeComponent(varargin{:});
+      obj = obj@GrasppeHandleComponent();
+      obj = obj@EventHandler;
     end
     
   end

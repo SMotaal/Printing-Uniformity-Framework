@@ -3,34 +3,16 @@ classdef GrasppeHandleComponent < GrasppeComponent
   %   Detailed explanation goes here
   
   properties
-    GrasppeHandleComponentHandleProperties = {'Parent', {'Children', 'Children', 'readonly'}, ...
-      {'ID', 'Tag'}, {'Type','Type','readonly'} , 'HandleVisibility', ...
-      {'CallbackQueueMode', 'BusyAction'}, {'CallbackInterruption', 'Interruptible'}, ...
-      {'IsHighlightable', 'SelectionHighlight'}, {'ContextMenu', 'UIContextMenu'}, ...
-      {'IsDestructing','BeingDeleted', 'readonly'}, {'IsVisible', 'Visible'}, {'IsSelected', 'Selected'}, ...
-      };
-    
-    % {'IsClickable', 'HitTest'}, 
+    GrasppeHandleComponentHandleProperties = {{'ID', 'Tag'}, {'Type','Type','readonly'}};
   end
   
   properties (SetObservable, GetObservable, AbortSet)
-    Parent
-    IsClickable=true
-    IsVisible=true
-    IsSelected=false
     Type
-    HandleVisibility='on'
-    Children
-    IsDestructing=false
-    IsHighlightable=true
-    CallbackQueueMode
-    CallbackInterruption
-    ContextMenu
   end
   
   
   properties
-    HandleProperties
+    HandleFunctions         % Struct holding handle functions
     ObjectPropertyMap       % Object-Handle Map
     HandlePropertyMap       % Handle-Object Map
     HandlePropertyMeta      % Struct holding meta.property for each handle-object property
@@ -141,6 +123,10 @@ classdef GrasppeHandleComponent < GrasppeComponent
       % addlistener(handle,  propertyName,   'PostGet',  @obj.handlePostGet); ...
       % addlistener(handle,  propertyName,   'PreGet',   @obj.handlePreGet);
 
+    end
+    
+    function attachHandleFunctions(obj)
+      
     end
     
     function createHandlePropertyMap(obj)
