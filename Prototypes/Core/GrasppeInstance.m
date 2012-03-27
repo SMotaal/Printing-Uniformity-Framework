@@ -22,6 +22,7 @@ classdef GrasppeInstance < GrasppePrototype
   methods (Hidden)
     
     function obj = GrasppeInstance()
+      obj = obj@GrasppePrototype();
       if (isempty(obj.InstanceID))
         obj.InstanceID = obj.generateInstanceID;
       end
@@ -33,7 +34,7 @@ classdef GrasppeInstance < GrasppePrototype
       try
         instanceID = obj.InstanceID;
         if (isempty(instanceID) || ~ischar(instanceID))
-          instanceID = GrasppeHandle.InstanceRecord(obj);
+          instanceID = GrasppeInstance.InstanceRecord(obj);
           if (isempty(instanceID) || ~ischar(instanceID))
             instanceID = genvarname([obj.ClassName '_' int2str(rand*10^12)]);
           end

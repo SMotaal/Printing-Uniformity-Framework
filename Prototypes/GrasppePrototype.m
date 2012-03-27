@@ -96,8 +96,8 @@ classdef GrasppePrototype < handle
             prefix = tree{m};
                         
             try
-              classProperties = obj.([prefix suffix]);
-              propertyTable{end+1} = classProperties;
+              classProperties       = obj.([prefix suffix]);
+              propertyTable{end+1}  = classProperties;
 %               if isempty(propertyTable)
 %                 propertyTable = classProperties;
 %               else
