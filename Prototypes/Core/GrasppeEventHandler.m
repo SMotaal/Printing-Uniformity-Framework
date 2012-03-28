@@ -5,34 +5,20 @@ classdef GrasppeEventHandler < GrasppePrototype
   properties
   end
   
-  events
+  events %(Hidden, ListenAccess=private, NotifyAccess=public)
     Test
   end
   
   methods
     
-    function defineDynamicEventFunctions(obj, eventMeta) % functionName, functionCallback)
-%       propertyNames = properties(obj);
-%       
-%       eventMeta     = eventsMeta(m);
-%       %definingClass = eventMeta.DefiningClass.Name;
-%       
-%       % Define aspect names
-%       eventName     = eventMeta.Name;
-%       eventFunction = [eventName 'Function'];
-%       eventCallback = ['On' eventName];
-%       
-%       % Tally undefined event function properties
-%       if ~any(strcmpi(eventFunction, propertyNames))
-%         n = n + 1;
-%         newFunctions{n} = eventFunction;
-%       end
+    function obj = GrasppeEventHandler()
+      obj.attachEventFunctions;
     end
     
     function attachEventFunctions(obj)
       
       eventsMeta    = obj.MetaClass.EventList;    
-      propertyNames = properties(obj);
+      propertyNames = {obj.MetaClass.PropertyList.Name};
       
       for m = 1:numel(eventsMeta)
         eventMeta     = eventsMeta(m);
@@ -46,14 +32,16 @@ classdef GrasppeEventHandler < GrasppePrototype
         % Define aspect names
         eventName     = eventMeta.Name;
         eventFunction = [eventName 'Function'];
-        eventCallback = ['On' eventName];
-        
+        eventCallback = {@GrasppeEventHandler.callbackEvent, obj, eventName};
         
         if ~any(strcmpi(eventFunction, propertyNames))
           addprop(obj, eventFunction);
           
           propertyMeta  = findprop(obj, eventFunction);
-          propertyMeta.Hidden = true;
+          % propertyMeta.Hidden         = true;
+          propertyMeta.SetObservable  = true;
+          propertyMeta.GetObservable  = true;
+          propertyMeta.AbortSet       = true;
         end
         
         obj.(eventFunction) = eventCallback; %str2func(['@obj.' eventCallback]);
@@ -64,21 +52,74 @@ classdef GrasppeEventHandler < GrasppePrototype
       
     end
     
-    function callbackEvent(obj, source, event)
-      disp(toString(event));
+    function registerEventHandler(obj, group, handler)
+      handlers = obj.([group 'EventHandlers']);
       
-      eventFunction = [event.EventName 'Function'];
+      if ~iscell(handlers)
+        handlers = {};
+      end
       
+      if ~any(handlers==handler)
+        handlers{end+1} = handler;
+        obj.([group 'EventHandlers']) = handlers;
+      end
+    end
+    
+    function consumed = callEventHandlers(obj, group, name, source, event)
       try
-        feval(str2func(['@' obj.(eventFunction)]), obj, event);
+        consumed = false;
+        try consumed = event.consumed; end
+        
+        handlers = obj.([group 'EventHandlers']);
+        if iscell(handlers) && ~isempty(handlers)
+          for i = 1:numel(handlers)
+            try
+              consumed = eval([ 'handlers{i}.' name '(obj, event);']);
+              event.consumed = event.consumed || consumed;
+            end
+          end
+        end
+        consumed = event.consumed;
+      end
+    end
+    
+%     function callbackEvent(obj, source, event)
+%       disp(toString(event));
+%       
+%       eventFunction = [event.EventName 'Function'];
+%       
+%       try
+%         feval(str2func(['@' obj.(eventFunction)]), obj, event);
+%       catch err
+%         disp(['Function callback error ' err.identifier ': ' err.message]);
+%       end
+%     end
+    
+    function OnTest(obj, event)
+      disp(event);
+    end
+  end
+  
+  methods (Static)
+    function callbackEvent(source, event, obj, eventName)
+      disp(event);
+      
+      if nargin==2 && isa(source, 'GrasppeEventHandler')
+        obj = source;
+        eventFunction = ['On' event.EventName];      
+      elseif nargin==4 && isa(obj, 'GrasppeEventHandler')
+        eventFunction = ['On' eventName];
+      else
+        return;
+      end
+          
+      try
+        feval(str2func(eventFunction), obj, event);
       catch err
         disp(['Function callback error ' err.identifier ': ' err.message]);
       end
     end
-    
-    function OnTest(obj, event)
-      disp(toString(event));
-    end
+        
   end
   
 end

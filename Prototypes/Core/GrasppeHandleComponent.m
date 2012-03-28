@@ -69,10 +69,6 @@ classdef GrasppeHandleComponent < GrasppeComponent
     end
     
     function value = handleGet(obj, name)
-      %       switch class(value)
-      %         case 'logical'
-      %           if isOn(value), value = 'on'; else value = 'off'; end
-      %       end
       
       value = get(obj.Handle, name);
       
@@ -113,19 +109,12 @@ classdef GrasppeHandleComponent < GrasppeComponent
       end
       
       addlistener(obj,  propertyAlias,   'PostSet',  @obj.objectPostSet);
-      % addlistener(obj,  propertyAlias,   'PreSet',   @obj.objectPreSet);  ...
-      % addlistener(obj,  propertyAlias,   'PostGet',  @obj.objectPostGet); ...
-      % addlistener(obj,  propertyAlias,   'PreGet',   @obj.objectPreGet);
-
       
       addlistener(h,  propertyName,   'PostSet',  @obj.handlePostSet);
-      % addlistener(handle,  propertyName,   'PreSet',   @obj.handlePreSet);  ...
-      % addlistener(handle,  propertyName,   'PostGet',  @obj.handlePostGet); ...
-      % addlistener(handle,  propertyName,   'PreGet',   @obj.handlePreGet);
 
     end
     
-    function attachHandleFunctions(obj)
+    function attachHandleFunctions(obj)      
       
     end
     
@@ -133,7 +122,8 @@ classdef GrasppeHandleComponent < GrasppeComponent
       
       if isempty(obj.HandlePropertyMap) || isempty(obj.ObjectPropertyMap)
         handlePropertyTables = obj.getRecursiveProperty('HandleProperties');
-        handlePropertyTable  = [handlePropertyTables{:}];
+        handleFunctionTables = obj.getRecursiveProperty('HandleFunctions');
+        handlePropertyTable  = [handlePropertyTables{:}, handleFunctionTables{:}];
         
         nProperties       = numel(handlePropertyTable);
                        

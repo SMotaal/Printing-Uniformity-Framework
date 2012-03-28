@@ -1,4 +1,4 @@
-classdef NewFigureObject < GrasppeHandleComponent
+classdef NewFigureObject < GrasppeHandleComponent & GrasppeEventHandler
   %NEWFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -12,8 +12,14 @@ classdef NewFigureObject < GrasppeHandleComponent
       {'WindowTitle', 'Name'}, 'Renderer', {'Toolbar', 'ToolBar'}, {'Menubar', 'MenuBar'}, 'WindowStyle', ...
       'Color', 'Units'};
     
+    NewFigureObjectHandleFunctions  = {{'CloseFunction', 'CloseRequestFcn'}};
+    
     ComponentType = 'figure';    
     
+  end
+  
+  events
+    Close
   end
  
   
@@ -28,9 +34,17 @@ classdef NewFigureObject < GrasppeHandleComponent
   
   methods
     function obj = NewFigureObject(varargin)
+      obj = obj@GrasppeEventHandler();
       obj = obj@GrasppeHandleComponent(varargin{:});
     end
     
+  end
+  
+  methods (Hidden=true)
+    function OnClose(obj, event)
+      disp(event);
+      obj.handleSet('Visible', 'off');
+    end
   end
   
   methods (Access=protected)
@@ -42,7 +56,7 @@ classdef NewFigureObject < GrasppeHandleComponent
   end
   
   
-  methods(Static, Hidden)
+  methods(Static, Hidden=true)
     function options  = DefaultOptions()
       WindowTitle   = 'Printing Uniformity Plot';
       BaseTitle     = 'Printing Uniformity';
@@ -50,7 +64,6 @@ classdef NewFigureObject < GrasppeHandleComponent
       Toolbar       = 'none';  Menubar = 'none';
       WindowStyle   = 'normal';
       Renderer      = 'opengl';
-      Parent        = 0;
       
       options = WorkspaceVariables(true);
     end

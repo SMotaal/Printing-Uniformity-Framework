@@ -1,4 +1,4 @@
-classdef GraphicsObject < GrasppeHandleComponent & EventHandler %GrasppePrototype & WindowEventHandler & DecoratedObject % & GrasppeComponent
+classdef GraphicsObject < GrasppeHandleComponent & GrasppeEventHandler
   %HANDLEGRAPHICSOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -11,8 +11,8 @@ classdef GraphicsObject < GrasppeHandleComponent & EventHandler %GrasppePrototyp
       };
     
     
-    GrasppeHandleComponentHandleFunctions = {{'Create', 'CreateFcn'}, ...
-      {'Delete', 'DeleteFcn'}, {'ButtonDown', 'ButtonDownFcn'}};
+    GrasppeHandleComponentHandleFunctions = {{'CreateFunction', 'CreateFcn'}, ...
+      {'DeleteFunction', 'DeleteFcn'}, {'ButtonDownFunction', 'ButtonDownFcn'}};
     
   end
   
@@ -42,8 +42,8 @@ classdef GraphicsObject < GrasppeHandleComponent & EventHandler %GrasppePrototyp
   
   methods
     function obj = GraphicsObject(varargin)
+      obj = obj@GrasppeEventHandler();
       obj = obj@GrasppeHandleComponent();
-      obj = obj@EventHandler;
     end
     
   end

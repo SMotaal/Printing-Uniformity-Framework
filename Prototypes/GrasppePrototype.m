@@ -1,4 +1,4 @@
-classdef GrasppePrototype < handle & dynamicprops & hgsetget
+classdef GrasppePrototype < handle & dynamicprops %& hgsetget
   %GRASPPEPROTOTYPE Summary of this class goes here
   %   Detailed explanation goes here
   
