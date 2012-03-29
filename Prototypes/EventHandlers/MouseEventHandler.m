@@ -32,19 +32,19 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
     end
     
     function consumed = mouseUp(obj, source, event)
-      %       disp(sprintf('%s <== %s', obj.ID, 'MouseUp'));
+      %       dispf('%s <== %s', obj.ID, 'MouseUp');
       consumed = obj.callEventHandlers('Mouse', 'mouseUp', source, event);
       %       notify(obj, 'MouseUp', event);
     end
     
     function consumed = mouseDown(obj, source, event)
-      %       disp(sprintf('%s <== %s', obj.ID, 'MouseDown'));
+      %       dispf('%s <== %s', obj.ID, 'MouseDown');
       consumed = obj.callEventHandlers('Mouse', 'mouseDown', source, event);
       %       notify(obj, 'MouseDown', event);
     end
     
     function consumed = mouseWheel(obj, source, event)
-      %       disp(sprintf('%s <== %s', obj.ID, 'MouseWheel'));
+      %       dispf('%s <== %s', obj.ID, 'MouseWheel');
       %       if ~event.ScrollingMomentum
       %         disp(toString(event));
       %       end
@@ -63,13 +63,13 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
     end
     
     function consumed = mouseClick(obj, source, event)
-      %       disp(sprintf('%s <== %s', obj.ID, 'MouseClick'));
+      %       dispf('%s <== %s', obj.ID, 'MouseClick');
       consumed = obj.callEventHandlers('Mouse', 'MouseClick', source, event);
       %       notify(obj, 'MouseClick', event);
     end
     
     function consumed = mouseDoubleClick(obj, source, event)
-      %       disp(sprintf('%s <== %s', obj.ID, 'MouseDoubleClick'));
+      %       dispf('%s <== %s', obj.ID, 'MouseDoubleClick');
       consumed = obj.callEventHandlers('Mouse', 'mouseDoubleClick', source, event);
       %       notify(obj, 'MouseDoubleClick', event);
     end
@@ -141,7 +141,7 @@ classdef MouseEventHandler < GrasppePrototype & EventHandler
           
           obj.mouseDown(source, MouseEventData('down'));
           
-          %           disp(sprintf('Down type is %s.', figureObject.handleGet('SelectionType')));
+          %           dispf('Down type is %s.', figureObject.handleGet('SelectionType'));
           
         case 'up'
           

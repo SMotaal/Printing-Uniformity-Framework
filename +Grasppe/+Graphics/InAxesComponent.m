@@ -1,5 +1,5 @@
-classdef InAxesObject < GrasppePrototype & GraphicsObject
-  %INAXESOBJECT Superclass for plot and annotation objects
+classdef InAxesComponent < Grasppe.Graphics.InFigureComponent % & Grasppe.Core.DecoratedComponent & Grasppe.Core.EventHandler
+  %NEWFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
   properties (SetObservable, GetObservable)
@@ -8,22 +8,19 @@ classdef InAxesObject < GrasppePrototype & GraphicsObject
   
   properties (Dependent)
     ParentFigure
-%     HasParentAxes
   end
   
-  
-  methods (Hidden)
-    function obj = InAxesObject(varargin)
-      obj = obj@GrasppePrototype;
-      obj = obj@GraphicsObject(varargin{:});
-    end
-  end
-  
+    
   methods
+    function obj = InAxesComponent(varargin)
+      obj = obj@Grasppe.Graphics.InFigureComponent(varargin{:});
+    end
+    
+    
     function set.ParentAxes(obj, parentAxes)
       try
         if isempty(parentAxes), return; end        
-        if ~InAxesObject.checkInheritence(parentAxes, 'AxesObject')
+        if ~Grasppe.Graphics.Axes.checkInheritence(parentAxes)
           error('Grasppe:ParentAxes:NotAxes', 'Attempt to set parent axes to a non-axes object.');
         end
         obj.ParentAxes = parentAxes;
@@ -42,7 +39,19 @@ classdef InAxesObject < GrasppePrototype & GraphicsObject
       try parentFigure = obj.ParentAxes.ParentFigure; end
     end
     
+  end  
+  
+  methods(Static, Hidden=true)
+    function options  = DefaultOptions()
+      options = WorkspaceVariables(true);
+    end
   end
+  
+  %   methods(Abstract, Static, Hidden)
+  %     options  = DefaultOptions()
+  %     obj = Create()
+  %   end
+  
   
 end
 

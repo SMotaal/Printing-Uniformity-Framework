@@ -33,7 +33,7 @@ function [ g ] = listobj( input_args )
   end
   g = cellfun(@(x) toString(x),g, 'UniformOutput', false);
   disp(g);
-%     disp(sprintf('%s\t%s\t%s\t%s\t%s',  g{:})); %toString(g));
+%     dispf('%s\t%s\t%s\t%s\t%s',  g{:}); %toString(g);
 
   if nargout==0
     clear g;

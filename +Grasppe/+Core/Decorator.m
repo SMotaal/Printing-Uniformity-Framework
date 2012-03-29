@@ -1,4 +1,4 @@
-classdef GrasppeDecorator < GrasppePrototype & GrasppeHandle
+classdef Decorator < Grasppe.Core.Prototype % & Grasppe.Core.HandleComponent
   %HANDLEDECORATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -10,8 +10,8 @@ classdef GrasppeDecorator < GrasppePrototype & GrasppeHandle
   
   methods
     
-    function obj = GrasppeDecorator(component)
-      obj = obj@GrasppePrototype;
+    function obj = Decorator(component)
+      obj = obj@Grasppe.Core.Prototype;
       try
         obj.Component = component;
         component.decorate(obj);
@@ -40,7 +40,7 @@ classdef GrasppeDecorator < GrasppePrototype & GrasppeHandle
       properties = obj.DecorationProperties;
     end
     
-    function obj = set.DecorationProperties(obj, properties)
+    function set.DecorationProperties(obj, properties)
       if isstruct(properties)
         obj.DecorationProperties = properties;
       end
@@ -91,7 +91,7 @@ classdef GrasppeDecorator < GrasppePrototype & GrasppeHandle
       
       currentValue = obj.(source.Name);
       
-      if GrasppeDecorator.checkInheritence(obj) && isvalid(obj)
+      if Grasppe.Core.Decorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
             %             obj.(source.Name) = currentValue;
@@ -107,7 +107,7 @@ classdef GrasppeDecorator < GrasppePrototype & GrasppeHandle
       
       currentValue = obj.(source.Name);
       
-      if GrasppeDecorator.checkInheritence(obj) && isvalid(obj)
+      if Grasppe.Core.Decorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
             obj.Decorators{i}.setDecoratorProperty(source, event);
@@ -120,7 +120,7 @@ classdef GrasppeDecorator < GrasppePrototype & GrasppeHandle
     
     function GetDecoratorProperty(source, event)
       obj = event.AffectedObject;
-      if GrasppeDecorator.checkInheritence(obj) && isvalid(obj)
+      if Grasppe.Core.Decorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
             decorator = obj.Decorators{i};

@@ -221,7 +221,7 @@ classdef PlotObject < GrasppePrototype & InAxesObject
 %         catch err
 %           try debugStamp(obj.ID); end
 %           if strcmp(err.identifier, 'MATLAB:noSuchMethodOrField')
-%             try disp(sprintf('\t%s ==> %s',err.identifier, char(property))); end
+%             try dispf('\t%s ==> %s',err.identifier, char(property)); end
 %           else
 %             try debugStamp(obj.ID); end
 %             disp(err);
@@ -265,7 +265,7 @@ classdef PlotObject < GrasppePrototype & InAxesObject
         return;
       end
       try debugStamp(obj.ID);
-        disp(sprintf('Could not set %s for %s', property, obj.ID));
+        dispf('Could not set %s for %s', property, obj.ID);
       end
     end
     

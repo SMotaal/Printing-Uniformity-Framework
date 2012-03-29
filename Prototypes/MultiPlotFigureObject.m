@@ -308,7 +308,7 @@ classdef MultiPlotFigureObject < GrasppePrototype & PlotFigureObject
           catch err
             try debugStamp(obj.ID); end
             %             disp(err);
-            disp(sprintf('Layout FAILED for %s', obj.PlotAxes{i}.ID));
+            dispf('Layout FAILED for %s', obj.PlotAxes{i}.ID);
           end
         end
         

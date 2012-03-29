@@ -304,7 +304,7 @@ function saveSpaceData(space, name, data)
   saveStruct.(name) = data;
   
   spaceFilename = getSpaceFilename(space);
-%   disp(sprintf('Saving %s:%s.', space, name));
+%   dispf('Saving %s:%s.', space, name);
   try
     save(spaceFilename, '-append', '-struct', 'saveStruct', name);
     statusbar(0, sprintf('Appending %s:%s.', space, name));

@@ -178,7 +178,7 @@ classdef PropertiesTableObject < GrasppePrototype & TableObject
       value     = obj.Properties.(property).Value;
       type      = obj.Properties.(property).Type;
       
-      %       disp(sprintf('Setting %s.%s: %s', component.ID, property, toString(value)));
+      %       dispf('Setting %s.%s: %s', component.ID, property, toString(value));
       
       %       try component.setOptions(property,value); end
       if ischar(value)
@@ -193,7 +193,7 @@ classdef PropertiesTableObject < GrasppePrototype & TableObject
             return;
         end
       end
-      disp(sprintf('Setting %s.%s(%s): %s', component.ID, property, type, toString(value)));      
+      dispf('Setting %s.%s(%s): %s', component.ID, property, type, toString(value));      
       try component.(property) = value; end
     end
     

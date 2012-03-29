@@ -41,7 +41,7 @@ classdef UniformitySurfaceObject < GrasppePrototype & SurfaceObject & Uniformity
         dataSource  = event.AffectedObject;
         dataField   = source.Name;
         
-        % disp(sprintf('Refreshing %s.%s', dataSource.ID, dataField));
+        % dispf('Refreshing %s.%s', dataSource.ID, dataField);
         
         obj.handleSet(dataField, dataSource.(dataField));
       catch err

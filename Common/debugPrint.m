@@ -15,7 +15,7 @@ function [ output_args ] = debugPrint( varargin )
   end
     
     
-	disp(sprintf(varargin{:}));
+	dispf(varargin{:});
   
 end
 

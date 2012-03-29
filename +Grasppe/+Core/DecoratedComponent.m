@@ -1,4 +1,4 @@
-classdef DecoratedObject < GrasppePrototype & GrasppeHandle
+classdef DecoratedComponent < Grasppe.Core.Prototype % & Grasppe.Core.HandleComponent
   %DECORATEDOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -9,10 +9,10 @@ classdef DecoratedObject < GrasppePrototype & GrasppeHandle
   end
   
   methods
-    function obj = DecoratedObject()
-      obj = obj@GrasppePrototype;
-      obj = obj@GrasppeHandle;
-      decorateComponent(obj);
+    function obj = DecoratedComponent()
+      obj = obj@Grasppe.Core.Prototype;
+      % obj = obj@Grasppe.Core.HandleComponent;
+      obj.decorateComponent;
     end
   end
   
@@ -24,7 +24,7 @@ classdef DecoratedObject < GrasppePrototype & GrasppeHandle
   methods
     function decorate(obj, decorator)
       
-      if ~(DecoratedObject.checkInheritence(decorator) && isvalid(decorator))
+      if ~(Grasppe.Core.DecoratedComponent.checkInheritence(decorator) && isvalid(decorator))
         return;
       end
       
@@ -65,22 +65,20 @@ classdef DecoratedObject < GrasppePrototype & GrasppeHandle
       
       %       mb1.SetMethod = {@setView, ;
       
-      addlistener(obj, decoration, 'PreGet', @GrasppeDecorator.GetDecoratorProperty);
-      addlistener(obj, decoration, 'PreSet', @GrasppeDecorator.preSetDecoratorProperty);
-      addlistener(obj, decoration, 'PostSet', @GrasppeDecorator.postSetDecoratorProperty);
+      addlistener(obj, decoration, 'PreGet', @Grasppe.Core.Decorator.GetDecoratorProperty);
+      addlistener(obj, decoration, 'PreSet', @Grasppe.Core.Decorator.preSetDecoratorProperty);
+      addlistener(obj, decoration, 'PostSet', @Grasppe.Core.Decorator.postSetDecoratorProperty);
       
       try
         defaultValue      = obj.Defaults.(decoration);
         %         obj.(decoration)  = defaultValue;
-        if ishandle(obj.Handle)
-          set(obj.Handle, decoration, defaultValue);
+        if ishandle(obj.HandleComponent)
+          set(obj.HandleComponent, decoration, defaultValue);
           dispf('\t%s.%s(%s) = %s', obj.ID, decoration, class(defaultValue), toString(defaultValue));          
         end
         %         obj.handleSet(decoration, obj.(decoration));
       end
-      
-      %       obj.(decoration) = obj.(decoration);
-      
+            
     end
   end
   

@@ -42,7 +42,7 @@ classdef FigureObject < GrasppePrototype & GraphicsObject & EventHandler
     
     function consumed = mousePan(obj, source, event)
       persistent lastPanTic lastPanXY
-      %       disp(sprintf('%s <== %s (%s)', obj.ID, 'MousePan', toString(event.PanVector)));
+      %       dispf('%s <== %s (%s)', obj.ID, 'MousePan', toString(event.PanVector));
       
       panMultiplierRate   = 45;     % per second
       panStickyThreshold  = 5;

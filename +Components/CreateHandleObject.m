@@ -32,7 +32,7 @@ function [ handle ] = CreateHandleObject (type, tag, parent, varargin)
     args = [args, 'Tag', tag];
   end
   
-  %disp(sprintf(['\n*** CreateHandleObject: ' constructor ' ==> ' toString(args{:}) '\n']));
+  %dispf(['\n*** CreateHandleObject: ' constructor ' ==> ' toString(args{:}) '\n']);
   
 %   switch type
 %     case 'colorbar'

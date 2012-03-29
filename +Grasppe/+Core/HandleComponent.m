@@ -1,9 +1,9 @@
-classdef HandleWrapper < GrasppeComponent
+classdef HandleComponent < Grasppe.Core.Component
   %GRASPPEHANDLECOMPONENT Summary of this class goes here
   %   Detailed explanation goes here
   
   properties
-    GrasppeHandleComponentHandleProperties = {{'ID', 'Tag'}, {'Type','Type','readonly'}};
+    HandleComponentHandleProperties = {{'ID', 'Tag'}, {'Type','Type','readonly'}};
   end
   
   properties (SetObservable, GetObservable, AbortSet)
@@ -24,15 +24,54 @@ classdef HandleWrapper < GrasppeComponent
   end
   
   methods
-    function obj = GrasppeHandleComponent(varargin)
-      obj = obj@GrasppeComponent(varargin{:});
+    function obj = HandleComponent(varargin)
+      obj = obj@Grasppe.Core.Component(varargin{:});
     end
+    
+    
+    function handleSet(obj, name, value)
+      try
+        switch class(value)
+          case 'logical'
+            if isOn(value), value = 'on'; else value = 'off'; end
+        end
+        set(obj.Handle, name, value);
+      catch err
+        if isvalid(obj), rethrow(err); end
+      end
+      
+    end
+    
+    function value = handleGet(obj, name)
+      try
+        value = get(obj.Handle, name);
+      catch err
+        if isvalid(obj), rethrow(err); end
+      end
+      
+    end
+    
+    function autoSet(obj, property, value)
+      if isnumeric(value)
+        obj.handleSet(property, value);
+      elseif isequal(lower(value), 'auto')
+        obj.handleSet([property 'Mode'], 'auto');
+      end
+    end
+    
+    function value = autoGet(obj, property)
+      value = obj.handleGet([property 'Mode']);
+      if ~isequal(lower(value), 'auto')
+        value = obj.handleGet(property);
+      end
+    end
+    
   end
   
   methods (Access=protected)
     function createComponent(obj)
-      obj.createComponent@GrasppeComponent();
-      obj.createHandlePropertyMap();      
+      obj.createComponent@Grasppe.Core.Component();
+      obj.createHandlePropertyMap();
       obj.createHandleObject();
       set(obj.Handle, 'UserData', obj);
       obj.HandleObject = handle(obj.Handle);
@@ -50,7 +89,7 @@ classdef HandleWrapper < GrasppeComponent
       names   = obj.ObjectPropertyMap.values;
       
       
-      setObservableWarnState = warning('off', 'MATLAB:class:nonSetObservableProp');      
+      setObservableWarnState = warning('off', 'MATLAB:class:nonSetObservableProp');
       for m = 1:numel(aliases)
         obj.attachHandleProperty(aliases{m}, names{m});
       end
@@ -58,25 +97,25 @@ classdef HandleWrapper < GrasppeComponent
       
     end
     
-    function handleSet(obj, name, value)
-      switch class(value)
-        case 'logical'
-          if isOn(value), value = 'on'; else value = 'off'; end
-      end
-      
-      set(obj.Handle, name, value);
-        
-    end
+    %     function handleSet(obj, name, value)
+    %       switch class(value)
+    %         case 'logical'
+    %           if isOn(value), value = 'on'; else value = 'off'; end
+    %       end
+    %
+    %       set(obj.Handle, name, value);
+    %
+    %     end
+    %
+    %     function value = handleGet(obj, name)
+    %
+    %       value = get(obj.Handle, name);
+    %
+    %     end
     
-    function value = handleGet(obj, name)
-      
-      value = get(obj.Handle, name);
-      
-    end
-
-       
+    
     function attachHandleProperty(obj, propertyAlias, propertyName)
-           
+      
       h = obj.Handle;
       hObj = obj.HandleObject;
       
@@ -85,9 +124,9 @@ classdef HandleWrapper < GrasppeComponent
       
       % Determine data type
       handleMeta.schema  = findprop(hObj, propertyName);
-            
+      
       % If a default value is defined locally, update the handle,
-      % otherwise, update the local property to handle default.      
+      % otherwise, update the local property to handle default.
       
       if isempty(objectValue)
         try
@@ -101,7 +140,7 @@ classdef HandleWrapper < GrasppeComponent
       try
         obj.handleSet(propertyName, objectValue);
       catch err
-        disp(err);
+        disp(err); keyboard;
       end
       
       try
@@ -111,10 +150,10 @@ classdef HandleWrapper < GrasppeComponent
       addlistener(obj,  propertyAlias,   'PostSet',  @obj.objectPostSet);
       
       addlistener(h,  propertyName,   'PostSet',  @obj.handlePostSet);
-
+      
     end
     
-    function attachHandleFunctions(obj)      
+    function attachHandleFunctions(obj)
       
     end
     
@@ -126,7 +165,7 @@ classdef HandleWrapper < GrasppeComponent
         handlePropertyTable  = [handlePropertyTables{:}, handleFunctionTables{:}];
         
         nProperties       = numel(handlePropertyTable);
-                       
+        
         handleProperties  = cell(size(handlePropertyTable));
         objectProperties  = handleProperties;
         
@@ -136,8 +175,8 @@ classdef HandleWrapper < GrasppeComponent
           property = handlePropertyTable{m};
           
           if isa(property, 'char')
-              objectProperties(m) = {property};
-              handleProperties(m) = {property};            
+            objectProperties(m) = {property};
+            handleProperties(m) = {property};
           elseif isa(property, 'cell')
             
             objectProperties(m) = property(1);
@@ -172,23 +211,32 @@ classdef HandleWrapper < GrasppeComponent
   
   
   %% Property Update
-  methods(Hidden)    
+  methods(Hidden)
     function objectPostSet(obj, source, event)
-      propertyAlias = source.Name;
-      propertyName  = obj.ObjectPropertyMap(propertyAlias);
+      try
+        propertyAlias = source.Name;
+        propertyName  = obj.ObjectPropertyMap(propertyAlias);
+        
+        obj.handleSet(propertyName, obj.(propertyAlias));
+        
+        obj.(propertyAlias) = obj.handleGet(propertyName);
+      catch err
+        if isvalid(obj), rethrow(err); end
+      end
       
-      obj.handleSet(propertyName, obj.(propertyAlias));
-      
-      obj.(propertyAlias) = obj.handleGet(propertyName);
       return;
     end
     
     
     function handlePostSet(obj, source, event)
-      propertyName  = source.Name;
-      propertyAlias = obj.HandlePropertyMap(propertyName);
-      
-      obj.(propertyAlias) = event.AffectedObject.(propertyName);
+      try
+        propertyName  = source.Name;
+        propertyAlias = obj.HandlePropertyMap(propertyName);
+        
+        obj.(propertyAlias) = event.AffectedObject.(propertyName);
+      catch err
+        if isvalid(obj), rethrow(err); end
+      end
       return;
     end
     

@@ -59,7 +59,7 @@ function [ output_args ] = debugStamp( tag, level )
     if detailed
       disp(debugstack);
     else
-      disp(sprintf('Stacks: %d \tLoops: %d \tDuration: %5.3f s',n , stackloops, duration));
+      dispf('Stacks: %d \tLoops: %d \tDuration: %5.3f s',n , stackloops, duration);
     end
     stamp;
     if (intrusive) keyboard; end
