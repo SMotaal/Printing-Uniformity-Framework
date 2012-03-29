@@ -3,7 +3,7 @@ function [ output_args ] = initialize( input_args )
   
   addpath('Common', 'Scripts', 'Prototypes', 'Algorithms', 'Test');
   
-  GrasppePrototype.InitializeGrasppePrototypes;
+  % GrasppePrototype.InitializeGrasppePrototypes;
   
   timerID     = 'InitializeTimer';
   delayTimer  = timerfind('Tag','StartupTimer');

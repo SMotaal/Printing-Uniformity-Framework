@@ -1,4 +1,4 @@
-classdef InAxesComponent < Grasppe.Graphics.InFigureComponent % & Grasppe.Core.DecoratedComponent & Grasppe.Core.EventHandler
+classdef InAxesComponent < Grasppe.Graphics.HandleGraphicsComponent % & Grasppe.Core.DecoratedComponent & Grasppe.Core.EventHandler
   %NEWFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -13,7 +13,7 @@ classdef InAxesComponent < Grasppe.Graphics.InFigureComponent % & Grasppe.Core.D
     
   methods
     function obj = InAxesComponent(varargin)
-      obj = obj@Grasppe.Graphics.InFigureComponent(varargin{:});
+      obj = obj@Grasppe.Graphics.HandleGraphicsComponent(varargin{:});
     end
     
     
@@ -35,7 +35,7 @@ classdef InAxesComponent < Grasppe.Graphics.InFigureComponent % & Grasppe.Core.D
         
     function parentFigure = get.ParentFigure(obj)
       parentFigure = [];       
-      if ~obj.HasParentAxes return; end
+      %if ~obj.HasParentAxes return; end
       try parentFigure = obj.ParentAxes.ParentFigure; end
     end
     

@@ -235,6 +235,9 @@ classdef HandleComponent < Grasppe.Core.Component
         
         obj.(propertyAlias) = event.AffectedObject.(propertyName);
       catch err
+        if strcmp(err.identifier, 'MATLAB:class:noSetMethod')
+          return;
+        end
         if isvalid(obj), rethrow(err); end
       end
       return;

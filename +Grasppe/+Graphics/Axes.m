@@ -191,10 +191,6 @@ classdef Axes < Grasppe.Graphics.InFigureComponent ...
   end
   
   methods (Hidden=true)
-%     function OnClose(obj, event)
-%       disp(event);
-%       obj.handleSet('Visible', 'off');
-%     end
   end
   
   methods (Access=protected)
