@@ -1,9 +1,9 @@
-classdef LocalVariabilityUniformity < Grasppe.Data.Sources.PrintingUniformity
+classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSource
   %SURFACEUNIFORMITYDATASOURCE Raw printing uniformity data source
   %   Detailed explanation goes here
   
   properties
-    LocalVariabilityUniformityProperties = {
+    LocalVariabilityDataSourceProperties = {
       'TestProperty', 'Test Property', 'Labels', 'string', '';   ...
       };    
     
@@ -11,13 +11,13 @@ classdef LocalVariabilityUniformity < Grasppe.Data.Sources.PrintingUniformity
   end
   
   methods (Hidden)
-    function obj = LocalVariabilityUniformity(varargin)
-      obj = obj@Grasppe.Data.Sources.PrintingUniformity(varargin{:});
+    function obj = LocalVariabilityDataSource(varargin)
+      obj = obj@Grasppe.PrintUniformity.Data.UniformityDataSource(varargin{:});
     end
 
     function [X Y Z] = processSheetData(obj, sheetID)
 
-      [X Y Z]   = obj.processSheetData@Grasppe.Data.Sources.PrintingUniformity(sheetID);
+      [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID);
       
       sourceData    = obj.SourceData;
       setData       = obj.SetData;
@@ -30,7 +30,7 @@ classdef LocalVariabilityUniformity < Grasppe.Data.Sources.PrintingUniformity
       Z(targetFilter~=1)  = NaN;
       Z(patchFilter~=1)   = NaN;
       
-      Z = Grasppe.Data.Sources.LocalVariabilityUniformity.localVariabilityFilter(Z);
+      Z = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource.localVariabilityFilter(Z);
       
     end
     
@@ -82,7 +82,7 @@ classdef LocalVariabilityUniformity < Grasppe.Data.Sources.PrintingUniformity
   
   methods (Static)
     function obj = Create(varargin)
-      obj = LocalVariabilityUniformity(varargin{:});
+      obj = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource(varargin{:});
     end
   end
   

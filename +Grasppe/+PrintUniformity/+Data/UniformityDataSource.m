@@ -1,6 +1,17 @@
-classdef PrintingUniformity < Grasppe.Core.Component % & GrasppeComponent
+classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
   %UNIFORMITYDATASOURCE Superclass for surface uniformity data sources
   %   Detailed explanation goes here
+  
+%   properties (Access=private)
+%     COMPONENTTYPE     = 'PrintingUniformityDataSource';
+%     METAPROPERTIES    = {
+%       'CLim', 'Color Map Limits', 'Labels', 'string', '';   ...
+%       };    
+%     HANDLEPROPERTIES  = {};
+%     HANDLEEVENTS      = {};
+%     DATAPROPERTIES    = {'CaseID', 'SetID', 'XData', 'YData', 'ZData', 'SheetID'};
+%     TESTPROPERTY      = 'test';
+%   end  
   
   properties (Transient, Hidden)
     HandleProperties = {};
@@ -10,12 +21,11 @@ classdef PrintingUniformity < Grasppe.Core.Component % & GrasppeComponent
     
     DataProperties = {'CaseID', 'SetID', 'XData', 'YData', 'ZData', 'SheetID'};
     
-    PrintingUniformityProperties = {
+    DataSourceProperties = {
       'CLim', 'Color Map Limits', 'Labels', 'string', '';   ...
-      };    
+      };
         
   end
-  
   
   properties (Hidden)
     LinkedPlotObjects = [];
@@ -26,7 +36,7 @@ classdef PrintingUniformity < Grasppe.Core.Component % & GrasppeComponent
   properties (SetObservable, GetObservable)
     
     ExtendedParameters,
-    DataParameters, DataSource, SourceData, SetData, SampleData
+    DataParameters, SourceData, SetData, SampleData
     XData, YData, ZData
     CaseID, SetID, SheetID
     SampleSummary = false
@@ -56,13 +66,13 @@ classdef PrintingUniformity < Grasppe.Core.Component % & GrasppeComponent
   end
   
   methods (Hidden)
-    function obj = PrintingUniformity(varargin)
+    function obj = UniformityDataSource(varargin)
       obj = obj@Grasppe.Core.Component(varargin{:});
       
       args = varargin;
       plotObject = [];
       try
-        if Grasppe.Data.Sources.PrintingUniformity.checkInheritence(varargin{1}, 'PlotObject')
+        if Grasppe.Graphics.PlotComponent.checkInheritence(varargin{1})
           plotObject = varargin{1};
           args = varargin(2:end);
         end
@@ -76,8 +86,8 @@ classdef PrintingUniformity < Grasppe.Core.Component % & GrasppeComponent
     
     function attachPlotObject(obj, plotObject)
       
-      if isempty(plotObject) || ~isa(plotObject, 'PlotObject')
-        return;
+      if isempty(plotObject) || ~Grasppe.Graphics.PlotComponent.checkInheritence(plotObject)
+       return;
       end
       
       try debugStamp(obj.ID); catch, debugStamp(); end;
@@ -95,7 +105,7 @@ classdef PrintingUniformity < Grasppe.Core.Component % & GrasppeComponent
     
     function linkPlot(obj, plotObject)
       try
-        if isa(plotObject, 'PlotObject')
+        if Grasppe.Graphics.PlotComponent.checkInheritence(plotObject)
           plotObject.XData    = 'xData'; ...
             plotObject.YData  = 'yData'; ...
             plotObject.ZData  = 'zData';
@@ -120,7 +130,7 @@ classdef PrintingUniformity < Grasppe.Core.Component % & GrasppeComponent
       
       try
         linkedPlots = unqiue(linkedPlots);
-        if isa(plotObject, 'PlotObject'), linkedPlots = linkedPlots.Handle; end
+        if Grasppe.Graphics.PlotComponent.checkInheritence(plotObject), linkedPlots = linkedPlots.Handle; end
       catch err
         obj.validatePlots;
         linkedPlots = obj.LinkedPlotHandles;
@@ -154,7 +164,7 @@ classdef PrintingUniformity < Grasppe.Core.Component % & GrasppeComponent
       parameters = [];
       try
         if isempty(obj.currentParameters)
-          obj.currentParameters = Grasppe.Data.Models.PrintingUniformityDataParameters;
+          obj.currentParameters = Grasppe.PrintUniformity.Models.DataParameters;
         end
       end
       try parameters = obj.currentParameters; end

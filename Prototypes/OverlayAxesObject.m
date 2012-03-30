@@ -40,8 +40,8 @@ classdef OverlayAxesObject < GrasppePrototype & AxesObject
       IsVisible     = false;
       IsClickable   = false;
       Box           = 'off';
-      %       Position      = [0 0 1 1];
-      %       Parent        = 0;
+      Units         = 'normalized';
+      Position      = [0 0 1 1];
       Color         = 'none';
       
       options = WorkspaceVariables(true);

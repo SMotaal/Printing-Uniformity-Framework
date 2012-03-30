@@ -16,6 +16,17 @@ classdef Prototype < handle & dynamicprops %& hgsetget
       obj.createMetaPropertyTable;
     end
     
+    
+    function id = char(obj)
+      id = obj.ID;
+    end
+    
+%     function disp(obj, varargin)
+%       disp('Testing');
+%     end
+    
+    
+    
 %    function processMetaData(obj)
 %        try
 % -        if iscell(obj.MetaProperties) && size(obj.MetaProperties, 2)==5
@@ -38,8 +49,7 @@ classdef Prototype < handle & dynamicprops %& hgsetget
 % -%         disp(err); keyboard;
 % +        % disp(err); keyboard;
 %        end
-%      end
-    
+%      end   
     
     function createMetaPropertyTable(obj)
       % if isempty(obj.MetaProperties)
@@ -113,6 +123,28 @@ classdef Prototype < handle & dynamicprops %& hgsetget
   end
   
   methods (Static, Hidden)
+    
+    function ProcessPrototypeHeader(obj)
+      header = struct(...
+        'ComponentType', [], 'MetaProperties', [], ...
+        'HandleProperties', [], 'HandleEvents', [], ...
+        'DataProperties', [] ...
+        );
+      
+      fields = fieldnames(header);
+      
+      for m = 1:numel(fields)
+        field = fields{m};
+        name  = upper(field);
+        header.(field) = evalin('caller', name);
+      end
+      
+      disp(header);
+      
+      return;
+      
+    end
+    
   
 %     function propertyTable = getRecursiveProperty(className, suffix)
 %         propertyTable = {};

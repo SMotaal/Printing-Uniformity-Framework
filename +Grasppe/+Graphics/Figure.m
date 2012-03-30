@@ -35,7 +35,7 @@ classdef Figure < Grasppe.Core.DecoratedComponent & Grasppe.Graphics.HandleGraph
   
   properties (SetObservable, GetObservable, AbortSet)
     Color
-    WindowTitle, BaseTitle
+    WindowTitle
     Toolbar, Menubar
     WindowStyle
     Renderer
@@ -79,7 +79,7 @@ classdef Figure < Grasppe.Core.DecoratedComponent & Grasppe.Graphics.HandleGraph
   methods(Static, Hidden=true)
     function options  = DefaultOptions()
       WindowTitle   = 'Printing Uniformity Plot';
-      BaseTitle     = 'Printing Uniformity';
+%       BaseTitle     = 'Printing Uniformity';
       Color         = 'white';
       Toolbar       = 'none';  Menubar = 'none';
       WindowStyle   = 'normal';

@@ -1,4 +1,4 @@
-classdef PrintingUniformityDataParameters < Grasppe.Data.Models.DataParameters
+classdef DataParameters < Grasppe.Data.Models.DataParameters
   %UNIFORMITYSAMPLEDATAPARAMETERS Case, Set, Sample, Variable Details
   %   Detailed explanation goes here
   
@@ -11,7 +11,7 @@ classdef PrintingUniformityDataParameters < Grasppe.Data.Models.DataParameters
   
   methods
     
-    function model = PrintingUniformityDataParameters(caseID, setID, sheetID, variableID)
+    function model = DataParameters(caseID, setID, sheetID, variableID)
       model = model@Grasppe.Data.Models.DataParameters();
       try model.CaseID      = caseID;     end
       try model.SetID       = setID;      end
@@ -21,7 +21,7 @@ classdef PrintingUniformityDataParameters < Grasppe.Data.Models.DataParameters
     
     function model = duplicate(model, varargin)
       
-      model = Grasppe.Data.Models.PrintingUniformityDataParameters( ...
+      model = Grasppe.PrintUniformity.Models.DataParameters( ...
         model.CaseID, model.SetID, model.SheetID, model.VariableID);
       
       [pargin ineven innames invalues] = pairedArgs(varargin{:});

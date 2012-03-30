@@ -1,7 +1,9 @@
 function [ output_args ] = initialize( input_args )
   %INITIALIZE Summary of this function goes here
   
-  addpath('Common', 'Scripts', 'Prototypes', 'Algorithms', 'Test');
+  addpath('Common', 'Scripts', 'Algorithms', 'Test');
+  
+  connector on;
   
   % GrasppePrototype.InitializeGrasppePrototypes;
   

@@ -5,7 +5,7 @@ classdef Instance < Grasppe.Core.Prototype
   properties
   end
   
-  properties (SetAccess=immutable)
+  properties (SetAccess=immutable, Hidden, Access=private)
     InstanceID
   end
   
@@ -60,7 +60,7 @@ classdef Instance < Grasppe.Core.Prototype
       
       GetInstance = @(r)  instances.(hashmap(r, 2))(hashmap(r, 3));
       
-      SafeName    = @(t)  genvarname(regexprep(t,'[^\w]+','_'));
+      SafeName    = @(t)  genvarname(regexprep(t,'[^\w]+',''));
       
       if (~isempty(object.InstanceID) && ischar(object.ID) && size(hashmap,1)>0) % Rows
         row = find(strcmpi(hashmap(:, 1),object.ID));

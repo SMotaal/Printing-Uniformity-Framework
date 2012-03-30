@@ -21,7 +21,6 @@ classdef Surf < Grasppe.Graphics.PlotComponent % & Grasppe.Core.DecoratedCompone
   
   methods
     function obj = Surf(parentAxes, varargin)
-      % try parentAxes.clearAxes; end
       obj = obj@Grasppe.Graphics.PlotComponent(parentAxes, varargin{:});
     end
     

@@ -73,7 +73,7 @@ classdef HandleComponent < Grasppe.Core.Component
       obj.createComponent@Grasppe.Core.Component();
       obj.createHandlePropertyMap();
       obj.createHandleObject();
-      set(obj.Handle, 'UserData', obj);
+      try obj.handleSet('UserData', obj); end
       obj.HandleObject = handle(obj.Handle);
       obj.attachHandleProperties();
     end
