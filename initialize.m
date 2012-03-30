@@ -3,8 +3,6 @@ function [ output_args ] = initialize( input_args )
   
   addpath('Common', 'Scripts', 'Algorithms', 'Test');
   
-  connector on;
-  
   % GrasppePrototype.InitializeGrasppePrototypes;
   
   timerID     = 'InitializeTimer';
@@ -30,6 +28,7 @@ function initializeScript()
   PersistentSources load; %PersistentSources load;  
   fprintf(2,'\nWorkspace: '); fprintf(1, 'Ready\n');
   setstatus(0,'');
+  connector on;
   
 end
 

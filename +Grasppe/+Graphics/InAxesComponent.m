@@ -2,9 +2,20 @@ classdef InAxesComponent < Grasppe.Graphics.HandleGraphicsComponent % & Grasppe.
   %NEWFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (SetObservable, GetObservable)
-    ParentAxes
+  properties (Transient, Hidden)   
+    InAxesComponentHandleProperties = {'Position', 'Units'};
   end
+  
+  properties (SetObservable, GetObservable, AbortSet)
+    ParentAxes
+    
+    Position
+    Units
+
+    Padding       = [5 5 5 5]
+  end
+  
+  
   
   properties (Dependent)
     ParentFigure

@@ -2,9 +2,18 @@ classdef InFigureComponent < Grasppe.Graphics.HandleGraphicsComponent % & Graspp
   %NEWFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (SetObservable, GetObservable)
+  properties (Transient, Hidden)   
+    InFigureComponentHandleProperties = {'Position', 'Units'};
+  end
+  
+  
+  properties (SetObservable, GetObservable, AbortSet)
     ParentFigure
-    Padding = [20 20 20 20]
+    
+    Position
+    Units
+
+    Padding       = [20 20 20 20]
   end
   
     

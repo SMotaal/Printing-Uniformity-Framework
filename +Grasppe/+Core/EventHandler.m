@@ -19,7 +19,7 @@ classdef EventHandler < Grasppe.Core.Prototype
     
     function attachEventFunctions(obj)
       
-      eventsMeta    = obj.MetaClass.EventList;    
+      eventsMeta    = obj.MetaClass.EventList;
       %propertyNames = {obj.MetaClass.PropertyList.Name};
       
       for m = 1:numel(eventsMeta)
@@ -56,7 +56,7 @@ classdef EventHandler < Grasppe.Core.Prototype
         
         obj.(eventFunction) = eventCallback; %str2func(['@obj.' eventCallback]);
         
-        obj.addlistener(eventName, @obj.callbackEvent);
+        % obj.addlistener(eventName, @obj.callbackEvent);
         
       end
       
@@ -93,17 +93,17 @@ classdef EventHandler < Grasppe.Core.Prototype
       end
     end
     
-%     function callbackEvent(obj, source, event)
-%       disp(toString(event));
-%       
-%       eventFunction = [event.EventName 'Function'];
-%       
-%       try
-%         feval(str2func(['@' obj.(eventFunction)]), obj, event);
-%       catch err
-%         disp(['Function callback error ' err.identifier ': ' err.message]);
-%       end
-%     end
+    %     function callbackEvent(obj, source, event)
+    %       disp(toString(event));
+    %
+    %       eventFunction = [event.EventName 'Function'];
+    %
+    %       try
+    %         feval(str2func(['@' obj.(eventFunction)]), obj, event);
+    %       catch err
+    %         disp(['Function callback error ' err.identifier ': ' err.message]);
+    %       end
+    %     end
     
     function OnTest(obj, source, event)
       disp(event);
@@ -112,24 +112,35 @@ classdef EventHandler < Grasppe.Core.Prototype
   
   methods (Static)
     function callbackEvent(source, event, obj, eventName)
-      disp(event);
+      %       disp(event);
       
       if nargin==2 && isa(source, 'Grasppe.Core.EventHandler')
+        disp(toString({source, event}));
         obj = source;
-        eventFunction = ['On' event.EventName];      
+        eventName     = event.EventName;
+        eventFunction = ['On' eventName];
       elseif nargin==4 && isa(obj, 'Grasppe.Core.EventHandler')
+        disp(toString({source, event, obj, eventName}));
         eventFunction = ['On' eventName];
       else
         return;
       end
-          
+      
       try
         feval(str2func(eventFunction), obj, source, event);
       catch err
         disp(['Function callback error ' err.identifier ': ' err.message]);
       end
+      
+      
+      try
+        if ~isa(source, 'Grasppe.Core.Component') % isnumeric(source) isempty(event)
+          notify(obj, eventName);
+        end
+      end
+      
     end
-        
+    
   end
   
 end

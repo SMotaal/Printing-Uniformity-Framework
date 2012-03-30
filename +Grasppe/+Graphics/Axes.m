@@ -1,5 +1,4 @@
-classdef Axes < Grasppe.Graphics.InFigureComponent ...
-    & Grasppe.Core.DecoratedComponent & Grasppe.Core.EventHandler
+classdef Axes < Grasppe.Graphics.InFigureComponent
   %NEWFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -14,7 +13,9 @@ classdef Axes < Grasppe.Graphics.InFigureComponent ...
       };
     
     AxesHandleProperties = { ...
-      'Box', 'Color', 'Units', 'Projection', ... % 'View', ...
+      'Box', 'Color', 'Projection', ... % 'View', 'Units', 
+      ...
+      'OuterPosition', {'PositionMode', 'ActivePositionProperty'}, ...
       ...
       'XScale', 'XDir', 'XColor', 'XLabel', 'XAxisLocation', ...
       'XGrid', 'XMinorGrid', 'XMinorTick', ...
@@ -34,14 +35,12 @@ classdef Axes < Grasppe.Graphics.InFigureComponent ...
   
   
   properties (SetObservable, GetObservable, AbortSet)
-    Color, Units, Box, PositionMode
+    Color, Box,
     
-    Position, OuterPosition,
+    PositionMode, OuterPosition,
     
-    Projection, % View
-    
-    %     FontName, FontSize, FontAngle, FontWeight, FontUnits
-    
+    Projection,
+        
     XScale, XDir, XColor, XLabel, XAxisLocation
     XGrid, XMinorGrid, XMinorTick
     
@@ -72,8 +71,8 @@ classdef Axes < Grasppe.Graphics.InFigureComponent ...
   
   methods
     function obj = Axes(varargin)
-      obj = obj@Grasppe.Core.DecoratedComponent();
-      obj = obj@Grasppe.Core.EventHandler();
+%       obj = obj@Grasppe.Core.DecoratedComponent();
+      % obj = obj@Grasppe.Core.EventHandler();
       obj = obj@Grasppe.Graphics.InFigureComponent(varargin{:});
       % obj = obj@Grasppe.Graphics.HandleGraphicsComponent(varargin{:});
     end

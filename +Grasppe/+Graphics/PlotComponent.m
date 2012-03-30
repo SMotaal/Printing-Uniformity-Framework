@@ -15,7 +15,7 @@ classdef PlotComponent < Grasppe.Graphics.InAxesComponent ...
     function obj = PlotComponent(parentAxes, varargin)
       try parentAxes.clearAxes; end
       obj = obj@Grasppe.Core.DecoratedComponent();
-      obj = obj@Grasppe.Core.EventHandler();
+      % obj = obj@Grasppe.Core.EventHandler();
       obj = obj@Grasppe.Graphics.InAxesComponent(varargin{:},'ParentAxes', parentAxes);
     end
   end

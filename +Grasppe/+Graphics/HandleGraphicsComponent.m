@@ -1,4 +1,5 @@
-classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent % & Grasppe.Core.EventHandler
+classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent ...
+    & Grasppe.Core.DecoratedComponent & Grasppe.Core.EventHandler
   %HANDLEGRAPHICSOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -16,13 +17,13 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent % & Grasppe.Core
       };
     
     
-    HandleGraphicsComponentHandleFunctions = {{'CreateFunction', 'CreateFcn'}, ...
+    HandleGraphicsComponentHandleFunctions = { ... % {'CreateFunction', 'CreateFcn'}, 
       {'DeleteFunction', 'DeleteFcn'}, {'ButtonDownFunction', 'ButtonDownFcn'}};
     
   end
   
   events
-    Create, Delete, ButtonDown
+    Delete, ButtonDown % Create
   end
   
   properties (SetObservable, GetObservable, AbortSet)
@@ -44,7 +45,8 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent % & Grasppe.Core
   
   methods
     function obj = HandleGraphicsComponent(varargin)
-      % obj = obj@Grasppe.Core.EventHandler();
+      obj = obj@Grasppe.Core.DecoratedComponent();      
+      obj = obj@Grasppe.Core.EventHandler();
       obj = obj@Grasppe.Core.HandleComponent(varargin{:});
     end
     

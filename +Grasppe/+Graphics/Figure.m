@@ -1,5 +1,5 @@
-classdef Figure < Grasppe.Core.DecoratedComponent & Grasppe.Graphics.HandleGraphicsComponent ...
-    & Grasppe.Core.EventHandler & Grasppe.Core.KeyEventHandler
+classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
+    & Grasppe.Core.KeyEventHandler
   %NEWFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -44,8 +44,8 @@ classdef Figure < Grasppe.Core.DecoratedComponent & Grasppe.Graphics.HandleGraph
   
   methods
     function obj = Figure(varargin)
-      obj = obj@Grasppe.Core.DecoratedComponent();
-      obj = obj@Grasppe.Core.EventHandler();
+%       obj = obj@Grasppe.Core.DecoratedComponent();
+%       obj = obj@Grasppe.Core.EventHandler();
       obj = obj@Grasppe.Graphics.HandleGraphicsComponent(varargin{:});
     end
     
@@ -58,7 +58,7 @@ classdef Figure < Grasppe.Core.DecoratedComponent & Grasppe.Graphics.HandleGraph
     end
     
     function OnResize(obj, source, event)
-      
+      disp('Resized Figure');
     end    
   end
   

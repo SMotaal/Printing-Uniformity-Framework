@@ -84,15 +84,15 @@ classdef PlotFigure < Grasppe.Graphics.Figure
   methods (Access=protected, Hidden)
     function createComponent(obj)
       obj.createComponent@Grasppe.Graphics.Figure();
-      % obj.preparePlotAxes;
+      obj.preparePlotAxes;
       obj.OverlayAxes = Grasppe.Graphics.OverlayAxes('ParentFigure', obj);  %OverlayAxesObject.Create(obj);
       % obj.StatusText  = OverlayTextObject.Create(obj.OverlayAxes);
-      % obj.TitleText   = TitleTextObject.Create(obj.OverlayAxes);
+      obj.TitleText   = Grasppe.Graphics.TextObject(obj.OverlayAxes, 'Text', 'tada');
       % obj.TitleText.updateTitle;
     end
     
     function preparePlotAxes(obj)
-      % obj.PlotAxes    = PlotAxesObject.Create(obj);
+      obj.PlotAxes    = Grasppe.Graphics.PlotAxes(obj);
     end
     
     function updatePlotTitle(obj)
