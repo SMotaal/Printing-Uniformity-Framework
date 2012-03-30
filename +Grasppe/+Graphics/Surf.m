@@ -30,12 +30,17 @@ classdef Surf < Grasppe.Graphics.PlotComponent % & Grasppe.Core.DecoratedCompone
         toString( event.Data.CurrentXY ));
     end
     
+    function OnMouseDoubleClick(obj, source, event)
+      dispf('%s => %s:%s [%s]', source.ID, obj.ID, event.Name, ...
+        toString( event.Data.CurrentXY ));
+    end    
+    
     function OnMousePan(obj, source, event)
       % dispf('%s => %s:%s [%s]', source.ID, obj.ID, event.Name, ...
       %   toString( event.Data.Panning ));
       
-      obj.ParentAxes.panAxes(event.Data.Panning.Current, event.Data.Panning.Length)
-      consumed = true;
+%       obj.ParentAxes.panAxes(event.Data.Panning.Current, event.Data.Panning.Length)
+%       consumed = true;
 %       disp(WorkspaceVariables);
     end    
     

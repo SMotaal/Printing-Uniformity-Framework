@@ -103,16 +103,78 @@ classdef PlotFigure < Grasppe.Graphics.Figure
     
   end
   
+  methods
+    function OnMousePan(obj, source, event)
+      try
+        plotAxes = source.ParentAxes;
+        obj.panAxes(plotAxes, event.Data.Panning.Current, event.Data.Panning.Length);
+      catch err
+        try dispf('Failed to pan %s: %s', source.ID, err.message); end
+      end
+    end    
+    
+    function panAxes(obj, plotAxes, panXY, panLength) % (obj, source, event)
+      persistent lastPanXY
+      
+      panStickyThreshold  = 3.45;
+      panStickyAngle      = 45/2;
+      panWidthReference   = 600;
+      
+%       lastPanToc  = 0;
+%       try lastPanToc = toc(lastPanTic); end
+      
+      if isempty(lastPanXY) || panLength==0;
+        deltaPanXY  = [0 0];
+      else
+        deltaPanXY  = panXY - lastPanXY;
+        position    = obj.handleGet('Position');
+        panFactor   = position([3 4])./panWidthReference;
+        deltaPanXY  = round(deltaPanXY ./ (panFactor));
+      end
+      
+      try
+        newView = plotAxes.View - deltaPanXY;
+        
+        if newView(2) < 0
+          newView(2) = 0;
+        elseif newView(2) > 90
+          newView(2) = 90;
+        end
+                
+        if panStickyAngle-mod(newView(1), panStickyAngle)<panStickyThreshold || ...
+            mod(newView(1), panStickyAngle)<panStickyThreshold
+          newView(1) = round(newView(1)/panStickyAngle)*panStickyAngle;
+        end
+        if panStickyAngle-mod(newView(2), panStickyAngle)<panStickyThreshold || ...
+            mod(newView(2), panStickyAngle)<panStickyThreshold
+          newView(2) = round(newView(2)/panStickyAngle)*panStickyAngle; % - mod(newView(2), 90)
+        end
+        
+        plotAxes.View = newView;
+                
+      catch err
+        warning('Grasppe:MouseEvents:PanningFailed', err.message);
+      end
+      
+      lastPanXY   = panXY;
+      lastPanTic  = tic;
+      
+      %consumed = obj.mousePan@GraphicsObject(source, event);        
+    end
+    
+  end
   
   
   methods(Static, Hidden=true)
     function options  = DefaultOptions()
-      WindowTitle   = 'Printing Uniformity Plot';
-      BaseTitle     = 'Printing Uniformity';
-      Color         = 'white';
-      Toolbar       = 'none';  Menubar = 'none';
-      WindowStyle   = 'normal';
-      Renderer      = 'opengl';
+      WindowTitle     = 'Printing Uniformity Plot'; ... 
+        BaseTitle     = 'Printing Uniformity'; ...
+        Color         = 'white'; ...
+        Toolbar       = 'none';  ...
+        Menubar       = 'none'; ...
+        WindowStyle   = 'normal'; ...
+        Renderer      = 'opengl'; ...
+        %#ok<NASGU>
       
       options = WorkspaceVariables(true);
     end

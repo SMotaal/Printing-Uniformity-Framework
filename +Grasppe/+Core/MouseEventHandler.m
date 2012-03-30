@@ -49,11 +49,11 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
     function processMouseEvent(obj, source, type, event)
       persistent lastDownTic lastUpTic ...
         lastDownID lastUpID ...
-        lastDownXY lastUpXY ...
-        lastPanTic lastScrollSwipeTic lastScrollSwipeToc  ...
+        lastDownXY clickTimer ...
+        lastPanTic lastScrollSwipeTic  ...
         fireClickTimer lastMouseStateHandle MouseButtonState;
       
-      doubleClickRate     = 0.5;
+      doubleClickRate     = 0.2;
       
       scrollingThreshold  = 0.275;
       
@@ -78,9 +78,6 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
       if isempty(fireClickTimer) || ~isvalid(fireClickTimer)
         fireClickTimer = timer( 'StartDelay', doubleClickRate);
       end
-      
-      %       eventdata = varStruct(event.Data, type, doubleClickRate, ...
-      %         currentXY, lastDownDeltaXY, lastDownToc, lastUpToc, lastDownSameID, lastUpSameID);
       
       sourceData = event.Data;
       
@@ -111,39 +108,57 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
         case 'mousedown'
           MouseButtonState = 'down';
           try lastMouseStateHandle = figureObject.handleGet('CurrentObject');
-          catch lastMouseStateHandle = [], end
+          catch, lastMouseStateHandle = [], end
           
+          %if isempty(lastDownTic) % || lastDownToc > 2*doubleClickRate
           lastDownTic = tic;
+          %end
           
           lastDownID  = obj.ID;
           lastDownXY  = currentXY;
           
-          %obj.mouseDown(source, Grasppe.Core.MouseEventData('down'));
-          
-          %           dispf('Down type is %s.', figureObject.handleGet('SelectionType'));
-          
         case 'mouseup'
           
           MouseButtonState = 'up';
-          %           try lastMouseStateHandle = figureObject.handleGet('CurrentObject'); end
-          %           catch, lastMouseStateHandle = []; end
           lastMouseStateHandle = [];
           lastUpTic = tic;
           lastUpID  = obj.ID;
           lastUpXY  = currentXY;
           lastPanTic = [];
+          
+          
+          
           try
             if isobject(currentObject)
-              selectionType = obj.handleGet('SelectionType');
-              if isequal(selectionType, 'normal') && lastDownToc < doubleClickRate
+              selectionType = figureObject.handleGet('SelectionType');
+              if isequal(selectionType, 'normal') 
                 event.Name = 'MouseClick';
-                Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
-              elseif isequal(selectionType, 'open')
-                event.Name = 'MouseMouseDoubleClick';
+                
+                clickFunction = {@Grasppe.Core.EventHandler.callbackEvent, obj, event.Name, currentObject, event};
+                
+                if isempty(clickTimer) || ~isvalid(clickTimer)
+                  clickTimer = timer('name', 'ClickTimer', 'Period', doubleClickRate, 'StartDelay', doubleClickRate, ...
+                  'TimerFcn', clickFunction);
+                else
+                  stop(clickTimer);
+                  set(clickTimer, 'TimerFcn', clickFunction);
+                end
+                start(clickTimer);
+              elseif isequal(selectionType, 'open') %&& lastUpToc < doubleClickRate %if lastUpToc < doubleClickRate %&& lastDownToc < doubleClickRate                
+                if ~isempty(clickTimer) && isvalid(clickTimer)
+                  stop(clickTimer);
+                end
+                event.Name = 'MouseDoubleClick';
                 Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
               end
+              
+              
             end
+          catch err
+            disp(err.message);
           end
+          
+          
           
         case 'mousemotion'
           isPanning = true;
@@ -156,42 +171,32 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
             else
               lastPanToc = 0;
               try lastPanToc = toc(lastPanTic); end
-              eventData.Panning.Length  = lastPanToc;
+              event.Data.Panning.Length  = lastPanToc;
             end
             event.Data.Panning.Start   = lastDownXY;
             event.Data.Panning.Current = currentXY;
             event.Data.Panning.Delta   = lastDownDeltaXY;
             
-          try
-            if isobject(currentObject)
-              event.Name = 'MousePan';
-              Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+            try
+              if isobject(currentObject)
+                event.Name = 'MousePan';
+                Grasppe.Core.EventHandler.callbackEvent(currentObject, event, figureObject, event.Name);
+                Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+              end
             end
-          end
-            
-            
-%             try
-%               currentObject = get(lastMouseStateHandle, 'UserData');
-%               dispf('Panning %s', currentObject);
-%             end
-            %notify(currentObject, 'MousePan'
-            % obj.mousePan(source, event);
           else
-          try
-            if isobject(currentObject)
-              event.Name = 'MouseMotion';
-              Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+            try
+              if isobject(currentObject)
+                event.Name = 'MouseMotion';
+                Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+              end
             end
-          end
           end
         case 'mousewheel'
           lastScrollToc = 0;
           try lastScrollToc = toc(lastScrollSwipeTic); end;
           
-          % try disp([lastScrollToc lastScrollSwipeToc lastScrollToc/lastScrollSwipeToc]); end
-          
           lastScrollSwipeTic = tic;
-          % lastScrollSwipeToc = lastScrollToc;
           
           try
             event.Data.Scrolling.Length        = lastScrollToc;

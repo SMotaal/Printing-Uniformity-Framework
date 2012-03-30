@@ -23,11 +23,17 @@ classdef PlotAxes < Grasppe.Graphics.Axes
       lastPanToc  = 0;
       try lastPanToc = toc(lastPanTic); end
       
-      if isempty(lastPanXY) || panLength==0;
+      if isempty(lastPanXY) %|| panLength==0;
         deltaPanXY  = [0 0];
       else
         deltaPanXY  = panXY - lastPanXY;
       end
+      
+      
+      XY1 = lastPanXY
+      XY2 = panXY
+      
+      c0  = panLength~=0
       
       plotAxes = obj; % get(obj.handleGet('CurrentAxes'), 'UserData');
       
@@ -39,6 +45,11 @@ classdef PlotAxes < Grasppe.Graphics.Axes
         elseif newView(2) > 90
           newView(2) = 90;
         end
+        
+        c1 = panStickyAngle-mod(newView(1), panStickyAngle)<panStickyThreshold
+        c2 = mod(newView(1), panStickyAngle)<panStickyThreshold
+        c3 = panStickyAngle-mod(newView(2), panStickyAngle)<panStickyThreshold
+        c4 = mod(newView(2), panStickyAngle)<panStickyThreshold
         
         if panStickyAngle-mod(newView(1), panStickyAngle)<panStickyThreshold || ...
             mod(newView(1), panStickyAngle)<panStickyThreshold
