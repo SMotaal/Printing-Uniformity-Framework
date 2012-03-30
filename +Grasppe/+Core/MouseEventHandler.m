@@ -19,7 +19,7 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
     MouseClick
     MouseDoubleClick
     MousePan
-    
+    MouseScroll
   end
   
   methods
@@ -42,24 +42,7 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
     
     function triggerMouseEvent(obj, source, event, eventName)
       try if nargin<4, eventName = event.EventName; end; end
-      disp(WorkspaceVariables);
-      
-      try
-        switch (event.EventName)
-          case 'MouseUp'
-            obj.processMouseEvent(source, 'up', event);       % object.mouseUp(source, event);
-          case 'MouseDown'
-            obj.processMouseEvent(source, 'down', event);     % object.mouseDown(source, event);
-          case 'MouseMotion'
-            obj.processMouseEvent(source, 'motion', event);   % object.mouseMotion(source, event);
-          case 'MouseWheel'
-            obj.processMouseEvent(source, 'wheel', event);    % object.mouseWheel(source, event);
-        end
-      catch err
-        disp(err.message);
-      end
-      
-      %disp(event.Sou);
+      try obj.processMouseEvent(source, eventName, event); end
     end
     
     
@@ -96,28 +79,39 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
         fireClickTimer = timer( 'StartDelay', doubleClickRate);
       end
       
-      event = varStruct(event, type, doubleClickRate, ...
-        currentXY, lastDownDeltaXY, lastDownToc, lastUpToc, lastDownSameID, lastUpSameID);
+      %       eventdata = varStruct(event.Data, type, doubleClickRate, ...
+      %         currentXY, lastDownDeltaXY, lastDownToc, lastUpToc, lastDownSameID, lastUpSameID);
+      
+      sourceData = event.Data;
+      
+      eventData.Type             = type; ...
+        eventData.DoubleClickRate  = doubleClickRate; ...
+        eventData.CurrentXY        = currentXY; ...
+        eventData.LastDownDeltaXY  = lastDownDeltaXY; ...
+        eventData.LastDownToc      = lastDownToc; ...
+        eventData.LastUpToc        = lastUpToc; ...
+        eventData.LastDownSameID   = lastDownSameID; ...
+        eventData.LastUpSameID     = lastUpSameID;
+      
+      event.Data = eventData;
       
       
       figureObject = [];
       try
         if isequal(obj.ComponentType,  'figure')
           figureObject = obj;
-          %           selectionType = obj.handleGet('SelectionType');
-          %           currentObject = obj.handleGet('CurrentObject');
         else
           figureObject = obj.ParentFigure;
-          %           selectionType = obj.ParentFigure.handleGet('SelectionType');
-          %           currentObject = obj.ParentFigure.handleGet('CurrentObject');
         end
       end
       
+      try currentObject = get(lastMouseStateHandle, 'UserData'); end
+      
       switch lower(type)
-        case 'down'
+        case 'mousedown'
           MouseButtonState = 'down';
-          try lastMouseStateHandle = figureObject.handleGet('CurrentObject')
-          catch, lastMouseStateHandle = []; end
+          try lastMouseStateHandle = figureObject.handleGet('CurrentObject');
+          catch lastMouseStateHandle = [], end
           
           lastDownTic = tic;
           
@@ -128,7 +122,7 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
           
           %           dispf('Down type is %s.', figureObject.handleGet('SelectionType'));
           
-        case 'up'
+        case 'mouseup'
           
           MouseButtonState = 'up';
           %           try lastMouseStateHandle = figureObject.handleGet('CurrentObject'); end
@@ -138,41 +132,59 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
           lastUpID  = obj.ID;
           lastUpXY  = currentXY;
           lastPanTic = [];
-          
-          selectionType = obj.handleGet('SelectionType');
-          if isequal(selectionType, 'normal') && lastDownToc < doubleClickRate
-            % obj.mouseClick(source, event);
-          elseif isequal(selectionType, 'open')
-            % obj.mouseDoubleClick(source, event);
+          try
+            if isobject(currentObject)
+              selectionType = obj.handleGet('SelectionType');
+              if isequal(selectionType, 'normal') && lastDownToc < doubleClickRate
+                event.Name = 'MouseClick';
+                Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+              elseif isequal(selectionType, 'open')
+                event.Name = 'MouseMouseDoubleClick';
+                Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+              end
+            end
           end
           
-        case 'motion'
+        case 'mousemotion'
           isPanning = true;
           try isPanning = isequal(lastMouseStateHandle, figureObject.handleGet('CurrentObject')); end
           try isPanning = isPanning && isequal(MouseButtonState, 'down'); end
           if isPanning
             if isempty(lastPanTic)
               lastPanTic = tic;
-              event.PanVector.Length  = 0;
+              event.Data.Panning.Length  = 0;
             else
               lastPanToc = 0;
               try lastPanToc = toc(lastPanTic); end
-              event.PanVector.Length  = lastPanToc;
+              eventData.Panning.Length  = lastPanToc;
             end
-            event.PanVector.Start   = lastDownXY;
-            event.PanVector.Current = currentXY;
-            event.PanVector.Delta   = lastDownDeltaXY;
+            event.Data.Panning.Start   = lastDownXY;
+            event.Data.Panning.Current = currentXY;
+            event.Data.Panning.Delta   = lastDownDeltaXY;
             
-            try
-              currentObject = get(lastMouseStateHandle, 'UserData');
-              dispf('Panning %s', currentObject);
+          try
+            if isobject(currentObject)
+              event.Name = 'MousePan';
+              Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
             end
-              %notify(currentObject, 'MousePan'
+          end
+            
+            
+%             try
+%               currentObject = get(lastMouseStateHandle, 'UserData');
+%               dispf('Panning %s', currentObject);
+%             end
+            %notify(currentObject, 'MousePan'
             % obj.mousePan(source, event);
           else
-            % obj.mouseMotion(source, event);
+          try
+            if isobject(currentObject)
+              event.Name = 'MouseMotion';
+              Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+            end
           end
-        case 'wheel'
+          end
+        case 'mousewheel'
           lastScrollToc = 0;
           try lastScrollToc = toc(lastScrollSwipeTic); end;
           
@@ -181,14 +193,26 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
           lastScrollSwipeTic = tic;
           % lastScrollSwipeToc = lastScrollToc;
           
-          event.Scrolling.Length        = lastScrollToc;
-          % event.Scrolling.Swipe         = lastScrollSwipeToc;
-          event.Scrolling.Vertical      = [event.event.VerticalScrollCount event.event.VerticalScrollAmount];
-          event.Scrolling.Momentum      = lastScrollToc < scrollingThreshold;
+          try
+            event.Data.Scrolling.Length        = lastScrollToc;
+            event.Data.Scrolling.Vertical      = [sourceData.VerticalScrollCount sourceData.VerticalScrollAmount];
+            event.Data.Scrolling.Momentum      = lastScrollToc < scrollingThreshold;
+            disp(event);
+          catch err
+            disp(err.message);
+            disp(event);
+            beep;
+          end
           
-          % obj.mouseWheel(source, event);
+          try
+            if isobject(currentObject)
+              event.Name = 'MouseWheel';
+              Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+            end
+          end
           
         otherwise
+          disp(type);
       end
       
     end

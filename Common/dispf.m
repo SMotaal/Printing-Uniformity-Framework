@@ -1,7 +1,9 @@
-function [ result ] = dispf( varargin )
+function dispf( varargin )
   %DISPF disp using sprintf
   %   Detailed explanation goes here
   
-  result = disp(sprintf(varargin{:}));
+  disp(sprintf(varargin{:}));
+%   if nargout == 0, clear out; end
+  
 end
 

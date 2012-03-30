@@ -112,7 +112,7 @@ classdef EventHandler < Grasppe.Core.Prototype
   
   methods (Static)
     function callbackEvent(source, event, obj, eventName)
-      %       disp(event);
+      %try disp(event); end
       
       if nargin==2 && isa(source, 'Grasppe.Core.EventHandler')
         % disp(toString({source, event}));
@@ -126,16 +126,36 @@ classdef EventHandler < Grasppe.Core.Prototype
         return;
       end
       
+      %try disp(eventName); end
+      
       try
         feval(str2func(eventFunction), obj, source, event);
       catch err
         % disp(['Function callback error ' err.identifier ': ' err.message]);
       end
       
+      if ~isempty(strfind(eventName, 'Click')) && ~isa(obj,'Grasppe.Graphics.Figure')
+%         try
+%           notify(obj, eventName, event);
+          disp(eventName);
+%           return;
+%         catch
+%           disp(eventName);
+%         end
+      end
+      
+      try
+        data = event;
+        eventData = Grasppe.Core.EventData;
+        eventData.Name  = eventName;
+        eventData.Data  = data;
+        %disp(eventData, data);
+      end
+      
       
       try
         if ~isa(source, 'Grasppe.Core.Component') % isnumeric(source) isempty(event)
-          notify(obj, eventName);
+          notify(obj, eventName, eventData);
         end
       end
       

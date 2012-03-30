@@ -92,7 +92,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
     end
     
     function preparePlotAxes(obj)
-      obj.PlotAxes    = Grasppe.Graphics.PlotAxes(obj);
+      obj.PlotAxes    = Grasppe.Graphics.PlotAxes('ParentFigure', obj);
     end
     
     function updatePlotTitle(obj)
