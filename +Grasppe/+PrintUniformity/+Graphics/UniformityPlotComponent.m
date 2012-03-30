@@ -39,6 +39,28 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype
       value.attachPlotObject(obj);
       %       try value.attachPlotObject(obj); end
     end
+    
+    function OnMouseScroll(obj, source, event)
+%       if ~isequal(obj.Handle, hittest)
+%         consumed = false;
+%         return;
+%       end
+      
+      if ~event.Data.Scrolling.Momentum
+        % disp(toString(event));
+        % plotAxes = get(obj.handleGet('CurrentAxes'), 'UserData');
+        if event.Data.Scrolling.Vertical(1) > 0
+          obj.setSheet('+1');
+        elseif event.Data.Scrolling.Vertical(1) < 0
+          obj.setSheet('-1');
+        end
+      end    
+    end
+    
+    function setSheet(obj, varargin)
+      try obj.DataSource.setSheet(varargin{:}); end
+    end
+    
   end
   
 end

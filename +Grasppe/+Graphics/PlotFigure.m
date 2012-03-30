@@ -106,12 +106,18 @@ classdef PlotFigure < Grasppe.Graphics.Figure
   methods
     function OnMousePan(obj, source, event)
       try
-        plotAxes = source.ParentAxes;
+        try
+          %           if isa(source, 'Grasppe.Graphics.PlotAxes')
+          %             plotAxes = source;
+          %           else
+          plotAxes = source.ParentAxes;
+          %           end
+        end
         obj.panAxes(plotAxes, event.Data.Panning.Current, event.Data.Panning.Length);
       catch err
         try dispf('Failed to pan %s: %s', source.ID, err.message); end
       end
-    end    
+    end
     
     function panAxes(obj, plotAxes, panXY, panLength) % (obj, source, event)
       persistent lastPanXY
@@ -120,8 +126,8 @@ classdef PlotFigure < Grasppe.Graphics.Figure
       panStickyAngle      = 45/2;
       panWidthReference   = 600;
       
-%       lastPanToc  = 0;
-%       try lastPanToc = toc(lastPanTic); end
+      %       lastPanToc  = 0;
+      %       try lastPanToc = toc(lastPanTic); end
       
       if isempty(lastPanXY) || panLength==0;
         deltaPanXY  = [0 0];
@@ -140,7 +146,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
         elseif newView(2) > 90
           newView(2) = 90;
         end
-                
+        
         if panStickyAngle-mod(newView(1), panStickyAngle)<panStickyThreshold || ...
             mod(newView(1), panStickyAngle)<panStickyThreshold
           newView(1) = round(newView(1)/panStickyAngle)*panStickyAngle;
@@ -151,7 +157,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
         end
         
         plotAxes.View = newView;
-                
+        
       catch err
         warning('Grasppe:MouseEvents:PanningFailed', err.message);
       end
@@ -159,7 +165,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
       lastPanXY   = panXY;
       lastPanTic  = tic;
       
-      %consumed = obj.mousePan@GraphicsObject(source, event);        
+      %consumed = obj.mousePan@GraphicsObject(source, event);
     end
     
   end
@@ -167,7 +173,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
   
   methods(Static, Hidden=true)
     function options  = DefaultOptions()
-      WindowTitle     = 'Printing Uniformity Plot'; ... 
+      WindowTitle     = 'Printing Uniformity Plot'; ...
         BaseTitle     = 'Printing Uniformity'; ...
         Color         = 'white'; ...
         Toolbar       = 'none';  ...

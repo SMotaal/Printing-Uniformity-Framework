@@ -32,6 +32,8 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
       
       Z = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource.localVariabilityFilter(Z);
       
+      %Z(patchFilter~=1)   = NaN;      
+      
     end
     
     function optimizeSetLimits(obj)

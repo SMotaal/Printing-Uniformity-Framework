@@ -98,7 +98,7 @@ classdef Surf < Grasppe.Graphics.PlotComponent % & Grasppe.Core.DecoratedCompone
     end
     
     function createHandleObject(obj)
-      obj.Handle = surf('Parent', obj.ParentAxes.Handle);
+      obj.Handle = surf(obj.ParentAxes.Handle);
     end
   end
   

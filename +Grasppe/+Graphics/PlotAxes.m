@@ -9,67 +9,14 @@ classdef PlotAxes < Grasppe.Graphics.Axes
     
     function obj = PlotAxes(varargin)
       obj = obj@Grasppe.Graphics.Axes(varargin{:});
-    end  
+    end
     
+  end
+  methods (Access=protected)
     
-    function panAxes(obj, panXY, panLength) % (obj, source, event)
-      persistent lastPanTic lastPanXY
-      %       dispf('%s <== %s (%s)', obj.ID, 'MousePan', toString(event.PanVector));
-      
-      panMultiplierRate   = 45;     % per second
-      panStickyThreshold  = 5;
-      panStickyAngle      = 45/2;
-      
-      lastPanToc  = 0;
-      try lastPanToc = toc(lastPanTic); end
-      
-      if isempty(lastPanXY) %|| panLength==0;
-        deltaPanXY  = [0 0];
-      else
-        deltaPanXY  = panXY - lastPanXY;
-      end
-      
-      
-      XY1 = lastPanXY
-      XY2 = panXY
-      
-      c0  = panLength~=0
-      
-      plotAxes = obj; % get(obj.handleGet('CurrentAxes'), 'UserData');
-      
-      try
-        newView = plotAxes.View - deltaPanXY;
-        
-        if newView(2) < 0
-          newView(2) = 0;
-        elseif newView(2) > 90
-          newView(2) = 90;
-        end
-        
-        c1 = panStickyAngle-mod(newView(1), panStickyAngle)<panStickyThreshold
-        c2 = mod(newView(1), panStickyAngle)<panStickyThreshold
-        c3 = panStickyAngle-mod(newView(2), panStickyAngle)<panStickyThreshold
-        c4 = mod(newView(2), panStickyAngle)<panStickyThreshold
-        
-        if panStickyAngle-mod(newView(1), panStickyAngle)<panStickyThreshold || ...
-            mod(newView(1), panStickyAngle)<panStickyThreshold
-          newView(1) = round(newView(1)/panStickyAngle)*panStickyAngle;
-        end
-        if panStickyAngle-mod(newView(2), panStickyAngle)<panStickyThreshold || ...
-            mod(newView(2), panStickyAngle)<panStickyThreshold
-          newView(2) = round(newView(2)/panStickyAngle)*panStickyAngle; % - mod(newView(2), 90)
-        end
-        
-        currentView = plotAxes.View;
-        plotAxes.View = newView;
-        dispf('Panning: %s => %s = %s', toString(currentView), ...
-          toString(newView), toString(plotAxes.View));
-      end
-      
-      lastPanXY   = panXY;
-      lastPanTic  = tic;
-      
-      %consumed = obj.mousePan@GraphicsObject(source, event);
+    function createHandleObject(obj)
+      obj.createHandleObject@Grasppe.Graphics.Axes;
+      obj.handleSet('NextPlot', 'replacechildren');
     end
   end
   

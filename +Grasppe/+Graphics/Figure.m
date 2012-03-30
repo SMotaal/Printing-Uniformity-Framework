@@ -42,8 +42,6 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
   
   methods
     function obj = Figure(varargin)
-%       obj = obj@Grasppe.Core.DecoratedComponent();
-%       obj = obj@Grasppe.Core.EventHandler();
       obj = obj@Grasppe.Graphics.HandleGraphicsComponent(varargin{:});
     end
     
@@ -67,8 +65,6 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
     end
     
     function decorateComponent(obj)
-      %obj.decorateComponent@HandleGraphicsComponent();
-      %Grasppe.Graphics.Decorators.FontDecorator(obj);
     end    
     
   end

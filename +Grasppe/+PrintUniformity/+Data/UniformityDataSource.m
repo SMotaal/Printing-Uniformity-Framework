@@ -129,6 +129,13 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       xData = obj.XData; yData = obj.YData; zData = obj.ZData;
       
       try
+        zNaN        = isnan(zData);
+        
+        xData(zNaN) = NaN;
+        yData(zNaN) = NaN;
+      end
+      
+      try
         linkedPlots = unqiue(linkedPlots);
         if Grasppe.Graphics.PlotComponent.checkInheritence(plotObject), linkedPlots = linkedPlots.Handle; end
       catch err

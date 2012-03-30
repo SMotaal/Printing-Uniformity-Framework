@@ -55,7 +55,7 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
       
       doubleClickRate     = 0.2;
       
-      scrollingThreshold  = 0.275;
+      scrollingThreshold  = 0.0;
       
       currentXY           = get(0,'PointerLocation');
       
@@ -127,11 +127,10 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
           lastPanTic = [];
           
           
-          
           try
-            if isobject(currentObject)
+            if isobject(currentObject) && isequal(lastDownXY, lastUpXY)
               selectionType = figureObject.handleGet('SelectionType');
-              if isequal(selectionType, 'normal') 
+              if isequal(selectionType, 'normal')
                 event.Name = 'MouseClick';
                 
                 clickFunction = {@Grasppe.Core.EventHandler.callbackEvent, obj, event.Name, currentObject, event};
@@ -163,7 +162,8 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
         case 'mousemotion'
           isPanning = true;
           try isPanning = isequal(lastMouseStateHandle, figureObject.handleGet('CurrentObject')); end
-          try isPanning = isPanning && isequal(MouseButtonState, 'down'); end
+          try isPanning = isPanning && (...
+              isequal(MouseButtonState, 'down') || isequal(MouseButtonState, 'dragging')); end
           if isPanning
             if isempty(lastPanTic)
               lastPanTic = tic;
@@ -202,17 +202,30 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
             event.Data.Scrolling.Length        = lastScrollToc;
             event.Data.Scrolling.Vertical      = [sourceData.VerticalScrollCount sourceData.VerticalScrollAmount];
             event.Data.Scrolling.Momentum      = lastScrollToc < scrollingThreshold;
-            disp(event);
+            % disp(event);
           catch err
             disp(err.message);
             disp(event);
             beep;
           end
           
+          
+          hoverObject =[];
+          
+          h = hittest;
+          
+          switch get(h, 'Type')
+            case 'axes'
+              children = get(h, 'Children');
+              try hoverObject = get(children(1), 'UserData'); end
+            case {'surface'}
+              try hoverObject = get(h, 'UserData'); end
+          end
+          
           try
-            if isobject(currentObject)
-              event.Name = 'MouseWheel';
-              Grasppe.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+            if isobject(hoverObject)
+              event.Name = 'MouseScroll';
+              Grasppe.Core.EventHandler.callbackEvent(obj, event, hoverObject, event.Name);
             end
           end
           
