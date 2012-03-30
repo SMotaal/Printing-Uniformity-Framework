@@ -11,8 +11,8 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
   
   methods
     function obj = UniformitySurf(parentAxes, dataSource, varargin)
-      obj = obj@Grasppe.Graphics.Surf(parentAxes, 'DataSource', dataSource, varargin{:});
-      obj = obj@Grasppe.PrintUniformity.Graphics.UniformityPlotComponent;
+      obj = obj@Grasppe.Graphics.Surf(parentAxes, varargin{:});
+      obj = obj@Grasppe.PrintUniformity.Graphics.UniformityPlotComponent(dataSource);
       
       obj.attachDataSource;
     end

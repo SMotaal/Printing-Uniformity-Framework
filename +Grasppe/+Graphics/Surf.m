@@ -68,7 +68,8 @@ classdef Surf < Grasppe.Graphics.PlotComponent % & Grasppe.Core.DecoratedCompone
     function set.ZData(obj, value)
       try debugStamp(obj.ID); catch, debugStamp(); end;
       obj.dataSet('ZData', value);
-    end    
+    end   
+        
   end
   
   methods (Access=protected)

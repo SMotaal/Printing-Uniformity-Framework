@@ -14,6 +14,7 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype
   methods
     function obj = UniformityPlotComponent(dataSource, varargin)
       obj = obj@Grasppe.Core.Prototype; %Component(varargin{:}, 'DataSource', dataSource);
+      obj.DataSource = dataSource;
     end
   end
   

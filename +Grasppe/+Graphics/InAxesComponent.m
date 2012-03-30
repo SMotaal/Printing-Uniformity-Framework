@@ -1,9 +1,13 @@
-classdef InAxesComponent < Grasppe.Graphics.HandleGraphicsComponent % & Grasppe.Core.DecoratedComponent & Grasppe.Core.EventHandler
+classdef InAxesComponent < Grasppe.Graphics.HandleGraphicsComponent ... % & Grasppe.Core.DecoratedComponent & Grasppe.Core.EventHandler
+      & Grasppe.Core.MouseEventHandler
   %NEWFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
   properties (Transient, Hidden)   
     InAxesComponentHandleProperties = {'Position', 'Units'};
+    
+    InAxesComponentHandleFunctions = {{'MouseDownFunction', 'ButtonDownFcn'}};
+    
   end
   
   properties (SetObservable, GetObservable, AbortSet)

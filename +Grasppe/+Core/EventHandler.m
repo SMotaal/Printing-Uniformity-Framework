@@ -115,12 +115,12 @@ classdef EventHandler < Grasppe.Core.Prototype
       %       disp(event);
       
       if nargin==2 && isa(source, 'Grasppe.Core.EventHandler')
-        disp(toString({source, event}));
+        % disp(toString({source, event}));
         obj = source;
         eventName     = event.EventName;
         eventFunction = ['On' eventName];
       elseif nargin==4 && isa(obj, 'Grasppe.Core.EventHandler')
-        disp(toString({source, event, obj, eventName}));
+        % disp(toString({source, event, obj, eventName}));
         eventFunction = ['On' eventName];
       else
         return;
@@ -129,7 +129,7 @@ classdef EventHandler < Grasppe.Core.Prototype
       try
         feval(str2func(eventFunction), obj, source, event);
       catch err
-        disp(['Function callback error ' err.identifier ': ' err.message]);
+        % disp(['Function callback error ' err.identifier ': ' err.message]);
       end
       
       

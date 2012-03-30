@@ -18,12 +18,13 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent ...
     
     
     HandleGraphicsComponentHandleFunctions = { ... % {'CreateFunction', 'CreateFcn'}, 
-      {'DeleteFunction', 'DeleteFcn'}, {'ButtonDownFunction', 'ButtonDownFcn'}};
+      {'DeleteFunction', 'DeleteFcn'}}; %, {'ButtonDownFunction', 'ButtonDownFcn'}};
     
   end
   
   events
-    Delete, ButtonDown % Create
+    Delete
+    %ButtonDown % Create
   end
   
   properties (SetObservable, GetObservable, AbortSet)
