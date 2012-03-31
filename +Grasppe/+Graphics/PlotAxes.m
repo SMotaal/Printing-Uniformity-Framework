@@ -22,7 +22,7 @@ classdef PlotAxes < Grasppe.Graphics.Axes
   
   
   methods(Static, Hidden=true)
-    function options  = DefaultOptions( )
+    function OPTIONS  = DefaultOptions( )
       
       IsVisible     = true;
       IsClickable   = true;
@@ -36,7 +36,7 @@ classdef PlotAxes < Grasppe.Graphics.Axes
       
       OuterPosition = [0.1 0.1 0.8 0.8];
       
-      options       = WorkspaceVariables(true);
+      Grasppe.Utilities.DeclareOptions;
     end
     
   end

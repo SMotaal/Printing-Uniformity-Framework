@@ -14,7 +14,7 @@ classdef OverlayAxes < Grasppe.Graphics.Axes
   
   
   methods(Static, Hidden=true)
-    function options  = DefaultOptions( )
+    function OPTIONS  = DefaultOptions( )
       
       IsVisible     = false;
       IsClickable   = false;
@@ -23,7 +23,7 @@ classdef OverlayAxes < Grasppe.Graphics.Axes
       Position      = [0 0 1 1];
       Color         = 'none';
       
-      options       = WorkspaceVariables(true);
+      Grasppe.Utilities.DeclareOptions;
     end
     
   end

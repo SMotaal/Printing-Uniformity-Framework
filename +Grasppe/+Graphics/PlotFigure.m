@@ -94,7 +94,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
     function preparePlotAxes(obj)
       obj.PlotAxes    = Grasppe.Graphics.PlotAxes('ParentFigure', obj);
     end
-    
+        
     function updatePlotTitle(obj)
       obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')'];
     end
@@ -104,6 +104,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
   end
   
   methods
+       
     function OnMousePan(obj, source, event)
       try
         try
@@ -172,7 +173,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
   
   
   methods(Static, Hidden=true)
-    function options  = DefaultOptions()
+    function OPTIONS  = DefaultOptions()
       WindowTitle     = 'Printing Uniformity Plot'; ...
         BaseTitle     = 'Printing Uniformity'; ...
         Color         = 'white'; ...
@@ -182,7 +183,10 @@ classdef PlotFigure < Grasppe.Graphics.Figure
         Renderer      = 'opengl'; ...
         %#ok<NASGU>
       
-      options = WorkspaceVariables(true);
+      
+      Grasppe.Utilities.DeclareOptions;
+
+      %options = WorkspaceVariables(true);
     end
   end
   

@@ -5,7 +5,7 @@ classdef DecoratedComponent < Grasppe.Core.Prototype % & Grasppe.Core.HandleComp
   properties
     Decorators = {};
     DecoratorNames = {};
-    Decorations
+    PropertyDecorations
   end
   
   methods
@@ -65,9 +65,9 @@ classdef DecoratedComponent < Grasppe.Core.Prototype % & Grasppe.Core.HandleComp
       
       %       mb1.SetMethod = {@setView, ;
       
-      addlistener(obj, decoration, 'PreGet', @Grasppe.Core.Decorator.GetDecoratorProperty);
-      addlistener(obj, decoration, 'PreSet', @Grasppe.Core.Decorator.preSetDecoratorProperty);
-      addlistener(obj, decoration, 'PostSet', @Grasppe.Core.Decorator.postSetDecoratorProperty);
+      addlistener(obj, decoration, 'PreGet', @Grasppe.Core.PropertyDecorator.GetDecoratorProperty);
+      addlistener(obj, decoration, 'PreSet', @Grasppe.Core.PropertyDecorator.preSetDecoratorProperty);
+      addlistener(obj, decoration, 'PostSet', @Grasppe.Core.PropertyDecorator.postSetDecoratorProperty);
       
       try
         defaultValue      = obj.Defaults.(decoration);

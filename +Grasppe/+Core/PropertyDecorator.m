@@ -1,4 +1,4 @@
-classdef Decorator < Grasppe.Core.Prototype % & Grasppe.Core.HandleComponent
+classdef PropertyDecorator < Grasppe.Core.Prototype % & Grasppe.Core.HandleComponent
   %HANDLEDECORATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -10,7 +10,7 @@ classdef Decorator < Grasppe.Core.Prototype % & Grasppe.Core.HandleComponent
   
   methods
     
-    function obj = Decorator(component)
+    function obj = PropertyDecorator(component)
       obj = obj@Grasppe.Core.Prototype;
       try
         obj.Component = component;
@@ -91,7 +91,7 @@ classdef Decorator < Grasppe.Core.Prototype % & Grasppe.Core.HandleComponent
       
       currentValue = obj.(source.Name);
       
-      if Grasppe.Core.Decorator.checkInheritence(obj) && isvalid(obj)
+      if Grasppe.Core.PropertyDecorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
             %             obj.(source.Name) = currentValue;
@@ -107,7 +107,7 @@ classdef Decorator < Grasppe.Core.Prototype % & Grasppe.Core.HandleComponent
       
       currentValue = obj.(source.Name);
       
-      if Grasppe.Core.Decorator.checkInheritence(obj) && isvalid(obj)
+      if Grasppe.Core.PropertyDecorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
             obj.Decorators{i}.setDecoratorProperty(source, event);
@@ -120,7 +120,7 @@ classdef Decorator < Grasppe.Core.Prototype % & Grasppe.Core.HandleComponent
     
     function GetDecoratorProperty(source, event)
       obj = event.AffectedObject;
-      if Grasppe.Core.Decorator.checkInheritence(obj) && isvalid(obj)
+      if Grasppe.Core.PropertyDecorator.checkInheritence(obj) && isvalid(obj)
         for i = 1:numel(obj.Decorators)
           try
             decorator = obj.Decorators{i};

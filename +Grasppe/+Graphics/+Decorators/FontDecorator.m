@@ -1,4 +1,4 @@
-classdef FontDecorator < Grasppe.Core.Prototype & Grasppe.Core.Decorator
+classdef FontDecorator < Grasppe.Core.Prototype & Grasppe.Core.PropertyDecorator
   %AXESVIEWDECORATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -13,14 +13,14 @@ classdef FontDecorator < Grasppe.Core.Prototype & Grasppe.Core.Decorator
   methods
     function obj = FontDecorator(varargin)
       obj = obj@Grasppe.Core.Prototype;
-      obj = obj@Grasppe.Core.Decorator(varargin{:});
+      obj = obj@Grasppe.Core.PropertyDecorator(varargin{:});
     end
     
   end
   
   methods(Static, Hidden)
-    function options  = DefaultOptions()
-      options = [];
+    function OPTIONS  = DefaultOptions()
+      Grasppe.Utilities.DeclareOptions;
     end
   end
   

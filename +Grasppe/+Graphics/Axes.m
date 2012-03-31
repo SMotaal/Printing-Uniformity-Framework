@@ -207,8 +207,8 @@ classdef Axes < Grasppe.Graphics.InFigureComponent
   
   
   methods(Static, Hidden=true)
-    function options  = DefaultOptions()      
-      options = WorkspaceVariables(true);
+    function OPTIONS  = DefaultOptions()      
+      Grasppe.Utilities.DeclareOptions;
     end
   end
   

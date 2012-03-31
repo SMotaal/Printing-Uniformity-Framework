@@ -4,7 +4,7 @@ classdef InAxesComponent < Grasppe.Graphics.HandleGraphicsComponent ... % & Gras
   %   Detailed explanation goes here
   
   properties (Transient, Hidden)   
-    InAxesComponentHandleProperties = {'Position', 'Units'};
+    InAxesComponentHandleProperties = {};
     
     InAxesComponentHandleFunctions = {{'MouseDownFunction', 'ButtonDownFcn'}};
     
@@ -12,13 +12,7 @@ classdef InAxesComponent < Grasppe.Graphics.HandleGraphicsComponent ... % & Gras
   
   properties (SetObservable, GetObservable, AbortSet)
     ParentAxes
-    
-    Position
-    Units
-
-    Padding       = [5 5 5 5]
   end
-  
   
   
   properties (Dependent)
@@ -57,8 +51,8 @@ classdef InAxesComponent < Grasppe.Graphics.HandleGraphicsComponent ... % & Gras
   end  
   
   methods(Static, Hidden=true)
-    function options  = DefaultOptions()
-      options = WorkspaceVariables(true);
+    function OPTIONS  = DefaultOptions()
+      Grasppe.Utilities.DeclareOptions;
     end
   end
   

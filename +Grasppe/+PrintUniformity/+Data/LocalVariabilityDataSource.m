@@ -77,8 +77,8 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
         newData   = dData(ySub, xSub);
       end
     end
-    function options  = DefaultOptions()      
-      options = WorkspaceVariables(true);
+    function OPTIONS  = DefaultOptions()      
+      Grasppe.Utilities.DeclareOptions;
     end
   end
   

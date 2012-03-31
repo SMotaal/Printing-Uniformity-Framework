@@ -1,4 +1,4 @@
-classdef AxesViewDecorator < Grasppe.Core.Prototype & Grasppe.Core.Decorator
+classdef AxesViewDecorator < Grasppe.Core.Prototype & Grasppe.Core.PropertyDecorator
   %AXESVIEWDECORATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -13,7 +13,7 @@ classdef AxesViewDecorator < Grasppe.Core.Prototype & Grasppe.Core.Decorator
   methods
     function obj = AxesViewDecorator(varargin)
       obj = obj@Grasppe.Core.Prototype;
-      obj@Grasppe.Core.Decorator(varargin{:});
+      obj@Grasppe.Core.PropertyDecorator(varargin{:});
     end
     
     %     function value = getView(obj)
@@ -31,8 +31,8 @@ classdef AxesViewDecorator < Grasppe.Core.Prototype & Grasppe.Core.Decorator
   end
   
   methods(Static, Hidden)
-    function options  = DefaultOptions()
-      options = [];
+    function OPTIONS  = DefaultOptions()
+      Grasppe.Utilities.DeclareOptions;
     end
   end
   

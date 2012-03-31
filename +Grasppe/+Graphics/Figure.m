@@ -3,7 +3,7 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
   %NEWFIGUREOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
- 
+  
   properties (Transient, Hidden)
     FigureProperties = {
       'WindowTitle',    'Plot Title',       'Labels',     'string',   '';   ...
@@ -21,7 +21,7 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
       {'MouseDownFunction', 'WindowButtonDownFcn'}, {'MouseUpFunction', 'WindowButtonUpFcn'}, ...
       {'MouseMotionFunction', 'WindowButtonMotionFcn'}, {'MouseWheelFunction', 'WindowScrollWheelFcn'}};
     
-    ComponentType = 'figure';    
+    ComponentType = 'figure';
     
   end
   
@@ -29,7 +29,7 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
     Close
     Resize
   end
- 
+  
   
   properties (SetObservable, GetObservable, AbortSet)
     Color
@@ -55,7 +55,7 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
     
     function OnResize(obj, source, event)
       disp('Resized Figure');
-    end    
+    end
   end
   
   methods (Access=protected)
@@ -65,21 +65,21 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
     end
     
     function decorateComponent(obj)
-    end    
+    end
     
   end
   
   
   methods(Static, Hidden=true)
-    function options  = DefaultOptions()
+    function OPTIONS  = DefaultOptions()
       WindowTitle   = 'Printing Uniformity Plot';
-%       BaseTitle     = 'Printing Uniformity';
+      %       BaseTitle     = 'Printing Uniformity';
       Color         = 'white';
       Toolbar       = 'none';  Menubar = 'none';
       WindowStyle   = 'normal';
       Renderer      = 'opengl';
       
-      options = WorkspaceVariables(true);
+      Grasppe.Utilities.DeclareOptions;
     end
   end
   

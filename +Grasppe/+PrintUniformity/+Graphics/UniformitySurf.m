@@ -108,12 +108,12 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
   
   
   methods (Static, Hidden)
-    function options  = DefaultOptions( )
+    function OPTIONS  = DefaultOptions( )
       
       IsVisible     = true;
       IsClickable   = true;
       
-      options = WorkspaceVariables(true);
+      Grasppe.Utilities.DeclareOptions;
     end
     
   end

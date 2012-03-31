@@ -1,4 +1,4 @@
-classdef TextObject < Grasppe.Graphics.InAxesComponent
+classdef TextObject < Grasppe.Graphics.AnnotationComponent
   %TEXT Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -16,13 +16,8 @@ classdef TextObject < Grasppe.Graphics.InAxesComponent
   
   methods
     function obj = TextObject(parentAxes, varargin)
-      obj = obj@Grasppe.Graphics.InAxesComponent(varargin{:},'ParentAxes', parentAxes);
-    end
-    
-    function OnResize(obj, source, event)
-      disp('resized');
+      obj = obj@Grasppe.Graphics.AnnotationComponent(parentAxes, varargin{:});
     end    
-    
   end
   
   methods (Access=protected)
@@ -30,7 +25,7 @@ classdef TextObject < Grasppe.Graphics.InAxesComponent
     function createComponent(obj)
       obj.createComponent@Grasppe.Graphics.InAxesComponent;
       
-      addlistener(obj.ParentFigure, 'Resize', @obj.OnResize); %@(s,e)OnResize(obj, s, e));
+       %@(s,e)OnResize(obj, s, e));
     end
     
     function createHandleObject(obj)

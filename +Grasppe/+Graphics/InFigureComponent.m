@@ -62,8 +62,8 @@ classdef InFigureComponent < Grasppe.Graphics.HandleGraphicsComponent ... % & Gr
   end
   
   methods(Static, Hidden=true)
-    function options  = DefaultOptions()
-      options = WorkspaceVariables(true);
+    function OPTIONS  = DefaultOptions()
+      Grasppe.Utilities.DeclareOptions;
     end
   end
   
