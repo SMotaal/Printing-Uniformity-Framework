@@ -36,7 +36,14 @@ classdef Instance < Grasppe.Core.Prototype
         if (isempty(instanceID) || ~ischar(instanceID))
           instanceID = Grasppe.Core.Instance.InstanceRecord(obj);
           if (isempty(instanceID) || ~ischar(instanceID))
-            instanceID = genvarname([obj.ClassName '_' int2str(rand*10^12)]);
+            error('Grasppe:Instance:Generate', 'Generating instance ID failed!');
+%             try
+%               propertyMeta  = metaProperty(obj.ClassName, 'ComponentName');
+%               componentName = propertyMeta.DefaultValue;
+%             catch
+%               componentName = regexprep(obj.ClassName, '\w+\.(?=\w+\.)|\.', ''); %regexprep(obj.ClassName, '\w+\.[?=\w+\.]', '');
+%             end
+%             instanceID = genvarname([componentName '_' int2str(rand*10^12)]);
           end
         end
       end
@@ -60,7 +67,7 @@ classdef Instance < Grasppe.Core.Prototype
       
       GetInstance = @(r)  instances.(hashmap(r, 2))(hashmap(r, 3));
       
-      SafeName    = @(t)  genvarname(regexprep(t,'[^\w]+',''));
+      SafeName    = @(t)  genvarname(regexprep(t, '(\w+\.)|\.', ''));   %regexprep(t,'(\w+\.(?=\w+\.))|\.',''));
       
       if (~isempty(object.InstanceID) && ischar(object.ID) && size(hashmap,1)>0) % Rows
         row = find(strcmpi(hashmap(:, 1),object.ID));
@@ -96,7 +103,7 @@ classdef Instance < Grasppe.Core.Prototype
           index   = 1;
         end
         
-        id = SafeName([instance.class '.' int2str(index)]);
+        id = SafeName([instance.class '_' int2str(index)]);
         
         instances.(group)(index) = instance;
         hashmap(end+1,:) = {id, group, index};

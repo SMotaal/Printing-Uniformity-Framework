@@ -95,8 +95,8 @@ classdef Prototype < handle & dynamicprops %& hgsetget
     
     function metaClass = get.MetaClass(obj)
       metaClass = metaclass(obj);
-    end    
-      
+    end
+         
     function propertyTable = getRecursiveProperty(obj, suffix)
         propertyTable = {};
         try
@@ -144,6 +144,11 @@ classdef Prototype < handle & dynamicprops %& hgsetget
       return;
       
     end
+    
+%     function name = ComponentName()
+%       className = eval(CLASS);
+%       name      = regexprep(className, '\w+\.', '');
+%     end
     
   
 %     function propertyTable = getRecursiveProperty(className, suffix)

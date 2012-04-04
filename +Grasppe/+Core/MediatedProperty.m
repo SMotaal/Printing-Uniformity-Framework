@@ -3,7 +3,7 @@ classdef MediatedProperty < Grasppe.Core.Prototype & Grasppe.Core.Property
   %   Detailed explanation goes here
   
   properties
-%     Mediator
+    %     Mediator
     
     Subject
     SubjectMeta
@@ -19,7 +19,7 @@ classdef MediatedProperty < Grasppe.Core.Prototype & Grasppe.Core.Property
       obj = obj@Grasppe.Core.Prototype();
       obj = obj@Grasppe.Core.Property(mediator, [], []);
       
-%       obj.Mediator    = mediator;
+      %       obj.Mediator    = mediator;
       
       obj.Subject     = subject;
       obj.SubjectMeta = propertyMeta;
@@ -48,31 +48,53 @@ classdef MediatedProperty < Grasppe.Core.Prototype & Grasppe.Core.Property
       end
     end
     
-    function components = get.Subjects(obj)
-      subject = {obj.Subject};
-      components = {subject{:}, obj.Subjects{:}};
-      %if isempty(obj.Components), components = obj.Component; end
-    end
+    %     function components = get.Subjects(obj)
+    %       % subject = {obj.Subject};
+    %       % class(obj.Subjects)
+    %       % components = {subject{:}, obj.Subjects{:}};
+    %       %if isempty(obj.Components), components = obj.Component; end
+    %     end
     
     function addSubject(obj, subject)
       subjects = obj.Subjects;
+      
+      if ~iscell(subjects), subjects = {}; end
+      
       for i = 1:numel(subjects)
         s = subjects{i};
-        if isequal(s, subject), return; end
+        if isequal(s, subjects), return; end
       end
-      obj.Subjects = {subjects{:}, subject};
+      
+      subjects{end+1} = subject;
+      
+      if numel(subjects)>1
+        obj.Subjects = subjects; %{2:end};
+      else
+        obj.Subjects = {};
+      end
+      
+      propertyName            = obj.SubjectMeta.Name;
+      subject.(propertyName)  = obj.Value;
+
     end
     
     function [value changed] = newValue(obj, value, currentValue)
       [value changed] = obj.newValue@Grasppe.Core.Property(value, currentValue);
+      
+      if isempty(obj.Subject), return; end
+      
+      subjects = [{obj.Subject}, obj.Subjects];
+      
       if changed
-        subject         = obj.Subject;
-        propertyName    = obj.SubjectMeta.Name;
-        obj.Subject.(propertyName) = value;
+        for m = 1:numel(subjects)
+          subject         = subjects{m};
+          propertyName    = obj.SubjectMeta.Name;
+          subject.(propertyName) = value;
+        end
       end
     end
-
-  end
     
+  end
+  
 end
 

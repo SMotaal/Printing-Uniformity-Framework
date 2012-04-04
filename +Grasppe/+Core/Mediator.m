@@ -1,4 +1,4 @@
-classdef Mediator < Grasppe.Core.Prototype % & Grasppe.Core.Component
+classdef Mediator < Grasppe.Core.Instance % & Grasppe.Core.Component
   %GRASPPEMEDIATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -12,7 +12,7 @@ classdef Mediator < Grasppe.Core.Prototype % & Grasppe.Core.Component
   
   methods
     function obj = Mediator()
-      obj = obj@Grasppe.Core.Prototype;
+      obj = obj@Grasppe.Core.Instance;
       % obj = obj@Grasppe.Core.Component;
     end
     
@@ -34,7 +34,7 @@ classdef Mediator < Grasppe.Core.Prototype % & Grasppe.Core.Component
         validSubject  = isa(subject.MetaProperties.(property), 'Grasppe.Core.MetaProperty');
         
         % Look for mediator metaproperty
-        if ~exists('alias'), alias = [subjectID '_' subjectMeta.Name]; end
+        if ~exists('alias'), alias = property; end %[subjectID '_' subjectMeta.Name]; end
         nativeMeta    = obj.findprop(alias); %metaProperty(obj.ClassName, alias);
         
         % Add mediator property if not found or amend components if found
@@ -61,8 +61,8 @@ classdef Mediator < Grasppe.Core.Prototype % & Grasppe.Core.Component
           
           nativeMeta.SetMethod = @mediationSet;
           
-          obj.MediationProperties.(alias) = mediatorProperty;
-          obj.MediationReferences.(subjectID).(property) = mediatorProperty;
+          obj.MediationProperties.(alias)     = mediatorProperty;
+          obj.MediationReferences.(property)  = mediatorProperty;
           
         else
           obj.MediationProperties.(alias).addSubject(subject);
@@ -146,7 +146,7 @@ classdef Mediator < Grasppe.Core.Prototype % & Grasppe.Core.Component
     
     function subjectPostSet(obj, source, event)
       if isempty(obj.SettingProperty)
-        mediationProperty = obj.MediationReferences.(event.AffectedObject.ID).(source.Name);
+        mediationProperty = obj.MediationReferences.(source.Name);
         obj.(mediationProperty.Name) = event.AffectedObject.(source.Name);
       end
       return;
