@@ -120,6 +120,44 @@ classdef PlotFigure < Grasppe.Graphics.Figure
       end
     end
     
+    function OnKeyPress(obj, source, event)
+      shiftKey = stropt('shift', event.Data.Modifier);
+      commandKey = stropt('command', event.Data.Modifier) || stropt('control', event.Data.Modifier);
+      
+      if ~event.Consumed
+      
+        if commandKey
+          switch event.Data.Key
+            case 'w'
+              obj.closeComponent();
+              event.Consumed = true;
+            case 'm'
+              if shiftKey
+                if strcmp(obj.WindowStyle, 'docked')
+                  obj.WindowStyle = 'normal';
+                end
+                try obj.JavaObject.setMaximized(true); end
+              else
+                try obj.JavaObject.setMinimized(true); end
+              end
+              event.Consumed = true;
+            case 'd'
+              try
+                if strcmp(obj.WindowStyle, 'docked')
+                  obj.WindowStyle = 'normal';
+                else
+                  obj.WindowStyle = 'docked';
+                end
+              end
+              event.Consumed = true;
+          end
+        end
+        
+      end
+      obj.OnKeyPress@FigureObject(source, event);
+      
+    end
+    
     function panAxes(obj, plotAxes, panXY, panLength) % (obj, source, event)
       persistent lastPanXY
       

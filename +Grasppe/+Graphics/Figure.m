@@ -62,6 +62,8 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
     
     function createHandleObject(obj)
       obj.Handle = figure('Visible', 'off');
+      
+      obj.JavaObject = get(handle(obj.Handle), 'JavaFrame');
     end
     
     function decorateComponent(obj)

@@ -131,11 +131,16 @@ classdef EventHandler < Grasppe.Core.Prototype
         return;
       end
       
-%       %try disp(eventName); end
-%       
-%       if strcmp(eventName, 'MouseClick')
-%         disp(event);
-%       end
+      %       %try disp(eventName); end
+      %
+      %       if strcmp(eventName, 'MouseClick')
+      %         disp(event);
+      %       end
+      
+      switch eventFunction
+        case {'OnKeyPress', 'OnKeyRelease'}
+          event = Grasppe.Core.EventData(eventFunction, event);
+      end
       
       try
         feval(str2func(eventFunction), obj, source, event);
@@ -144,16 +149,16 @@ classdef EventHandler < Grasppe.Core.Prototype
         % disp(['Function callback error ' err.identifier ': ' err.message]);
       end
       
-%       if ~isempty(strfind(eventName, 'Click')) && ~isa(obj,'Grasppe.Graphics.Figure')
-% %         try
-% %           notify(obj, eventName, event);
-%           disp(eventName);
-% %           return;
-% %         catch
-% %           disp(eventName);
-% %         end
-%       end
-%       
+      %       if ~isempty(strfind(eventName, 'Click')) && ~isa(obj,'Grasppe.Graphics.Figure')
+      % %         try
+      % %           notify(obj, eventName, event);
+      %           disp(eventName);
+      % %           return;
+      % %         catch
+      % %           disp(eventName);
+      % %         end
+      %       end
+      %
       try
         data = event;
         eventData = Grasppe.Core.EventData;

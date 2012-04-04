@@ -99,6 +99,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
           obj.PlotObjects = plotObject;
         end
       end
+      
       obj.linkPlot(plotObject);
       
     end
