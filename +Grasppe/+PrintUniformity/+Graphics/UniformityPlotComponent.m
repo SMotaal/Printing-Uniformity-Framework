@@ -29,7 +29,15 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype
     %     end
     
     function attachDataSource(obj)
+      obj.resetPlotLimits;
       obj.DataSource.attachPlotObject(obj);
+    end
+    
+    function resetPlotLimits(obj)
+      try obj.ParentAxes.XLim = 'auto'; end
+      try obj.ParentAxes.YLim = 'auto'; end
+      try obj.ParentAxes.ZLim = 'auto'; end
+      try obj.ParentAxes.CLim = 'auto'; end
     end
   end
   
