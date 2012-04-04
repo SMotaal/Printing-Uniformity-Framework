@@ -128,12 +128,12 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     function updatePlots(obj, linkedPlots)
       xData = obj.XData; yData = obj.YData; zData = obj.ZData;
       
-      try
-        zNaN        = isnan(zData);
-        
-        xData(zNaN) = NaN;
-        yData(zNaN) = NaN;
-      end
+%       try
+%         zNaN        = isnan(zData);
+%         
+%         xData(zNaN) = NaN;
+%         yData(zNaN) = NaN;
+%       end
       
       try
         linkedPlots = unqiue(linkedPlots);

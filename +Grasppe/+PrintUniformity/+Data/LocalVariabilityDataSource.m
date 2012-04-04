@@ -32,6 +32,14 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
       
       Z = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource.localVariabilityFilter(Z);
       
+      try
+        zNaN        = isnan(Z);
+        
+        X(zNaN) = NaN;
+        Y(zNaN) = NaN;
+      end
+
+      
       %Z(patchFilter~=1)   = NaN;      
       
     end

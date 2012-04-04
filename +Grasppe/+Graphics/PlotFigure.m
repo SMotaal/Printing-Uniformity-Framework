@@ -108,11 +108,11 @@ classdef PlotFigure < Grasppe.Graphics.Figure
     function OnMousePan(obj, source, event)
       try
         try
-          %           if isa(source, 'Grasppe.Graphics.PlotAxes')
-          %             plotAxes = source;
-          %           else
-          plotAxes = source.ParentAxes;
-          %           end
+          if isa(source, 'Grasppe.Graphics.PlotAxes')
+            plotAxes = source;
+          else
+            plotAxes = source.ParentAxes;
+          end
         end
         obj.panAxes(plotAxes, event.Data.Panning.Current, event.Data.Panning.Length);
       catch err
