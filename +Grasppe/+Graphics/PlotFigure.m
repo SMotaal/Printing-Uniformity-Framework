@@ -116,7 +116,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
         end
         obj.panAxes(plotAxes, event.Data.Panning.Current, event.Data.Panning.Length);
       catch err
-        try dispf('Failed to pan %s: %s', source.ID, err.message); end
+        % try dispf('Failed to pan %s: %s', source.ID, err.message); end
       end
     end
     

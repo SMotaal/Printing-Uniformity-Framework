@@ -27,7 +27,7 @@ classdef KeyEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
     end
     
     function consumed = OnKeyPress(obj, source, event)
-      disp (['KeyPress for ' obj.ID]);
+      % disp (['KeyPress for ' obj.ID]);
       if obj.KeyPressEvents >5
         return;
       end
@@ -37,7 +37,7 @@ classdef KeyEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
     end
     
     function consumed = OnKeyRelease(obj, source, event)
-      disp (['KeyRelease for ' obj.ID]);
+      % disp (['KeyRelease for ' obj.ID]);
       consumed = obj.callEventHandlers('Key', 'KeyRelease', source, event);
     end
     

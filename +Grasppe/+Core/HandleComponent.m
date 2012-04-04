@@ -162,7 +162,7 @@ classdef HandleComponent < Grasppe.Core.Component
       if isempty(obj.HandlePropertyMap) || isempty(obj.ObjectPropertyMap)
         handlePropertyTables = obj.getRecursiveProperty('HandleProperties');
         handleFunctionTables = obj.getRecursiveProperty('HandleFunctions');
-        handlePropertyTable  = [handlePropertyTables{:}, handleFunctionTables{:}];
+        handlePropertyTable  = [handlePropertyTables{1,:}, handleFunctionTables{1,:}];
         
         nProperties       = numel(handlePropertyTable);
         

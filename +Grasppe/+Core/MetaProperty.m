@@ -33,7 +33,11 @@ classdef MetaProperty < Grasppe.Core.Prototype
     function propertyMeta = Declare(name, definingClass, displayName, category, mode, description)
       
       nativeMeta    = metaProperty( definingClass, name );
-      editable      = isequal(nativeMeta.SetAccess, 'public') && ~nativeMeta.Constant && ~nativeMeta.Abstract;
+      if ~isempty(nativeMeta)
+        editable  = isequal(nativeMeta.SetAccess, 'public') && ~nativeMeta.Constant && ~nativeMeta.Abstract;
+      else
+        editable  = false;
+      end
       
       propertyMeta  = Grasppe.Core.MetaProperty.Define( ...
         [], name, definingClass, mode, displayName, category, description, editable, nativeMeta);

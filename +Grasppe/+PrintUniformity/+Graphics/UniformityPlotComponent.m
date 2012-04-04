@@ -5,7 +5,20 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype
   properties (SetObservable, GetObservable)
     DataSource
     LinkedProperties
+    
   end
+  
+  properties (Transient, Hidden)
+    
+    UniformityPlotComponentProperties = {
+      'ALim',       'Alpha Map Limits', 'Data Limits',      'limits',   '';   ...
+      'CLim',       'Color Map Limits', 'Data Limits',      'limits',   '';   ...
+      'XLim',       'X Axes Limits',    'Data Limits',      'limits',   '';   ...
+      'YLim',       'Y Axes Limits',    'Data Limits',      'limits',   '';   ...
+      'ZLim',       'Z Axes Limits',    'Data Limits',      'limits',   '';   ...
+      };%     HANDLEPROPERTIES  = {};
+  end
+  
   
   properties (Dependent)
     %     IsLinked;
@@ -49,10 +62,10 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype
     end
     
     function OnMouseScroll(obj, source, event)
-%       if ~isequal(obj.Handle, hittest)
-%         consumed = false;
-%         return;
-%       end
+      %       if ~isequal(obj.Handle, hittest)
+      %         consumed = false;
+      %         return;
+      %       end
       
       if ~event.Data.Scrolling.Momentum
         % disp(toString(event));
@@ -62,7 +75,7 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype
         elseif event.Data.Scrolling.Vertical(1) < 0
           obj.setSheet('-1');
         end
-      end    
+      end
     end
     
     function setSheet(obj, varargin)

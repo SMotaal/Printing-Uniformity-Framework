@@ -60,14 +60,14 @@ classdef MediatedProperty < Grasppe.Core.Prototype & Grasppe.Core.Property
       
       if ~iscell(subjects), subjects = {}; end
       
-      for i = 1:numel(subjects)
-        s = subjects{i};
+      for m = 1:numel(subjects)
+        s = subjects{m};
         if isequal(s, subjects), return; end
       end
       
       subjects{end+1} = subject;
       
-      if numel(subjects)>1
+      if numel(subjects)>0
         obj.Subjects = subjects; %{2:end};
       else
         obj.Subjects = {};

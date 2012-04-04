@@ -3,11 +3,10 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
   %   Detailed explanation goes here
   
   properties
-    LocalVariabilityDataSourceProperties = {
-      'TestProperty', 'Test Property', 'Labels', 'string', '';   ...
-      };    
-    
-    TestProperty
+    % LocalVariabilityDataSourceProperties = {
+    %   'TestProperty', 'Test Property', 'Labels', 'string', '';   ...
+    %   };
+    % TestProperty
   end
   
   methods (Hidden)

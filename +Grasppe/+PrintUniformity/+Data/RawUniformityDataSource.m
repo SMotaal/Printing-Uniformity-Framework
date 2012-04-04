@@ -3,11 +3,10 @@ classdef RawUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSo
   %   Detailed explanation goes here
   
   properties
-    RawUniformityDataSourceProperties = {
-      'TestProperty', 'Test Property', 'Labels', 'string', '';   ...
-      };
-    
-    TestProperty
+    % RawUniformityDataSourceProperties = {
+    %   'TestProperty', 'Test Property', 'Labels', 'string', '';   ...
+    %   };
+    % TestProperty
   end
   
   methods (Hidden)

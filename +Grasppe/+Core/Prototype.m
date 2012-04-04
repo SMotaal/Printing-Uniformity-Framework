@@ -54,18 +54,26 @@ classdef Prototype < handle & dynamicprops %& hgsetget
     function createMetaPropertyTable(obj)
       % if isempty(obj.MetaProperties)
         definedProperties = obj.getRecursiveProperty('Properties');
-        definedProperties = vertcat(definedProperties{:});
-        tableSize = size(definedProperties);
         
-        if isa(definedProperties, 'cell') && tableSize(2)==5
+        if isempty(definedProperties) || ~isa(definedProperties, 'cell'), return; end
+          
+        definingClasses   = definedProperties(2,:);
+        definedProperties = definedProperties(1,:); %vertcat(definedProperties{1,:});
+        tableSize = size(definedProperties{1});
+        
+        if isa(definedProperties{1}, 'cell') && tableSize(2)==5
           metaProperties   = struct;
-
-          for m = 1:tableSize(1)
-            property    = definedProperties{m,1};
-            metaData    = definedProperties(m,2:5);
-            
-            metaProperties.(property) = Grasppe.Core.MetaProperty.Declare( ...
-              property, class(obj), metaData{:});
+          
+          for m = 1:numel(definedProperties)
+            definingClass = definingClasses{m};
+            tableSize = size(definedProperties{m});
+            for n = 1:tableSize(1)
+              property    = definedProperties{m}{n,1};
+              metaData    = definedProperties{m}(n,2:5);
+              
+              metaProperties.(property) = Grasppe.Core.MetaProperty.Declare( ...
+                property, definingClass, metaData{:});
+            end
           end
           obj.MetaProperties = metaProperties;
 %         else
@@ -107,7 +115,8 @@ classdef Prototype < handle & dynamicprops %& hgsetget
                         
             try
               classProperties       = obj.([prefix suffix]);
-              propertyTable{end+1}  = classProperties;
+              propertyTable{1, end+1}  = classProperties;
+              propertyTable{2, end}  = tree{m};
 %               if isempty(propertyTable)
 %                 propertyTable = classProperties;
 %               else
