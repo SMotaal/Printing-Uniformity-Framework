@@ -23,7 +23,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
     
     
     function OnResize(obj, source, event)
-      obj.OnResize@Grasppe.Graphics.PlotAxes;
+      obj.OnResize@Grasppe.Graphics.PlotFigure;
       obj.layoutPlotAxes;
     end
   end
@@ -80,8 +80,6 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       nextIdx = idx;  nextID  = id;
       
       nAxes = length(obj.PlotAxes);
-      
-      % plotAxesStruct = struct('id', [], 'object', []);
       
       emptyIdx  = cellfun('isempty', {obj.PlotAxesTargets.object});
       
@@ -237,13 +235,14 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
           try
             if plotBottom < (plottingHeight)
               if ~isempty(obj.PlotAxes{i}) && ishandle(obj.PlotAxes{i}.Handle)
-                obj.PlotAxes{i}.handleSet('ActivePositionProperty', 'OuterPosition', ...
-                  'Units', 'pixels', 'Position', plotPosition);
+                obj.PlotAxes{i}.handleSet('ActivePositionProperty', 'OuterPosition');
+                obj.PlotAxes{i}.handleSet('Units', 'pixels');
+                obj.PlotAxes{i}.handleSet('Position', plotPosition);
               end
-              set(obj.PlotAxes{i}.Handle,'Parent', obj.Handle);
+              obj.PlotAxes{i}.handleSet('Parent', obj.Handle);
               
             else
-              set(obj.PlotAxes{i}.Handle,'Parent', obj.HiddenFigure);
+              obj.PlotAxes{i}.handleSet('Parent', obj.HiddenFigure);
             end
           catch err
             try debugStamp(obj.ID); end
