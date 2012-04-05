@@ -4,6 +4,7 @@ classdef Component < Grasppe.Core.Instance
   
   properties
     Defaults
+    ComponentInitialized = false;
   end
   
   properties (Access=private)
@@ -38,6 +39,8 @@ classdef Component < Grasppe.Core.Instance
       end
       
       obj.intializeComponentOptions;
+      
+      obj.ComponentInitialized = true;
       
     end
     

@@ -17,7 +17,7 @@ classdef TextObject < Grasppe.Graphics.AnnotationComponent
   methods
     function obj = TextObject(parentAxes, varargin)
       obj = obj@Grasppe.Graphics.AnnotationComponent(parentAxes, varargin{:});
-    end    
+    end
   end
   
   methods (Access=protected)
@@ -25,7 +25,7 @@ classdef TextObject < Grasppe.Graphics.AnnotationComponent
     function createComponent(obj)
       obj.createComponent@Grasppe.Graphics.InAxesComponent;
       
-       %@(s,e)OnResize(obj, s, e));
+      %@(s,e)OnResize(obj, s, e));
     end
     
     function createHandleObject(obj)
@@ -35,7 +35,15 @@ classdef TextObject < Grasppe.Graphics.AnnotationComponent
     function decorateComponent(obj)
       Grasppe.Graphics.Decorators.FontDecorator(obj);
     end
-       
+    
+  end
+  
+  
+  methods(Static, Hidden=true)
+    function OPTIONS  = DefaultOptions()
+      IsClickable   = false;
+      Grasppe.Utilities.DeclareOptions;
+    end
   end
   
   

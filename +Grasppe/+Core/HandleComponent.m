@@ -19,6 +19,9 @@ classdef HandleComponent < Grasppe.Core.Component
     
     Handle = [];
     
+    PropertyQueue   = {};
+    PropertyQueing  = false;
+    
     HandleObject
     JavaObject
   end
@@ -26,6 +29,23 @@ classdef HandleComponent < Grasppe.Core.Component
   methods
     function obj = HandleComponent(varargin)
       obj = obj@Grasppe.Core.Component(varargin{:});
+    end
+    
+    function set.PropertyQueing(obj, queing)
+      if islogical(queing)
+        isqueing = obj.PropertyQueing;
+        obj.PropertyQueing = queing;
+        if isqueing && ~queing
+          % do update
+          properties = unique(obj.PropertyQueue);
+          for m = 1:numel(properties)
+            propertyName  = properties{m};
+            propertyAlias = obj.HandlePropertyMap(propertyName);
+        
+            obj.(propertyAlias) = obj.handleGet(propertyName);
+          end
+        end
+      end
     end
     
     
@@ -229,11 +249,24 @@ classdef HandleComponent < Grasppe.Core.Component
     
     
     function handlePostSet(obj, source, event)
+      
+      % try
+      %   dispf('%s.Queuing = %s', obj.ID, toString(obj.PropertyQueing));
+      % catch err
+      %   disp('HandlePostSet Disp Error!');
+      % end
+      
+      if obj.PropertyQueing
+        obj.PropertyQueue{end+1} = source.Name;
+        return;
+      end
+      
       try
         propertyName  = source.Name;
+        % dispf('%s:%s.%s = %s', obj.ID, toString(event.AffectedObject), propertyName, toString(event.AffectedObject.(propertyName)));
         propertyAlias = obj.HandlePropertyMap(propertyName);
         
-        obj.(propertyAlias) = event.AffectedObject.(propertyName);
+        try obj.(propertyAlias) = event.AffectedObject.(propertyName); end
       catch err
         if strcmp(err.identifier, 'MATLAB:class:noSetMethod')
           return;

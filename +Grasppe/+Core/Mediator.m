@@ -66,7 +66,7 @@ classdef Mediator < Grasppe.Core.Instance % & Grasppe.Core.Component
           
         else
           obj.MediationProperties.(alias).addSubject(subject);
-          warning('Grasppe:Mediator:PredefinedPropertyAlias', 'Adding subject %s for predefined alias %s for property %s.', subject.ID, alias, property);
+          %warning('Grasppe:Mediator:PredefinedPropertyAlias', 'Adding subject %s for predefined alias %s for property %s.', subject.ID, alias, property);
           %error('Grasppe:Mediator:PredefinedPropertyAlias', 'Could not define the alias %s for the property %s since it is already defined.', alias, property);
         end
         

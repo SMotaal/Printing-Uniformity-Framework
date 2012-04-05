@@ -208,6 +208,36 @@ function [params] = parseModeParamters(params, options, defaults)
   end
   
   if (~isempty(statMode))
+    
+    if stropt('complete', statMode)
+      statModes = {'across', 'around', 'sections', 'zones', 'zonebands'};
+    else
+      modes = statMode;   statMode = {};
+      if isa(modes, 'char'), modes = {modes}; end
+      for s  = 1:numel(modes)
+        switch lower(char(modes{1}))
+          case {'axial', 'across'}
+            region  = 'across';
+          case {'circumferential', 'around'}
+            region  = 'around';
+          case {'region', 'regions', 'section', 'sections'}
+            region  = 'sections';
+          case {'zone', 'zones'}
+            region  = 'across';
+          case {'zoneband', 'zonebands', 'band', 'bands'}
+            region  = 'zoneBands';
+          otherwise
+            region  = '';
+        end
+        if ~isempty(region)
+          statMode{end+1} = region;
+        end
+      end
+      
+      statMode = unique(statMode);
+
+    end
+    
     params.statMode = statMode;
   end
 

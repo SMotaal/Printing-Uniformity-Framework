@@ -14,9 +14,9 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
       obj = obj@Grasppe.PrintUniformity.Data.UniformityDataSource(varargin{:});
     end
 
-    function [X Y Z] = processSheetData(obj, sheetID)
+    function [X Y Z] = processSheetData(obj, sheetID, variableID)
 
-      [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID);
+      [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID, variableID);
       
       sourceData    = obj.SourceData;
       setData       = obj.SetData;

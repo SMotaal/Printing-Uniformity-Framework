@@ -70,11 +70,11 @@ classdef DataParameters < Grasppe.Data.Models.DataParameters
     end
     
     function variableID = get.VariableID(model)
-      variableID = model.sampleID;
+      variableID = model.variableID;
     end
     
     function set.VariableID(model, variableID)
-      model.sampleID = variableID;
+      model.variableID = variableID;
     end
     
   end

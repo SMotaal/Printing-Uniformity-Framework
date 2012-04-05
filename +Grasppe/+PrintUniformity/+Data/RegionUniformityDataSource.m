@@ -1,4 +1,4 @@
-classdef RawUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSource
+classdef RegionUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSource
   %SURFACEUNIFORMITYDATASOURCE Raw printing uniformity data source
   %   Detailed explanation goes here
   
@@ -10,7 +10,7 @@ classdef RawUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSo
   end
   
   methods (Hidden)
-    function obj = RawUniformityDataSource(varargin)
+    function obj = RegionUniformityDataSource(varargin)
       obj = obj@Grasppe.PrintUniformity.Data.UniformityDataSource(varargin{:});
     end
 
@@ -18,23 +18,22 @@ classdef RawUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSo
 
       [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID, variableID);
       
-      sourceData    = obj.SourceData;
-      setData       = obj.SetData;
-      sheetData     = setData.data(sheetID).zData;
+      sourceData      = obj.SourceData;
+      setData         = obj.SetData;
       
-      targetFilter  = sourceData.sampling.masks.Target~=1;
-      patchFilter   = setData.filterData.dataFilter~=1;
+      sheetData       = squeeze(setData.surfs.(variableID).Mean(sheetID, 1, :, :));
       
-      Z(~patchFilter)  = sheetData;
+      targetFilter    = sourceData.sampling.masks.Target~=1;
+      
+      Z(:)            = sheetData;
       Z(targetFilter) = NaN;
-      Z(patchFilter)  = NaN;
       
-      dataFilter  = ~isnan(Z);
-      
-      F = TriScatteredInterp(X(dataFilter), Y(dataFilter), Z(dataFilter));
-      
-      Z = F(X, Y);
-      Z(targetFilter) = NaN;
+%       dataFilter  = ~isnan(Z);
+%       
+%       F = TriScatteredInterp(X(dataFilter), Y(dataFilter), Z(dataFilter));
+%       
+%       Z = F(X, Y);
+%       Z(targetFilter) = NaN;
 
       
       % Z = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource.localVariabilityFilter(Z);
