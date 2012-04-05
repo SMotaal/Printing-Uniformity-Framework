@@ -38,7 +38,8 @@ function [ strID ] = generateUPID( dataSource, dataSet, dataClass )
     dataSource = lower(dataSource);
   end
   
-  strID = [dataSource camelString(dataSet, dataClass)];
+  
+  strID = [toString(dataSource) toString(dataSet) toString(dataClass)];
   
 end
 

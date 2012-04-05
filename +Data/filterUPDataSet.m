@@ -84,7 +84,7 @@ function [ dataSet ] = filterUPDataSet( dataSource, sourceName, patchSet )
 %       setCode = 200-setCode;
 %     end
 %     
-    setID     = camelString(dataSet.sourceName, dataSet.patchSet);
+    setID     = [dataSet.sourceName, int2str(dataSet.patchSet)];
     filterID  = [setID 'Filters'];
     
     sourceSpace = dataSet.sourceName;
