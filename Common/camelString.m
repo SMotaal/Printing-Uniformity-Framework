@@ -1,5 +1,8 @@
 function [ str ] = camelString(varargin)
   %CAMELCASE convert normal text to camelCase
+  
+  warning('Grasppe:Depricated:CamelString', ...
+    'CamelString is depricated due to inaccurate output issues');
    
   str = '';
   
