@@ -1,4 +1,4 @@
-classdef DataParameters < Grasppe.Core.Prototype
+classdef DataParameters < Grasppe.Core.Model
   %SAMPLEDATAPARAMETERS Case, Set, Sample, Variable Details
   %   Detailed explanation goes here
   
