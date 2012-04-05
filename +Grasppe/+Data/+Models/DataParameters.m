@@ -10,6 +10,9 @@ classdef DataParameters < Grasppe.Core.Model
   end
   
   methods
+    function obj = DataParameters(varargin)
+      obj = obj@Grasppe.Core.Model(varargin{:});
+    end    
   end
   
 end

@@ -6,6 +6,9 @@ classdef DataModel < Grasppe.Core.Model
   end
   
   methods
+    function obj = DataModel(varargin)
+      obj = obj@Grasppe.Core.Model(varargin{:});
+    end
   end
   
 end

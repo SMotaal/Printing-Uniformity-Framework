@@ -11,18 +11,23 @@ classdef DataParameters < Grasppe.Data.Models.DataParameters
   
   methods
     
-    function model = DataParameters(caseID, setID, sheetID, variableID)
-      model = model@Grasppe.Data.Models.DataParameters();
-      try model.CaseID      = caseID;     end
-      try model.SetID       = setID;      end
-      try model.SheetID     = sheetID;    end
-      try model.VariableID  = variableID; end
+    function obj = DataParameters(varargin)
+      obj = obj@Grasppe.Data.Models.DataParameters(varargin{:});
     end
+    
+%     function model = DataParameters(caseID, setID, sheetID, variableID)
+%       model = model@Grasppe.Data.Models.DataParameters();
+%       try model.CaseID      = caseID;     end
+%       try model.SetID       = setID;      end
+%       try model.SheetID     = sheetID;    end
+%       try model.VariableID  = variableID; end
+%     end
     
     function model = duplicate(model, varargin)
       
       model = Grasppe.PrintUniformity.Models.DataParameters( ...
-        model.CaseID, model.SetID, model.SheetID, model.VariableID);
+        'CaseID', model.CaseID,   'SetID', model.SetID, ... 
+        'SheetID', model.SheetID, 'VariableID', model.VariableID);
       
       [pargin ineven innames invalues] = pairedArgs(varargin{:});
       for i = 1:pargin

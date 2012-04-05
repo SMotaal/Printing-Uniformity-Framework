@@ -10,6 +10,20 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
   end
   
   methods
+    function obj = UniformityData(varargin)
+      obj = obj@Grasppe.Data.Models.DataModel(varargin{:});
+    end   
+  end
+  
+  methods (Access = protected)
+    % Override copyElement method:
+    function cpObj = copyElement(obj)
+      % Make a shallow copy of all shallow properties
+      cpObj = copyElement@Grasppe.Data.Models.DataModel(obj);
+      
+      % Make a deep copy of the deep object
+      try cpObj.Parameters = copy(obj.Parameters); end
+    end
   end
   
 end

@@ -50,51 +50,49 @@ classdef UniformityProcessor < Grasppe.Core.Component
       import Grasppe.PrintUniformity.Data.*;
       import Grasppe.PrintUniformity.Models.*;
       
+      obj.initializeDataModels;
+      
       parameters      = obj.Parameters;
       metaProperties  = obj.MetaProperties;
       
       setID   = 100;
       try setID       = metaProperties.SetID.NativeMeta.DefaultValue; end
       try if ~isempty(parameters.SetID),      setID     = parameters.SetID; end; end
-      
-      sheetID = 1;
-      try sheetID     = metaProperties.SheetID.NativeMeta.DefaultValue; end
-      try if ~isempty(parameters.SheetID),    sheetID     = parameters.SheetID; end; end
-      
-      variableID = 1;
-      try variableID  = metaProperties.VariableID.NativeMeta.DefaultValue; end
-      try if ~isempty(parameters.VariableID), variableID  = parameters.VariableID; end; end
-      
-      % Reset SetID/SheetID Parameters
-      if ~isa(obj.Parameters, 'Grasppe.PrintUniformity.Models.DataParameters')
-        obj.resetDataParamters;
+                 
+      if ~isequal(obj.Parameters.CaseID, caseID)
+        obj.resetDataModels;
+        
+        obj.Parameters.CaseID     = caseID;
+        obj.SetID                 = setID;
       end
-      
-      obj.Parameters.CaseID     = caseID;
-      obj.Parameters.SetID      = setID;
-      obj.Parameters.SheetID    = sheetID;
-      obj.Parameters.VariableID = variableID;
-      
-      obj.resetData;
+
     end
     
-    function resetDataParamters(obj)
-      if isobject(obj.Parameters) delete(obj.Parameters); end
-      
-      obj.Parameters  = Grasppe.PrintUniformity.Models.DataParameters;
+    function resetDataModels(obj)
+      obj.deleteDataModels;
+      obj.initializeDataModels;
     end
     
-    function resetData(obj)
-      if isobject(obj.Data) delete(obj.Parameters); end
-      
-      obj.Data  = Grasppe.PrintUniformity.Models.UniformityData;
-      
-      if ~isa(obj.Parameters, 'Grasppe.PrintUniformity.Models.DataParameters')
-        obj.resetDataParamters;
+    function deleteDataModels(obj)
+      if isobject(obj.Data)
+        delete(obj.Data);         obj.Data =[];
       end
       
-      obj.Data.Parameters = obj.Parameters;
+      if isobject(obj.Parameters)
+        delete(obj.Parameters);   obj.Parameters =[];
+      end      
     end
+        
+    function initializeDataModels(obj)
+      if ~isa(obj.Parameters, 'Grasppe.PrintUniformity.Models.UniformityData')
+        obj.Data  = Grasppe.PrintUniformity.Models.UniformityData;
+      end
+      
+      if ~isa(obj.Parameters, 'Grasppe.PrintUniformity.Models.DataParameters')
+        obj.Parameters = Grasppe.PrintUniformity.Models.DataParameters;
+      end
+    end
+    
     
     function caseID = get.CaseID(obj)
       caseID = '';
@@ -106,6 +104,8 @@ classdef UniformityProcessor < Grasppe.Core.Component
     
     function set.SetID(obj, setID)
       
+      obj.initializeDataModels;
+      
       parameters      = obj.Parameters;
       
       sheetID = 1;
@@ -116,8 +116,12 @@ classdef UniformityProcessor < Grasppe.Core.Component
       try variableID  = metaProperties.VariableID.NativeMeta.DefaultValue; end
       try if ~isempty(parameters.VariableID), variableID  = parameters.VariableID; end; end
       
-      obj.Parameters.SetID    = setID;
-      obj.Parameters.SheetID  = sheetID;
+      if ~isequal(obj.Parameters.SetID, setID)
+        obj.Parameters.SetID    = setID;
+        obj.Data.SetData        = [];
+      end
+      
+      obj.SheetID  = sheetID;
     end
     
     function setID = get.SetID(obj)
@@ -129,6 +133,8 @@ classdef UniformityProcessor < Grasppe.Core.Component
     %% SheetID
     
     function set.SheetID(obj, sheetID)
+      
+      obj.initializeDataModels;
       
       parameters      = obj.Parameters;
       
@@ -267,24 +273,76 @@ classdef UniformityProcessor < Grasppe.Core.Component
     function caseData = processCaseData(parameters, data)
       import Grasppe.PrintUniformity.Data.*;
       
-      caseData = Data.loadUPData(parameters.CaseID);
+      caseData    = [];
+
+      caseID      = parameters.CaseID;
+      
+      try if isequal(caseID, data.Parameters.CaseID)
+          caseData = data.CaseData; end; end
+
+      if isempty(caseData)
+        data.Parameters.CaseID = [];
+        
+        try caseData  = Data.loadUPData(caseID); end
+      end
+
+      try data.CaseData 	= caseData;
+        if ~isempty(caseData) data.Parameters.CaseID = caseID; end; end
+
     end
     
     function setData = processSetData(parameters, data)
       import Grasppe.PrintUniformity.Data.*;
       
-      setData = struct( 'sourceName', parameters.CaseID, ...
-        'patchSet', parameters.SetID, 'setLabel', ['tv' int2str(parameters.SetID) 'data'], ...
-        'patchFilter', [], 'data', [] );
+      setData     = [];
       
-      setData = Data.filterUPDataSet(data.CaseData, setData);
+      caseID      = parameters.CaseID;
+      setID       = parameters.SetID;
+      
+      try if isequal(setID, data.Parameters.SetID)
+          setData = data.SetData; end; end
+      
+      if isempty(setData)
+        data.Parameters.SetID = [];
+        
+        caseData  = UniformityProcessor.processCaseData(parameters, data);
+        
+        setData   = struct( 'sourceName', caseID, 'patchSet', setID, ...
+          'setLabel', ['tv' int2str(setID) 'data'], 'patchFilter', [], ...
+          'data', [] );
+        
+        setData   = Data.filterUPDataSet(caseData, setData);
+      end
+
+      try data.SetData 	= setData;
+        if ~isempty(setData) data.Parameters.SetID = setID; end; end
       
     end
     
     function sheetData = processSheetData(parameters, data)
       import Grasppe.PrintUniformity.Data.*;
-
       
+      sheetData   = [];
+      
+      caseID      = parameters.CaseID;
+      setID       = parameters.SetID;
+      sheetID     = parameters.SheetID;
+      variableID  = parameters.VariableID;
+      
+      try if isequal(sheetID, data.Parameters.SheetID)
+          sheetData = data.SheetData; end; end
+      
+      if isempty(sheetData)
+        data.Parameters.SheetID = [];
+        
+        setData           = UniformityProcessor.processSetData(parameters, data);
+        
+        try sheetData     = setData.data(sheetID).zData; end
+      end
+      
+      try data.SheetData  = sheetData;
+        if ~isempty(sheetData) data.Parameters.SheetID = sheetID; end; end
+
     end
   end
   
