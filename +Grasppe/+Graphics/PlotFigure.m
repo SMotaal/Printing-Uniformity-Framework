@@ -35,8 +35,9 @@ classdef PlotFigure < Grasppe.Graphics.Figure
       %   set(obj.TitleTextHandle, 'String', value);
       % end
       % try obj.TitleText.updateTitle; end
-      try obj.Title = strtrim(value); end
-      try obj.TitleText.Text = obj.Title; end
+      % try value = strtrim(value); end
+      try obj.Title = value; end
+      try obj.TitleText.Text = [obj.Title '               ']; end
     end
     
     
@@ -127,13 +128,16 @@ classdef PlotFigure < Grasppe.Graphics.Figure
       shiftKey = stropt('shift', event.Data.Modifier);
       commandKey = stropt('command', event.Data.Modifier) || stropt('control', event.Data.Modifier);
       
+      % 
+      
       if ~event.Consumed
       
         if commandKey
           switch event.Data.Key
             case 'w'
-              obj.closeComponent();
+              obj.OnClose(source, event);
               event.Consumed = true;
+              return;
             case 'm'
               if shiftKey
                 if strcmp(obj.WindowStyle, 'docked')
@@ -157,12 +161,15 @@ classdef PlotFigure < Grasppe.Graphics.Figure
         end
         
       end
-      obj.OnKeyPress@FigureObject(source, event);
+      
+      if ~event.Consumed, obj.OnKeyPress@Figure(source, event); end
       
     end
     
     function panAxes(obj, plotAxes, panXY, panLength) % (obj, source, event)
       persistent lastPanXY
+      
+      if isequal(plotAxes.ViewLock, true), return; end
       
       panStickyThreshold  = 3.45;
       panStickyAngle      = 45/2;

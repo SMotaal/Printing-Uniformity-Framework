@@ -48,6 +48,11 @@ classdef InAxesComponent < Grasppe.Graphics.HandleGraphicsComponent ... % & Gras
       try parentFigure = obj.ParentAxes.ParentFigure; end
     end
     
+    function OnMouseDoubleClick(obj, source, event)
+      try obj.ParentAxes.OnMouseDoubleClick(source, event); end
+    end
+    
+    
   end  
   
   methods(Static, Hidden=true)

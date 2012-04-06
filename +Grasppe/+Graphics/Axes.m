@@ -22,7 +22,7 @@ classdef Axes < Grasppe.Graphics.InFigureComponent
       };
     
     AxesHandleProperties = { ...
-      'Box', 'Color', 'Projection', ... % 'View', 'Units', 
+      'Box', 'Color', 'Projection', ... 
       ...
       'OuterPosition', {'PositionMode', 'ActivePositionProperty'}, ...
       ...
@@ -48,7 +48,7 @@ classdef Axes < Grasppe.Graphics.InFigureComponent
     
     PositionMode, OuterPosition,
     
-    Projection,
+    Projection
         
     XScale, XDir, XColor, XLabel, XAxisLocation
     XGrid, XMinorGrid, XMinorTick
@@ -61,7 +61,7 @@ classdef Axes < Grasppe.Graphics.InFigureComponent
 
   end
   
-  properties (Dependent)
+  properties (Dependent, SetObservable, GetObservable, AbortSet)
     %DataAspectRatioMode
     AspectRatio
     
@@ -76,6 +76,9 @@ classdef Axes < Grasppe.Graphics.InFigureComponent
     
     %ZLimMode   ZTickMode,  ZTickLabelMode
     ZLim,       ZTick,      ZTickLabel
+    
+    %View
+    View
   end
   
   
@@ -197,6 +200,20 @@ classdef Axes < Grasppe.Graphics.InFigureComponent
       value = obj.autoGet('ZTickLabel');
     end
     
+    % View    
+    function set.View(obj, value)
+        obj.setView(value);
+    end
+    
+    function value = get.View(obj)
+      value = [];
+      try value = obj.handleGet('View'); end
+    end
+    
+    function setView(obj, view, varargin)
+      obj.handleSet('View', view);
+    end
+    
   end
   
   methods (Hidden=true)
@@ -209,7 +226,7 @@ classdef Axes < Grasppe.Graphics.InFigureComponent
     end
     
     function decorateComponent(obj)
-      Grasppe.Graphics.Decorators.AxesViewDecorator(obj);
+      % Grasppe.Graphics.Decorators.AxesViewDecorator(obj);
       Grasppe.Graphics.Decorators.FontDecorator(obj);
     end
     

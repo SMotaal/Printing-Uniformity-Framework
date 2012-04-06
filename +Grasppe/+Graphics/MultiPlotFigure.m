@@ -158,7 +158,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         margins         = [20 20 20 20]; % L/B/R/T
         spacing         = 60; %-50;
         padding         = [30 30 30 10];
-        minimumSize     = [250 200]; %W/H
+        minimumSize     = [150 125]; %W/H
         sizingRatio     = 1.25;
         
         plottingWidth   = parentPosition(3) - margins(1) - margins(3);

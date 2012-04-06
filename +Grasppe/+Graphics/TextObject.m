@@ -6,12 +6,12 @@ classdef TextObject < Grasppe.Graphics.AnnotationComponent
     ComponentType = 'text';
     
     TextObjectHandleProperties = { ...
-      {'Text', 'String'}, 'Color'};
+      {'Text', 'String'}, 'Color', 'Clipping', 'Margin', 'Rotation', 'Interpreter'};
     
   end
   
   properties (SetObservable, GetObservable, AbortSet)
-    Text, Color
+    Text, Color, Clipping='off', Margin=5, Rotation, Interpreter='tex';
   end
   
   methods

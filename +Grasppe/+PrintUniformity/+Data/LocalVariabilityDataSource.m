@@ -16,7 +16,7 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
     
     function attachPlotObject(obj, plotObject)
       obj.attachPlotObject@Grasppe.PrintUniformity.Data.UniformityDataSource(plotObject);
-      try plotObject.ParentAxes.View = [-90 90]; end
+      try plotObject.ParentAxes.setView([-90 90], true); end
     end
 
     function [X Y Z] = processSheetData(obj, sheetID, variableID)
@@ -36,6 +36,7 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
       
       Z = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource.localVariabilityFilter(Z);
       
+      Z(targetFilter~=1)  = NaN;
       try
         zNaN        = isnan(Z);
         
@@ -59,8 +60,12 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
       try debugStamp(obj.ID); catch, debugStamp(); end;
       obj.XData = XData;
       obj.YData = YData;
-      obj.ZData = ones(size(ZData)) * nanmean(ZData(:));
+      %obj.ZData = ZData;
       obj.CData = ZData;
+      
+      ZData(~isnan(ZData)) = nanmean(ZData(:));
+      
+      obj.ZData = ZData;
       
       obj.updatePlots();
     end

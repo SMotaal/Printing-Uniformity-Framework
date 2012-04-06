@@ -23,7 +23,14 @@ classdef AxesViewDecorator < Grasppe.Core.Prototype & Grasppe.Core.PropertyDecor
     %     end
     
     function set.View(obj, value)
-      obj.View = value;
+      locked = false;
+      try locked = isequal(obj.Component.ViewLock, true); end
+      
+      if ~locked 
+        obj.View = value; 
+      else
+        obj.Component.View = obj.View;
+      end
 %       if obj.Component.HasParentFigure
 %         try obj.Component.ParentFigure.StatusText.Text = toString(value); end
 %       end

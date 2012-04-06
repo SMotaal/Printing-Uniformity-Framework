@@ -181,7 +181,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       for h = linkedPlots
         plotObject = get(h, 'UserData');
         try plotObject.refreshPlot(obj); end
-        try plotObject.updatePlotTitle; end
+        % try plotObject.updatePlotTitle; end
       end
     end
     

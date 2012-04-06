@@ -51,13 +51,32 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
   
   methods (Hidden=true)
     function OnClose(obj, source, event)
-      disp(event);
-      obj.handleSet('Visible', 'off');
+      % disp(event);
+      %obj.handleSet('WindowStyle
+%       style = obj.WindowStyle;
+      event.Consumed = true;
+      obj.hide; %IsVisible = 'off';
+%       if strcmp(style, 'docked') obj.WindowStyle = 'normal'; end
+%       obj.handleSet('Visible', 'off');
+%       if strcmp(style, 'docked') obj.WindowStyle = 'docked'; end
+%       obj.handleSet('Visible', 'off');
     end
     
     function OnResize(obj, source, event)
       % disp('Resized Figure');
     end
+    
+    function show(obj)
+      figure(obj.Handle);
+      obj.IsVisible = 'on';
+      obj.handleSet('Visible', 'on');
+    end
+    
+    function hide(obj)
+      figure(obj.Handle);
+      obj.IsVisible = 'off';
+      obj.handleSet('Visible', 'off');
+    end      
   end
   
   methods (Access=protected)

@@ -30,6 +30,7 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
       
       %obj.ParentFigure.registerMouseEventHandler(obj);
       obj.handleSet('EdgeAlpha', 0.5);
+      obj.handleSet('LineWidth', 0.25);
     end
   end
   
@@ -42,11 +43,20 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
       try obj.ParentAxes.ZLim = dataSource.ZLim; end
       try obj.ParentAxes.CLim = dataSource.CLim; end
       
-      try
-        obj.ParentFigure.SampleTitle = dataSource.SheetName;
-      end
+      %try obj.ParentFigure.SampleTitle = dataSource.SheetName; end
+      obj.updatePlotTitle;
       
     end
+    
+    function updatePlotTitle(obj, base, sample)
+      
+      try caseName  = obj.DataSource.CaseName;  end
+      try setName   = obj.DataSource.SetName;   end
+      try sheetName = obj.DataSource.SheetName; end
+      
+      try obj.ParentFigure.BaseTitle    = [caseName ' ' setName]; end;
+      try obj.ParentFigure.SampleTitle  = sheetName; end;
+    end    
     
     function refreshPlotData(obj, source, event)
       try debugStamp(obj.ID); catch, debugStamp(); end;

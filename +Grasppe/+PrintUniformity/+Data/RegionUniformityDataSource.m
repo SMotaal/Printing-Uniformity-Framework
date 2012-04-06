@@ -13,6 +13,11 @@ classdef RegionUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
     function obj = RegionUniformityDataSource(varargin)
       obj = obj@Grasppe.PrintUniformity.Data.UniformityDataSource(varargin{:});
     end
+    
+    function attachPlotObject(obj, plotObject)
+      obj.attachPlotObject@Grasppe.PrintUniformity.Data.UniformityDataSource(plotObject);
+      try plotObject.ParentAxes.ViewLock = false; end
+    end    
 
     function [X Y Z] = processSheetData(obj, sheetID, variableID)
 
