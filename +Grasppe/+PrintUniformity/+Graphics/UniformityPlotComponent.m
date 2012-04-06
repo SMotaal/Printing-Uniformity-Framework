@@ -44,6 +44,12 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype
     function attachDataSource(obj)
       obj.resetPlotLimits;
       obj.DataSource.attachPlotObject(obj);
+      
+      if isempty(obj.ParentFigure.DataSources) || ~iscell(obj.ParentFigure.DataSources)
+        obj.ParentFigure.DataSources = {};
+      end
+      
+      obj.ParentFigure.DataSources{end+1} = obj.DataSource;
     end
     
     function resetPlotLimits(obj)

@@ -91,6 +91,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
       % obj.StatusText  = OverlayTextObject.Create(obj.OverlayAxes);
       obj.TitleText   = Grasppe.Graphics.TextObject(obj.OverlayAxes, 'Text', 'tada');
       % obj.TitleText.updateTitle;
+      
     end
     
     function preparePlotAxes(obj)

@@ -49,6 +49,8 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent ...
       obj = obj@Grasppe.Core.DecoratedComponent();      
       obj = obj@Grasppe.Core.EventHandler();
       obj = obj@Grasppe.Core.HandleComponent(varargin{:});
+      
+      try obj.OnResize; end
     end
     
   end

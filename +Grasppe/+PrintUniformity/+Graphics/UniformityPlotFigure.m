@@ -22,6 +22,9 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
       
       obj.attachMediations(obj.PlotAxes, axesProperties);
       
+      
+      obj.attachMediations(obj.DataSources, dataProperties);
+      
       %       properties  = axesProperties;
       %       subjects    = plotAxes
       %       for m = 1:numel(subjects)
@@ -48,6 +51,8 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
       
       plotMediator  = obj.PlotMediator;
       
+      subjects = subjects;
+      
       for m = 1:numel(subjects)
         subject = subjects{m};
         for n = 1:numel(properties)
@@ -70,7 +75,7 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
   
   methods(Access=protected)
     function preparePlotAxes(obj)
-      obj.PlotAxesLength = 1;
+      % obj.PlotAxesLength = 1;
       obj.preparePlotAxes@Grasppe.Graphics.MultiPlotFigure;
     end
   end

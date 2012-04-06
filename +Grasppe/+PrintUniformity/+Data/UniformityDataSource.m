@@ -41,7 +41,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     
     % ExtendedParameters,
     % DataParameters, CaseData, SetData, SampleData
-    XData, YData, ZData
+    XData, YData, ZData, CData
     % CaseID, SetID, SheetID, VariableID
     SampleSummary = false
     
@@ -129,7 +129,9 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
         if Grasppe.Graphics.PlotComponent.checkInheritence(plotObject)
           plotObject.XData    = 'xData'; ...
             plotObject.YData  = 'yData'; ...
-            plotObject.ZData  = 'zData';
+            plotObject.ZData  = 'zData'; ...
+            plotObject.CData  = 'cData';
+            
           try
             obj.LinkedPlotObjects(end+1) = plotObject;
           catch
@@ -147,7 +149,9 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     end
     
     function updatePlots(obj, linkedPlots)
-      xData = obj.XData; yData = obj.YData; zData = obj.ZData;
+      xData = obj.XData; yData = obj.YData; zData = obj.ZData; 
+
+      cData = obj.CData;
       
       %       try
       %         zNaN        = isnan(zData);
@@ -452,6 +456,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       obj.XData = XData;
       obj.YData = YData;
       obj.ZData = ZData;
+      obj.CData = ZData;
       
       obj.updatePlots();
     end

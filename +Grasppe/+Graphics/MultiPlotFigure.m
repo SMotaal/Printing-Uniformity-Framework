@@ -5,12 +5,13 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
   properties
     PlotAxesTargets = []; % = struct('id', [], 'idx', [], 'object', []);
     PlotAxesStack   = [];
-    PlotAxesLength  = 2;
+    PlotAxesLength  = 1;
     
     PlotRows;
     PlotColumns;
     PlotWidth;
     PlotHeight;
+    PlotArea;
     HiddenFigure    = figure('Visible', 'off');
     
   end
@@ -25,6 +26,8 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
     function OnResize(obj, source, event)
       obj.OnResize@Grasppe.Graphics.PlotFigure;
       obj.layoutPlotAxes;
+      obj.layoutOverlay;
+      
     end
   end
   
@@ -128,6 +131,25 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       obj.layoutPlotAxes();
     end
     
+    function layoutOverlay(obj)
+      
+      plotArea      = obj.PlotArea;
+      
+      try
+        obj.TitleText.handleSet('Units', 'pixels');
+        
+        titlePosition = obj.TitleText.handleGet('Position');
+        titlePosition = [plotArea(1) plotArea(2)+plotArea(4) titlePosition(3)];
+        
+        plotInset     = obj.PlotAxes{1}.handleGet('TightInset');
+        
+        titlePosition = titlePosition + [0 plotInset(2)+plotInset(4) 0];
+      end
+      
+      try obj.TitleText.handleSet('Position', titlePosition); end
+      
+    end    
+    
     
     function layoutPlotAxes(obj)
       try
@@ -220,8 +242,10 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         cellLeft        = (cellWidth - plotWidth) / 2;
         cellBottom      = (cellHeight - plotHeight) / 2;
         
-        for i = 1:cells
-          [column row]  = ind2sub([columns rows], i);
+        plotPosition    = zeros(cells, 4);
+        
+        for m = 1:cells
+          [column row]  = ind2sub([columns rows], m);
           if (row == rows)
             plotLeft      = fittingLeft   + lastOffset + cellLeft   + padding(1) + (cellWidth  * (column - 1));
             plotBottom    = fittingBottom + cellBottom + padding(2) + (cellHeight * (rows-row));
@@ -230,28 +254,34 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
             plotBottom    = fittingBottom + cellBottom + padding(2) + (cellHeight * (rows-row));
           end
           
-          plotPosition  = round([plotLeft plotBottom plotSize]);
+          plotPosition(m, :) = round([plotLeft plotBottom plotSize]);
 
           try
             if plotBottom < (plottingHeight)
-              obj.PlotAxes{i}.handleSet('Parent', obj.Handle);
-              if ~isempty(obj.PlotAxes{i}) && ishandle(obj.PlotAxes{i}.Handle)
-                obj.PlotAxes{i}.handleSet('ActivePositionProperty', 'OuterPosition');
-                obj.PlotAxes{i}.handleSet('Units', 'pixels');
-                obj.PlotAxes{i}.handleSet('Position', plotPosition);
+              obj.PlotAxes{m}.handleSet('Parent', obj.Handle);
+              if ~isempty(obj.PlotAxes{m}) && ishandle(obj.PlotAxes{m}.Handle)
+                obj.PlotAxes{m}.handleSet('ActivePositionProperty', 'OuterPosition');
+                obj.PlotAxes{m}.handleSet('Units', 'pixels');
+                obj.PlotAxes{m}.handleSet('Position', plotPosition(m, :));
               end
             else
-              obj.PlotAxes{i}.handleSet('Parent', obj.HiddenFigure);
+              obj.PlotAxes{m}.handleSet('Parent', obj.HiddenFigure);
             end
           catch err
             try debugStamp(obj.ID); end
-            dispf('Layout FAILED for %s', obj.PlotAxes{i}.ID);
+            dispf('Layout FAILED for %s', obj.PlotAxes{m}.ID);
           end
         end
         
+        areaMin = min(plotPosition, [], 1);
+        areaMax = max(plotPosition, [], 1);        
+        areaPosition = [areaMin(1:2)  areaMin(1:2)-areaMax(1:2)+areaMax(3:4)];
+        
+        obj.PlotArea = areaPosition;
+        
       catch err
         try debugStamp(obj.ID); end
-        disp(err);
+        %disp(err);
       end
     end
     

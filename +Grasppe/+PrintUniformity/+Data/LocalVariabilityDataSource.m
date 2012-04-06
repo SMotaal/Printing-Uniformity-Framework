@@ -13,6 +13,11 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
     function obj = LocalVariabilityDataSource(varargin)
       obj = obj@Grasppe.PrintUniformity.Data.UniformityDataSource(varargin{:});
     end
+    
+    function attachPlotObject(obj, plotObject)
+      obj.attachPlotObject@Grasppe.PrintUniformity.Data.UniformityDataSource(plotObject);
+      try plotObject.ParentAxes.View = [-90 90]; end
+    end
 
     function [X Y Z] = processSheetData(obj, sheetID, variableID)
 
@@ -50,6 +55,15 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
       obj.CLim  = zLim;
     end
     
+    function setPlotData(obj, XData, YData, ZData)
+      try debugStamp(obj.ID); catch, debugStamp(); end;
+      obj.XData = XData;
+      obj.YData = YData;
+      obj.ZData = ones(size(ZData)) * nanmean(ZData(:));
+      obj.CData = ZData;
+      
+      obj.updatePlots();
+    end
     
   end
   
