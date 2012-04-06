@@ -234,13 +234,12 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
 
           try
             if plotBottom < (plottingHeight)
+              obj.PlotAxes{i}.handleSet('Parent', obj.Handle);
               if ~isempty(obj.PlotAxes{i}) && ishandle(obj.PlotAxes{i}.Handle)
                 obj.PlotAxes{i}.handleSet('ActivePositionProperty', 'OuterPosition');
                 obj.PlotAxes{i}.handleSet('Units', 'pixels');
                 obj.PlotAxes{i}.handleSet('Position', plotPosition);
               end
-              obj.PlotAxes{i}.handleSet('Parent', obj.Handle);
-              
             else
               obj.PlotAxes{i}.handleSet('Parent', obj.HiddenFigure);
             end

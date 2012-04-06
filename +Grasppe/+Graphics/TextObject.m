@@ -5,7 +5,7 @@ classdef TextObject < Grasppe.Graphics.AnnotationComponent
   properties (Transient, Hidden)
     ComponentType = 'text';
     
-    TextHandleProperties = { ...
+    TextObjectHandleProperties = { ...
       {'Text', 'String'}, 'Color'};
     
   end

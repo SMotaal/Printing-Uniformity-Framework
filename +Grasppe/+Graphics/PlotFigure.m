@@ -35,6 +35,8 @@ classdef PlotFigure < Grasppe.Graphics.Figure
       %   set(obj.TitleTextHandle, 'String', value);
       % end
       % try obj.TitleText.updateTitle; end
+      try obj.Title = strtrim(value); end
+      try obj.TitleText.Text = obj.Title; end
     end
     
     

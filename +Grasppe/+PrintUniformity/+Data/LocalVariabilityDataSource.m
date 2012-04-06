@@ -18,11 +18,11 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
 
       [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID, variableID);
       
-      sourceData    = obj.SourceData;
-      setData       = obj.SetData;
-      sheetData     = setData.data(sheetID).zData;
+      caseData      = obj.CaseData; ...
+        setData   	= obj.SetData; ...
+        sheetData   = obj.SheetData;
       
-      targetFilter  = sourceData.sampling.masks.Target;
+      targetFilter  = caseData.sampling.masks.Target;
       patchFilter   = setData.filterData.dataFilter;
       
       Z(patchFilter)      = sheetData;

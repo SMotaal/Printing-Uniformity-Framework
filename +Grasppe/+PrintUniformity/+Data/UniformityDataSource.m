@@ -2,12 +2,12 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
   %UNIFORMITYDATASOURCE Superclass for surface uniformity data sources
   %   Detailed explanation goes here
   
-%   properties (Access=private)
-%     COMPONENTTYPE     = 'PrintingUniformityDataSource';
-%     HANDLEEVENTS      = {};
-%     DATAPROPERTIES    = {'CaseID', 'SetID', 'XData', 'YData', 'ZData', 'SheetID'};
-%     TESTPROPERTY      = 'test';
-%   end  
+  %   properties (Access=private)
+  %     COMPONENTTYPE     = 'PrintingUniformityDataSource';
+  %     HANDLEEVENTS      = {};
+  %     DATAPROPERTIES    = {'CaseID', 'SetID', 'XData', 'YData', 'ZData', 'SheetID'};
+  %     TESTPROPERTY      = 'test';
+  %   end
   
   properties (Transient, Hidden)
     HandleProperties = {};
@@ -28,7 +28,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       'YLim',       'Y Axes Limits',    'Data Limits',      'limits',   '';   ...
       'ZLim',       'Z Axes Limits',    'Data Limits',      'limits',   '';   ...
       };
-        
+    
   end
   
   properties (Hidden)
@@ -39,10 +39,10 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
   
   properties (SetObservable, GetObservable)
     
-    ExtendedParameters,
-    DataParameters, SourceData, SetData, SampleData
+    % ExtendedParameters,
+    % DataParameters, CaseData, SetData, SampleData
     XData, YData, ZData
-    CaseID, SetID, SheetID, VariableID
+    % CaseID, SetID, SheetID, VariableID
     SampleSummary = false
     
     %DataAspectRatioMode
@@ -62,12 +62,26 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
   end
   
   properties (GetAccess=public, SetAccess=protected)
-    currentParameters = [];
+    % currentParameters = [];
+    
+    DataProcessor;
   end
   
-  properties (Dependent)
-    CaseName, SetName, SheetName,
+  properties (SetObservable, GetObservable, AbortSet)
+    Parameters, Data;
+    CaseID,     SetID,    SheetID,    VariableID
+    CaseName,   SetName,  SheetName
   end
+  
+  properties (Dependent, Hidden=true)
+    CaseData,   SetData,  SheetData
+  end
+  
+  events
+    CaseChange
+    SetChange
+    SheetChange
+  end  
   
   methods (Hidden)
     function obj = UniformityDataSource(varargin)
@@ -82,11 +96,9 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
         end
       end
       
-      % obj = obj@GrasppeComponent(args{:});
+      % obj.currentParameters = Grasppe.PrintUniformity.Models.DataParameters;
       
-      obj.currentParameters = Grasppe.PrintUniformity.Models.DataParameters;
-      
-      obj.updateSourceParameters();
+      % obj.updateSourceParameters();
       
       obj.attachPlotObject(plotObject);
       
@@ -95,7 +107,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     function attachPlotObject(obj, plotObject)
       
       if isempty(plotObject) || ~Grasppe.Graphics.PlotComponent.checkInheritence(plotObject)
-       return;
+        return;
       end
       
       try debugStamp(obj.ID); catch, debugStamp(); end;
@@ -137,12 +149,12 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     function updatePlots(obj, linkedPlots)
       xData = obj.XData; yData = obj.YData; zData = obj.ZData;
       
-%       try
-%         zNaN        = isnan(zData);
-%         
-%         xData(zNaN) = NaN;
-%         yData(zNaN) = NaN;
-%       end
+      %       try
+      %         zNaN        = isnan(zData);
+      %
+      %         xData(zNaN) = NaN;
+      %         yData(zNaN) = NaN;
+      %       end
       
       try
         linkedPlots = unqiue(linkedPlots);
@@ -164,11 +176,31 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       
       for h = linkedPlots
         plotObject = get(h, 'UserData');
-        try plotObject.refreshPlot(obj); end     
+        try plotObject.refreshPlot(obj); end
         try plotObject.updatePlotTitle; end
       end
     end
     
+  end
+  
+  methods (Access=protected)
+    
+    function createComponent(obj)
+      obj.initializeDataProcessor;
+      obj.createComponent@Grasppe.Core.Component;
+    end
+    
+    function initializeDataProcessor(obj)
+      if ~isa(obj.DataProcessor, 'Grasppe.PrintUniformity.Data.UniformityProcessor') ...
+          || ~isvalid(obj.DataProcessor)
+        obj.DataProcessor = Grasppe.PrintUniformity.Data.UniformityProcessor;
+        obj.DataProcessor.addlistener('CaseChange',   @obj.updateCaseData);
+        obj.DataProcessor.addlistener('SetChange',    @obj.updateSetData);
+        obj.DataProcessor.addlistener('SheetChange',  @obj.updateSheetData);
+        
+        % dispf('%s.%s', obj.ID, 'initializeDataProcessor');
+      end
+    end
   end
   
   %% Data Source Getters & Setters
@@ -176,49 +208,71 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     
     %% currentParameters
     
-    function parameters = get.currentParameters(obj)
-      parameters = [];
-      try
-%         if isempty(obj.currentParameters)
-%           obj.currentParameters = Grasppe.PrintUniformity.Models.DataParameters;
-%         end
-      end
-      try parameters = obj.currentParameters; end
+    %     function parameters = get.currentParameters(obj)
+    %       parameters = [];
+    %       try
+    % %         if isempty(obj.currentParameters)
+    % %           obj.currentParameters = Grasppe.PrintUniformity.Models.DataParameters;
+    % %         end
+    %       end
+    %       try parameters = obj.currentParameters; end
+    %     end
+    
+    %% CaseID / CaseName / CaseData
+    function caseID = get.CaseID(obj)
+      caseID = [];
+      try caseID = obj.DataProcessor.CaseID; end
     end
     
-    %% CaseID & SourceName
-    
-    function set.CaseID(obj, value)
-      [obj.CaseID changed] = changeSet(obj.CaseID, value);
-      try 
-        changed = changed && ~isequal(value, obj.currentParameters.CaseID);
-        if changed, obj.updateSourceParameters; end
-        obj.CaseID = obj.currentParameters.CaseID;
-      end
-      try debugStamp(obj.ID); catch, debugStamp(); end
+    function set.CaseID(obj, caseID)
+      processor = obj.DataProcessor;
+      [processor.CaseID changed] = changeSet(processor.CaseID, caseID);
+      
+      if changed, obj.CaseID = processor.CaseID; end
+      % [obj.CaseID changed] = changeSet(obj.CaseID, value);
+      % try
+      %   changed = changed && ~isequal(value, obj.currentParameters.CaseID);
+      %   if changed, obj.updateSourceParameters; end
+      %   obj.CaseID = obj.currentParameters.CaseID;
+      % end
+      % try debugStamp(obj.ID); catch, debugStamp(); end
     end
     
     function caseName = get.CaseName(obj)
       caseName = []; pressName = []; runCode = [];
       
-      try pressName = obj.SourceData.metadata.testrun.press.name; end
-
-      try runCode   = obj.SourceData.name; end
+      try pressName = obj.CaseData.metadata.testrun.press.name; end
+      
+      try runCode   = obj.CaseData.name; end
       try runCode   = sprintf('#%s', char(regexpi(runCode, '[0-9]{2}[a-z]?$', 'match'))); end
-
+      
       try caseName  = strtrim([pressName ' ' runCode]); end
     end
     
-    %% SetID & SetName
+    function caseData = get.CaseData(obj)
+      caseData = [];
+      try caseData = obj.DataProcessor.CaseData; end
+    end
     
-    function set.SetID(obj, value)
-      [obj.SetID changed] = changeSet(obj.SetID, value);
-      try
-        changed = changed && ~isequal(value, obj.currentParameters.SetID);
-        if changed, obj.updateSourceParameters; end
-        obj.SetID = obj.currentParameters.SetID;
-      end
-      try debugStamp(obj.ID); catch, debugStamp(); end
+    %% SetID & SetName
+    function setID = get.SetID(obj)
+      setID = [];
+      try setID = obj.DataProcessor.SetID; end
+    end
+    
+    function set.SetID(obj, setID)
+      processor = obj.DataProcessor;
+      [processor.SetID changed] = changeSet(processor.SetID, setID);
+      
+      
+      if changed, obj.SetID = processor.SetID; end
+      % [obj.SetID changed] = changeSet(obj.SetID, value);
+      % try
+      %   changed = changed && ~isequal(value, obj.currentParameters.SetID);
+      %   if changed, obj.updateSourceParameters; end
+      %   obj.SetID = obj.currentParameters.SetID;
+      % end
+      % try debugStamp(obj.ID); catch, debugStamp(); end
     end
     
     function setName = get.SetName(obj)
@@ -230,33 +284,54 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       if isnumeric(setName), setName = int2str(setName); end
     end
     
-    %% SheetID & SheetName
+    function setData = get.SetData(obj)
+      setData = [];
+      try setData = obj.DataProcessor.SetData; end
+    end    
     
-    function set.SheetID(obj, value)
-      [obj.SheetID changed] = changeSet(obj.SheetID, value);
-      try
-        changed = changed && ~isequal(value, obj.currentParameters.SheetID);
-        if changed, obj.updateSourceParameters; end
-        obj.SheetID = obj.currentParameters.SheetID;
-      end
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+    %% SheetID & SheetName
+    function sheetID = get.SheetID(obj)
+      sheetID = [];
+      try sheetID = obj.DataProcessor.SheetID; end
+    end
+    
+    function set.SheetID(obj, sheetID)
+      processor = obj.DataProcessor;
+      [processor.SheetID changed] = changeSet(processor.SheetID, sheetID);
+      
+      if changed, obj.SheetID = processor.SheetID; end
     end
     
     function sampleName = get.SheetName(obj)
       sampleName = [];
-      try sampleName = obj.SourceData.index.Sheets(obj.currentParameters.SheetID); end
+      try sampleName = obj.CaseData.index.Sheets(obj.SheetID); end
       if isnumeric(sampleName), sampleName = int2str(sampleName); end
     end
     
+    function sheetData = get.SheetData(obj)
+      sheetData = [];
+      try sheetData = obj.DataProcessor.SheetData; end
+    end    
+    
     %% VariableID
-    function set.VariableID(obj, value)
-      [obj.VariableID changed] = changeSet(obj.VariableID, value);
-      try
-        changed = changed && ~isequal(value, obj.currentParameters.VariableID);
-        if changed, obj.updateSourceParameters; end
-        obj.VariableID = obj.currentParameters.VariableID;
-      end
-      try debugStamp(obj.ID); catch, debugStamp(); end
+    function variableID = get.VariableID(obj)
+      variableID = [];
+      try variableID = obj.DataProcessor.VariableID; end
+    end
+    
+    function set.VariableID(obj, variableID)
+      processor = obj.DataProcessor;
+      [processor.VariableID changed] = changeSet(processor.VariableID, variableID);
+      
+      
+      obj.VariableID = processor.VariableID;
+      % [obj.VariableID changed] = changeSet(obj.VariableID, value);
+      % try
+      %   changed = changed && ~isequal(value, obj.currentParameters.VariableID);
+      %   if changed, obj.updateSourceParameters; end
+      %   obj.VariableID = obj.currentParameters.VariableID;
+      % end
+      % try debugStamp(obj.ID); catch, debugStamp(); end
     end
     
     
@@ -264,122 +339,105 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     
     function sets = getSetCount(obj)
       sets = [];
-      try sets = obj.SourceData.Datasets.Length; end
+      try sets = obj.CaseData.Datasets.Length; end
     end
     
     function samples = getSheetCount(obj)
       samples = [];
-      try samples = obj.SourceData.length.Sheets; end
-    end    
+      try samples = obj.CaseData.length.Sheets; end
+    end
     
     function rows = getRowCount(obj)
       rows = [];
-      try rows    = obj.SourceData.metrics.sampleSize(1); end
+      try rows = obj.CaseData.metrics.sampleSize(1); end
     end
     
     function columns = getColumnCount(obj)
       columns = [];
-      try columns = obj.SourceData.metrics.sampleSize(2); end
+      try columns = obj.CaseData.metrics.sampleSize(2); end
     end
     
-    function regions = getRegionCount(obj)
-      regions = [];
-      % try regions    = obj.SourceData.metrics.sampleSize(1); end
-    end
-    
-    function zones = getZoneCount(obj)
-      zones = [];
-      % try zones    = obj.SourceData.metrics.sampleSize(1); end
-    end
+%     function regions = getRegionCount(obj)
+%       regions = [];
+%       try regions = obj.CaseData.metrics.sampleSize(1); end
+%     end
+%     
+%     function zones = getZoneCount(obj)
+%       zones = [];
+%       try zones = obj.CaseData.metrics.sampleSize(1); end
+%     end
     
   end
   
   %% Data Source Update Routines
   methods
     
-    function updateSourceParameters(obj)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+    % function updateSourceParameters(obj)
+    %   try debugStamp(obj.ID); catch, debugStamp(); end;
+    %
+    %   if ~isa(obj.currentParameters, 'Grasppe.PrintUniformity.Models.DataParameters')
+    %     return;
+    %   end
+    %
+    %   parameters = obj.currentParameters;
+    %
+    %   [parameters.CaseID      updateSource    ] = changeSet(parameters.CaseID,      obj.CaseID      );
+    %   [parameters.SetID       updateSet       ] = changeSet(parameters.SetID,       obj.SetID       );
+    %   [parameters.SheetID     updateSheet     ] = changeSet(parameters.SheetID,     obj.SheetID     );
+    %   [parameters.VariableID  updateVariable  ] = changeSet(parameters.VariableID,  obj.VariableID  );
+    %
+    %   if updateSource || updateSet || updateVariable
+    %     obj.updateCaseData();
+    %   end
+    %
+    %   if updateSheet || updateSet || updateSource || updateVariable
+    %     obj.updateSheetData();
+    %   end
+    %
+    %   [obj.CaseID     updateSource    ] = changeSet(obj.CaseID,     parameters.CaseID     );
+    %   [obj.SetID      updateSet       ] = changeSet(obj.SetID,      parameters.SetID      );
+    %   [obj.SheetID    updateSheet     ] = changeSet(obj.SheetID,    parameters.SheetID    );
+    %   [obj.VariableID updateVariable  ] = changeSet(obj.VariableID, parameters.VariableID );
+    % end
+    
+    function updateCaseData(obj, source, event)
+      % dispf('%s.%s', obj.ID, 'updateCaseData');
       
-      if ~isa(obj.currentParameters, 'Grasppe.PrintUniformity.Models.DataParameters')
-        return;
-      end
+      % obj.updateSetData;
       
-      parameters = obj.currentParameters;
-      
-      [parameters.CaseID      updateSource    ] = changeSet(parameters.CaseID,      obj.CaseID      );
-      [parameters.SetID       updateSet       ] = changeSet(parameters.SetID,       obj.SetID       );
-      [parameters.SheetID     updateSheet     ] = changeSet(parameters.SheetID,     obj.SheetID     );
-      [parameters.VariableID  updateVariable  ] = changeSet(parameters.VariableID,  obj.VariableID  );
-      
-      if updateSource || updateSet || updateVariable
-        obj.updateSourceData();
-      end
-      
-      if updateSheet || updateSet || updateSource || updateVariable
-        obj.updateSheetData();
-      end
-      
-      [obj.CaseID     updateSource    ] = changeSet(obj.CaseID,     parameters.CaseID     );
-      [obj.SetID      updateSet       ] = changeSet(obj.SetID,      parameters.SetID      );
-      [obj.SheetID    updateSheet     ] = changeSet(obj.SheetID,    parameters.SheetID    );
-      [obj.VariableID updateVariable  ] = changeSet(obj.VariableID, parameters.VariableID );
+      try obj.notify('CaseChange', event.EventData); return; end
+      obj.notify('CaseChange');
     end
     
-    function updateSourceData(obj)
-      parameters  = obj.currentParameters;
+    function updateSetData(obj, source, event)
+      % dispf('%s.%s', obj.ID, 'updateSetData');
       
-      sourceID      = parameters.CaseID; ...
-        setID       = parameters.SetID; ...
-        sheetID     = parameters.SheetID; ...
-        variableID  = parameters.VariableID;
+      % obj.updateSheetData;
       
-      if ~isnumeric(setID)
-        setID = [];
-      end
-      
-      args = {sourceID, setID};
-      
-      dataParameters  = obj.DataParameters;
-      
-      if isempty(dataParameters) || ~isa(dataParameters, 'cell') 
-        dataParameters = {};
-      end
-      
-      if ~isempty(variableID) && isa(variableID, 'char')
-        dataParameters{end+1} = variableID;
-      end
-                  
-      args = {args{:}, dataParameters{:}};
-      
-      [sourceData setData extendedParameters] = Plots.plotUPStats(args{:});
-      
-      obj.SourceData            = sourceData; ...
-        obj.SetData             = setData; ...
-        obj.ExtendedParameters  = extendedParameters;
-      
-      parameters.SetID          = obj.SetData.patchSet;     
-      parameters.SheetID        = limit(sheetID, 1, obj.getSheetCount);
-      parameters.VariableID     = char(obj.ExtendedParameters.statMode);
-              
       obj.optimizeSetLimits;
       
+      try obj.notify('SetChange', event.EventData); return; end
+      obj.notify('SetChange');
     end
     
-    function updateSheetData(obj)
-      parameters  = obj.currentParameters;
-      
-      sourceID      = parameters.CaseID; ...
-        setID       = parameters.SetID; ...
-        sheetID     = parameters.SheetID; ...
-        variableID  = parameters.VariableID;
+    function updateSheetData(obj, source, event)
+      % dispf('%s.%s', obj.ID, 'updateSheetData');
+      processor     = obj.DataProcessor; ...
+        ...
+        sourceID    = processor.CaseID; ...
+        setID       = processor.SetID; ...
+        sheetID     = processor.SheetID; ...
+        variableID  = processor.VariableID;
       
       rows      = obj.getRowCount;
       columns   = obj.getColumnCount;
       
       [X Y Z]   = obj.processSheetData(sheetID, variableID);
       
-      obj.setPlotData(X, Y, Z);
+      obj.setPlotData(X, Y, Z);     
       
+      try obj.notify('SheetChange', event.EventData); return; end
+      obj.notify('SheetChange');
     end
     
     function [X Y Z] = processSheetData(obj, sheetID, variableID)
@@ -405,24 +463,24 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       
       try
         setData   = obj.SetData;
-
+        
         zData     = [setData.data(:).zData];
         zMean     = nanmean(zData);
         zStd      = nanstd(zData,1);
         zSigma    = [-3 +3] * zStd;
-
-
+        
+        
         zMedian   = round(zMean*2)/2;
         zRange    = [-3 +3];
         zLim      = zMedian + zRange;
-
+        
         cLim      = zLim;
       end
       
       obj.ZLim  = zLim;
       obj.CLim  = cLim;
     end
-
+    
     
     function sheet = setSheet (obj, sheet)
       
@@ -473,8 +531,8 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
   
   %% Static Component Methods
   
-  methods(Abstract, Static, Hidden)
-    function OPTIONS  = DefaultOptions()      
+  methods(Static, Hidden)
+    function OPTIONS  = DefaultOptions()
       Grasppe.Utilities.DeclareOptions;
     end
   end

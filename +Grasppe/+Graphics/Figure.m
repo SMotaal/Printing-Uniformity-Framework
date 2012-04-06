@@ -63,7 +63,10 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
   methods (Access=protected)
     
     function createHandleObject(obj)
-      obj.Handle = figure('Visible', 'off');
+      obj.Handle = figure('Visible', 'off', 'RendererMode', 'auto');
+      
+      addlistener(obj.Handle, 'RendererMode', 'PreSet',   @obj.callbackEvent); %Grasppe.Core.EventData.
+      addlistener(obj.Handle, 'RendererMode', 'PostSet',  @obj.callbackEvent); %Grasppe.Core.EventData.
       
       obj.JavaObject = get(handle(obj.Handle), 'JavaFrame');
     end

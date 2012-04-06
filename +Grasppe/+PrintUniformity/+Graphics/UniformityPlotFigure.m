@@ -68,5 +68,20 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
     end
   end
   
+  methods(Access=protected)
+    function preparePlotAxes(obj)
+      obj.PlotAxesLength = 1;
+      obj.preparePlotAxes@Grasppe.Graphics.MultiPlotFigure;
+    end
+  end
+  
+%     methods (Static, Hidden)
+%     function OPTIONS  = DefaultOptions()      
+%       PlotAxesLength = 1;
+%       Grasppe.Utilities.DeclareOptions;
+%     end
+%       
+%     end
+  
 end
 

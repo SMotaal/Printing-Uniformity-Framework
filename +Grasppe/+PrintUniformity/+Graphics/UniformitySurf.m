@@ -42,6 +42,10 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
       try obj.ParentAxes.ZLim = dataSource.ZLim; end
       try obj.ParentAxes.CLim = dataSource.CLim; end
       
+      try
+        obj.ParentFigure.SampleTitle = dataSource.SheetName;
+      end
+      
     end
     
     function refreshPlotData(obj, source, event)

@@ -38,6 +38,12 @@ classdef UniformityProcessor < Grasppe.Core.Component
     Parameters = [];
   end
   
+  events
+    CaseChange
+    SetChange
+    SheetChange
+  end
+  
   methods
     
     function obj = UniformityProcessor(varargin)
@@ -58,14 +64,16 @@ classdef UniformityProcessor < Grasppe.Core.Component
       setID   = 100;
       try setID       = metaProperties.SetID.NativeMeta.DefaultValue; end
       try if ~isempty(parameters.SetID),      setID     = parameters.SetID; end; end
-                 
+      
       if ~isequal(obj.Parameters.CaseID, caseID)
         obj.resetDataModels;
         
         obj.Parameters.CaseID     = caseID;
         obj.SetID                 = setID;
+        
+        obj.notify('CaseChange');
       end
-
+      
     end
     
     function resetDataModels(obj)
@@ -80,9 +88,9 @@ classdef UniformityProcessor < Grasppe.Core.Component
       
       if isobject(obj.Parameters)
         delete(obj.Parameters);   obj.Parameters =[];
-      end      
+      end
     end
-        
+    
     function initializeDataModels(obj)
       if ~isa(obj.Parameters, 'Grasppe.PrintUniformity.Models.UniformityData')
         obj.Data  = Grasppe.PrintUniformity.Models.UniformityData;
@@ -119,6 +127,8 @@ classdef UniformityProcessor < Grasppe.Core.Component
       if ~isequal(obj.Parameters.SetID, setID)
         obj.Parameters.SetID    = setID;
         obj.Data.SetData        = [];
+        
+        obj.notify('SetChange');
       end
       
       obj.SheetID  = sheetID;
@@ -142,7 +152,10 @@ classdef UniformityProcessor < Grasppe.Core.Component
       try variableID  = metaProperties.VariableID.NativeMeta.DefaultValue; end
       try if ~isempty(parameters.VariableID), variableID  = parameters.VariableID; end; end
       
-      obj.Parameters.SheetID  = sheetID;
+      if ~isequal(obj.Parameters.SheetID, sheetID)
+        obj.Parameters.SheetID  = sheetID;
+        obj.notify('SheetChange');
+      end
     end
     
     function sheetID = get.SheetID(obj)
@@ -164,7 +177,9 @@ classdef UniformityProcessor < Grasppe.Core.Component
     
     %% Case Data
     function set.CaseData(obj, caseData)
-      obj.Data.CaseData = caseData;
+      data = obj.Data;
+      [data.CaseData changed] = changeSet(data.CaseData, caseData);
+      % if changed, obj.notify('CaseChange'); end
     end
     
     function caseData = get.CaseData(obj)
@@ -179,7 +194,9 @@ classdef UniformityProcessor < Grasppe.Core.Component
     
     %% Set Data
     function set.SetData(obj, setData)
-      obj.Data.SetData = setData;
+      data = obj.Data;
+      [data.SetData changed] = changeSet(data.SetData, setData);
+      % if changed, obj.notify('SetChange'); end
     end
     
     function setData = get.SetData(obj)
@@ -194,7 +211,9 @@ classdef UniformityProcessor < Grasppe.Core.Component
     
     %% Sheet Data
     function set.SheetData(obj, sheetData)
-      obj.Data.SheetData = sheetData;
+      data = obj.Data;
+      [data.SheetData changed] = changeSet(data.SheetData, sheetData);
+      % if changed, obj.notify('SheetChange'); end
     end
     
     function sheetData = get.SheetData(obj)
@@ -274,21 +293,21 @@ classdef UniformityProcessor < Grasppe.Core.Component
       import Grasppe.PrintUniformity.Data.*;
       
       caseData    = [];
-
+      
       caseID      = parameters.CaseID;
       
       try if isequal(caseID, data.Parameters.CaseID)
           caseData = data.CaseData; end; end
-
+      
       if isempty(caseData)
         data.Parameters.CaseID = [];
         
         try caseData  = Data.loadUPData(caseID); end
       end
-
+      
       try data.CaseData 	= caseData;
         if ~isempty(caseData) data.Parameters.CaseID = caseID; end; end
-
+      
     end
     
     function setData = processSetData(parameters, data)
@@ -313,7 +332,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
         
         setData   = Data.filterUPDataSet(caseData, setData);
       end
-
+      
       try data.SetData 	= setData;
         if ~isempty(setData) data.Parameters.SetID = setID; end; end
       
@@ -342,7 +361,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
       
       try data.SheetData  = sheetData;
         if ~isempty(sheetData) data.Parameters.SheetID = sheetID; end; end
-
+      
     end
   end
   
