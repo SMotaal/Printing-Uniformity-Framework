@@ -2,7 +2,7 @@ classdef Mediator < Grasppe.Core.Instance % & Grasppe.Core.Component
   %GRASPPEMEDIATOR Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (Hidden=true)
     MediationProperties
     MediationReferences
     Colleagues

@@ -15,7 +15,7 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
     
     function prepareMediator(obj)
       
-      obj.PlotMediator  = Grasppe.Core.Mediator;
+      obj.PlotMediator  = Grasppe.PrintUniformity.Graphics.PlotMediator;
       
       dataProperties    = {'CaseID', 'SetID', 'SheetID'};
       axesProperties    = {'View', 'Projection', {'PlotColor', 'Color'}};

@@ -2,7 +2,7 @@ classdef DecoratedComponent < Grasppe.Core.Prototype % & Grasppe.Core.HandleComp
   %DECORATEDOBJECT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (Hidden=true)
     Decorators = {};
     DecoratorNames = {};
     PropertyDecorations

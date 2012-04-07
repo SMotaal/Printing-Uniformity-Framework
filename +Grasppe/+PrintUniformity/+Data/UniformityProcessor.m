@@ -88,7 +88,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
     end
     
     function resetDataModels(obj)
-      obj.deleteDataModels;
+      % obj.deleteDataModels;
       obj.initializeDataModels;
     end
     
@@ -104,11 +104,11 @@ classdef UniformityProcessor < Grasppe.Core.Component
     
     function initializeDataModels(obj)
       if ~isa(obj.Data, 'Grasppe.PrintUniformity.Models.UniformityData')
-        obj.Data  = Grasppe.PrintUniformity.Models.UniformityData;
+        obj.Data  = Grasppe.PrintUniformity.Models.UniformityData('Creator', obj);
       end
       
       if ~isa(obj.Parameters, 'Grasppe.PrintUniformity.Models.DataParameters')
-        obj.Parameters = Grasppe.PrintUniformity.Models.DataParameters;
+        obj.Parameters = Grasppe.PrintUniformity.Models.DataParameters('Creator', obj);
       end
     end
     

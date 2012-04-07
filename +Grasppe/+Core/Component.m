@@ -2,7 +2,7 @@ classdef Component < Grasppe.Core.Instance
   %GRASPPE.CORE.COMPONENT with enhanced get/set
   %   Detailed explanation goes here
   
-  properties
+  properties (Hidden=true)
     Defaults
     Initialized = false;
   end

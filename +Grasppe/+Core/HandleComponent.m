@@ -2,16 +2,16 @@ classdef HandleComponent < Grasppe.Core.Component
   %GRASPPEHANDLECOMPONENT Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (Hidden=true)
     HandleComponentHandleProperties = {{'ID', 'Tag'}, {'Type','Type','readonly'}};
   end
   
-  properties (SetObservable, GetObservable, AbortSet)
+  properties (SetObservable, GetObservable, AbortSet, Hidden=true)
     Type
   end
   
   
-  properties
+  properties (Hidden=true)
     HandleFunctions         % Struct holding handle functions
     ObjectPropertyMap       % Object-Handle Map
     HandlePropertyMap       % Handle-Object Map

@@ -435,6 +435,8 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
         sheetID     = processor.SheetID; ...
         variableID  = processor.VariableID;
       
+      if isempty(sheetID) || ~isnumeric(sheetID), return; end
+      
       rows      = obj.getRowCount;
       columns   = obj.getColumnCount;
       

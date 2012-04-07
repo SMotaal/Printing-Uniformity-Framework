@@ -2,13 +2,13 @@ classdef EventHandler < Grasppe.Core.Prototype
   %GRASPPEEVENTHANDLER Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (Hidden=true)
     EventFunctions = {};
   end
   
-  events %(Hidden, ListenAccess=private, NotifyAccess=public)
-    Test
-  end
+%   events %(Hidden, ListenAccess=private, NotifyAccess=public)
+%     Test
+%   end
   
   methods
     

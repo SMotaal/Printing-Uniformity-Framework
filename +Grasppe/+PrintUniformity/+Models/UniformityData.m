@@ -14,7 +14,7 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
       obj = obj@Grasppe.Data.Models.DataModel(varargin{:});
       
       if isempty(obj.Parameters) 
-        obj.Parameters = Grasppe.PrintUniformity.Models.DataParameters;
+        obj.Parameters = Grasppe.PrintUniformity.Models.DataParameters('Creator', obj);
       end
         
     end   

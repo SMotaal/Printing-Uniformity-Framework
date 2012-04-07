@@ -2,13 +2,13 @@ classdef KeyEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
   %KEYEVENTHANDLER Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (Hidden=true)
     KeyEventHandlers
     LastKeyEvent
     KeyPressEvents = 0;
   end
   
-  properties
+  properties (Hidden=true)
     IsAltDown
     IsControlDown
     IsCommandDown

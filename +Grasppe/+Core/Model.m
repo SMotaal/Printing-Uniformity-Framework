@@ -4,6 +4,11 @@ classdef Model < Grasppe.Core.Prototype & matlab.mixin.Copyable
   
   properties
     Models
+    Creator
+  end
+  
+  properties (Dependent)
+    CreatorID
   end
   
   methods
@@ -15,6 +20,15 @@ classdef Model < Grasppe.Core.Prototype & matlab.mixin.Copyable
       Grasppe.Core.Model.ModelRecord(obj);
       
       if (nargin > 0), obj.setOptions(varargin{:}); end
+    end
+    
+    function id = get.CreatorID(obj)
+      id = [];
+      if isa(obj.Creator, 'Grasppe.Core.Model')
+        try id = obj.Creator.CreatorID; end
+      else
+        try id = obj.Creator.ID; end
+      end
     end
   end
   
