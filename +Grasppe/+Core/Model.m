@@ -3,12 +3,16 @@ classdef Model < Grasppe.Core.Prototype & matlab.mixin.Copyable
   %   Detailed explanation goes here
   
   properties
+    Models
   end
   
   methods
     
     function obj = Model(varargin)
       obj = obj@Grasppe.Core.Prototype;
+      
+      disp(class(obj));
+      Grasppe.Core.Model.ModelRecord(obj);
       
       if (nargin > 0), obj.setOptions(varargin{:}); end
     end
@@ -69,6 +73,32 @@ classdef Model < Grasppe.Core.Prototype & matlab.mixin.Copyable
       
     end
     
+  end
+  
+  methods(Hidden, Static)
+    function models = ModelRecord(model)
+      models = [];
+      
+      persistent instances
+      if nargin==1
+        if isnumeric(model)
+          try models = instances(model); end
+        elseif isa(model, 'Grasppe.Core.Model')
+          record = struct('Model', model);
+          if isempty(instances)
+            instances = record;
+          else
+            instances(end+1) = record;
+          end
+        end
+      else
+        if nargout==1
+          models = instances;
+        end
+      end
+      
+      
+    end
   end
   
 end

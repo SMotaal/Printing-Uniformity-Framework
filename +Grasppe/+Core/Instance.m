@@ -30,20 +30,20 @@ classdef Instance < Grasppe.Core.Prototype
     
     function instanceID = generateInstanceID(obj)
       instanceID = [];
-
+      
       try
         instanceID = obj.InstanceID;
         if (isempty(instanceID) || ~ischar(instanceID))
           instanceID = Grasppe.Core.Instance.InstanceRecord(obj);
           if (isempty(instanceID) || ~ischar(instanceID))
             error('Grasppe:Instance:Generate', 'Generating instance ID failed!');
-%             try
-%               propertyMeta  = metaProperty(obj.ClassName, 'ComponentName');
-%               componentName = propertyMeta.DefaultValue;
-%             catch
-%               componentName = regexprep(obj.ClassName, '\w+\.(?=\w+\.)|\.', ''); %regexprep(obj.ClassName, '\w+\.[?=\w+\.]', '');
-%             end
-%             instanceID = genvarname([componentName '_' int2str(rand*10^12)]);
+            %             try
+            %               propertyMeta  = metaProperty(obj.ClassName, 'ComponentName');
+            %               componentName = propertyMeta.DefaultValue;
+            %             catch
+            %               componentName = regexprep(obj.ClassName, '\w+\.(?=\w+\.)|\.', ''); %regexprep(obj.ClassName, '\w+\.[?=\w+\.]', '');
+            %             end
+            %             instanceID = genvarname([componentName '_' int2str(rand*10^12)]);
           end
         end
       end
@@ -55,7 +55,18 @@ classdef Instance < Grasppe.Core.Prototype
     function [ID instance] = InstanceRecord(object)
       persistent instances hashmap
       
-      if (~exist('object','var')), return; end
+      %if (~exist('object','var')), return; end
+      
+      if nargin==0
+        if nargout==1
+          ID.Instances  = instances;
+          ID.Hashmap    = hashmap;
+        elseif nargout==2
+          ID            = instances;
+          instance      = hashmap;
+        end
+        return;
+      end
       
       instance = struct( 'class', class(object), 'created', now(), 'object', object );
       

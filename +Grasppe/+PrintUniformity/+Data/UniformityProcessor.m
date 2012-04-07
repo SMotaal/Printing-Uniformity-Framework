@@ -50,13 +50,24 @@ classdef UniformityProcessor < Grasppe.Core.Component
       obj = obj@Grasppe.Core.Component(varargin{:});
     end
     
+  end
+  
+  methods (Access=protected)
+    
+    function createComponent(obj)
+      obj.initializeDataModels;
+      obj.createComponent@Grasppe.Core.Component;
+    end
+  end
+  methods;
+    
     %% CaseID
     
     function set.CaseID(obj, caseID)
       import Grasppe.PrintUniformity.Data.*;
       import Grasppe.PrintUniformity.Models.*;
       
-      obj.initializeDataModels;
+      % obj.initializeDataModels;
       
       parameters      = obj.Parameters;
       metaProperties  = obj.MetaProperties;
@@ -92,7 +103,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
     end
     
     function initializeDataModels(obj)
-      if ~isa(obj.Parameters, 'Grasppe.PrintUniformity.Models.UniformityData')
+      if ~isa(obj.Data, 'Grasppe.PrintUniformity.Models.UniformityData')
         obj.Data  = Grasppe.PrintUniformity.Models.UniformityData;
       end
       
@@ -112,7 +123,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
     
     function set.SetID(obj, setID)
       
-      obj.initializeDataModels;
+      % obj.initializeDataModels;
       
       parameters      = obj.Parameters;
       
@@ -144,7 +155,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
     
     function set.SheetID(obj, sheetID)
       
-      obj.initializeDataModels;
+      % obj.initializeDataModels;
       
       parameters      = obj.Parameters;
       
@@ -185,7 +196,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
     function caseData = get.CaseData(obj)
       caseData = [];
       
-      try caseData = obj.Data.CaseData; end
+      %try caseData = obj.Data.CaseData; end
       if isempty(caseData), obj.getCaseData; end
       
       try caseData = obj.Data.CaseData; end
@@ -202,7 +213,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
     function setData = get.SetData(obj)
       setData = [];
       
-      try setData = obj.Data.SetData; end
+      % try setData = obj.Data.SetData; end
       if isempty(setData), obj.getSetData; end
       
       try setData = obj.Data.SetData; end
@@ -219,7 +230,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
     function sheetData = get.SheetData(obj)
       sheetData = [];
       
-      try sheetData = obj.Data.SheetData; end
+      % try sheetData = obj.Data.SheetData; end
       if isempty(sheetData), obj.getSheetData; end
       
       try sheetData = obj.Data.SheetData; end

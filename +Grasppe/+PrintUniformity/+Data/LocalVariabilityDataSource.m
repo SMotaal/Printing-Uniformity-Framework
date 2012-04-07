@@ -27,23 +27,24 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
         setData   	= obj.SetData; ...
         sheetData   = obj.SheetData;
       
-      targetFilter  = caseData.sampling.masks.Target;
-      patchFilter   = setData.filterData.dataFilter;
+      targetFilter  = caseData.sampling.masks.Target~=1;
+      patchFilter   = setData.filterData.dataFilter~=1;
       
-      Z(patchFilter)      = sheetData;
-      Z(targetFilter~=1)  = NaN;
-      Z(patchFilter~=1)   = NaN;
+      Z(~patchFilter) = sheetData;
+      Z(targetFilter) = NaN;
+      Z(patchFilter)  = NaN;
       
       Z = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource.localVariabilityFilter(Z);
       
-      Z(targetFilter~=1)  = NaN;
-      try
-        zNaN        = isnan(Z);
-        
-        X(zNaN) = NaN;
-        Y(zNaN) = NaN;
-      end
-
+      Z(targetFilter) = NaN;
+      Z(patchFilter)  = NaN;
+      
+      dataFilter  = ~isnan(Z);
+      
+      F = TriScatteredInterp(X(dataFilter), Y(dataFilter), Z(dataFilter), 'natural');
+      
+      Z = F(X, Y);
+      Z(targetFilter) = NaN;
       
       %Z(patchFilter~=1)   = NaN;      
       
@@ -63,7 +64,7 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
       %obj.ZData = ZData;
       obj.CData = ZData;
       
-      ZData(~isnan(ZData)) = nanmean(ZData(:));
+      %ZData(~isnan(ZData)) = nanmean(ZData(:));
       
       obj.ZData = ZData;
       
@@ -75,11 +76,21 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
   methods (Static, Hidden)
     function newData = localVariabilityFilter(zData)
       newData = [];
+      
       try
-        yNan    = find(~isnan(zData(:,1)));
+        y = 1; yNan = [];
+        while isempty(yNan)       
+          yNan  = find(~isnan(zData(:,y)));
+          y     = y +1;
+        end
         yStep   = abs(mode(yNan - yNan([2:end 1])));
         
-        xNan    = find(~isnan(zData(1,:)));
+        x = 1; xNan = [];
+        while isempty(xNan)       
+          xNan  = find(~isnan(zData(x,:)));
+          x     = x +1;
+        end        
+        
         xStep   = abs(mode(xNan - xNan([2:end 1])));
         
         ySub    = yStep+1:yStep+size(zData,1);
@@ -92,9 +103,9 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
         
         dData   = zeros(size(pData));
         
-        for x = [-xStep 0 +xStep]
-          for y = [-yStep 0 +yStep]
-            fData                 = abs(pData-circshift(pData,[y x]));
+        for xi = [-xStep 0 +xStep]
+          for yi = [-yStep 0 +yStep]
+            fData                 = abs(pData-circshift(pData,[yi xi]));
             fData(isnan(fData))   = 0 ;
             dData                 = dData + fData;
           end

@@ -407,7 +407,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     function updateCaseData(obj, source, event)
       % dispf('%s.%s', obj.ID, 'updateCaseData');
       
-      % obj.updateSetData;
+      obj.updateSetData(source, event);
       
       try obj.notify('CaseChange', event.EventData); return; end
       obj.notify('CaseChange');
@@ -417,6 +417,8 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       % dispf('%s.%s', obj.ID, 'updateSetData');
       
       % obj.updateSheetData;
+      
+      obj.updateSheetData(source, event);
       
       obj.optimizeSetLimits;
       

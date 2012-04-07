@@ -61,6 +61,10 @@ classdef Component < Grasppe.Core.Instance
       
     end
     
+  end
+  
+  methods (Hidden=true)
+    
     function options = getOptions(obj, varargin)
       
       switch nargin

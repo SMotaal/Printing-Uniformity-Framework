@@ -18,7 +18,9 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
       obj.PlotMediator  = Grasppe.Core.Mediator;
       
       dataProperties    = {'CaseID', 'SetID', 'SheetID'};
-      axesProperties    = {'View', 'ViewLock', 'Projection', {'PlotColor', 'Color'}};
+      axesProperties    = {'View', 'Projection', {'PlotColor', 'Color'}};
+      
+      %'ViewLock', 
       
       obj.attachMediations(obj.PlotAxes, axesProperties);
       

@@ -12,6 +12,11 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
   methods
     function obj = UniformityData(varargin)
       obj = obj@Grasppe.Data.Models.DataModel(varargin{:});
+      
+      if isempty(obj.Parameters) 
+        obj.Parameters = Grasppe.PrintUniformity.Models.DataParameters;
+      end
+        
     end   
   end
   
