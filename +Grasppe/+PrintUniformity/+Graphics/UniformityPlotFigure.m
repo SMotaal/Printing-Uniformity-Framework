@@ -15,17 +15,21 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
     
     function prepareMediator(obj)
       
-      obj.PlotMediator  = Grasppe.PrintUniformity.Graphics.PlotMediator;
-      
-      dataProperties    = {'CaseID', 'SetID', 'SheetID'};
-      axesProperties    = {'View', 'Projection', {'PlotColor', 'Color'}};
-      
-      %'ViewLock', 
-      
-      obj.attachMediations(obj.PlotAxes, axesProperties);
-      
-      
-      obj.attachMediations(obj.DataSources, dataProperties);
+      if isempty(obj.PlotMediator)
+        obj.PlotMediator  = Grasppe.PrintUniformity.Graphics.PlotMediator;
+        
+        dataProperties    = {'CaseID', 'SetID', 'SheetID'};
+        axesProperties    = {'View', 'Projection', {'PlotColor', 'Color'}};
+        
+        %'ViewLock',
+        
+        obj.attachMediations(obj.PlotAxes, axesProperties);
+        
+        
+        obj.attachMediations(obj.DataSources, dataProperties);
+        
+        obj.PlotMediator.createControls(obj);
+      end
       
       %       properties  = axesProperties;
       %       subjects    = plotAxes
@@ -72,6 +76,7 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
       end
       
       obj.PlotMediator = plotMediator;
+      
     end
   end
   
@@ -82,13 +87,13 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
     end
   end
   
-%     methods (Static, Hidden)
-%     function OPTIONS  = DefaultOptions()      
-%       PlotAxesLength = 1;
-%       Grasppe.Utilities.DeclareOptions;
-%     end
-%       
-%     end
+  %     methods (Static, Hidden)
+  %     function OPTIONS  = DefaultOptions()
+  %       PlotAxesLength = 1;
+  %       Grasppe.Utilities.DeclareOptions;
+  %     end
+  %
+  %     end
   
 end
 
