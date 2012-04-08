@@ -148,7 +148,7 @@ classdef Prototype < handle & dynamicprops %& hgsetget
         header.(field) = evalin('caller', name);
       end
       
-      disp(header);
+      % disp(header);
       
       return;
       

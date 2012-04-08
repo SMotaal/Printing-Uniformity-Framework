@@ -206,7 +206,7 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
           catch err
             disp(err.message);
             disp(event);
-            beep;
+            % beep;
           end
           
           
@@ -230,7 +230,7 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
           end
           
         otherwise
-          disp(type);
+          % disp(type);
       end
       
     end

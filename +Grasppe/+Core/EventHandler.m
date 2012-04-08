@@ -133,9 +133,9 @@ classdef EventHandler < Grasppe.Core.Prototype
       
       %       %try disp(eventName); end
       %
-      if strcmp(eventName, 'PreSet') || strcmp(eventName, 'PostSet')
-        disp(event);
-      end
+      % if strcmp(eventName, 'PreSet') || strcmp(eventName, 'PostSet')
+      %   disp(event);
+      % end
       
       switch eventFunction
         case {'OnKeyPress', 'OnKeyRelease'}

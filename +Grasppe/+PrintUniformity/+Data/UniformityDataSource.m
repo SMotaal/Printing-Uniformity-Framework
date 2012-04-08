@@ -174,7 +174,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
         % disp(['Refreshing Data for ' toString(linkedPlots(:))]);
       catch err
         disp(['Refreshing Data FAILED for ' toString(linkedPlots(:))]);
-        halt(err, 'obj.ID');
+        % halt(err, 'obj.ID');
         try debugStamp(obj.ID, 4); end
       end
       

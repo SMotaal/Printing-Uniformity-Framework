@@ -88,7 +88,7 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent ...
         end
       end
       try delete(obj.Handle); end
-      disp(['Deleting handle for ' obj.ID]);
+      %disp(['Deleting handle for ' obj.ID]);
     end
     
     function OnButtonDown(obj, source, event)
