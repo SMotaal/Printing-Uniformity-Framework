@@ -10,3 +10,4 @@ d3 = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource('CaseID', 'rithp550
 p3 = Grasppe.PrintUniformity.Graphics.UniformitySurf(a3, d3);
 
 x.prepareMediator;
+x.PlotMediator.createControls(x);

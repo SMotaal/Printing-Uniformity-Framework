@@ -11,7 +11,7 @@ classdef PlotMediator < Grasppe.Core.Mediator
   end
   
   properties
-    MediatorControls = struct('Component', [], 'Handle', [],  'Object', []);
+    MediatorControls; % = struct('Component', [], 'Handle', [],  'Object', []);
   end
   
   methods
@@ -47,7 +47,7 @@ classdef PlotMediator < Grasppe.Core.Mediator
     function set.SHEETID(obj, value)
       try obj.SheetID = value; end
     end
-
+    
     
     function value = get.VIEW(obj)
       value = [];
@@ -57,7 +57,7 @@ classdef PlotMediator < Grasppe.Core.Mediator
     function set.VIEW(obj, value)
       try obj.View = value; end
     end
-
+    
     
     function value = get.PLOTCOLOR(obj)
       value = [];
@@ -67,18 +67,14 @@ classdef PlotMediator < Grasppe.Core.Mediator
     function set.PLOTCOLOR(obj, value)
       try obj.PlotColor = value; end
     end
-
+    
     
     function createControls(obj, parentFigure)
-           
+      
       cases     = {'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01', 'rithp5501'};
       sets      = int8([100, 75, 50, 25, 0]);
       
       hFigure   = parentFigure.Handle;
-      
-      hToolbar  = uitoolbar(hFigure);
-      
-      jToolbar = get(get(hToolbar,'JavaContainer'),'ComponentPeer');     
       
       caseID = obj.CaseID;
       selectedCase = find(strcmpi(caseID, cases));
@@ -88,29 +84,32 @@ classdef PlotMediator < Grasppe.Core.Mediator
       setID = obj.SetID;
       selectedSet = find(sets==setID);
       jSetMenu = obj.createDropDown(hFigure, sets, selectedSet, ...
-        @obj.selectSetID, 175, [], 75);      
+        @obj.selectSetID, 175, [], 75);
+      
+      hToolbar = findall(allchild(hFigure),'flat','type','uitoolbar');
+      
+      if isempty(hToolbar), hToolbar  = uitoolbar(hFigure); end
+      
+      drawnow;
+      
+      jContainer = get(hToolbar(1),'JavaContainer');
+      jToolbar = jContainer.getComponentPeer;
+      
+      jToolbar.add(jCaseMenu);
+      jToolbar.add(jSetMenu);
+      jToolbar.repaint;
+      jToolbar.revalidate;
       
       
-      if ~isempty(jToolbar)
-        jToolbar(1).add(jCaseMenu,1);
-        jToolbar(1).add(jSetMenu,1);
-        jToolbar(1).repaint;
-        jToolbar(1).revalidate;
-      end      
-      
-      
-%       obj.createDropDown(hFigure, ...
-%         {100, 75, 50, 25, 0}, ...
-%         @obj.selectCaseID, 175, [], 100);      
     end
     
     function selectCaseID(obj, source, event)
-      % disp(source);
+      % disp(source); caseID = source.getSelectedItem;
       try obj.CaseID = source.getSelectedItem; end
     end
     
     function selectSetID(obj, source, event)
-      % disp(source);
+      % disp(source); setID = source.getSelectedItem;
       try obj.SetID = source.getSelectedItem; end
     end
     
@@ -119,22 +118,33 @@ classdef PlotMediator < Grasppe.Core.Mediator
       % options = {'opt #1', 'opt #2', 'opt #3'};
       
       try if isnumeric(options)
-          options = num2cell(options); 
+          options = num2cell(options);
         end; end;
       
       combo = javax.swing.JComboBox(options);
       % combo.setEditable(1);
       %[jCombo,hCombo] = javacomponent(combo, position);
       [jCombo,hCombo] = javacomponent(combo);
-
+      
       jCombo.ActionPerformedCallback = callback;
       
-      p = get(hCombo, 'Position'); 
+      p = get(hCombo, 'Position');
       try if ~isempty(left),    p(1) = left; end; end
       try if ~isempty(bottom),  p(2) = bottom; end; end
       try if ~isempty(width),   p(3) = width; end; end
       try if ~isempty(height),  p(4) = height; end; end
       set(hCombo, 'Position', p);
+      
+      
+      try
+        if ~isempty(width),   
+          s         = jCombo.getMaximumSize;
+          s.width   = width;
+          jCombo.setMaximumSize(s); 
+        end
+      end
+      
+      
       
       try if ~isempty(selection), jCombo.setSelectedIndex(selection-1); end; end
       
@@ -145,7 +155,11 @@ classdef PlotMediator < Grasppe.Core.Mediator
     function registerControl(obj, c, h, j)
       entry = struct('Component', c, 'Handle', h, 'Object', j);
       
-      obj.MediatorControls(end) = entry;
+      if isempty(obj.MediatorControls)
+        obj.MediatorControls = entry;
+      else
+        obj.MediatorControls(end+1) = entry;
+      end
     end
     
   end
