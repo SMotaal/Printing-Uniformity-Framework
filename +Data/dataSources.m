@@ -119,7 +119,8 @@ function [ data ] = dataSources( sourceName, varargin )
     inputParams.space = 'base';
     space = inputParams.space;
   else
-    inputParams.space = upper(genvarname(inputParams.space));
+    
+    inputParams.space = upper(regexprep(inputParams.space, '\W+', '_'));
     space = inputParams.space;
     
     spaceFilename     = datadir('Sources', [space '.mat']);
@@ -144,7 +145,7 @@ function [ data ] = dataSources( sourceName, varargin )
     end
   end
   
-  inputParams.name = genvarname(inputParams.name);
+  inputParams.name = regexprep(inputParams.name, '\W+', '_');
   
   hasChanged = false;
   if (~isempty(inputParams.data))

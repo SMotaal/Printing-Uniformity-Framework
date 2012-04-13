@@ -107,7 +107,8 @@ classdef MetaProperty < Grasppe.Core.Prototype
               if mediatorMode
                 MediatorProperties.(mediatorID).(property.Name) = property;
               else
-                MetaProperties.(genvarname(property.DefiningClass)).(property.Name) = property;
+                definingClass = regexprep(property.DefiningClass, '\W+', '_');
+                MetaProperties.(definingClass).(property.Name) = property;
               end
             end
           end

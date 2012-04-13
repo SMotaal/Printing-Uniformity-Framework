@@ -70,7 +70,7 @@ classdef Instance < Grasppe.Core.Prototype
       
       instance = struct( 'class', class(object), 'created', now(), 'object', object );
       
-      if (isempty(hashmap) || ~iscell(hashmap))
+      if (isempty(hashmap) || ~isa(hashmap, 'cell'))
         hashmap = {};
       end
       
@@ -78,7 +78,7 @@ classdef Instance < Grasppe.Core.Prototype
       
       GetInstance = @(r)  instances.(hashmap(r, 2))(hashmap(r, 3));
       
-      SafeName    = @(t)  genvarname(regexprep(t, '(\w+\.)|\.', ''));   %regexprep(t,'(\w+\.(?=\w+\.))|\.',''));
+      SafeName    = @(t)  regexprep(t, '(\w+\.)|\.', '');   %genvarname( %regexprep(t,'(\w+\.(?=\w+\.))|\.',''));
       
       if (~isempty(object.InstanceID) && ischar(object.ID) && size(hashmap,1)>0) % Rows
         row = find(strcmpi(hashmap(:, 1),object.ID));

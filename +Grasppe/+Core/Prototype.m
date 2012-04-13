@@ -74,9 +74,10 @@ classdef Prototype < handle & dynamicprops %& hgsetget
           prefix = regexprep(tree{m}, '\w+\.', ''); %tree{m};
           
           try
-            classProperties       = obj.([prefix suffix]);
-            propertyTable{1, end+1}  = classProperties;
-            propertyTable{2, end}  = tree{m};
+            % classProperties       = obj.([prefix suffix]);
+            classProperties         = eval(['obj.' prefix suffix]);
+            propertyTable{1, end+1} = classProperties;
+            propertyTable{2, end}   = tree{m};
           end
           
         end

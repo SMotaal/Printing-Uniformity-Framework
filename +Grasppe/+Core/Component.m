@@ -37,15 +37,15 @@ classdef Component < Grasppe.Core.Instance
   methods (Access=protected)
     
     function registerHandle(obj, handles)
-      try
-        if isa(handles, 'Grasppe.Core.Prototype')
-          dispf('Registering %s @ %s', handles.ID, obj.ID);
-        else
-          dispf('Registering %s @ %s', toString(handles), obj.ID);
-        end
-      catch
-        dispf('Registering %s @ %s', 'objects', obj.ID);
-      end
+      % try
+      %   if isa(handles, 'Grasppe.Core.Prototype')
+      %     dispf('Registering %s @ %s', handles.ID, obj.ID);
+      %   else
+      %     dispf('Registering %s @ %s', toString(handles), obj.ID);
+      %   end
+      % catch
+      %   dispf('Registering %s @ %s', 'objects', obj.ID);
+      % end
       if ishandle(handles) && isnumeric(handles)
         try obj.SubHandles = [obj.SubHandles handles]; end
       elseif isobject(handles)
@@ -63,7 +63,7 @@ classdef Component < Grasppe.Core.Instance
     function deleteHandles(obj)
       handles = obj.SubHandles;
       for m = 1:numel(handles)
-        try dispf('Deleting %s @ %s', toString(handles(m)), obj.ID); end
+        % try dispf('Deleting %s @ %s', toString(handles(m)), obj.ID); end
         try delete(handles(m)); end
       end
       
@@ -71,7 +71,7 @@ classdef Component < Grasppe.Core.Instance
       
       objects = obj.SubHandleObjects;
       for m = 1:numel(objects)
-        try dispf('Deleting %s @ %s', toString(handles{m}), obj.ID); end
+        % try dispf('Deleting %s @ %s', toString(handles{m}), obj.ID); end
         try delete(objects{m}); end
       end
       

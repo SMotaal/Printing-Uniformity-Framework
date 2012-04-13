@@ -2,7 +2,7 @@ function [ output_args ] = debugStamp( tag, level, obj )
   %DEBUGSTAMP Summary of this function goes here
   %   Detailed explanation goes here
   
-  debugmode     = true;
+  debugmode     = false;
   if ~debugmode, return; end
   
   persistent debugtimer debugstack stackdups stackloops stacktime;

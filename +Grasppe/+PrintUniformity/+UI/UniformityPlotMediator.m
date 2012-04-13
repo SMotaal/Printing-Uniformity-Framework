@@ -2,7 +2,7 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
   %UNIFORMITYPLOTMEDIATOR Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties
+  properties (Hidden)
     PlotFigure  = [];
     DataSources = {};
     PlotObjects = {};
