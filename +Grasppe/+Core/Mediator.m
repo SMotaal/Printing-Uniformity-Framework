@@ -1,4 +1,4 @@
-classdef Mediator < Grasppe.Core.Instance % & Grasppe.Core.Component
+classdef Mediator < Grasppe.Core.Component % & Grasppe.Core.Component
   %GRASPPEMEDIATOR Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -12,7 +12,7 @@ classdef Mediator < Grasppe.Core.Instance % & Grasppe.Core.Component
   
   methods
     function obj = Mediator()
-      obj = obj@Grasppe.Core.Instance;
+      obj = obj@Grasppe.Core.Component;
       % obj = obj@Grasppe.Core.Component;
     end
     
@@ -161,5 +161,12 @@ classdef Mediator < Grasppe.Core.Instance % & Grasppe.Core.Component
       return;
     end
   end
+  
+  methods(Static, Hidden)
+    function options  = DefaultOptions()
+      options = [];
+    end
+  end
+  
 end
 

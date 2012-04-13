@@ -10,15 +10,19 @@ classdef PlotMediator < Grasppe.Core.Mediator
     PLOTCOLOR
   end
   
-  properties
-    MediatorControls; % = struct('Component', [], 'Handle', [],  'Object', []);
+  properties (Hidden)
+    Cases = {'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01', 'rithp5501'};
+    Sets  = int8([100, 75, 50, 25, 0]);
+    
+    CaseIDControl
+    SetIDControl
+    
+    MediatorControls;
   end
   
   methods
     function obj = PlotMediator()
       obj = obj@Grasppe.Core.Mediator;
-      
-      %obj.createControls
     end
     
     function value = get.CASEID(obj)
@@ -28,6 +32,7 @@ classdef PlotMediator < Grasppe.Core.Mediator
     
     function set.CASEID(obj, value)
       try obj.CaseID = value; end
+      obj.updateControls;
     end
     
     function value = get.SETID(obj)
@@ -37,6 +42,7 @@ classdef PlotMediator < Grasppe.Core.Mediator
     
     function set.SETID(obj, value)
       try obj.SetID = value; end
+      obj.updateControls;
     end
     
     function value = get.SHEETID(obj)
@@ -46,6 +52,7 @@ classdef PlotMediator < Grasppe.Core.Mediator
     
     function set.SHEETID(obj, value)
       try obj.SheetID = value; end
+      % obj.updateControls;
     end
     
     
@@ -68,23 +75,50 @@ classdef PlotMediator < Grasppe.Core.Mediator
       try obj.PlotColor = value; end
     end
     
+    %     function delete(obj)
+    %       controlEntries  = obj.MediatorControls;
+    %       obj.delete@Grasppe.Core.Mediator;
+    %     end
+    
+    function updateControls(obj)
+      disp('Updating Controls');
+      if ~isempty(obj.CaseIDControl)
+        try selectedCase = find(strcmpi(obj.CaseID, obj.Cases));
+          if ~isempty(selectedCase)
+            obj.CaseIDControl.setSelectedIndex(selectedCase-1);
+          end
+        end
+      end
+      
+      if ~isempty(obj.SetIDControl)
+        try selectedSet = find(obj.SetID == obj.Sets, 1);
+          if ~isempty(selectedSet)
+            obj.SetIDControl.setSelectedIndex(selectedSet-1);
+          end
+        end
+      end
+      
+    end
     
     function createControls(obj, parentFigure)
       
-      cases     = {'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01', 'rithp5501'};
-      sets      = int8([100, 75, 50, 25, 0]);
+      cases     = obj.Cases; sets      = obj.Sets;
       
       hFigure   = parentFigure.Handle;
       
-      caseID = obj.CaseID;
-      selectedCase = find(strcmpi(caseID, cases));
+      selectedCase = [];
+      try selectedCase = find(strcmpi(obj.CaseID, cases)); end
       jCaseMenu = obj.createDropDown(hFigure, cases, selectedCase, ...
-        @obj.selectCaseID, 0, [], 150);
+        @obj.selectCaseID, [], [], 150);
       
-      setID = obj.SetID;
-      selectedSet = find(sets==setID);
+      obj.CaseIDControl = jCaseMenu;
+      
+      selectedSet = [];
+      try selectedSet = find(sets==obj.SetID); end
       jSetMenu = obj.createDropDown(hFigure, sets, selectedSet, ...
-        @obj.selectSetID, 175, [], 75);
+        @obj.selectSetID, [], [], 75);
+      
+      obj.SetIDControl = jSetMenu;
       
       hToolbar = findall(allchild(hFigure),'flat','type','uitoolbar');
       
@@ -100,6 +134,7 @@ classdef PlotMediator < Grasppe.Core.Mediator
       jToolbar.repaint;
       jToolbar.revalidate;
       
+      refresh(hFigure);
       
     end
     
@@ -129,18 +164,19 @@ classdef PlotMediator < Grasppe.Core.Mediator
       jCombo.ActionPerformedCallback = callback;
       
       p = get(hCombo, 'Position');
-      try if ~isempty(left),    p(1) = left; end; end
-      try if ~isempty(bottom),  p(2) = bottom; end; end
+      try if ~isempty(left),    p(1) = left;  end; end
+      try if ~isempty(bottom),  p(2) = bottom;
+        else p(2) = -height-10; end; end
       try if ~isempty(width),   p(3) = width; end; end
       try if ~isempty(height),  p(4) = height; end; end
       set(hCombo, 'Position', p);
       
       
       try
-        if ~isempty(width),   
+        if ~isempty(width),
           s         = jCombo.getMaximumSize;
           s.width   = width;
-          jCombo.setMaximumSize(s); 
+          jCombo.setMaximumSize(s);
         end
       end
       
@@ -160,6 +196,11 @@ classdef PlotMediator < Grasppe.Core.Mediator
       else
         obj.MediatorControls(end+1) = entry;
       end
+      
+      try obj.registerHandle(h); end
+      try obj.registerHandle(c); end
+      try obj.registerHandle(j); end
+      
     end
     
   end

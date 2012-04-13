@@ -1,8 +1,8 @@
-function [ output_args ] = debugStamp( tag, level )
+function [ output_args ] = debugStamp( tag, level, obj )
   %DEBUGSTAMP Summary of this function goes here
   %   Detailed explanation goes here
   
-  debugmode     = false;
+  debugmode     = true;
   if ~debugmode, return; end
   
   persistent debugtimer debugstack stackdups stackloops stacktime;
@@ -15,10 +15,23 @@ function [ output_args ] = debugStamp( tag, level )
   stackLimit    = 5;
   latencyLimit  = stackLimit * 100;
 
-  
-  if ~isInteger('level') || ~isscalar(level)
-    level       = 5;
+  if isnumeric(tag)
+    if nargin==2
+      obj = level;
+      level = tag; tag = '';
+      try tag = obj.ID; end
+      try if isempty(tag), tag = class(obj); end; end
+    else
+      level = tag; tag = '';
+    end
+    
+  else
+    if nargin<2
+      level = 5;
+    end
   end
+  
+  
   
   d = dbstack('-completenames');
   
@@ -37,6 +50,9 @@ function [ output_args ] = debugStamp( tag, level )
   end  
  
   try
+    try if nargin>2 && isa(Grasppe.Core.Prototype(obj))
+      tag = [obj.ID '.' tag]; end; end
+    
     nextstack = sprintf('\n%s',[tag ':' dbstamp]);
   catch
     nextstack = sprintf('\n%s',['@' dbstamp]);

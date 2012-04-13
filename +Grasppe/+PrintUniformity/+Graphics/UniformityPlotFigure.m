@@ -8,51 +8,33 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
   end
   
   methods
-    
     function obj = UniformityPlotFigure(varargin)
       obj = obj@Grasppe.Graphics.MultiPlotFigure(varargin{:});
-    end
-    
-    function prepareMediator(obj)
-      
-      if isempty(obj.PlotMediator)
-        obj.PlotMediator  = Grasppe.PrintUniformity.Graphics.PlotMediator;
-        
-        dataProperties    = {'CaseID', 'SetID', 'SheetID'};
-        axesProperties    = {'View', 'Projection', {'PlotColor', 'Color'}};
-        
-        %'ViewLock',
-        
-        obj.attachMediations(obj.PlotAxes, axesProperties);
-        
-        
-        obj.attachMediations(obj.DataSources, dataProperties);
-        
-        obj.PlotMediator.createControls(obj);
+      refresh(obj.Handle);
+    end   
+
+    function prepareMediator(obj, dataProperties, axesProperties)
+      if isempty(obj.PlotMediator) || ~isa(obj, 'Grasppe.PrintUniformity.UI.PlotMediator')
+        obj.PlotMediator  = Grasppe.PrintUniformity.UI.PlotMediator;
       end
       
-      %       properties  = axesProperties;
-      %       subjects    = plotAxes
-      %       for m = 1:numel(subjects)
-      %         subject = subjects{m};
-      %         %if isa(subject, 'Grasppe.Graphics.PlotAxes')
-      %           for n = 1:numel(properties)
-      %             property = properties{n};
-      %             if isa(property, 'char')
-      %               alias     = property;
-      %             elseif isa(property, 'cell')
-      %               alias     = property{1};
-      %               property  = property{2};
-      %             else
-      %               continue;
-      %             end
-      %             plotMediator.attachMediatorProperty(subject, property, alias);
-      %           end
-      %         %end
-      %       end
+      obj.registerHandle(obj.PlotMediator);
       
+      obj.attachMediations(obj.PlotAxes, axesProperties);
+      
+      obj.attachMediations(obj.DataSources, dataProperties);
+      
+      obj.PlotMediator.createControls(obj);
     end
     
+  end
+  
+  methods(Access=protected)
+    
+    function createComponent(obj)
+      obj.createComponent@Grasppe.Graphics.MultiPlotFigure();
+    end
+        
     function attachMediations(obj, subjects, properties)
       
       plotMediator  = obj.PlotMediator;
@@ -78,13 +60,11 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
       obj.PlotMediator = plotMediator;
       
     end
-  end
-  
-  methods(Access=protected)
-    function preparePlotAxes(obj)
-      % obj.PlotAxesLength = 1;
-      obj.preparePlotAxes@Grasppe.Graphics.MultiPlotFigure;
-    end
+    
+    
+%     function preparePlotAxes(obj)
+%       obj.preparePlotAxes@Grasppe.Graphics.MultiPlotFigure;
+%     end
   end
   
   %     methods (Static, Hidden)

@@ -5,6 +5,8 @@ classdef Component < Grasppe.Core.Instance
   properties (Hidden=true)
     Defaults
     Initialized = false;
+    SubHandles  = [];
+    SubHandleObjects = {};
   end
   
   properties (Access=private)
@@ -25,9 +27,56 @@ classdef Component < Grasppe.Core.Instance
       componentOptions = obj.ComponentOptions;
     end
     
+    function delete(obj)
+      debugStamp(2, obj);
+      obj.deleteHandles;
+    end
+    
   end
   
   methods (Access=protected)
+    
+    function registerHandle(obj, handles)
+      try
+        if isa(handles, 'Grasppe.Core.Prototype')
+          dispf('Registering %s @ %s', handles.ID, obj.ID);
+        else
+          dispf('Registering %s @ %s', toString(handles), obj.ID);
+        end
+      catch
+        dispf('Registering %s @ %s', 'objects', obj.ID);
+      end
+      if ishandle(handles) && isnumeric(handles)
+        try obj.SubHandles = [obj.SubHandles handles]; end
+      elseif isobject(handles)
+        try obj.SubHandleObjects = {obj.SubHandleObjects{:}, handles}; end
+      elseif iscell(handles)
+        for m = 1:numel(handles)
+          handle = handles{m};
+          if isobject(handle)
+            try obj.SubHandleObjects = {obj.SubHandleObjects{:}, handle}; end
+          end
+        end
+      end
+    end
+    
+    function deleteHandles(obj)
+      handles = obj.SubHandles;
+      for m = 1:numel(handles)
+        try dispf('Deleting %s @ %s', toString(handles(m)), obj.ID); end
+        try delete(handles(m)); end
+      end
+      
+      obj.SubHandles = [];
+      
+      objects = obj.SubHandleObjects;
+      for m = 1:numel(objects)
+        try dispf('Deleting %s @ %s', toString(handles{m}), obj.ID); end
+        try delete(objects{m}); end
+      end
+      
+      obj.SubHandleObjects = {};
+    end
     
     function createComponent(obj)
       

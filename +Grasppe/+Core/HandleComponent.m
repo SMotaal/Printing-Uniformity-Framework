@@ -31,6 +31,12 @@ classdef HandleComponent < Grasppe.Core.Component
       obj = obj@Grasppe.Core.Component(varargin{:});
     end
     
+    function delete(obj)
+      debugStamp(2, obj);
+      try obj.handleSet('UserData', []); end
+    end
+
+    
     function set.PropertyQueing(obj, queing)
       if islogical(queing)
         isqueing = obj.PropertyQueing;
@@ -93,11 +99,23 @@ classdef HandleComponent < Grasppe.Core.Component
       obj.createComponent@Grasppe.Core.Component();
       obj.createHandlePropertyMap();
       obj.createHandleObject();
-      try obj.handleSet('UserData', obj); end
-      obj.HandleObject = handle(obj.Handle);
-      obj.attachHandleProperties();
+      
+      showComponent = isempty(obj.IsVisible) || isOn(obj.IsVisible);
+      obj.IsVisible = false;
+      if ishandle(obj.Handle)
+        try obj.handleSet('UserData', obj); end
+        obj.HandleObject = handle(obj.Handle);
+        obj.registerHandle(obj.Handle);
+        obj.attachHandleProperties();
+      end
+      
+      try refresh(obj.Handle); end
+      
+      if showComponent
+        obj.IsVisible = true;
+      end
     end
-    
+        
     function createHandleObject(obj)
       error('Grasppe:HandleComponent:CreateMethodUndefined', ...
         'Unable to create the handle component due to undefined create method.');

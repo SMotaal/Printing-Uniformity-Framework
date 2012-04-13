@@ -31,7 +31,7 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent ...
     Parent
     Children    
     IsClickable           = true
-    IsVisible             = true
+    IsVisible             = [];
     IsSelected            = false
     HandleVisibility      = true
     IsDestructing         = false
@@ -53,29 +53,9 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent ...
       try obj.OnResize; end
     end
     
-  end
-  
-  methods (Access=protected)
-    
-  end
-  
-  methods (Access=protected, Hidden=false)
-    
-  end
-  
-  methods (Hidden)
-    
     function delete(obj)
-      obj.OnDelete;
-    end
-
-    function OnCreate(obj, source, event)
-      disp(['Creating handle for ' obj.ID]);
-    end
-    
-    function OnDelete(obj, source, event)
-      if isequal(obj.IsDestructing, true), return; end
-      obj.IsDestructing = true;
+      debugStamp(2, obj);
+      try set(obj.Handle, 'Visible', 'off'); end
       try
         children = obj.handleGet('Children');
         for m = 1:numel(children)
@@ -87,16 +67,48 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent ...
           end
         end
       end
-      try delete(obj.Handle); end
-      %disp(['Deleting handle for ' obj.ID]);
+      try delete(obj.Handle); end      
+    end    
+    
+    
+  end
+    
+  methods (Access=protected, Hidden=false)
+    
+  end
+  
+  methods (Hidden)
+    
+%     function delete(obj)
+%       obj.OnDelete;
+%     end
+
+    function OnCreate(obj, source, event)
+      disp(['Creating handle for ' obj.ID]);
+    end
+        
+    function OnDelete(obj, source, event)
+      % if isequal(obj.IsDestructing, true), return; end
+      debugStamp(2, obj);
+      obj.IsDestructing = true;
     end
     
     function OnButtonDown(obj, source, event)
     end
   end
   
-  methods % Getters / Setters
-        
+  methods(Hidden)
+    function objectPostSet(obj, source, event)
+      if isOn(obj.IsDestructing), return; end
+      obj.objectPostSet@Grasppe.Core.HandleComponent(source, event);
+    end
+    
+    
+    function handlePostSet(obj, source, event)
+      if isOn(obj.IsDestructing), return; end
+      obj.handlePostSet@Grasppe.Core.HandleComponent(source, event);
+    end
+    
   end
   
   methods(Abstract, Static, Hidden)

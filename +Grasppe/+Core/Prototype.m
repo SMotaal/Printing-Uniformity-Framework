@@ -11,8 +11,7 @@ classdef Prototype < handle & dynamicprops %& hgsetget
   
   methods
     function obj = Prototype()
-      % Grasppe.Core.Prototype.InitializeGrasppePrototypes;
-      
+      Grasppe.Core.Prototype.RegisterPrototype(obj);
       obj.createMetaPropertyTable;
     end
     
@@ -21,65 +20,32 @@ classdef Prototype < handle & dynamicprops %& hgsetget
       id = obj.ID;
     end
     
-%     function disp(obj, varargin)
-%       disp('Testing');
-%     end
-    
-    
-    
-%    function processMetaData(obj)
-%        try
-% -        if iscell(obj.MetaProperties) && size(obj.MetaProperties, 2)==5
-% +        definedProperties = obj.MetaProperties;
-% +        if iscell(definedProperties) && size(definedProperties, 2)==5
-%            metaProperties   = struct;
-% -          for i = 1:size(obj.MetaProperties, 1)
-% -            property    = obj.MetaProperties{i,1};
-% -            metaData    = obj.MetaProperties(i,2:end);
-% +          for i = 1:size(definedProperties, 1)
-% +            property    = definedProperties{i,1};
-% +            metaData    = definedProperties(i,2:end);
-%              
-%              metaProperties.(property) = Grasppe.Core.MetaProperty.Declare( ...
-%                property, class(obj), metaData{:});
-% @@ -25,9 +31,37 @@ classdef GrasppePrototype < handle
-%            obj.MetaProperties = metaProperties;
-%          end
-%        catch err
-% -%         disp(err); keyboard;
-% +        % disp(err); keyboard;
-%        end
-%      end   
-    
     function createMetaPropertyTable(obj)
-      % if isempty(obj.MetaProperties)
-        definedProperties = obj.getRecursiveProperty('Properties');
+      definedProperties = obj.getRecursiveProperty('Properties');
+      
+      if isempty(definedProperties) || ~isa(definedProperties, 'cell'), return; end
+      
+      definingClasses   = definedProperties(2,:);
+      definedProperties = definedProperties(1,:); %vertcat(definedProperties{1,:});
+      tableSize = size(definedProperties{1});
+      
+      if isa(definedProperties{1}, 'cell') && tableSize(2)==5
+        metaProperties   = struct;
         
-        if isempty(definedProperties) || ~isa(definedProperties, 'cell'), return; end
-          
-        definingClasses   = definedProperties(2,:);
-        definedProperties = definedProperties(1,:); %vertcat(definedProperties{1,:});
-        tableSize = size(definedProperties{1});
-        
-        if isa(definedProperties{1}, 'cell') && tableSize(2)==5
-          metaProperties   = struct;
-          
-          for m = 1:numel(definedProperties)
-            definingClass = definingClasses{m};
-            tableSize = size(definedProperties{m});
-            for n = 1:tableSize(1)
-              property    = definedProperties{m}{n,1};
-              metaData    = definedProperties{m}(n,2:5);
-              
-              metaProperties.(property) = Grasppe.Core.MetaProperty.Declare( ...
-                property, definingClass, metaData{:});
-            end
+        for m = 1:numel(definedProperties)
+          definingClass = definingClasses{m};
+          tableSize = size(definedProperties{m});
+          for n = 1:tableSize(1)
+            property    = definedProperties{m}{n,1};
+            metaData    = definedProperties{m}(n,2:5);
+            
+            metaProperties.(property) = Grasppe.Core.MetaProperty.Declare( ...
+              property, definingClass, metaData{:});
           end
-          obj.MetaProperties = metaProperties;
-%         else
-%           obj.MetaProperties = NaN;
         end
-      % end      
+        obj.MetaProperties = metaProperties;
+      end
+
     end
     
     function dup = CreateDuplicate(obj)
@@ -88,13 +54,7 @@ classdef Prototype < handle & dynamicprops %& hgsetget
     
     
     function className = get.ClassName(obj)
-      % superName = eval(CLASS);
       className = class(obj);
-      % if (strcmpi(superName, className))
-      %   warning('Grasppe:Component:ClassName:Unexpected', ...
-      %     ['Attempting to access a component''s super class (%s) instead of the ' ...
-      %     'actual component. Make sure this is the intended behaviour.'], superName);
-      % end
     end
     
     function classPath = get.ClassPath(obj)
@@ -104,28 +64,23 @@ classdef Prototype < handle & dynamicprops %& hgsetget
     function metaClass = get.MetaClass(obj)
       metaClass = metaclass(obj);
     end
-         
+    
     function propertyTable = getRecursiveProperty(obj, suffix)
-        propertyTable = {};
-        try
-          tree = vertcat(class(obj), superclasses(obj));
-
-          for m = 1:numel(tree)
-            prefix = regexprep(tree{m}, '\w+\.', ''); %tree{m};
-                        
-            try
-              classProperties       = obj.([prefix suffix]);
-              propertyTable{1, end+1}  = classProperties;
-              propertyTable{2, end}  = tree{m};
-%               if isempty(propertyTable)
-%                 propertyTable = classProperties;
-%               else
-%                 propertyTable = vertcat(propertyTable, classProperties);
-%               end
-            end
-              
+      propertyTable = {};
+      try
+        tree = vertcat(class(obj), superclasses(obj));
+        
+        for m = 1:numel(tree)
+          prefix = regexprep(tree{m}, '\w+\.', ''); %tree{m};
+          
+          try
+            classProperties       = obj.([prefix suffix]);
+            propertyTable{1, end+1}  = classProperties;
+            propertyTable{2, end}  = tree{m};
           end
-        end      
+          
+        end
+      end
     end
     
     
@@ -148,59 +103,81 @@ classdef Prototype < handle & dynamicprops %& hgsetget
         header.(field) = evalin('caller', name);
       end
       
-      % disp(header);
+    end
+        
+    function ClearPrototypes()
+      objects = Grasppe.Core.Prototype.RegisterPrototype;
       
-      return;
+      if ~isempty(objects)
+        tic;
+        deleted = 0;
+        records = numel(objects);
+        for m = 1:records
+          object = objects{m};
+          try
+            if isvalid(object)
+              deleted = deleted + 1;
+              delete(objects{m});
+            end
+          end
+          Grasppe.Core.Prototype.RegisterPrototype(m);
+        end
+        try dispf('Deleted %d of %d prototypes in %2.1f seconds', deleted, records, toc); end
+      end
       
+      % Grasppe.Core.Prototype.RegisterPrototype('clear');
     end
     
-%     function name = ComponentName()
-%       className = eval(CLASS);
-%       name      = regexprep(className, '\w+\.', '');
-%     end
-    
-  
-%     function propertyTable = getRecursiveProperty(className, suffix)
-%         propertyTable = {};
-%         try
-%           tree = vertcat(className, superclasses(className));
-% 
-%           for m = 1:numel(tree)
-%             prefix = tree{m};
-%                         
-%             try
-%               classProperties = obj.([prefix suffix]);
-%               if isempty(propertyTable)
-%                 propertyTable = classProperties;
-%               else
-%                 propertyTable = vertcat(propertyTable, classProperties);
-%               end
-%             end
-%               
-%           end
-%         end      
-%     end
-  
-    function InitializeGrasppePrototypes(forced)
-      persistent initialized;
-      try  if forced, initialized = false; end, end
+    function objects = RegisterPrototype(obj)
+      persistent prototypes;
       
-      if ~isequal(initialized, true)
-        [currentPath] = fileparts(mfilename('fullpath'));
-        
-        folders     = dir(currentPath);
-        folderNames = {folders([folders.isdir]).name};
-        subNames    = folderNames(~cellfun('isempty', ...
-          regexp(folderNames,'^[A-Z].*')));
-        
-        subPaths    = strcat(currentPath,filesep,subNames);
-        
-        addpath(subPaths{:});
-        initialized = true;
+      % mlock;
+      
+      if nargout==1
+        objects = prototypes;
+      end
+      
+      if nargin==1
+        if ischar(obj) && isequal(obj, 'clear')
+          clear prototypes; return;
+        end
+        if isnumeric(obj)
+          object = prototypes{obj};
+          try 
+            if ~isa(object, 'object') || isvalid(object)
+              delete(object); 
+            end
+          end
+          prototypes{obj} = {};
+          return;
+        end
+        if ~iscell(prototypes)
+          prototypes = {};
+        end
+        prototypes = {prototypes{:}, obj};
       end
     end
     
-    function checks = checkInheritence(obj, classname)     
+%     function InitializeGrasppePrototypes(forced)
+%       persistent initialized;
+%       try  if forced, initialized = false; end, end
+%       
+%       if ~isequal(initialized, true)
+%         [currentPath] = fileparts(mfilename('fullpath'));
+%         
+%         folders     = dir(currentPath);
+%         folderNames = {folders([folders.isdir]).name};
+%         subNames    = folderNames(~cellfun('isempty', ...
+%           regexp(folderNames,'^[A-Z].*')));
+%         
+%         subPaths    = strcat(currentPath,filesep,subNames);
+%         
+%         addpath(subPaths{:});
+%         initialized = true;
+%       end
+%     end
+    
+    function checks = checkInheritence(obj, classname)
       checks = false;
       try
         checks = isa(obj, classname);

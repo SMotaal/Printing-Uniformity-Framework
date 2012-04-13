@@ -6,6 +6,10 @@ function [ output_args ] = cleardebug( input_args )
   
   warning('off');
   
+  evalin('base', 'Grasppe.Core.Prototype.ClearPrototypes');
+%   
+%   evalin('base', 'clear');
+  
   mlock;
   try
     if feature('IsDebugMode'), dbquit all; end
