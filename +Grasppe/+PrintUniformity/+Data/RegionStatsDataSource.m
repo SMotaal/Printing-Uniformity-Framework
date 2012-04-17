@@ -16,7 +16,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     
     function attachPlotObject(obj, plotObject)
       obj.attachPlotObject@Grasppe.PrintUniformity.Data.UniformityDataSource(plotObject);
-      try plotObject.ParentAxes.setView([-90 90], true); end
+      try plotObject.ParentAxes.setView([0 90], true); end
     end
 
     function [X Y Z] = processSheetData(obj, sheetID, variableID)

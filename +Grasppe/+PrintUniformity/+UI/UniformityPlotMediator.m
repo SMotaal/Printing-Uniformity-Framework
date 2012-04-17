@@ -54,7 +54,7 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
         
         case {'uniformitysurface', 'surface', 'surf'}
           
-          if createSource, dataSource  = UniformitySurfaceDataSource(varargin{:}); end
+          if createSource, dataSource  = UniformityPlaneDataSource(varargin{:}); end
           plotObject    = Grasppe.PrintUniformity.Graphics.UniformitySurf(plotAxes, dataSource);
           
         case {'localvariability', 'slope'}

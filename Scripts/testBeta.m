@@ -38,7 +38,7 @@ endProfile(); snapnow(); newProfile();
 p1 = Grasppe.PrintUniformity.Graphics.UniformitySurf(a1, d1);
 endProfile(); snapnow(); newProfile();
 
-d2 = Grasppe.PrintUniformity.Data.UniformitySurfaceDataSource('CaseID', 'rithp5501'); 
+d2 = Grasppe.PrintUniformity.Data.UniformityPlaneDataSource('CaseID', 'rithp5501'); 
 endProfile(); snapnow(); newProfile();
 
 p2 = Grasppe.PrintUniformity.Graphics.UniformitySurf(a2, d2);

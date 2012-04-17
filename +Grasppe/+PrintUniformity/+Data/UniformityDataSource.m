@@ -8,7 +8,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
   %     DATAPROPERTIES    = {'CaseID', 'SetID', 'XData', 'YData', 'ZData', 'SheetID'};
   %     TESTPROPERTY      = 'test';
   %   end
-  
+ 
   properties (Transient, Hidden)
     HandleProperties = {};
     HandleEvents = {};
@@ -22,6 +22,7 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       'SetID',      'Set ID',           'Data Source',      'int',      '';   ...
       'SheetID',    'Sheet ID',         'Data Source',      'int',      '';   ...
       'VariableID', 'Variable ID',      'Data Source',      'string',   '';   ...
+      'PlotType',   'Plot Type',        'Data Processing'   'string',   '';   ...
       'ALim',       'Alpha Map Limits', 'Data Limits',      'limits',   '';   ...
       'CLim',       'Color Map Limits', 'Data Limits',      'limits',   '';   ...
       'XLim',       'X Axes Limits',    'Data Limits',      'limits',   '';   ...
@@ -59,6 +60,8 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     
     %ZLimMode   ZTickMode,  ZTickLabelMode
     ZLim,       ZTick,      ZTickLabel
+    
+    PlotType = 'Surface';
   end
   
   properties (GetAccess=public, SetAccess=protected)
@@ -81,6 +84,8 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     CaseChange
     SetChange
     SheetChange
+    PlotChange
+    ProcessorChange
   end  
   
   methods (Hidden)
@@ -548,4 +553,3 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
   
   
 end
-

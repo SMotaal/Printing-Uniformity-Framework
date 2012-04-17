@@ -5,7 +5,7 @@ set(x.Handle, 'Position', [mPos(1,1) mPos(4) mPos(3) 550]);
 
 a1 = x.PlotAxes{1}; a2 = x.PlotAxes{2}; a3 = x.PlotAxes{3};
 
-d1 = Grasppe.PrintUniformity.Data.UniformitySurfaceDataSource('CaseID', 'rithp5501');
+d1 = Grasppe.PrintUniformity.Data.UniformityPlaneDataSource('CaseID', 'rithp5501');
 
 p1 = Grasppe.PrintUniformity.Graphics.UniformitySurf(a1, d1);
 

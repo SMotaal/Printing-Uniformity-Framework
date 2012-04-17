@@ -68,14 +68,13 @@ classdef Prototype < handle & dynamicprops %& hgsetget
     function propertyTable = getRecursiveProperty(obj, suffix)
       propertyTable = {};
       try
-        tree = vertcat(class(obj), superclasses(obj));
+        tree        = vertcat(class(obj), superclasses(obj));
+        properties  = regexp(strcat(tree, suffix),'(?<=\.)\w+$','match');
+        properties  = horzcat(properties{:});
         
-        for m = 1:numel(tree)
-          prefix = regexprep(tree{m}, '\w+\.', ''); %tree{m};
-          
+        for m = 1:numel(properties)         
           try
-            % classProperties       = obj.([prefix suffix]);
-            classProperties         = eval(['obj.' prefix suffix]);
+            classProperties         = obj.(properties{m}); 
             propertyTable{1, end+1} = classProperties;
             propertyTable{2, end}   = tree{m};
           end
