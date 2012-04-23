@@ -76,7 +76,7 @@ classdef RawUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSo
       % zLim    = [0 10];
       
       obj.ZLim  = 'auto';
-      obj.CLim  = 'auto';
+      % obj.CLim  = 'auto';
     end
     
     

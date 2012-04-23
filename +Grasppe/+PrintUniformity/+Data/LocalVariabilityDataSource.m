@@ -54,7 +54,7 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
       zLim    = [0 10];
       
       obj.ZLim  = zLim;
-      obj.CLim  = zLim;
+      % obj.CLim  = zLim;
     end
     
     function setPlotData(obj, XData, YData, ZData)

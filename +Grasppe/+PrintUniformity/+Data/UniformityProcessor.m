@@ -42,6 +42,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
     CaseChange
     SetChange
     SheetChange
+    VariableChange
   end
   
   methods
@@ -70,10 +71,9 @@ classdef UniformityProcessor < Grasppe.Core.Component
       % obj.initializeDataModels;
       
       parameters      = obj.Parameters;
-      metaProperties  = obj.MetaProperties;
       
       setID   = 100;
-      try setID       = metaProperties.SetID.NativeMeta.DefaultValue; end
+      try setID       = obj.MetaProperties.SetID.NativeMeta.DefaultValue; end
       try if ~isempty(parameters.SetID),      setID     = parameters.SetID; end; end
       
       if ~isequal(obj.Parameters.CaseID, caseID)
@@ -128,11 +128,11 @@ classdef UniformityProcessor < Grasppe.Core.Component
       parameters      = obj.Parameters;
       
       sheetID = 1;
-      try sheetID     = metaProperties.SheetID.NativeMeta.DefaultValue; end
+      try sheetID     = obj.MetaProperties.SheetID.NativeMeta.DefaultValue; end
       try if ~isempty(parameters.SheetID),    sheetID     = parameters.SheetID; end; end
       
       variableID = 1;
-      try variableID  = metaProperties.VariableID.NativeMeta.DefaultValue; end
+      try variableID  = obj.MetaProperties.VariableID.NativeMeta.DefaultValue; end
       try if ~isempty(parameters.VariableID), variableID  = parameters.VariableID; end; end
       
       if ~isequal(obj.Parameters.SetID, setID)
@@ -160,7 +160,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
       parameters      = obj.Parameters;
       
       variableID = 1;
-      try variableID  = metaProperties.VariableID.NativeMeta.DefaultValue; end
+      try variableID  = obj.MetaProperties.VariableID.NativeMeta.DefaultValue; end
       try if ~isempty(parameters.VariableID), variableID  = parameters.VariableID; end; end
       
       if ~isequal(obj.Parameters.SheetID, sheetID)
@@ -178,7 +178,10 @@ classdef UniformityProcessor < Grasppe.Core.Component
     %% VariableID
     
     function set.VariableID(obj, variableID)
-      obj.Parameters.VariableID  = variableID;
+      if ~isequal(obj.Parameters.VariableID, variableID)
+        obj.Parameters.VariableID  = variableID;
+        obj.notify('VariableChange');
+      end
     end
     
     function variableID = get.VariableID(obj)

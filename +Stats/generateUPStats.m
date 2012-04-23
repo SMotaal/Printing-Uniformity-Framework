@@ -1,4 +1,4 @@
-function [ dataSource stats ] = generateUPStats( dataSource, dataSet  )
+function [ dataSource stats ] = generateUPStats( dataSource, dataSet, regions  )
   %GENERATEUPSTATS Summary of this function goes here
   %   Detailed explanation goes here
   
@@ -9,7 +9,8 @@ function [ dataSource stats ] = generateUPStats( dataSource, dataSet  )
   data    = getData(dataSet, dataField);
   metrics = getMetrics(dataSource, size(data,1));
   masks   = getDataMasks(dataSource);
-  regions = getRegionMasks(dataSource);
+  
+  if nargin < 3, regions = getRegionMasks(dataSource); end
   
   stats = struct('metadata', [], 'data', data, 'run', []);
   

@@ -53,7 +53,7 @@ classdef UniformityPlaneDataSource < Grasppe.PrintUniformity.Data.UniformityData
       % zLim    = [0 10];
       
       obj.ZLim  = 'auto';
-      obj.CLim  = 'auto';
+      % obj.CLim  = 'auto';
     end
     
     

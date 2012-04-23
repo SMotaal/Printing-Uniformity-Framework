@@ -1,5 +1,5 @@
 classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSource
-  %SURFACEUNIFORMITYDATASOURCE Raw printing uniformity data source
+  %REGIONSTATSDATASOURCE region-based printing uniformity statistics data source
   %   Detailed explanation goes here
   
   properties
@@ -7,6 +7,10 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     %   'TestProperty', 'Test Property', 'Labels', 'string', '';   ...
     %   };
     % TestProperty
+    Regions
+    Stats
+    
+    StatsMode = 'Mean';
   end
   
   methods (Hidden)
@@ -25,16 +29,63 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       
       caseData      = obj.CaseData; ...
         setData   	= obj.SetData; ...
-        sheetData   = obj.SheetData;
+        sheetData   = obj.SheetData; ...
+        stats       = obj.Stats; ...
+        variableID  = obj.VariableID;
       
+      dispf('Sheet ID = %s', int2str(obj.SheetID));
       targetFilter  = caseData.sampling.masks.Target~=1;
       patchFilter   = setData.filterData.dataFilter~=1;
       
-      Z(~patchFilter) = sheetData;
-      Z(targetFilter) = NaN;
-      Z(patchFilter)  = NaN;
-      
-      [Z M] = Grasppe.PrintUniformity.Data.RegionStatsDataSource.regionStatisticsFilter(Z);
+      if isempty(stats)
+        Z(~patchFilter) = sheetData;
+        Z(targetFilter) = NaN;
+        Z(patchFilter)  = NaN;
+        %[Z M] = Grasppe.PrintUniformity.Data.RegionStatsDataSource.regionStatisticsFilter(Z);
+      else
+        regionMasks = stats.metadata.regions.(variableID);
+        regionData  = stats.(variableID)(:, sheetID);
+        runData     = stats.run;
+        
+        statsMode = regexprep(lower(obj.StatsMode), '\W', '');
+        
+        switch statsMode
+          case {'std', 'deviation', 'standarddeviation'}
+            statsMode = 'Standard Deviation'
+            statsData = vertcat(regionData.Std);
+          case {'deltalimits', 'deltalimit', 'sixsigma'}
+            statsMode = 'Six Sigma'
+            statsData = vertcat(regionData.Std) .* 6;
+          case {'peaklimits', 'process limits'}
+            statsMode = 'Peak Limits'
+            limData   = vertcat(regionData.Lim);
+            statsData = max(abs(limData - runData.Mean),[],2);
+          case {'lowerlimit'}
+            statsMode = 'Lower Limit'
+            limData   = vertcat(regionData.Lim);
+            statsData = limData(:,1);             
+          case {'upperlimit'}
+            statsMode = 'Upper Limit'
+            limData   = vertcat(regionData.Lim);
+            statsData = limData(:,2);           
+          otherwise % case {'mean', 'average'}
+            statsMode   = 'Mean';
+            statsData = vertcat(regionData.Mean);
+        end
+        
+        obj.StatsMode = statsMode;
+        
+        newData = zeros(1, size(Z,1), size(Z,2));
+        
+        for m = 1:size(regionMasks,1)
+          maskData          = regionMasks(m, :, :)==1;
+          newData(maskData) = statsData(m);
+        end
+        
+        Z = squeeze(newData);
+        
+        %return;
+      end
       
       % Z(targetFilter) = NaN;
       % Z(patchFilter)  = NaN;
@@ -54,7 +105,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       zLim    = 'auto';
       
       obj.ZLim  = zLim;
-      obj.CLim  = zLim;
+      % obj.CLim  = zLim;
     end
     
     function setPlotData(obj, XData, YData, ZData)
@@ -73,7 +124,109 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     
   end
   
+  methods
+    function updateCaseData(obj, source, event)
+      [dataSource regions] = Metrics.generateUPRegions(obj.CaseData);
+      obj.Regions = regions;
+      
+      obj.LastVariableID = 'raw';
+      obj.updateVariableData(source, event);      
+      
+      obj.updateCaseData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
+    end
+    
+    function updateSetData(obj, source, event)
+      obj.updateSetData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
+    end
+    
+    function updateSheetData(obj, source, event)
+      obj.updateSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
+    end    
+    
+    function updateVariableData(obj, source, event)
+      variableID = regexprep(source.VariableID, '\W', '');
+      validID = false;
+      try 
+        variableID = validatestring(variableID, fieldnames(obj.Regions));
+        validID = true;
+      end
+      
+      if ~validID
+        switch lower(variableID)
+%           case {'raw', 'sections', 'around', 'across', 'zones', 'zonebands'}
+%             try
+%               if ~stropt(lower(source.VariableID), fieldnames(obj.Regions));
+%                 warning('Unknown variable ID, reverting to last variable ID.');
+%                 obj.VariableID = obj.LastVariableID; return;
+%               end
+%             catch err
+%               return;
+%             end
+          case {'', [], 'none'}
+            obj.VariableID = 'raw'; return;
+          case {'sections', 'regions', 'region'}
+            obj.VariableID = 'sections'; return;
+          case {'around', 'circumferential'}
+            obj.VariableID = 'around'; return;
+          case {'across', 'axial'}
+            obj.VariableID = 'across'; return;
+          case {'zones', 'zone', 'inkzones'}
+            obj.VariableID = 'zones'; return;
+          case {'zoneband'}
+            obj.VariableID = 'zoneBands'; return;
+          otherwise
+            warning('Unknown variable ID, reverting to last variable ID.');
+            obj.VariableID = obj.LastVariableID; return;
+        end
+      end
+      
+      if ~isequal(obj.VariableID, variableID)
+        obj.VariableID = variableID;
+      end
+      
+      if isequal(obj.VariableID, 'raw')
+        obj.Stats = [];
+      else
+        switch obj.VariableID
+          case {'sections', 'around', 'across'}
+            regions.sections  = obj.Regions.sections;
+            regions.around    = obj.Regions.around;
+            regions.across    = obj.Regions.across;
+          otherwise
+            regions.(obj.VariableID)  = obj.Regions.(obj.VariableID);
+            try regions.([obj.VariableID 'Around']) = obj.Regions.([obj.VariableID 'Around']); end
+            try regions.([obj.VariableID 'Across']) = obj.Regions.([obj.VariableID 'Across']); end
+        end
+
+        [dataSource stats]    = Stats.generateUPStats(obj.CaseData, obj.SetData, regions);
+        obj.Stats = stats;
+      end
+      
+      dispf('Variable ID = %s', obj.VariableID);
+      
+      obj.updateVariableData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
+    end
+    
+  end
+  
   methods (Static, Hidden)
+    function stats = regionStatistics(caseData, setData)
+      
+    end
+    
+    function masks = regionMasks(caseData)
+      %% Axial Masks
+      
+      %% Circumferential Masks
+      
+      %% Region Masks
+      
+    end
+    
+    function masks = zoneMasks(caseData)
+      
+    end
+    
     function [newData metrics]  = regionStatisticsFilter(zData)
       %newData = zData;
       
@@ -119,7 +272,9 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       % end
     end
     
-    function OPTIONS  = DefaultOptions()      
+    function OPTIONS  = DefaultOptions()
+      VariableID = 'sections';
+      
       Grasppe.Utilities.DeclareOptions;
     end
   end

@@ -4,7 +4,7 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
   
   properties
     MouseEventHandlers
-    MousePressEvents = 0;
+    % MousePressEvents = 0;
   end
   
   properties

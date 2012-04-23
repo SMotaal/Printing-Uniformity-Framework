@@ -22,6 +22,10 @@ function [ dataSource regions ] = generateUPRegions( dataSource )
     dataSource.sampling.regions.(field)  = masks.(field);
   end
   
+  if nargout==2
+    regions = dataSource.sampling.regions;
+  end
+  
 end
 
 
@@ -59,8 +63,23 @@ function [masks, metrics] = zoneROI(metrics, masks)
 
   end
   
-  masks.zones     = zoneMasks;
-  masks.zoneBands = zoneBandMasks;
+  zonesBandsAroundMasks = zeros(lengthBands, rows, columns);
+  
+  for l = 1:lengthBands
+    r1 = lengthMetrics.Steps(l)+1;
+    r2 = lengthMetrics.Steps(l+1);
+    
+    zonesBandsAroundMasks(l, :, :) = rectMask(rows, columns, r1, r2, [], []);
+  end
+  
+  masks.zones           = zoneMasks;
+  masks.zonesAround     = ones(1, rows, columns);
+  masks.zonesAcross     = zoneMasks;
+  
+  masks.zoneBands       = zoneBandMasks;
+  masks.zoneBandsAround = zonesBandsAroundMasks;
+  masks.zoneBandsAcross = zoneMasks;
+  
   return;
     
 end
@@ -120,7 +139,8 @@ function [masks, metrics] = regionROI(metrics, masks)
     end
   end
   
-  masks.sections  = sectionMasks;
+  masks.sections        = sectionMasks;
+  
   masks.across    = widthMasks;
   masks.around    = lengthMasks;
     

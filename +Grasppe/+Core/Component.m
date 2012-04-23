@@ -3,7 +3,7 @@ classdef Component < Grasppe.Core.Instance
   %   Detailed explanation goes here
   
   properties (Hidden=true)
-    Defaults
+    Defaults    = [];
     Initialized = false;
     SubHandles  = [];
     SubHandleObjects = {};
@@ -82,7 +82,7 @@ classdef Component < Grasppe.Core.Instance
       
       try
         componentType = obj.ComponentType;
-      catch
+      catch err
         error('Grasppe:Component:MissingType', ...
           'Unable to determine the component type to create the component.');
       end
@@ -191,7 +191,8 @@ classdef Component < Grasppe.Core.Instance
   
   methods
     function defaults = get.Defaults(obj)
-      defaults = obj.DefaultOptions;
+      try if isempty(obj.Defaults), obj.Defaults = obj.DefaultOptions; end; end
+      defaults = obj.Defaults;
     end
   end
   
