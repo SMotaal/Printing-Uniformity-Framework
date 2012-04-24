@@ -15,6 +15,8 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     DataFunction  = [];
     SummaryLength = 4;
     SummaryOffset = 1;
+    
+    PlotLabels  = [];
   end
   
   methods (Hidden)
@@ -26,182 +28,205 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       obj.attachPlotObject@Grasppe.PrintUniformity.Data.UniformityDataSource(plotObject);
       try plotObject.ParentAxes.setView([0 90], true); end
       try plotObject.ParentAxes.Box       = true; end
+      
+      try delete(obj.PlotLabels); end
+      try
+        obj.PlotLabels = Grasppe.PrintUniformity.Graphics.UniformityPlotLabels;
+        obj.PlotLabels.attachPlot(plotObject);
+      catch err
+        disp(err);
+      end
     end
-
+    
     function [X Y Z] = processSheetData(obj, sheetID, variableID)
-
-      [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID, variableID);
-      
-      caseData      = obj.CaseData; ...
-        setData   	= obj.SetData; ...
-        sheetData   = obj.SheetData; ...
-        stats       = obj.Stats; ...
-        variableID  = obj.VariableID;
-      
-      dispf('Sheet ID = %s', int2str(obj.SheetID));
-      targetFilter  = caseData.sampling.masks.Target~=1;
-      patchFilter   = setData.filterData.dataFilter~=1;
-      
-      if isempty(stats)
-        Z(~patchFilter) = sheetData;
-        Z(targetFilter) = NaN;
-        Z(patchFilter)  = NaN;
-        %[Z M] = Grasppe.PrintUniformity.Data.RegionStatsDataSource.regionStatisticsFilter(Z);
-      else
-
-        switch variableID
-          case {'sections', 'around', 'across'}
-            aroundID = 'around';
-            acrossID = 'across';
-          otherwise
-            aroundID = [variableID 'Around'];
-            acrossID = [variableID 'Across'];
-        end
+      try
         
-        regionMasks     = stats.metadata.regions.(variableID);
-        regionData      = stats.(variableID)(:, sheetID);
-        runData         = stats.run;
+        [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID, variableID);
         
-        try 
-          aroundMasks = stats.metadata.regions.(aroundID);
-          aroundMasks  = max(aroundMasks, [], 3);
-          aroundData  = stats.(aroundID)(:, sheetID);          
-        catch
-          aroundMasks = [];
-          aroundData  = [];
-        end
+        caseData      = obj.CaseData; ...
+          setData   	= obj.SetData; ...
+          sheetData   = obj.SheetData; ...
+          stats       = obj.Stats; ...
+          variableID  = obj.VariableID;
         
-        try 
-          acrossMasks = stats.metadata.regions.(acrossID);
-          acrossMasks  = max(acrossMasks, [], 2);
-          acrossData  = stats.(acrossID)(:, sheetID);
-        catch
-          acrossMasks = [];
-          acrossData  = [];
-        end        
-        statsMode = regexprep(lower(obj.StatsMode), '\W', '');
+        dispf('Sheet ID = %s', int2str(obj.SheetID));
+        targetFilter  = caseData.sampling.masks.Target~=1;
+        patchFilter   = setData.filterData.dataFilter~=1;
         
-        
-        switch statsMode
-          case {'std', 'deviation', 'standarddeviation'}
-            statsMode     = 'Standard Deviation'
-            statsFunction = @(d, r) vertcat(d.Std);
-            dataFunction  = @(s)    nanstd(s(:));
-
-            % statsData       = vertcat(regionData.Std);
-            % try aroundData  = vertcat(aroundData.Std); end
-            % try acrossData  = vertcat(acrossData.Std); end
-          case {'deltalimits', 'deltalimit', 'sixsigma'}
-            statsMode     = 'Six Sigma'
-            statsFunction = @(d, r) vertcat(d.Std) .* 6;
-            dataFunction  = @(s)    nanstd(s(:)) .* 6;
+        if isempty(stats)
+          Z(~patchFilter) = sheetData;
+          Z(targetFilter) = NaN;
+          Z(patchFilter)  = NaN;
+          
+          %[Z M] = Grasppe.PrintUniformity.Data.RegionStatsDataSource.regionStatisticsFilter(Z);
+        else
+          
+          switch variableID
+            case {'sections', 'around', 'across'}
+              aroundID = 'around';
+              acrossID = 'across';
+            otherwise
+              aroundID = [variableID 'Around'];
+              acrossID = [variableID 'Across'];
+          end
+          
+          regionMasks     = stats.metadata.regions.(variableID);
+          regionData      = stats.(variableID)(:, sheetID);
+          runData         = stats.run;
+          
+          try
+            aroundMasks = stats.metadata.regions.(aroundID);
+            aroundMasks  = max(aroundMasks, [], 3);
+            aroundData  = stats.(aroundID)(:, sheetID);
+          catch
+            aroundMasks = [];
+            aroundData  = [];
+          end
+          
+          try
+            acrossMasks = stats.metadata.regions.(acrossID);
+            acrossMasks  = max(acrossMasks, [], 2);
+            acrossData  = stats.(acrossID)(:, sheetID);
+          catch
+            acrossMasks = [];
+            acrossData  = [];
+          end
+          statsMode = regexprep(lower(obj.StatsMode), '\W', '');
+          
+          
+          switch statsMode
+            case {'std', 'deviation', 'standarddeviation'}
+              statsMode     = 'Standard Deviation'
+              statsFunction = @(d, r) vertcat(d.Std);
+              dataFunction  = @(s)    nanstd(s(:));
+              
+              % statsData       = vertcat(regionData.Std);
+              % try aroundData  = vertcat(aroundData.Std); end
+              % try acrossData  = vertcat(acrossData.Std); end
+            case {'deltalimits', 'deltalimit', 'sixsigma'}
+              statsMode     = 'Six Sigma'
+              statsFunction = @(d, r) vertcat(d.Std) .* 6;
+              dataFunction  = @(s)    nanstd(s(:)) .* 6;
+              
+              % statsData = vertcat(regionData.Std) .* 6;
+            case {'peaklimits', 'process limits'}
+              statsMode     = 'Peak Limits'
+              statsFunction = @(d, r) max(abs(vertcat(d.Lim) - r.Mean),[],2);
+              dataFunction  = @(s)    nanmax(s(:));
+              
+              % limData   = vertcat(regionData.Lim);
+              % statsData = max(abs(limData - runData.Mean),[],2);
+            case {'lowerlimit'}
+              statsMode     = 'Lower Limit'
+              statsFunction = @(d, r) eval('vertcat(d.Lim); ans(:,1)');
+              dataFunction  = @(s)    nanmin(s(:));
+              
+              
+              % limData   = vertcat(regionData.Lim);
+              % statsData = limData(:,1);
+            case {'upperlimit'}
+              statsMode     = 'Upper Limit'
+              statsFunction = @(d, r) eval('vertcat(d.Lim); ans(:,2)');
+              dataFunction  = @(s)    nanmax(s(:));
+              % limData   = vertcat(regionData.Lim);
+              % statsData = limData(:,2);
+            otherwise % case {'mean', 'average'}
+              statsMode     = 'Mean';
+              statsFunction = @(d, r) vertcat(d.Mean);
+              dataFunction  = @(s)    nanmean(s(:));
+              % statsData = vertcat(regionData.Mean);
+          end
+          
+          obj.StatsMode = statsMode;
+          
+          regionStats = statsFunction(regionData, runData);
+          
+          rows      = size(Z,2);
+          columns   = size(Z,1);
+          
+          newData   = zeros(1, columns, rows);
+          
+          for m = 1:size(regionMasks,1)
+            maskData          = regionMasks(m, :, :)==1;
+            newData(maskData) = regionStats(m);
+          end
+          
+          try
+            obj.PlotLabels.defineLabels(regionMasks, regionStats);
+            obj.PlotLabels.createLabels;
+          catch err
+            try obj.PlotLabels.deleteLabels; end
+          end
+          
+          summaryOffset = obj.SummaryOffset;
+          offsetRange   = 1:summaryOffset;
+          summaryRange  = summaryOffset + 1 + [0:obj.SummaryLength];
+          
+          try
+            aroundStats = statsFunction(aroundData, runData);
             
-            % statsData = vertcat(regionData.Std) .* 6;
-          case {'peaklimits', 'process limits'}
-            statsMode     = 'Peak Limits'
-            statsFunction = @(d, r) max(abs(vertcat(d.Lim) - r.Mean),[],2);
-            dataFunction  = @(s)    nanmax(s(:));
+            for m = 1:size(aroundMasks,1)
+              aroundMask  = aroundMasks(m, :, :)==1;
+              r = rows    + summaryRange;
+              newData(1, aroundMask(:), r) = aroundStats(m);
+            end
             
-            % limData   = vertcat(regionData.Lim);
-            % statsData = max(abs(limData - runData.Mean),[],2);
-          case {'lowerlimit'}
-            statsMode     = 'Lower Limit'
-            statsFunction = @(d, r) eval('vertcat(d.Lim); ans(:,1)');
-            dataFunction  = @(s)    nanmin(s(:));
+          end
+          
+          try
+            acrossStats = statsFunction(acrossData, runData);
             
+            for m = 1:size(acrossMasks,1)
+              acrossMask  = acrossMasks(m, :, :)==1;
+              c = columns + summaryRange;
+              newData(1, c, acrossMask(:)) = acrossStats(m);
+            end
             
-            % limData   = vertcat(regionData.Lim);
-            % statsData = limData(:,1);
-          case {'upperlimit'}
-            statsMode     = 'Upper Limit'
-            statsFunction = @(d, r) eval('vertcat(d.Lim); ans(:,2)');
-            dataFunction  = @(s)    nanmax(s(:));
-            % limData   = vertcat(regionData.Lim);
-            % statsData = limData(:,2);           
-          otherwise % case {'mean', 'average'}
-            statsMode     = 'Mean';
-            statsFunction = @(d, r) vertcat(d.Mean);
-            dataFunction  = @(s)    nanmean(s(:));
-            % statsData = vertcat(regionData.Mean);
-        end
-        
-        obj.StatsMode = statsMode;
-        
-        regionStats = statsFunction(regionData, runData);
-        
-        rows      = size(Z,2);
-        columns   = size(Z,1);
-        
-        newData   = zeros(1, columns, rows);
-        
-        for m = 1:size(regionMasks,1)
-          maskData          = regionMasks(m, :, :)==1;
-          newData(maskData) = regionStats(m);
-        end
-        
-        summaryOffset = obj.SummaryOffset;
-        offsetRange   = 1:summaryOffset;
-        summaryRange  = summaryOffset + 1 + [0:obj.SummaryLength];
-        
-        try 
-          aroundStats = statsFunction(aroundData, runData);
-        
-          for m = 1:size(aroundMasks,1)
-            aroundMask  = aroundMasks(m, :, :)==1;
+          end
+          
+          try
+            sampleStats = dataFunction(regionStats);
             r = rows    + summaryRange;
-            newData(1, aroundMask(:), r) = aroundStats(m);
-          end
-          
-        end
-        
-        try 
-          acrossStats = statsFunction(acrossData, runData);
-        
-          for m = 1:size(acrossMasks,1)
-            acrossMask  = acrossMasks(m, :, :)==1;
             c = columns + summaryRange;
-            newData(1, c, acrossMask(:)) = acrossStats(m);
+            newData(1, c, r) = sampleStats;
           end
           
+          if size(newData, 2) > columns,  newData(1, :, rows + offsetRange)     = nan; end
+          if size(newData, 3) > rows,     newData(1, columns + offsetRange, :)  = nan; end
+          
+          Z = squeeze(newData);
+          
+          [X Y] = meshgrid(1:size(newData, 3), 1:size(newData, 2));
+          
+          %return;
         end
         
-        try 
-          sampleStats = dataFunction(regionStats); 
-          r = rows    + summaryRange;
-          c = columns + summaryRange;
-          newData(1, c, r) = sampleStats;
-        end
+        % Z(targetFilter) = NaN;
+        % Z(patchFilter)  = NaN;
+        %
+        %       dataFilter  = ~isnan(Z);
+        %
+        %       F = TriScatteredInterp(X(dataFilter), Y(dataFilter), Z(dataFilter), 'natural');
+        %
+        %       Z = F(X, Y);
+        %       Z(targetFilter) = NaN;
         
-        if size(newData, 2) > columns,  newData(1, :, rows + offsetRange)     = nan; end
-        if size(newData, 3) > rows,     newData(1, columns + offsetRange, :)  = nan; end
+        %Z(patchFilter~=1)   = NaN;
         
-        Z = squeeze(newData);
-        
-        [X Y] = meshgrid(1:size(newData, 3), 1:size(newData, 2));
-        
-        %return;
+      catch err
+        disp(err);
+        % keyboard;
       end
       
-      % Z(targetFilter) = NaN;
-      % Z(patchFilter)  = NaN;
-%       
-%       dataFilter  = ~isnan(Z);
-%       
-%       F = TriScatteredInterp(X(dataFilter), Y(dataFilter), Z(dataFilter), 'natural');
-%       
-%       Z = F(X, Y);
-%       Z(targetFilter) = NaN;
-      
-      %Z(patchFilter~=1)   = NaN;      
       
     end
     
-%     function optimizeSetLimits(obj)
-%       zLim    = 'auto';
-%       
-%       obj.ZLim  = zLim;
-%       % obj.CLim  = zLim;
-%     end
+    %     function optimizeSetLimits(obj)
+    %       zLim    = 'auto';
+    %
+    %       obj.ZLim  = zLim;
+    %       % obj.CLim  = zLim;
+    %     end
     
     function setPlotData(obj, XData, YData, ZData)
       try debugStamp(obj.ID); catch, debugStamp(); end;
@@ -231,33 +256,35 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     end
     
     function updateSetData(obj, source, event)
+      obj.Stats = [];      
       obj.updateSetData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
-      obj.updateVariableData(source, event);      
+      obj.updateVariableData(source, event);
+      try obj.PlotLabels.deleteLabels; end
     end
     
     function updateSheetData(obj, source, event)
       obj.updateSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
-    end    
+    end
     
     function updateVariableData(obj, source, event)
       variableID = regexprep(source.VariableID, '\W', '');
       validID = false;
-      try 
+      try
         variableID = validatestring(variableID, fieldnames(obj.Regions));
         validID = true;
       end
       
       if ~validID
         switch lower(variableID)
-%           case {'raw', 'sections', 'around', 'across', 'zones', 'zonebands'}
-%             try
-%               if ~stropt(lower(source.VariableID), fieldnames(obj.Regions));
-%                 warning('Unknown variable ID, reverting to last variable ID.');
-%                 obj.VariableID = obj.LastVariableID; return;
-%               end
-%             catch err
-%               return;
-%             end
+          %           case {'raw', 'sections', 'around', 'across', 'zones', 'zonebands'}
+          %             try
+          %               if ~stropt(lower(source.VariableID), fieldnames(obj.Regions));
+          %                 warning('Unknown variable ID, reverting to last variable ID.');
+          %                 obj.VariableID = obj.LastVariableID; return;
+          %               end
+          %             catch err
+          %               return;
+          %             end
           case {'', [], 'none'}
             obj.VariableID = 'raw'; return;
           case {'sections', 'regions', 'region'}
@@ -293,7 +320,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
             try regions.([obj.VariableID 'Around']) = obj.Regions.([obj.VariableID 'Around']); end
             try regions.([obj.VariableID 'Across']) = obj.Regions.([obj.VariableID 'Across']); end
         end
-
+        
         [dataSource stats]    = Stats.generateUPStats(obj.CaseData, obj.SetData, regions);
         obj.Stats = stats;
       end

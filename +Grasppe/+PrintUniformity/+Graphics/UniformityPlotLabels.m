@@ -9,18 +9,42 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     LabelPositions  = [];
     LabelElevation  = 100;
     PlotObject
+    ComponentType   = '';
   end
   
   methods
     
-    function attachPlot(obj, plotObject)
-      %% Elevation
-      
-      obj.LabelElevation = 0;
+    function obj = UniformityPlotLabels()
+      obj = obj@Grasppe.Core.Component();
     end
     
-    function detachPlot(obj)
-      obj.deleteLabels;
+    function set.PlotObject(obj, plotObject)
+      try
+        obj.deleteLabels;
+      end
+      
+      obj.PlotObject = plotObject;
+    end
+    
+    function attachPlot(obj, plotObject)
+      
+      obj.PlotObject = plotObject;
+      
+      %% Elevation
+      zReverse = false;
+      try zReverse = isequal(lower(plotObject.ZDir), 'reverse'); end
+      
+      z = 100;
+      
+      try
+        if zReverse
+          z = min(plotObject.HandleObject.ZLim) - 3;
+        else
+          z = max(plotObject.HandleObject.ZLim) + 3;
+        end
+      end
+      
+      obj.LabelElevation = z;
     end
     
     function deleteLabels(obj)
@@ -35,6 +59,8 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
           try if isempty(obj.LabelObjects{m}), continue; end; end
           return;
         end
+      end
+      try
         obj.LabelObjects    = {};
         obj.LabelValues     = [];
         obj.LabelRegions    = [];
@@ -43,87 +69,117 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     end
     
     function defineLabels(obj, regions, values)
-      obj.deleteLabels;
-      obj.LabelRegions  = regions;
-      obj.LabelValues   = values;
+      %obj.deleteLabels;
+      obj.LabelRegions    = regions;
+      obj.LabelValues     = values;
+      obj.LabelPositions  = [];
     end
     
     function createLabels(obj)
-      values  = obj.LabelValues;
-      regions = obj.LabelRegions;
+      try
+        values  = obj.LabelValues;
+        regions = obj.LabelRegions;
+        
+        
+        for m = 1:numel(obj.LabelValues)
+          try
+            region = eval(['regions(m' repmat(',:',1,ndims(regions)-1)  ')']);
+            obj.createLabel(m, squeeze(region), values(m));
+          end
+        end
+      catch err
+        disp(err);
+      end
       
-      for m = 1:numel(obj.LabelValues)
-        obj.createLabel(m, values(m), regions(m,:));
-      end      
     end
     
+    
     function createLabel(obj, index, region, value)
-      
-      %% Index        
-      if isempty(index)
-        index = numel(obj.LabelObjects)+1;
-      else
-        label = [];
-        try label = obj.LabelObjects{index}; end
-      end
-      
-      %% Label
-      if isempty(label) % Create Label
-        try 
-          label = Grasppe.Graphics.TextObject(obj.PlotObject.ParentAxes);
-        catch err
-          warning('Plot must be attached before creating labels');
-          return;
+      try
+        
+        %% Index
+        if isempty(index)
+          index = numel(obj.LabelObjects)+1;
+        else
+          label = [];
+          try label = obj.LabelObjects{index}; end
         end
-        obj.registerHandle(label);
-        obj.LabelObj{index} = label;
+        
+        %% Label
+        if isempty(label) % Create Label
+          try
+            label = Grasppe.Graphics.TextObject(obj.PlotObject.ParentAxes, 'Text', int2str(index));
+            label.HandleObject.HorizontalAlignment  = 'center';
+            label.HandleObject.VerticalAlignment    = 'middle';
+            label.FontSize = 7;
+          catch err
+            warning('Plot must be attached before creating labels');
+            return;
+          end
+          obj.registerHandle(label);
+          obj.LabelObjects{index} = label;
+        end
+        
+        %% Region (xmin ymin width height)
+        if isequal(size(region), [1 4])
+          % no change
+        elseif isequal(size(region), [1 2])
+          region  = [region 0 0];
+        else % is a mask
+          y       = nanmax(region, [], 2);
+          y1      = find(y>0, 1, 'first');
+          y2      = find(y>0, 1, 'last');
+          
+          x       = nanmax(region, [], 1);
+          x1      = find(x>0, 1, 'first');
+          x2      = find(x>0, 1, 'last');
+          
+          region  = [x1 y1 x2-x1 y2-y1];
+        end
+        
+        dimension = region([3 4]);
+        
+        %% Position (centering)
+        position  = region([1 2]) + dimension/2;
+        
+        
+        obj.LabelRegions(index, 1:4) = region;
+        obj.LabelPositions(index, 1:2) = position;
+        
+        %% Value
+        if nargin < 3, value = []; end
+        
+        try if isempty(value), value = obj.LabelValues(index); end; end
+        
+        obj.LabelValues(index) = value;
+        
+        obj.updateLabel(index);
+        
+      catch err
+        disp(err);
       end
       
-      %% Region (xmin ymin width height)
-      if size(region)==[1 4]
-        % no change
-      elseif size(region)==[1 2]
-        region  = [region 0 0];
-      else % is a mask
-        y       = nanmax(region, [], 1);
-        y1      = find(y>0, 1, 'first');
-        y2      = find(y>0, 1, 'last');
-        
-        x       = nanmax(region, [], 2);
-        x1      = find(x>0, 1, 'first');
-        x2      = find(x>0, 1, 'last');
-        
-        region  = [x1 y1 x2-x1 y2-y1];
-      end
-      
-      dimension = region([3 4]);
-      
-      %% Position (centering)
-      position  = region([1 2]) + dimension/2;
-      
-      
-      obj.LabelRegions(index, 1:4) = region;
-      obj.LabelPositions(index, 1:2) = position;
-      
-      %% Value
-      if nargin < 3, value = []; end
-      
-      try if isempty(value), value = obj.LabelValues(index); end; end
-      
-      obj.LabelValues(index) = value;
-      
-      obj.updateLabel(index);
       
     end
     
     function updateLabel(obj, index)
-      value = [];
-      try value = toString(obj.LabelValues(index)); end
-      try obj.LabelObjects{index}.Text = value; end
-      
-      position = [-100 -100];
-      try position = obj.LabelPositions(index, :); end
-      try obj.LabelObjects{index}.Position([1 2]) = [position obj.LabelElevation]; end
+      try
+        value = [];
+        
+        try value = obj.LabelValues(index); end
+        
+        if isa(value, 'double'), value = num2str(value, '%3.1f');
+          %else, value = '';
+        end
+        
+        try obj.LabelObjects{index}.Text = toString(value); end
+        
+        position = [-100 -100];
+        try position = obj.LabelPositions(index, :); end
+        try obj.LabelObjects{index}.Position = [position obj.LabelElevation]; end
+      catch err
+        disp(err);
+      end
     end
     
     function updateLabels(obj)
@@ -132,6 +188,31 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
       end
     end
   end
+  
+  methods (Access=protected)
+    %     function createComponent(obj)
+    %
+    %       try
+    %         componentType = obj.ComponentType;
+    %       catch err
+    %         error('Grasppe:Component:MissingType', ...
+    %           'Unable to determine the component type to create the component.');
+    %       end
+    %
+    %       obj.intializeComponentOptions;
+    %
+    %       obj.Initialized = true;
+    %
+    %     end
+  end
+  
+  methods (Static)
+    
+    function OPTIONS  = DefaultOptions()
+      Grasppe.Utilities.DeclareOptions;
+    end
+  end
+  
   
 end
 

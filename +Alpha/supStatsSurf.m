@@ -396,7 +396,7 @@ for f = 1:nFields
     try
       plotSpecs = plotting.Specs(p);
     catch err
-      disp err;
+      disp(err);
     end
         
     hold all;
@@ -581,7 +581,7 @@ for f = 1:nFields
 %         xlim(hCB(f,p))
       end
     catch err
-      disp err;      
+      disp(err);
     end
     
     opt grid(plotSpecs.Grid);
@@ -630,7 +630,7 @@ for f = 1:nFields
         
         set(hText(f,p,m),'String', char(tStrings(f,p,m,1)));
       catch err
-        disp err;        
+        disp(err);
       end
 
     end
