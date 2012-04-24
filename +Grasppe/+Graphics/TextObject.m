@@ -29,7 +29,9 @@ classdef TextObject < Grasppe.Graphics.AnnotationComponent
     end
     
     function createHandleObject(obj)
-      obj.Handle = text(0.5, 0.5, 0, obj.Text, 'Parent', obj.ParentAxes.Handle);
+      string = obj.Text;
+      if ~ischar(string), string = ''; end
+      obj.Handle = text(0.5, 0.5, 0, string, 'Parent', obj.ParentAxes.Handle);
     end
     
     function decorateComponent(obj)

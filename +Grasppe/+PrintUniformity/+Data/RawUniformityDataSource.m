@@ -16,7 +16,8 @@ classdef RawUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSo
     
     function attachPlotObject(obj, plotObject)
       obj.attachPlotObject@Grasppe.PrintUniformity.Data.UniformityDataSource(plotObject);
-      try plotObject.ParentAxes.ViewLock = false; end
+      try plotObject.ParentAxes.ViewLock  = false; end
+      try plotObject.ParentAxes.Box       = false; end
     end
     
 
@@ -72,12 +73,12 @@ classdef RawUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSo
       
     end
     
-    function optimizeSetLimits(obj)
-      % zLim    = [0 10];
-      
-      obj.ZLim  = 'auto';
-      % obj.CLim  = 'auto';
-    end
+%     function optimizeSetLimits(obj)
+%       % zLim    = [0 10];
+%       
+%       obj.ZLim  = 'auto';
+%       % obj.CLim  = 'auto';
+%     end
     
     
   end

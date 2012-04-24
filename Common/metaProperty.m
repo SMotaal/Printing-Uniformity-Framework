@@ -7,7 +7,11 @@ function [ propertyMeta ] = metaProperty( className, propertyName )
     metaClass   = metaclass(className);
   end
   propertyNames    = {metaClass.PropertyList.Name};
-  propertyIndex = find(strcmp(propertyName, propertyNames));
-  propertyMeta  = metaClass.PropertyList(propertyIndex);
+  if nargin == 1
+    propertyMeta = propertyNames
+  elseif nargin ==2
+      propertyIndex = find(strcmp(propertyName, propertyNames));
+      propertyMeta  = metaClass.PropertyList(propertyIndex);
+  end
 end
 

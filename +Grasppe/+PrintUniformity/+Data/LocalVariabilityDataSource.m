@@ -17,6 +17,7 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
     function attachPlotObject(obj, plotObject)
       obj.attachPlotObject@Grasppe.PrintUniformity.Data.UniformityDataSource(plotObject);
       try plotObject.ParentAxes.setView([0 90], true); end
+      try plotObject.ParentAxes.Box       = true; end
     end
 
     function [X Y Z] = processSheetData(obj, sheetID, variableID)
@@ -51,10 +52,14 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
     end
     
     function optimizeSetLimits(obj)
-      zLim    = [0 10];
       
-      obj.ZLim  = zLim;
-      % obj.CLim  = zLim;
+      xLim  = [];
+      yLim  = [];
+      zLim  = [0 10];
+      cLim  = [];
+      
+      obj.optimizeSetLimits@Grasppe.PrintUniformity.Data.UniformityDataSource(xLim, yLim, zLim, cLim);
+      
     end
     
     function setPlotData(obj, XData, YData, ZData)

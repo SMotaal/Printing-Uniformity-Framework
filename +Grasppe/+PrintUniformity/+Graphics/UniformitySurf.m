@@ -26,11 +26,12 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
         if ~(isempty(obj.Handle) || ~isvalid(obj.Handle)), return; end;
         obj.createComponent@Grasppe.Graphics.Surf();
       end
-      %obj.createComponent@Grasppe.PrintUniformity.Graphics.UniformityPlotComponent();
+      % obj.createComponent@Grasppe.PrintUniformity.Graphics.UniformityPlotComponent();
       
-      %obj.ParentFigure.registerMouseEventHandler(obj);
-      obj.handleSet('EdgeAlpha', 0.5);
-      obj.handleSet('LineWidth', 0.25);
+      % obj.ParentFigure.registerMouseEventHandler(obj);
+      obj.ParentAxes.AspectRatio = [20 20 1];
+      % obj.handleSet('EdgeAlpha', 0.5);
+      % obj.handleSet('LineWidth', 0.25);
     end
   end
   
@@ -126,6 +127,8 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
       
       IsVisible     = true;
       IsClickable   = true;
+      EdgeColor     = 'none';
+      Clipping      = 'off';
       
       Grasppe.Utilities.DeclareOptions;
     end

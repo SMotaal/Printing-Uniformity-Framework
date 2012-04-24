@@ -16,7 +16,8 @@ classdef UniformityPlaneDataSource < Grasppe.PrintUniformity.Data.UniformityData
     
     function attachPlotObject(obj, plotObject)
       obj.attachPlotObject@Grasppe.PrintUniformity.Data.UniformityDataSource(plotObject);
-      try plotObject.ParentAxes.ViewLock = false; end
+      try plotObject.ParentAxes.ViewLock  = false; end
+      try plotObject.ParentAxes.Box       = false; end
     end
     
 
@@ -50,12 +51,15 @@ classdef UniformityPlaneDataSource < Grasppe.PrintUniformity.Data.UniformityData
     end
     
     function optimizeSetLimits(obj)
-      % zLim    = [0 10];
       
-      obj.ZLim  = 'auto';
-      % obj.CLim  = 'auto';
-    end
-    
+      xLim  = [];
+      yLim  = [];
+      zLim  = [];
+      cLim  = [];
+      
+      obj.optimizeSetLimits@Grasppe.PrintUniformity.Data.UniformityDataSource(xLim, yLim, zLim, cLim);
+      
+    end    
     
   end
   

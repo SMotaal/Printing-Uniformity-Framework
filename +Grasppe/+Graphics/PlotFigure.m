@@ -90,7 +90,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
       obj.preparePlotAxes;
       obj.OverlayAxes = Grasppe.Graphics.OverlayAxes('ParentFigure', obj);  %OverlayAxesObject.Create(obj);
       % obj.StatusText  = OverlayTextObject.Create(obj.OverlayAxes);
-      obj.TitleText   = Grasppe.Graphics.TextObject(obj.OverlayAxes, 'Text', 'tada');
+      obj.TitleText   = Grasppe.Graphics.TextObject(obj.OverlayAxes);
       % obj.TitleText.updateTitle;
       
     end

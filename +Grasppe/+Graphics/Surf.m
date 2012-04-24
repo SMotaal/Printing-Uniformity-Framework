@@ -5,7 +5,12 @@ classdef Surf < Grasppe.Graphics.PlotComponent % & Grasppe.Core.DecoratedCompone
   properties (Transient, Hidden)
     ComponentType = 'surf';
     
-    SurfHandleProperties = { 'Clipping', 'DisplayName', {'AntiAliasing' 'LineSmoothing'}};
+    SurfHandleProperties = { 'Clipping', 'DisplayName', {'AntiAliasing' 'LineSmoothing'}, ...
+      'FaceColor', 'FaceAlpha', 'EdgeColor', 'EdgeAlpha', ...
+      'BackFaceLighting', 'FaceLighting', 'EdgeLighting', ...
+      'AmbientStrength', 'DiffuseStrength', 'SpecularStrength', 'SpecularExponent', ...
+      'LineStyle', 'LineWidth', ...
+      'Marker', 'MarkerEdgeColor', 'MarkerFaceColor', 'MarkerSize'};
     
     DataProperties = {'AData', 'CData', 'XData', 'YData', 'ZData'}; %, 'CData', 'AData'}; %, 'SheetID', 'CaseID', 'SetID'};    
   end
@@ -13,6 +18,13 @@ classdef Surf < Grasppe.Graphics.PlotComponent % & Grasppe.Core.DecoratedCompone
   properties (SetObservable, GetObservable, AbortSet)
     Clipping, DisplayName='', AntiAliasing = 'on', CDataMapping;
     AData, CData, XData, YData, ZData
+    
+    FaceColor, FaceAlpha, EdgeColor, EdgeAlpha
+    BackFaceLighting, FaceLighting, EdgeLighting
+    AmbientStrength, DiffuseStrength, SpecularStrength, SpecularExponent, SpecularColorReflectance
+    
+    LineStyle, LineWidth
+    Marker, MarkerEdgeColor, MarkerFaceColor, MarkerSize
   end
   
   properties (Dependent)

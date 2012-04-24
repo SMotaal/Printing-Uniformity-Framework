@@ -39,42 +39,26 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
   end
   
   properties (SetObservable, GetObservable)
-    
-    % ExtendedParameters,
-    % DataParameters, CaseData, SetData, SampleData
-    XData, YData, ZData, CData
-    
-    % CaseID, SetID, SheetID, VariableID
-    SampleSummary = false
-    
-    %DataAspectRatioMode
+        
     AspectRatio
-    
-    %CLimMode   ALimMode
-    CLim,       ALim
-    
-    %XLimMode   XTickMode,  XTickLabelMode
-    XLim,       XTick,      XTickLabel
-    
-    %YLimMode   YTickMode,  YTickLabelMode
-    YLim,       YTick,      YTickLabel
-    
-    %ZLimMode   ZTickMode,  ZTickLabelMode
-    ZLim,       ZTick,      ZTickLabel
+    XData, YData, ZData, CData
+    CLim,       ALim                      %CLimMode   ALimMode
+    XLim,       XTick,      XTickLabel    %XLimMode   XTickMode,  XTickLabelMode
+    YLim,       YTick,      YTickLabel    %YLimMode   YTickMode,  YTickLabelMode
+    ZLim,       ZTick,      ZTickLabel    %ZLimMode   ZTickMode,  ZTickLabelMode
     
     PlotType = 'Surface';
   end
   
   properties (GetAccess=public, SetAccess=protected)
-    % currentParameters = [];
-    
     DataProcessor;
   end
   
   properties (SetObservable, GetObservable, AbortSet)
-    Parameters, Data;
+    %Parameters, % Data
     CaseID,     SetID,    SheetID,    VariableID='raw'
     CaseName,   SetName,  SheetName
+    SampleSummary = false
   end
   
   properties (Hidden)
@@ -132,6 +116,8 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
       end
       
       obj.linkPlot(plotObject);
+      
+      obj.optimizeSetLimits;
       
     end
     
@@ -499,28 +485,76 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
     end
     
     
-    function optimizeSetLimits(obj)
+    function optimizeSetLimits(obj, x, y, z, c)
+      %% Optimize XLim & YLim
+      xLim = 'auto';
+      yLim = 'auto';
+      
+      try
+        if nargin > 1 && ~isempty(x) % isnumeric(x) && size(x)==[1 2];
+          xLim = x;
+        else
+          xLim = [1 obj.getColumnCount];
+        end
+      end
+        
+      try
+        if nargin > 2 && ~isempty(y) % isnumeric(y) && size(y)==[1 2];
+          yLim = y;
+        else
+          yLim = [1 obj.getRowCount];
+        end
+      end
+      
+      obj.XLim  = xLim;
+      obj.YLim  = yLim;
+      
+      
+      %% Optimize ZLim & CLim
       zLim = 'auto';
       cLim = 'auto';
       
       try
-        setData   = obj.SetData;
-        
-        zData     = [setData.data(:).zData];
-        zMean     = nanmean(zData);
-        zStd      = nanstd(zData,1);
-        zSigma    = [-3 +3] * zStd;
-        
-        
-        zMedian   = round(zMean*2)/2;
-        zRange    = [-3 +3];
-        zLim      = zMedian + zRange;
-        
-        cLim      = zLim;
+        if nargin > 3 && ~isempty(z) % isnumeric(z) && size(z)==[1 2];
+          zLim = z;
+        else
+          setData   = obj.SetData;
+          
+          zData     = [setData.data(:).zData];
+          zMean     = nanmean(zData);
+          zStd      = nanstd(zData,1);
+          zSigma    = [-3 +3] * zStd;
+          
+          
+          zMedian   = round(zMean*2)/2;
+          zRange    = [-3 +3];
+          zLim      = zMedian + zRange;
+        end
+      end
+      
+      try
+        if nargin > 4 && ~isempty(c) % isnumeric(c) && size(c)==[1 2];
+          cLim      = c;
+        else
+          cLim      = zLim;
+        end
       end
       
       obj.ZLim  = zLim;
-      % obj.CLim  = cLim;
+      obj.CLim  = cLim;
+      
+      %% Update to LinkedPlots
+      try 
+        plotObject = obj.LinkedPlotObjects;
+
+        for m = 1:numel(plotObject)
+          try plotObject(m).ParentAxes.XLim = obj.XLim; end
+          try plotObject(m).ParentAxes.YLim = obj.YLim; end
+          try plotObject(m).ParentAxes.ZLim = obj.ZLim; end
+          try plotObject(m).ParentAxes.CLim = obj.CLim; end        
+        end
+      end
+      
     end
     
     
