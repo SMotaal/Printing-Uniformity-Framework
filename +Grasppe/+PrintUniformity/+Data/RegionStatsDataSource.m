@@ -2,7 +2,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
   %REGIONSTATSDATASOURCE region-based printing uniformity statistics data source
   %   Detailed explanation goes here
   
-  properties
+  properties (AbortSet)
     % LocalVariabilityDataSourceProperties = {
     %   'TestProperty', 'Test Property', 'Labels', 'string', '';   ...
     %   };
@@ -10,13 +10,23 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     Regions
     Stats
     
-    StatsMode     = 'Mean';
+    
     StatsFunction = [];
     DataFunction  = [];
-    SummaryLength = 4;
+    SummaryLength = 5;
     SummaryOffset = 1;
     
-    PlotLabels  = [];
+    PlotLabels    = [];
+    PlotRegions   = [];
+    PlotValues    = [];
+  end
+  
+  properties (AbortSet)
+    StatsMode
+  end
+  
+  properties (SetAccess=private, GetAccess=private)
+    CurrentStatsMode = 'Mean';
   end
   
   methods (Hidden)
@@ -33,9 +43,11 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       try
         obj.PlotLabels = Grasppe.PrintUniformity.Graphics.UniformityPlotLabels;
         obj.PlotLabels.attachPlot(plotObject);
+        obj.updatePlotLabels;
       catch err
         disp(err);
       end
+      
     end
     
     function [X Y Z] = processSheetData(obj, sheetID, variableID)
@@ -47,11 +59,15 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
           setData   	= obj.SetData; ...
           sheetData   = obj.SheetData; ...
           stats       = obj.Stats; ...
+          caseID      = obj.CaseID; ...
+          setID       = obj.SetID; ...
+          sheetID     = obj.SheetID; ...
           variableID  = obj.VariableID;
         
-        dispf('Sheet ID = %s', int2str(obj.SheetID));
+        % dispf('Sheet ID = %s', int2str(obj.SheetID));
         targetFilter  = caseData.sampling.masks.Target~=1;
         patchFilter   = setData.filterData.dataFilter~=1;
+        
         
         if isempty(stats)
           Z(~patchFilter) = sheetData;
@@ -61,42 +77,11 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
           %[Z M] = Grasppe.PrintUniformity.Data.RegionStatsDataSource.regionStatisticsFilter(Z);
         else
           
-          switch variableID
-            case {'sections', 'around', 'across'}
-              aroundID = 'around';
-              acrossID = 'across';
-            otherwise
-              aroundID = [variableID 'Around'];
-              acrossID = [variableID 'Across'];
-          end
-          
-          regionMasks     = stats.metadata.regions.(variableID);
-          regionData      = stats.(variableID)(:, sheetID);
-          runData         = stats.run;
-          
-          try
-            aroundMasks = stats.metadata.regions.(aroundID);
-            aroundMasks  = max(aroundMasks, [], 3);
-            aroundData  = stats.(aroundID)(:, sheetID);
-          catch
-            aroundMasks = [];
-            aroundData  = [];
-          end
-          
-          try
-            acrossMasks = stats.metadata.regions.(acrossID);
-            acrossMasks  = max(acrossMasks, [], 2);
-            acrossData  = stats.(acrossID)(:, sheetID);
-          catch
-            acrossMasks = [];
-            acrossData  = [];
-          end
           statsMode = regexprep(lower(obj.StatsMode), '\W', '');
-          
           
           switch statsMode
             case {'std', 'deviation', 'standarddeviation'}
-              statsMode     = 'Standard Deviation'
+              statsMode     = 'Standard Deviation';
               statsFunction = @(d, r) vertcat(d.Std);
               dataFunction  = @(s)    nanstd(s(:));
               
@@ -104,20 +89,20 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
               % try aroundData  = vertcat(aroundData.Std); end
               % try acrossData  = vertcat(acrossData.Std); end
             case {'deltalimits', 'deltalimit', 'sixsigma'}
-              statsMode     = 'Six Sigma'
+              statsMode     = 'Six Sigma';
               statsFunction = @(d, r) vertcat(d.Std) .* 6;
               dataFunction  = @(s)    nanstd(s(:)) .* 6;
               
               % statsData = vertcat(regionData.Std) .* 6;
             case {'peaklimits', 'process limits'}
-              statsMode     = 'Peak Limits'
+              statsMode     = 'Peak Limits';
               statsFunction = @(d, r) max(abs(vertcat(d.Lim) - r.Mean),[],2);
               dataFunction  = @(s)    nanmax(s(:));
               
               % limData   = vertcat(regionData.Lim);
               % statsData = max(abs(limData - runData.Mean),[],2);
             case {'lowerlimit'}
-              statsMode     = 'Lower Limit'
+              statsMode     = 'Lower Limit';
               statsFunction = @(d, r) eval('vertcat(d.Lim); ans(:,1)');
               dataFunction  = @(s)    nanmin(s(:));
               
@@ -125,7 +110,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
               % limData   = vertcat(regionData.Lim);
               % statsData = limData(:,1);
             case {'upperlimit'}
-              statsMode     = 'Upper Limit'
+              statsMode     = 'Upper Limit';
               statsFunction = @(d, r) eval('vertcat(d.Lim); ans(:,2)');
               dataFunction  = @(s)    nanmax(s(:));
               % limData   = vertcat(regionData.Lim);
@@ -137,62 +122,161 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
               % statsData = vertcat(regionData.Mean);
           end
           
-          obj.StatsMode = statsMode;
+          obj.CurrentStatsMode = statsMode;
           
-          regionStats = statsFunction(regionData, runData);
+          t = tic;
           
-          rows      = size(Z,2);
-          columns   = size(Z,1);
+          statsID     = regexprep(lower(statsMode), '\W', '');
+          sourceSpace =[caseID 'Surfs'];
+          surfID      = Data.generateUPID(caseID,setID, [variableID int2str(sheetID) statsID]);
+          surfData    = Data.dataSources(surfID, sourceSpace);
           
-          newData   = zeros(1, columns, rows);
-          
-          for m = 1:size(regionMasks,1)
-            maskData          = regionMasks(m, :, :)==1;
-            newData(maskData) = regionStats(m);
+          if ~(isempty(surfData))
+            try
+              regionMasks = reshape(full(surfData.masks), surfData.size);
+              regionStats = surfData.stats;
+              newData     = surfData.data;
+              % toc(t);
+            catch err
+              disp(err);
+              surfData    = [];
+            end
           end
           
-          try
-            obj.PlotLabels.defineLabels(regionMasks, regionStats);
-            obj.PlotLabels.createLabels;
-          catch err
-            try obj.PlotLabels.deleteLabels; end
-          end
-          
-          summaryOffset = obj.SummaryOffset;
-          offsetRange   = 1:summaryOffset;
-          summaryRange  = summaryOffset + 1 + [0:obj.SummaryLength];
-          
-          try
-            aroundStats = statsFunction(aroundData, runData);
+          if (isempty(surfData))
             
-            for m = 1:size(aroundMasks,1)
-              aroundMask  = aroundMasks(m, :, :)==1;
+            switch variableID
+              case {'sections', 'around', 'across'}
+                aroundID = 'around';
+                acrossID = 'across';
+              otherwise
+                aroundID = [variableID 'Around'];
+                acrossID = [variableID 'Across'];
+            end
+            
+            regionMasks     = stats.metadata.regions.(variableID);
+            regionData      = stats.(variableID)(:, sheetID);
+            runData         = stats.run;
+            
+            try
+              aroundMasks = stats.metadata.regions.(aroundID);
+              aroundMasks = max(aroundMasks, [], 3);
+              aroundData  = stats.(aroundID)(:, sheetID);
+            catch
+              aroundMasks = [];
+              aroundData  = [];
+            end
+            
+            try
+              acrossMasks = stats.metadata.regions.(acrossID);
+              acrossMasks = max(acrossMasks, [], 2);
+              acrossData  = stats.(acrossID)(:, sheetID);
+            catch
+              acrossMasks = [];
+              acrossData  = [];
+            end
+            
+            regionStats = statsFunction(regionData, runData);
+            
+            rows      = size(Z,2);
+            columns   = size(Z,1);
+            
+            summaryOffset = obj.SummaryOffset;
+            offsetRange   = 1:summaryOffset;
+            summaryRange  = summaryOffset + 1 + [0:obj.SummaryLength];
+            summaryExtent = max(summaryRange);
+            
+            xColumns      = columns+summaryExtent;
+            xColumnRange  = columns+1:xColumns;
+            xRows         = rows+summaryExtent;
+            xRowRange     = rows+1:xRows;
+            
+            regionMasks(:, xColumnRange, xRowRange) = false;
+            
+            newData       = zeros(1, xColumns, xRows);
+            
+            for m = 1:size(regionMasks,1)
+              maskData          = regionMasks(m, :, :)==1;
+              newData(maskData) = regionStats(m);
+            end
+            
+            % obj.PlotRegions = regionMasks;
+            % obj.PlotValues  = regionStats;
+            
+            try
+              aroundStats = statsFunction(aroundData, runData);
+              
+              for m = 1:size(aroundMasks,1)
+                xMask       = zeros(1, xColumns, xRows)==1;
+                
+                r = rows + summaryRange;
+                aroundMask  = aroundMasks(m, :, :)==1;
+                xMask(1, aroundMask(:), r) = true;
+                
+                
+                newData(xMask) = aroundStats(m);
+                
+                n = size(regionMasks,1)+1;
+                
+                regionMasks(n, :, :)  = xMask;
+                regionStats(n)        = aroundStats(m);
+              end
+              
+            end
+            
+            try
+              acrossStats = statsFunction(acrossData, runData);
+              
+              for m = 1:size(acrossMasks,1)
+                xMask       = zeros(1, xColumns, xRows)==1;
+                
+                c = columns + summaryRange;
+                acrossMask  = acrossMasks(m, :, :)==1;
+                xMask(1, c, acrossMask(:)) = true;
+                
+                newData(xMask) = acrossStats(m);
+                
+                n = size(regionMasks,1)+1;
+                
+                regionMasks(n, :, :)  = xMask;
+                regionStats(n)        = acrossStats(m);
+              end
+              
+            end
+            
+            try
+              sampleStats = dataFunction(regionStats);
               r = rows    + summaryRange;
-              newData(1, aroundMask(:), r) = aroundStats(m);
-            end
-            
-          end
-          
-          try
-            acrossStats = statsFunction(acrossData, runData);
-            
-            for m = 1:size(acrossMasks,1)
-              acrossMask  = acrossMasks(m, :, :)==1;
               c = columns + summaryRange;
-              newData(1, c, acrossMask(:)) = acrossStats(m);
+              newData(1, c, r) = sampleStats;
+              
+              xMask           = zeros(1, xColumns, xRows)==1;
+              xMask(1, c, r)  = true;
+              
+              n = size(regionMasks,1)+1;
+              
+              regionMasks(n, :, :)  = xMask;
+              regionStats(n)        = sampleStats;
+              
             end
             
+            if size(newData, 2) > columns,  newData(1, :, rows + offsetRange)     = nan; end
+            if size(newData, 3) > rows,     newData(1, columns + offsetRange, :)  = nan; end
+            
+            try
+              surfData.size   = size(regionMasks);
+              surfData.masks  = sparse(squeeze(reshape(regionMasks,size(regionMasks,1),[])));
+              surfData.stats  = regionStats;
+              surfData.data   = newData;
+            catch err
+              disp(err);
+            end
+            
+            Data.dataSources(surfID, surfData, true, sourceSpace);
           end
           
-          try
-            sampleStats = dataFunction(regionStats);
-            r = rows    + summaryRange;
-            c = columns + summaryRange;
-            newData(1, c, r) = sampleStats;
-          end
-          
-          if size(newData, 2) > columns,  newData(1, :, rows + offsetRange)     = nan; end
-          if size(newData, 3) > rows,     newData(1, columns + offsetRange, :)  = nan; end
+          obj.PlotRegions = regionMasks;
+          obj.PlotValues  = regionStats;
           
           Z = squeeze(newData);
           
@@ -221,12 +305,43 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       
     end
     
-    %     function optimizeSetLimits(obj)
-    %       zLim    = 'auto';
-    %
-    %       obj.ZLim  = zLim;
-    %       % obj.CLim  = zLim;
-    %     end
+    function optimizeSetLimits(obj)
+      
+      zLength = 6;
+      
+      xLim  = [];
+      yLim  = [];
+      zLim  = [];
+      cLim  = [];
+      
+      switch regexprep(lower(obj.StatsMode), '\W', '')
+        case {'mean', 'average'}
+          setData   = obj.SetData;
+          
+          zData     = [setData.data(:).zData];
+          zMean     = nanmean(zData);
+          
+          zLim      = zMean + [+zLength/2 -zLength/2];
+        case {'lowerlimit', 'upperlimit'}
+          setData   = obj.SetData;
+          
+          zData     = [setData.data(:).zData];
+          zMean     = nanmean(zData);
+          zStd      = nanstd(zData,1);
+          
+          zLim      = zMean + [+zLength/2 -zLength/2];
+        case {'std', 'deviation', 'standarddeviation'}
+          zLim      = [0 10];
+        case {'deltalimits', 'deltalimit', 'sixsigma'}
+          zLim      = [0 10];
+        case {'peaklimits', 'process limits'}
+          zLim      = [0 10];
+        otherwise
+      end
+      
+      obj.optimizeSetLimits@Grasppe.PrintUniformity.Data.UniformityDataSource(xLim, yLim, zLim, cLim);
+      
+    end
     
     function setPlotData(obj, XData, YData, ZData)
       try debugStamp(obj.ID); catch, debugStamp(); end;
@@ -240,30 +355,48 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       obj.ZData = ZData;
       
       obj.updatePlots();
+      
     end
     
   end
   
   methods
+    function updatePlotLabels(obj)
+      try
+        if ~isobject(obj.PlotLabels), return; end
+        obj.PlotLabels.defineLabels(obj.PlotRegions, obj.PlotValues);
+        obj.PlotLabels.createLabels;
+      catch err
+        disp(err);
+        % try obj.PlotLabels.deleteLabels; end
+      end
+    end
+    
     function updateCaseData(obj, source, event)
       [dataSource regions] = Metrics.generateUPRegions(obj.CaseData);
       obj.Regions = regions;
       
-      obj.LastVariableID = 'raw';
+      obj.LastVariableID = '';
       % obj.updateVariableData(source, event);
       
       obj.updateCaseData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
+      
+      % try obj.PlotLabels.updateLabels; end;
+      obj.updatePlotLabels;
     end
     
     function updateSetData(obj, source, event)
-      obj.Stats = [];      
+      obj.Stats = [];
+      try obj.PlotLabels.deleteLabels; end
       obj.updateSetData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
       obj.updateVariableData(source, event);
-      try obj.PlotLabels.deleteLabels; end
+      
+      obj.updatePlotLabels;
     end
     
     function updateSheetData(obj, source, event)
       obj.updateSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
+      obj.updatePlotLabels;
     end
     
     function updateVariableData(obj, source, event)
@@ -298,8 +431,16 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
           case {'zoneband'}
             obj.VariableID = 'zoneBands'; return;
           otherwise
-            warning('Unknown variable ID, reverting to last variable ID.');
-            obj.VariableID = obj.LastVariableID; return;
+            try
+              if ~isequal(obj.VariableID, obj.LastVariableID) && ~isempty(obj.LastVariableID)
+                warning('Unknown variable ID, reverting to last variable ID.');
+                obj.VariableID = obj.LastVariableID;
+                return;
+              end
+            end
+            %ids = fieldnames(obj.Regions);
+            obj.VariableID = 'sections';
+            return;
         end
       end
       
@@ -325,9 +466,21 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         obj.Stats = stats;
       end
       
-      dispf('Variable ID = %s', obj.VariableID);
+      % dispf('Variable ID = %s', obj.VariableID);
+      
+      try obj.PlotLabels.clearLabels; end
       
       obj.updateVariableData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
+    end
+    
+    function set.StatsMode(obj, value)
+      obj.StatsMode         = value;
+      obj.CurrentStatsMode  = value;
+      obj.updateSheetData([], []);
+    end
+    
+    function value = get.StatsMode(obj)
+      value = obj.CurrentStatsMode;
     end
     
   end

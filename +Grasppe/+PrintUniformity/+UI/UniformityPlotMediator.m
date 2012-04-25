@@ -2,12 +2,6 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
   %UNIFORMITYPLOTMEDIATOR Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (Hidden)
-    PlotFigure  = [];
-    DataSources = {};
-    PlotObjects = {};
-  end
-  
   properties (Access=private)
     FigureOptions   = {'PlotAxesLength', 3};
     PlotOptions     = {'CaseID', 'rithp5501'};
@@ -83,6 +77,11 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
       
       obj.PlotObjects = {obj.PlotObjects{:}, plotObject};
     end
+    
+    function executeCommand(obj, command)
+      try eval(command); end
+    end
+    
     
     function attachMediations(obj)
       try 

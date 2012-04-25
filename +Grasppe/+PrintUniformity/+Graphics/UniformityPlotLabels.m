@@ -7,9 +7,12 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     LabelValues     = [];
     LabelRegions    = [];
     LabelPositions  = [];
+    LabelActivePositions  = [];
+    LabelAreas      = [];
     LabelElevation  = 100;
     PlotObject
     ComponentType   = '';
+    FontSize        = 6;
   end
   
   methods
@@ -19,9 +22,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     end
     
     function set.PlotObject(obj, plotObject)
-      try
-        obj.deleteLabels;
-      end
+      try obj.deleteLabels; end
       
       obj.PlotObject = plotObject;
     end
@@ -45,6 +46,12 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
       end
       
       obj.LabelElevation = z;
+    end
+    
+    function clearLabels(obj)
+      for m = 1:numel(obj.LabelObjects)
+        obj.LabelObjects{m}.Text = '';
+      end
     end
     
     function deleteLabels(obj)
@@ -96,6 +103,15 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     
     function createLabel(obj, index, region, value)
       try
+        if ~isa(obj.PlotObject, 'Grasppe.Graphics.PlotComponent') || ...
+            ~isa(obj.PlotObject.ParentAxes, 'Grasppe.Graphics.PlotAxes')
+          return;
+        end
+      catch
+        return;
+      end
+      
+      try
         
         %% Index
         if isempty(index)
@@ -111,7 +127,8 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             label = Grasppe.Graphics.TextObject(obj.PlotObject.ParentAxes, 'Text', int2str(index));
             label.HandleObject.HorizontalAlignment  = 'center';
             label.HandleObject.VerticalAlignment    = 'middle';
-            label.FontSize = 7;
+            % label.FontSize    = 5;
+            label.IsClickable = false;
           catch err
             warning('Plot must be attached before creating labels');
             return;
@@ -119,6 +136,8 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
           obj.registerHandle(label);
           obj.LabelObjects{index} = label;
         end
+        
+        try label.FontSize = obj.FontSize; end
         
         %% Region (xmin ymin width height)
         if isequal(size(region), [1 4])
@@ -143,8 +162,9 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         position  = region([1 2]) + dimension/2;
         
         
-        obj.LabelRegions(index, 1:4) = region;
-        obj.LabelPositions(index, 1:2) = position;
+        obj.LabelRegions(index, 1:4)    = region;
+        obj.LabelPositions(index, 1:2)  = position;
+        obj.LabelAreas(index, 1:2)      = dimension;
         
         %% Value
         if nargin < 3, value = []; end
@@ -175,7 +195,22 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         try obj.LabelObjects{index}.Text = toString(value); end
         
         position = [-100 -100];
-        try position = obj.LabelPositions(index, :); end
+        try 
+          position = obj.LabelPositions(index, :); 
+          
+          try
+            extent = obj.LabelObjects{index}.HandleObject.Extent;
+            region = obj.LabelAreas(index, :);
+            
+            if extent(3)*0.8 > region(1)
+              position(2) = position(2) + (rem(index,2)*2-1)*1.5;
+            end
+            
+            if extent(4)*0.8 > region(2)
+              position(1) = position(1) + (rem(index,2)*2-1)*1.5;
+            end
+          end
+        end
         try obj.LabelObjects{index}.Position = [position obj.LabelElevation]; end
       catch err
         disp(err);
