@@ -4,43 +4,68 @@ function [ output_args ] = BuildSurfsBuffer( input_args )
   
   clc; try dbquit all, end; close all; cleardebug; cleardebug; dbstop if error;
   
-  surfCollection = { ...
-    {'ritsm7402a',  'sections', 'zones', 'zonebands'}, ...
-    {'ritsm7402b',  'sections', 'zones', 'zonebands'}, ...
-    {'ritsm7402c',  'sections', 'zones', 'zonebands'}, ...
-    {'ritsm7401',   'sections', 'zones', 'zonebands'}, ...
-    {'ritsmhp7k01', 'sections'}, ...
-    {'ritsmhp5501', 'sections'}, ...
+  surfCollections = { ...
+    ... % 'ritsm7402a',  'sections', 'zones', 'zonebands';
+    ... % 'ritsm7402b',  'sections', 'zones', 'zonebands';
+    ... % 'ritsm7402c',  'sections', 'zones', 'zonebands';
+    'ritsm7401',   'sections', 'zones', 'zonebands';
+    ... % 'rithp7k01', 'sections', '', '';
+    ... % 'rithp5501', 'sections', '', '';
     };
   
   surfStats = {'mean', 'std', 'sixsigma', 'peaklimits'}; %, 'upperlimit', 'lowerlimit'};
   
-  d1 = Grasppe.PrintUniformity.Data.RegionStatsDataSource('CaseID', surfCollection{1}{1});
+  patchSets = [0 25 50 75 100];
   
-  for c = 1:numel(surfCollection)
-    d1.CaseID = char(surfCollection{c}{1});
-    surfSets  = surfCollection{c}(2:end);
+  output_args = [];
+  
+  for c = 1:size(surfCollections, 1)
+    
+    surfCollection  = surfCollections(c, :);
+    surfSets        = surfCollection(2:end);
+    
+    caseID  = surfCollection{1};
     
     for v = 1:numel(surfSets)
       
-      d1.VariableID=char(surfSets{v});
+      variableID = surfSets{v};
       
-      for p = [0 25 50 75 100]
-        d1.SetID = p;
+      if isempty(variableID), continue; end
+      
+      Data.dataSources('clear');
+      Data.dataSources([], 'verbose', true, 'sizeLimit', 1024);
+            
+      parfor p = 1:numel(patchSets)
+        
+        patchValue = patchSets(p);
+        
+        
+        d1 = Grasppe.PrintUniformity.Data.RegionStatsDataSource(... 
+        'CaseID', caseID, 'VariableID', variableID, 'SetID', patchValue);
         
         for s = 1:numel(surfStats)
           
-          d1.StatsMode = char(surfStats{s});
+          statsMode = surfStats{s};
+          if isempty(statsMode), continue; end
           
-          for m = 1:size(d1.SetData.data,2)
-            d1.setSheet('+1');
+          d1.StatsMode = statsMode;
+          
+          try
+            for m = 1:size(d1.SetData.data,2)
+              try d1.setSheet('+1'); end
+            end
           end
           
         end
         
+        delete(d1);
+        
       end
       
+      evalin('base', 'Grasppe.Core.Prototype.ClearPrototypes');
+      
     end
+    
   end
   
 end
