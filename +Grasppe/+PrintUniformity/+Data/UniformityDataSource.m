@@ -150,13 +150,21 @@ classdef UniformityDataSource < Grasppe.Core.Component % & GrasppeComponent
 
       % cData = obj.CData;
       
+      linkedPlots = [];
+      
       try
-        linkedPlots = unqiue(linkedPlots);
-        if Grasppe.Graphics.PlotComponent.checkInheritence(plotObject), linkedPlots = linkedPlots.Handle; end
+        linkedPlots = unique(linkedPlots);
+        if exist('plotObject', 'var') && ...
+            Grasppe.Graphics.PlotComponent.checkInheritence(plotObject)
+          linkedPlots = linkedPlots.Handle;
+        end
       catch err
-        obj.validatePlots;
-        linkedPlots = obj.LinkedPlotHandles;
       end
+      
+        if isempty(linkedPlots)
+          obj.validatePlots;
+          linkedPlots = obj.LinkedPlotHandles;
+        end
       
       linkedPlots = linkedPlots(ishandle(obj.LinkedPlotHandles));
       try

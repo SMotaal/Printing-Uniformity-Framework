@@ -30,13 +30,7 @@ classdef Surf < Grasppe.Graphics.PlotComponent % & Grasppe.Core.DecoratedCompone
   properties (Dependent)
   end
   
-  
-  methods
-    function obj = Surf(parentAxes, varargin)
-      obj = obj@Grasppe.Graphics.PlotComponent(parentAxes, varargin{:});
-    end
-    
-    
+  methods (Hidden)
     function OnMouseClick(obj, source, event)
       % dispf('%s => %s:%s [%s]', source.ID, obj.ID, event.Name, ...
       %  toString( event.Data.CurrentXY ));
@@ -55,8 +49,16 @@ classdef Surf < Grasppe.Graphics.PlotComponent % & Grasppe.Core.DecoratedCompone
 %       obj.ParentAxes.panAxes(event.Data.Panning.Current, event.Data.Panning.Length)
 %       consumed = true;
 %       disp(WorkspaceVariables);
-    end    
+    end        
+  end
+  
+  
+  methods
+    function obj = Surf(parentAxes, varargin)
+      obj = obj@Grasppe.Graphics.PlotComponent(parentAxes, varargin{:});
+    end
     
+        
     function value = get.AData(obj)
       try debugStamp(obj.ID); catch, debugStamp(); end;
       value = obj.dataGet('AlphaData');

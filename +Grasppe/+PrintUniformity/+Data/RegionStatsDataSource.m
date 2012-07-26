@@ -411,7 +411,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     function updateVariableData(obj, source, event)
       variableID = regexprep(source.VariableID, '\W', '');
       validID = false;
-      try
+      if isstruct(obj.Regions)
         variableID = validatestring(variableID, fieldnames(obj.Regions));
         validID = true;
       end

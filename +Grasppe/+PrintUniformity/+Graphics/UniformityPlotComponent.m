@@ -1,4 +1,4 @@
-classdef UniformityPlotComponent < Grasppe.Core.Prototype
+classdef UniformityPlotComponent < Grasppe.Core.Prototype & Grasppe.Core.MouseEventHandler
   %UNIFORMITYPLOTOBJECT Co-superclass for printing uniformity plot objects
   %   Detailed explanation goes here
   
@@ -66,7 +66,15 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype
       value.attachPlotObject(obj);
       %       try value.attachPlotObject(obj); end
     end
+        
+    function setSheet(obj, varargin)
+      try obj.DataSource.setSheet(varargin{:}); end
+    end
     
+  end
+  
+  
+  methods (Hidden)
     function OnMouseScroll(obj, source, event)
       %       if ~isequal(obj.Handle, hittest)
       %         consumed = false;
@@ -82,12 +90,7 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype
           obj.setSheet('-1');
         end
       end
-    end
-    
-    function setSheet(obj, varargin)
-      try obj.DataSource.setSheet(varargin{:}); end
-    end
-    
+    end    
   end
   
 end

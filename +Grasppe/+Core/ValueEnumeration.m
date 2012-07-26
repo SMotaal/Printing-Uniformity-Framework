@@ -19,7 +19,7 @@ classdef ValueEnumeration
     function b = ctranspose(a)
       import Grasppe.Core.*;
       b = ValueEnumeration.GetValue(a);
-      try
+      if ischar(b)
         b  = char(regexp(b, '(?=.)\w*$', 'match'));
       end
     end

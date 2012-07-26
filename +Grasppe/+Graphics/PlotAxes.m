@@ -18,11 +18,6 @@ classdef PlotAxes < Grasppe.Graphics.Axes
       obj = obj@Grasppe.Graphics.Axes(varargin{:});
     end
     
-    function OnMouseDoubleClick(obj, source, event)
-      try obj.ViewLock = ~obj.ViewLock;
-      catch, obj.ViewLock = false; end
-    end
-    
     function setView(obj, view, varargin)
       if nargin==2
         lock = obj.ViewLock;
@@ -36,6 +31,16 @@ classdef PlotAxes < Grasppe.Graphics.Axes
     end
     
   end
+  
+  methods (Hidden)
+    
+    function OnMouseDoubleClick(obj, source, event)
+      try obj.ViewLock = ~obj.ViewLock;
+      catch, obj.ViewLock = false; end
+    end
+  end
+  
+  
   methods (Access=protected)
     
     function createHandleObject(obj)

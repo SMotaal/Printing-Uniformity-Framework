@@ -22,6 +22,39 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
     MouseScroll
   end
   
+  methods (Hidden)
+    
+    function OnMouseDown(obj, source, event)
+    end
+
+    function OnMouseUp(obj, source, event)
+    end
+    
+    function OnMouseMotion(obj, source, event)
+    end
+    
+    function OnMouseWheel(obj, source, event)
+    end
+    
+    
+    function OnMouseClick(obj, source, event)
+    end
+    
+    function OnMouseDoubleClick(obj, source, event)
+    end
+    
+    function OnMousePan(obj, source, event)
+    end
+    
+    function OnMouseScroll(obj, source, event)
+    end
+    
+%     function OnMouse(obj, source, event)
+%     end
+%     
+
+  end
+  
   methods
     
     function obj = MouseEventHandler()

@@ -109,7 +109,7 @@ classdef PlotFigure < Grasppe.Graphics.Figure
     
   end
   
-  methods
+  methods (Hidden)
        
     function OnMousePan(obj, source, event)
       try
@@ -125,6 +125,10 @@ classdef PlotFigure < Grasppe.Graphics.Figure
         % try dispf('Failed to pan %s: %s', source.ID, err.message); end
       end
     end
+    
+  end
+  
+  methods
     
     function OnKeyPress(obj, source, event)
       shiftKey = stropt('shift', event.Data.Modifier);

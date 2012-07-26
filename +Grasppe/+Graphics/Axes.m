@@ -39,9 +39,6 @@ classdef Axes < Grasppe.Graphics.InFigureComponent
     ComponentType = 'axes';
   end
   
-  events
-  end
-  
   
   properties (SetObservable, GetObservable, AbortSet)
     Color, Box,

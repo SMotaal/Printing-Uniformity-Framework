@@ -115,7 +115,7 @@ classdef Prototype < handle & dynamicprops %& hgsetget
         for m = 1:records
           object = objects{m};
           try
-            if isvalid(object)
+            if ~isempty(object) && isvalid(object)
               deleted = deleted + 1;
               delete(objects{m});
             end

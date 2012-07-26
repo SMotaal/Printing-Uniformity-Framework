@@ -2,6 +2,8 @@ function [ dataSource dataSet params parser ] = plotUPStats( dataSource, varargi
   %SUPSTATS Summary of this function goes here
   %   Detailed explanation goes here
   
+  import Grasppe.PrintUniformity.Utilities.*;
+  
   %% Defaults
    
   options.exportMode  = {'none', {'png', 'mov', 'avi', 'eps'}};
@@ -167,14 +169,18 @@ end
 
 
 function [ source ] = loadSource( source )
+  import Grasppe.PrintUniformity.Utilities.*;
+  
   source = Data.loadUPData(source);
 end
 
 function [ source ] = prepareUniformityData( source )
-  
+  import Grasppe.PrintUniformity.Utilities.*;
 end
 
 function [params] = parseModeParamters(params, options, defaults)
+  import Grasppe.PrintUniformity.Utilities.*;
+  
   try
     paramsMode = params.mode;
     modes = regexp(paramsMode,'\w+', 'match');
