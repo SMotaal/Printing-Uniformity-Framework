@@ -90,7 +90,8 @@ for f = 1:numel(treeFields)
         fieldColumns  = size(fieldSet,2);
         fieldRows     = size(fieldSet,1);
 %         fieldSet      = fieldValue(1:min(numel(fieldValue), ceil(15/fieldColumns)*fieldColumns));
-        fieldStrings  = num2str(fieldSet(:));
+        fieldEnd      = min(100, fieldColumns*fieldRows);
+        fieldStrings  = num2str(fieldSet(1:fieldEnd));
         
         cellWidth     = size(fieldStrings,2);
         

@@ -1,5 +1,5 @@
 function structVars( s )
-  %VARSTRUCT Summary of this function goes here
+  %VARSTRUCT assign struct fields to varibales 
   %   Detailed explanation goes here
   
   

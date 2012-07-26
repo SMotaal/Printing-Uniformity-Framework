@@ -51,6 +51,9 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     end
     
     function [X Y Z] = processSheetData(obj, sheetID, variableID)
+      
+      bufferSurfs = Grasppe.PrintUniformity.Options.Defaults.BufferSurfData';
+      
       try
         
         [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID, variableID);
@@ -129,7 +132,11 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
           statsID     = regexprep(lower(statsMode), '\W', '');
           sourceSpace =[caseID 'Surfs'];
           surfID      = Data.generateUPID(caseID,setID, [variableID int2str(sheetID) statsID]);
-          surfData    = Data.dataSources(surfID, sourceSpace);
+          surfData    = [];
+          
+          if bufferSurfs
+            surfData    = Data.dataSources(surfID, sourceSpace);
+          end
           
           if ~(isempty(surfData))
             try
@@ -272,7 +279,9 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
               disp(err);
             end
             
-            Data.dataSources(surfID, surfData, true, sourceSpace);
+            if bufferSurfs
+              Data.dataSources(surfID, surfData, true, sourceSpace);
+            end
           end
           
           obj.PlotRegions = regionMasks;
