@@ -139,14 +139,25 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         obj.TitleText.handleSet('Units', 'pixels');
         
         titlePosition = obj.TitleText.handleGet('Position');
-        titlePosition = [plotArea(1) plotArea(2)+plotArea(4) titlePosition(3)];
+        titleExtent   = obj.TitleText.handleGet('Extent');
         
         plotInset     = obj.PlotAxes{1}.handleGet('TightInset');
+        
+        % titlePosition = [plotArea(1) + plotArea(3)/2 ... %-titleExtent(3))/2  ...
+        %   plotArea(2)+plotArea(4)-(1*titleExtent(4))  ...
+        %   titlePosition(3)]; %+plotArea(4)
+        %
+        % titlePosition = titlePosition - [0 plotInset(2)+plotInset(4) 0];
+
+        titlePosition = [plotArea(1) plotArea(2)+plotArea(4) titlePosition(3)];
         
         titlePosition = titlePosition + [0 plotInset(2)+plotInset(4) 0];
       end
       
       try obj.TitleText.handleSet('Position', titlePosition); end
+      
+      obj.TitleText.handleSet('HorizontalAlignment', 'left');
+      obj.TitleText.handleSet('VerticalAlignment', 'bottom');      
       
     end    
     

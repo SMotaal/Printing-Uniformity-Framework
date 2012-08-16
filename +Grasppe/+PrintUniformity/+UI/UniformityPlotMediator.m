@@ -3,19 +3,23 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
   %   Detailed explanation goes here
   
   properties (Access=private)
-    FigureOptions   = {'PlotAxesLength', 3};
     PlotOptions     = {'CaseID', 'rithp5501'};
-    PlotTypes       = {'Surface', 'Regions', 'Slope'};
+    PlotTypes       = {'Regionsurfs'}; %, 'Slope'}; %'Surface', 'Regions', 'Slope'}; Regionsurfs
     DataProperties  = {'CaseID', 'SetID', 'SheetID'};    
     AxesProperties  = {'View', 'Projection', {'PlotColor', 'Color'}};
+    FigureOptions;   %= {'PlotAxesLength', 1}; %3    
   end
   
   methods
     
     function obj = UniformityPlotMediator
       obj = obj@Grasppe.PrintUniformity.UI.PlotMediator;
+      
+      obj.FigureOptions =  {'PlotAxesLength', numel(obj.PlotTypes)};      
           
-      obj.createFigure(obj.FigureOptions{:}, 'IsVisible', false);
+      obj.createFigure(obj.FigureOptions{:}, 'IsVisible', false, 'Renderer', 'Painters');
+      
+      obj.PlotFigure.handleSet('PaperPositionMode', 'auto');
       
       obj.PlotFigure.PlotMediator = obj;
       
@@ -46,6 +50,8 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
     function createPlot(obj, plotType, plotAxes, dataSource, varargin)
       import Grasppe.PrintUniformity.Data.*;
       
+      %return;
+      
       createSource = nargin<4 || isempty(dataSource);
       switch lower(plotType)
         
@@ -61,8 +67,14 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
           
         case {'regions', 'region'}
 
+          if createSource, dataSource  = PatchStatsDataSource(varargin{:}); end
+          plotObject    = Grasppe.PrintUniformity.Graphics.UniformityPatch(plotAxes, dataSource);          
+
+        case {'regionsurfs', 'regionsurf'}
+
           if createSource, dataSource  = RegionStatsDataSource(varargin{:}); end
           plotObject    = Grasppe.PrintUniformity.Graphics.UniformitySurf(plotAxes, dataSource);          
+          
           
         otherwise % {'raw', 'scatter'}
 

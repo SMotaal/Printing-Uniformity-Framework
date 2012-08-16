@@ -22,6 +22,8 @@ classdef RawUniformityDataSource < Grasppe.PrintUniformity.Data.UniformityDataSo
     
 
     function [X Y Z] = processSheetData(obj, sheetID, variableID)
+      
+      % if iscell(sheetID), sheetID = [sheetID{:}]; end
 
       [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID, variableID);
       

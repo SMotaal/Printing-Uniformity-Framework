@@ -35,7 +35,9 @@ classdef UniformityProcessor < Grasppe.Core.Component
   end
   
   properties (GetAccess=public, SetAccess=protected)
-    Parameters = [];
+    Parameters    = [];
+    AllData       = [];
+    PreloadTimer  = [];
   end
   
   events
@@ -49,6 +51,12 @@ classdef UniformityProcessor < Grasppe.Core.Component
     
     function obj = UniformityProcessor(varargin)
       obj = obj@Grasppe.Core.Component(varargin{:});
+      
+      obj.PreloadTimer = timer('Tag',['PreloadTimer' obj.ID], ...
+        'StartDelay', 0.5, ...
+        'TimerFcn', @(s,e)obj.preloadSheetData() ...
+        );
+    
     end
     
   end
@@ -81,6 +89,9 @@ classdef UniformityProcessor < Grasppe.Core.Component
         
         obj.Parameters.CaseID     = caseID;
         obj.SetID                 = setID;
+        
+        stop(obj.PreloadTimer);
+        obj.AllData = [];        
         
         obj.notify('CaseChange');
       end
@@ -138,6 +149,11 @@ classdef UniformityProcessor < Grasppe.Core.Component
       if ~isequal(obj.Parameters.SetID, setID)
         obj.Parameters.SetID    = setID;
         obj.Data.SetData        = [];
+        
+        stop(obj.PreloadTimer);
+        obj.AllData = [];
+        
+        obj.preloadSheetData;        
         
         obj.notify('SetChange');
       end
@@ -296,20 +312,56 @@ classdef UniformityProcessor < Grasppe.Core.Component
       
       if isempty(obj.SheetID), return; end
       
-      obj.Data.SheetData  = UniformityProcessor.processSheetData(obj.Parameters, obj.Data);
+      obj.Data.SheetData  = UniformityProcessor.processSheetData(obj.Parameters, obj.Data, obj.AllData);
       
     end
     
-    function data = AllSheetData(obj)
+    function data = getAllData(obj)
+      
+      import Grasppe.PrintUniformity.Data.*;
+      
+      data          = obj.AllData;      
+      
+      if ~isempty(obj.AllData), return; end;
       
       parameters    = copy(obj.Parameters);
-      sheetRange    = obj.Data.CaseData.range.Sheets;
+      
+      sheetRange    = [];
+      
+      try sheetRange  = obj.Data.CaseData.range.Sheets; end
+      
+      obj.AllData   = zeros(numel(sheetRange), 1);
       
       for s = sheetRange
         parameters.SheetID = s;
         data(s,:)  = UniformityProcessor.processSheetData(parameters, obj.Data);
       end
 
+    end
+    
+    function preloadSheetData(obj, varargin)
+      try
+      
+      isRunning   = @(x) isequal(x.Running, 'on');
+      
+      preloading  = false;
+      try preloading  = isRunning(obj.PreloadTimer); end
+      
+      if preloading
+        stop(obj.PreloadTimer);
+        
+        obj.AllData = obj.getAllData();
+      else
+        if isempty(obj.AllData)
+          start(obj.PreloadTimer);
+        end
+      end
+      
+      catch err
+        disp(err);
+        halt;
+      end
+        
     end
     
   end
@@ -360,19 +412,30 @@ classdef UniformityProcessor < Grasppe.Core.Component
       end
       
       try data.SetData 	= setData;
-        if ~isempty(setData) data.Parameters.SetID = setID; end; end
+        if ~isempty(setData) data.Parameters.SetID = setID; end;
+      end
       
     end
     
-    function sheetData = processSheetData(parameters, data)
+    function sheetData = processSheetData(parameters, data, allData)
       import Grasppe.PrintUniformity.Data.*;
       
       sheetData   = [];
-      
+            
       caseID      = parameters.CaseID;
       setID       = parameters.SetID;
       sheetID     = parameters.SheetID;
       variableID  = parameters.VariableID;
+      
+      if nargin==3 && size(allData,1) >= sheetID
+        %try
+          sheetData = allData(sheetID, :);
+          %sheetData = sheetData(:);
+          %beep;
+          return;
+        %end
+      end
+      
       
       try if isequal(sheetID, data.Parameters.SheetID)
           sheetData = data.SheetData; end; end
@@ -387,7 +450,6 @@ classdef UniformityProcessor < Grasppe.Core.Component
       
       try data.SheetData  = sheetData;
         if ~isempty(sheetData) data.Parameters.SheetID = sheetID; end; end
-      
     end
   end
   

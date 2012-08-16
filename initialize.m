@@ -1,7 +1,7 @@
-function [ output_args ] = initialize( input_args )
+function [ output_args ] = initialize( varargin )
   %INITIALIZE Summary of this function goes here
   
-  addpath('Common', 'Scripts', 'Algorithms', 'Test');
+  addpath('Common', 'Scripts'); % , 'Algorithms', 'Test');
   
   % GrasppePrototype.InitializeGrasppePrototypes;
   
@@ -11,7 +11,7 @@ function [ output_args ] = initialize( input_args )
   if isempty(delayTimer)
     fprintf(1,'\n\nHello!\n');
     delayTimer = timer('Tag','StartupTimer', 'StartDelay', 0.5, ...
-      'TimerFcn', 'initialize;');
+      'TimerFcn', @(src,evt)initialize()); % 'initialize');  %@(src,evt)initialize);
     start(delayTimer);
     fprintf(2,'\nWorkspace: '); fprintf(1, 'Loading...  \n');
   else
@@ -27,7 +27,7 @@ function initializeScript()
   PersistentSources readonly;
   PersistentSources load; %PersistentSources load;  
   fprintf(2,'\nWorkspace: '); fprintf(1, 'Ready\n');
-  setstatus(0,'');
+  status('',0);
   
 end
 

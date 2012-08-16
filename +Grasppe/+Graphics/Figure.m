@@ -101,9 +101,9 @@ classdef Figure < Grasppe.Graphics.HandleGraphicsComponent ...
       WindowTitle   = 'Printing Uniformity Plot';
       %       BaseTitle     = 'Printing Uniformity';
       Color         = 'white';
-      Toolbar       = 'none';  Menubar = 'none';
+      %Toolbar       = 'none';  Menubar = 'none';
       WindowStyle   = 'normal';
-      Renderer      = 'opengl';
+      Renderer      = 'zbuffer';
       
       Grasppe.Utilities.DeclareOptions;
     end

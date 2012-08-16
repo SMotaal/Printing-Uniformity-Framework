@@ -10,6 +10,12 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     LabelActivePositions  = [];
     LabelAreas      = [];
     LabelElevation  = 100;
+    SubPlotObjects  = {};
+    SubPlotMarkers  = {};
+    SubPlotBoxes    = {};
+    SubPlotData     = {};
+    MarkerPositions = {};
+    MarkerIndex     = 1;
     PlotObject
     ComponentType   = '';
     FontSize        = 6;
@@ -55,6 +61,27 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     end
     
     function deleteLabels(obj)
+      
+      try
+        for m = 1:numel(obj.SubPlotBoxes)
+          try delete(obj.SubPlotBoxes{m}); end
+          obj.SubPlotBoxes{m} = [];
+        end        
+      end
+      
+      try
+        for m = 1:numel(obj.SubPlotMarkers)
+          try delete(obj.SubPlotMarkers{m}); end
+          obj.SubPlotMarkers{m} = [];
+        end        
+      end
+
+      try
+        for m = 1:numel(obj.SubPlotObjects)
+          try delete(obj.SubPlotObjects{m}); end
+          obj.SubPlotObjects{m} = [];
+        end        
+      end
       try
         for m = 1:numel(obj.LabelObjects)
           try delete(obj.LabelObjects{m}); end
@@ -98,8 +125,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         disp(err);
       end
       
-    end
-    
+    end   
     
     function createLabel(obj, index, region, value)
       try
@@ -107,7 +133,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             ~isa(obj.PlotObject.ParentAxes, 'Grasppe.Graphics.PlotAxes')
           return;
         end
-      catch
+      catch err
         return;
       end
       
@@ -162,6 +188,13 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         position  = region([1 2]) + dimension/2;
         
         
+        try
+          if all(dimension>7) %&& ~isempty([obj.SubPlotObjects{:}])  % && dimension>7
+            position = position + [0 1];
+          end
+        end
+        
+        
         obj.LabelRegions(index, 1:4)    = region;
         obj.LabelPositions(index, 1:2)  = position;
         obj.LabelAreas(index, 1:2)      = dimension;
@@ -174,6 +207,43 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         obj.LabelValues(index) = value;
         
         obj.updateLabel(index);
+        
+        %% Sub Plots
+        try
+%           subPlot = [];
+%           try subPlot = obj.SubPlotObjects{index}; end
+%           
+%           if ishandle(label.ParentAxes.Handle) && (isempty(subPlot) || ~ishandle(subPlot)) % Create Label
+%             
+%             
+%             xd = 0; yd = 0; zd = 0;
+%             try
+%               larea = dimension; % obj.LabelAreas(index, :);
+%               lpos  = position; %obj.LabelPositions(index, :);
+%               
+%               xl    = lpos(1) + [-larea(1) larea(1)] /2;
+%               yl    = lpos(2) + [-larea(2) larea(2)] /2;
+%               
+%               yv    = obj.SubPlotData{index};
+%               
+%               ys    = numel(yv);
+%               xs    = (max(xl)-min(xl))/(ys-1);
+%               
+%               xd    = [min(xl) min(xl)+(1:ys-1)/(ys-1)*(max(xl) - min(xl))]; %min(xl):xs:max(xl);
+%               yd    = min(yl) + (yv);
+%               
+%               zd    = ones(size(xd))*200;
+%             end
+%             
+%             hold(label.ParentAxes.Handle, 'on');
+%             subPlot = line(xd, yd, zd, 'Parent', label.ParentAxes.Handle);
+%             
+%             obj.SubPlotObjects{index} = subPlot;
+%           end
+        catch err
+          disp(err);
+        end
+        
         
       catch err
         disp(err);
@@ -194,6 +264,8 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         
         try obj.LabelObjects{index}.Text = toString(value); end
         
+        %try obj.LabelObjects{index}.handleSet('BackgroundColor', 'w'); end
+        
         position = [-100 -100];
         try 
           position = obj.LabelPositions(index, :); 
@@ -211,16 +283,152 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             end
           end
         end
-        try obj.LabelObjects{index}.Position = [position obj.LabelElevation]; end
+        
+        try obj.LabelObjects{index}.Position = [position 200]; end %obj.LabelElevation]; end
+        
+        try
+          subPlot = obj.SubPlotObjects{index};
+          marker  = obj.SubPlotMarkers{index};
+          
+          xi      = obj.MarkerIndex;
+          
+          if isempty(xi),xi = 1; end;
+          
+%           if isempty(xi)
+%             %xi = 1;
+%             set(marker, 'Visible', 'off');
+%           else
+            xd      = obj.MarkerPositions{index};
+            set(marker, 'XData', [xd(xi) xd(xi)]); % 'Visible', 'on');
+%           end
+        catch err
+          %disp(err);
+        end
+        
+        
+%         try 
+%           
+%           label = obj.LabelObjects{index};
+%           
+%           larea = obj.LabelAreas(index, :);
+%           lpos  = obj.LabelPositions(index, :);
+%           
+%           xl    = lpos(1) + [-larea(1)+3 larea(1)-2] /2;
+%           yl    = lpos(2) + [-larea(2) larea(2)] /2;
+%           
+%           yv    = obj.SubPlotData{index};
+%           
+%           ys    = numel(yv);
+%           xs    = (max(xl)-min(xl))/(ys-1);
+%           
+%           xd    = [min(xl) min(xl)+(1:ys-1)/(ys-1)*(max(xl) - min(xl))]; %min(xl):xs:max(xl);
+%           yd    = min(yl) + 0.125*(max(yl)-min(yl))*(((yv-min(yv))/(max(yv)-min(yv)))+0.225);
+%           
+%           zd    = ones(size(xd))*200;
+%           
+%           try delete(obj.SubPlotObjects{index}); end
+%           
+%           if (max(xd)-min(xd))>5
+%             hold(label.ParentAxes.Handle, 'on');
+%             
+%             subPlot = line(xd, yd, zd, 'Parent', label.ParentAxes.Handle, 'color', 'k', 'linesmoothing', 'on');
+%             
+%             obj.SubPlotObjects{index} = subPlot;
+%           end
+%           
+%           %set(label.ParentAxes.Handle, 'Clipping', 'off');
+%           %drawnow expose update;
+%         end
       catch err
         disp(err);
       end
+    end
+    
+    function updateSubPlots(obj)
+        try 
+          for m = 1:numel(obj.LabelObjects)
+            
+            label = obj.LabelObjects{m};
+            
+            larea = obj.LabelAreas(m, :);
+            lpos  = obj.LabelPositions(m, :);
+            
+            xl    = lpos(1) + [-larea(1)+3 larea(1)-2] /2;
+            yl    = lpos(2) + [-larea(2)+4 larea(2)+4] /2;
+            
+            ys    = numel(obj.SubPlotData);
+            yv    = zeros(1,1:numel(ys));
+            
+            for n = 1:ys
+              yv(n) = obj.SubPlotData{n}(m);
+            end
+            
+            
+            yv    = (yv-min(yv)); %*0.75; %((yv-min(yv))/(max(yv)-min(yv)));
+            %yv    = obj.SubPlotData{m};
+            
+            ys    = numel(yv);
+            xs    = (max(xl)-min(xl))/(ys-1);
+            
+            xd    = [min(xl) min(xl)+(1:ys-1)/(ys-1)*(max(xl) - min(xl))]; %min(xl):xs:max(xl);
+            yd    = min(yl) + yv; %*(yv+0.225); %(0.125*(max(yl)-min(yl))) + + (max(yl)-min(yl)) 
+            
+            px = [xd(1) xd(end)] + [-0.1 0.1]; py = min(yl)+[-0.1 2.1]; pz = 200;
+            
+            zd    = ones(size(xd))*pz;
+            
+            xi    = obj.MarkerIndex;
+            
+            if isempty(xi),xi = 1; end;
+            
+            
+            try delete(obj.SubPlotObjects{m}); end
+            
+            try delete(obj.SubPlotMarker{m}); end
+            
+            try delete(obj.SubPlotBoxes{m}); end   
+            
+            if (max(xl)-min(xl))>7 && (max(yl)-min(yl))>7
+
+              %hold(label.ParentAxes.Handle, 'on');              
+              %plotbox = patch(px([1 2 2 1]), py([1 1 2 2]), 'w', 'ZData', [1 1 1 1] * pz-1, 'Parent', label.ParentAxes.Handle, 'linewidth', 1, 'LineStyle', '-', 'EdgeColor', 'w', 'EdgeAlpha', 0.25, 'FaceColor', 'none', 'FaceAlpha', 0.25, 'linesmoothing', 'on');
+              %obj.SubPlotBoxes{m} = plotbox;                  
+              
+              hold(label.ParentAxes.Handle, 'on');
+              marker  = line([xd(xi) xd(xi)], py, [1 1] * pz-1, 'Parent', label.ParentAxes.Handle, 'color', 'w', 'linewidth', 0.5);
+              obj.SubPlotMarkers{m} = marker;
+              
+              hold(label.ParentAxes.Handle, 'on');
+              subPlot = line(xd, yd, zd, 'Parent', label.ParentAxes.Handle, 'color', 'k', 'linewidth', 0.25);  % 'linesmoothing', 'on', %, 'linesmoothing', 'on'
+              obj.SubPlotObjects{m} = subPlot;
+              
+              %hold(label.ParentAxes.Handle, 'on');              
+              %plotbox = line(px([1 2 2 1 1]), py([1 1 2 2 1]), [1 1 1 1 1] * pz+1, 'Parent', label.ParentAxes.Handle, 'color', 'w', 'linewidth', 0.25); %, 'linesmoothing', 'on'
+              %obj.SubPlotBoxes{m} = plotbox;              
+
+            end
+            
+            obj.MarkerPositions{m}   = xd;
+            
+            %obj.LabelPositions(m, 2) = lpos(2)+50;
+            
+            %obj.SubPlotObjects{end+1} = line([xd(1) xd(1)], yd, zd, 'Parent', label.ParentAxes.Handle, 'color', 'k', 'linesmoothing', 'on', 'linewidth', 0.25);
+            
+            %set(label.ParentAxes.Handle, 'Clipping', 'off');
+            %drawnow expose update;
+          end
+          
+        catch err
+          disp(err);
+        end
+      
     end
     
     function updateLabels(obj)
       for m = 1:numel(obj.LabelObjects)
         obj.updateLabel(m);
       end
+            
     end
   end
   
