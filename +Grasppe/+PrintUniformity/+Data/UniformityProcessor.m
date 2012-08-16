@@ -300,6 +300,18 @@ classdef UniformityProcessor < Grasppe.Core.Component
       
     end
     
+    function data = AllSheetData(obj)
+      
+      parameters    = copy(obj.Parameters);
+      sheetRange    = obj.Data.CaseData.range.Sheets;
+      
+      for s = sheetRange
+        parameters.SheetID = s;
+        data(s,:)  = UniformityProcessor.processSheetData(parameters, obj.Data);
+      end
+
+    end
+    
   end
   
   methods (Static)
