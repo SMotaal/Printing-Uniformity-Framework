@@ -25,10 +25,37 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
     
     
     function OnResize(obj, source, event)
-      obj.OnResize@Grasppe.Graphics.PlotFigure;
+      obj.OnResize@Grasppe.Graphics.PlotFigure(source, event);
       obj.layoutPlotAxes;
       obj.layoutOverlay;
       
+    end
+    
+  
+    function OnKeyPress(obj, source, event)
+      shiftKey = stropt('shift', event.Data.Modifier);
+      commandKey = stropt('command', event.Data.Modifier) || stropt('control', event.Data.Modifier);
+      
+      if ~event.Consumed
+      
+        if commandKey && shiftKey
+          switch event.Data.Key
+            case 'h'
+              try obj.DataSources{1}.setSheet('sum'); end
+              event.Consumed = true;
+            case 'uparrow'
+              try obj.DataSources{1}.setSheet('+1'); end
+              event.Consumed = true;
+            case 'downarraow'
+              try obj.DataSources{1}.setSheet('-1'); end
+              event.Consumed = true;
+            otherwise
+              disp(toString(event.Data.Key));
+          end
+        end
+      end
+      
+      obj.OnKeyPress@Grasppe.Graphics.PlotFigure(source, event);
     end
     
     function Export(obj)
@@ -144,6 +171,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
                 regionRects = zeros(size(regionMasks,1), 4);
                 
                 regionPatch = [];
+                regionLine  = [];
                 
                 for r = 1:size(regionMasks,1)
                   region = squeeze(eval(['regionMasks(r' repmat(',:',1,ndims(regionMasks)-1)  ')']));
@@ -169,7 +197,9 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
                   yd      = yl([1 1 2 2 1])';
                   zd      = zv([1 1 1 1 1]);
                   
-                  regionPatch(end+1) = patch(xd, yd, zd, 'ZData', zd, 'Parent', hgSurf.Parent, 'FaceColor', 'flat', 'EdgeColor', 'none');
+                  regionPatch(end+1)  = patch(xd, yd, zd, 'ZData', zd, 'Parent', hgSurf.Parent, 'FaceColor', 'flat', 'EdgeColor', 'k' , 'LineWidth', 0.125 ); %'EdgeColor', [0.5 0.15 0.15]
+                  regionLine(end+1)   = line(xd, yd, 210*[1 1 1 1 1], 'Parent', hgSurf.Parent, 'Color', 'k' , 'LineWidth', 0.125 ); %'EdgeColor', [0.5 0.15 0.15]
+                  %, 'ZData', 210*[1 1 1 1 1], 
                 end
                 
                 hgSurf.Visible = 'off';

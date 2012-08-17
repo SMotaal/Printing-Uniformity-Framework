@@ -4,7 +4,7 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
   
   properties (Access=private)
     PlotOptions     = {'CaseID', 'rithp5501'};
-    PlotTypes       = {'Surface', 'Regionsurfs', 'Slope'}; %, 'Slope'}; %, 'Regions', 'Slope'}; Regionsurfs
+    PlotTypes       = {'Regions'}; %'Surface', 'Regionsurfs', 'Slope'}; %, 'Slope'}; %, 'Regions', 'Slope'}; Regionsurfs
     DataProperties  = {'CaseID', 'SetID', 'SheetID'};    
     AxesProperties  = {'View', 'Projection', {'PlotColor', 'Color'}};
     FigureOptions;   %= {'PlotAxesLength', 1}; %3    
@@ -44,9 +44,12 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
       
       for m = 1:numel(obj.DataSources);
         dataSource = obj.DataSources{m};
-        
-        notify(dataSource.DataProcessor, 'SetChange');
-        %try dataSource.updateSetData; end
+        %notify(dataSource.DataProcessor, 'SetChange');
+        %try obj.PlotLabels.clearLabels; end
+        %try dataSource.PlotLabels.clearLabels; end
+        %dataSource.updatePlotLabels; %end
+        %try dataSource.PlotLabels.updatePlotLabels; end
+        %dataSource.PlotLabels.updateSubPlots; %end
       end
     end
     
@@ -74,15 +77,9 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
           
         case {'regions', 'region'}
 
-          if createSource, dataSource  = PatchStatsDataSource(varargin{:}); end
-          plotObject    = Grasppe.PrintUniformity.Graphics.UniformityPatch(plotAxes, dataSource);          
-
-        case {'regionsurfs', 'regionsurf'}
-
           if createSource, dataSource  = RegionStatsDataSource(varargin{:}); end
           plotObject    = Grasppe.PrintUniformity.Graphics.UniformitySurf(plotAxes, dataSource);          
-          
-          
+                    
         otherwise % {'raw', 'scatter'}
 
           if createSource, dataSource  = RawUniformityDataSource(varargin{:}); end

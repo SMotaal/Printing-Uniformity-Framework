@@ -99,7 +99,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         end
       end      
       
-      obj.attachPlotObject(plotObject);
+      %obj.attachPlotObject(plotObject);
       
     end
     
@@ -113,12 +113,16 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         stop(obj.PreprocessTimer);
         
         obj.AllData = obj.getAllData();
+        obj.postprocessSheetData();
       else
         if isempty(obj.AllData) && isequal(obj.AllDataEnabled, true)
           try start(obj.PreprocessTimer); end
         end
       end
       
+    end
+    
+    function postprocessSheetData(obj)
     end
     
     function data = getAllData(obj)
@@ -234,7 +238,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
       catch err
         disp(['Refreshing Data FAILED for ' toString(linkedPlots(:))]);
         % halt(err, 'obj.ID');
-        try debugStamp(obj.ID, 4); end
+        try debugStamp(obj.ID,4); end
       end
       
       for h = linkedPlots
@@ -544,12 +548,18 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         obj.notify('SheetChange');
       end
       
-      if ~isempty(allData)
+      if ~isempty(allData) && sheetID>0 %&& sheetID<obj.getSheetCount
         if size(allData,1) >= sheetID && ~isempty(allData{sheetID,1}) % || isempty(sheetID)
           %[X Y Z]
           X         = allData{sheetID,1};
           Y         = allData{sheetID,2};
           Z         = allData{sheetID,3};
+          
+          if isempty(Y) && isempty(Z) && ~isempty(X)
+            X = allData{1,1};
+            Y = allData{1,2};
+            Z = allData{sheetID,1};
+          end
         else
           [X Y Z]   = obj.processSheetData(sheetID, variableID);
           
@@ -681,6 +691,10 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
       lastSheet     = obj.getSheetCount;
       nextSheet     = currentSheet;
       
+      if currentSheet>lastSheet
+        currentSheet=0;
+      end
+      
       %Parse sheet
       if isInteger(sheet)
         nextSheet = sheet;
@@ -688,7 +702,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         step = 0;
         switch lower(sheet)
           case {'summary', 'sum'}
-            if isequal(obj.SampleSummary, true), nextSheet = 0; end
+            nextSheet = lastSheet+1; %if isequal(obj.SampleSummary, true), nextSheet = 0; end
           case {'alpha', 'first', '#1'}
             nextSheet = firstSheet;
           case {'omega', 'last'}

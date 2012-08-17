@@ -100,7 +100,11 @@ classdef PlotFigure < Grasppe.Graphics.Figure
     end
         
     function updatePlotTitle(obj)
-      obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')'];
+      if isempty(obj.SampleTitle)
+        obj.Title = [obj.BaseTitle]; % ' (' obj.SampleTitle ')'];
+      else
+        obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')'];
+      end
       try statusbar(obj.Handle, ''); end
       try refresh(obj.Handle); end
     end

@@ -28,10 +28,12 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype & Grasppe.Core.MouseEv
     function obj = UniformityPlotComponent(dataSource, varargin)
       obj = obj@Grasppe.Core.Prototype; %Component(varargin{:}, 'DataSource', dataSource);
       obj.DataSource = dataSource;
+      
+      %obj.attachDataSource;
     end
   end
   
-  methods (Access=protected)
+  methods %(Access=protected)
     
     %     function createComponent(obj, type)
     % %       if ~UniformityPlotObject.checkInheritence(obj.DataSource, 'UniformityDataSource')
@@ -43,7 +45,7 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype & Grasppe.Core.MouseEv
     
     function attachDataSource(obj)
       obj.resetPlotLimits;
-      obj.DataSource.attachPlotObject(obj);
+      %obj.DataSource.attachPlotObject(obj);
       
       if isempty(obj.ParentFigure.DataSources) || ~iscell(obj.ParentFigure.DataSources)
         obj.ParentFigure.DataSources = {};
@@ -62,8 +64,12 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype & Grasppe.Core.MouseEv
   
   methods
     function set.DataSource(obj, value)
-      try obj.DataSource = value; end
-      value.attachPlotObject(obj);
+      try 
+        obj.DataSource = value;
+        %obj.attachDataSource;
+        value.attachPlotObject(obj);
+      end
+      %value.attachPlotObject(obj);
       %       try value.attachPlotObject(obj); end
     end
         
@@ -81,16 +87,19 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype & Grasppe.Core.MouseEv
       %         return;
       %       end
       
-      if ~event.Data.Scrolling.Momentum
-        % disp(toString(event));
+      if ~event.Data.Scrolling.Momentum && event.Data.Scrolling.Length<2
+        disp(toString(event.Data.Scrolling));
         % plotAxes = get(obj.handleGet('CurrentAxes'), 'UserData');
+%         if event.Data.Scrolling.Length>1.5 && event.Data.Scrolling.Length<2
+%           obj.setSheet('sum');
+%         else
         if event.Data.Scrolling.Vertical(1) > 0
-          obj.setSheet('+1');
-        elseif event.Data.Scrolling.Vertical(1) < 0
           obj.setSheet('-1');
+        elseif event.Data.Scrolling.Vertical(1) < 0
+          obj.setSheet('+1');
         end
       end
-    end    
+    end   
   end
   
 end

@@ -10,7 +10,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     LabelActivePositions  = [];
     LabelAreas      = [];
     LabelElevation  = 100;
-    SubPlotObjects  = {};
+    SubPlotObjects  = cell(0,2);
     SubPlotMarkers  = {};
     SubPlotBoxes    = {};
     SubPlotData     = {};
@@ -122,7 +122,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
           end
         end
       catch err
-        disp(err);
+        %disp(err);
       end
       
     end   
@@ -287,7 +287,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         try obj.LabelObjects{index}.Position = [position 200]; end %obj.LabelElevation]; end
         
         try
-          subPlot = obj.SubPlotObjects{index};
+          subPlot = obj.SubPlotObjects{index,1};
           marker  = obj.SubPlotMarkers{index};
           
           xi      = obj.MarkerIndex;
@@ -345,6 +345,28 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     end
     
     function updateSubPlots(obj)
+      
+      try debugStamp(obj.ID, 1); catch, debugStamp(); end;
+      
+      data = cell2mat(obj.SubPlotData);
+      
+      try
+        %ys    = numel(obj.SubPlotData);
+        %yvs    = zeros(1:numel(ys), numel(obj.LabelObjects));
+        %         for n = 1:ys
+        %           yvs(n,:) = [obj.SubPlotData{n}(:)];
+        %         end        
+        
+        yvs   = data';
+        ys    = size(yvs, 1);
+        yn    = size(yvs, 2);
+        
+        ymean = mean(yvs,2);
+        ymin  = min(yvs(:));
+        ymax  = max(yvs(:));
+        ylen  = ymax-ymin;
+      end
+      
         try 
           for m = 1:numel(obj.LabelObjects)
             
@@ -353,27 +375,36 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             larea = obj.LabelAreas(m, :);
             lpos  = obj.LabelPositions(m, :);
             
-            xl    = lpos(1) + [-larea(1)+3 larea(1)-2] /2;
-            yl    = lpos(2) + [-larea(2)+4 larea(2)+4] /2;
+            xl    = lpos(1) + [-larea(1)+0 larea(1)+2] /2;
+            xdist = max(xl)-min(xl);
+            yl    = lpos(2) + [-larea(2) larea(2)] /2;
+            ydist = max(yl)-min(yl);
+            
+            yofs  = 0.5;
+            yscl  = 2/4;
             
             ys    = numel(obj.SubPlotData);
             yv    = zeros(1,1:numel(ys));
             
             for n = 1:ys
-              yv(n) = obj.SubPlotData{n}(m);
+             yv(n) = obj.SubPlotData{n}(m);
             end
             
+            yv    = yvs(:,m)';
             
-            yv    = (yv-min(yv)); %*0.75; %((yv-min(yv))/(max(yv)-min(yv)));
-            %yv    = obj.SubPlotData{m};
+            yv    = (yv     - ymin)/ylen*ydist*yscl  - yofs;    %(yv-min(yv)); %*0.75; %((yv-min(yv))/(max(yv)-min(yv)));
+            yvm   = (ymean  - ymin)/ylen*ydist*yscl - yofs;
             
             ys    = numel(yv);
             xs    = (max(xl)-min(xl))/(ys-1);
             
             xd    = [min(xl) min(xl)+(1:ys-1)/(ys-1)*(max(xl) - min(xl))]; %min(xl):xs:max(xl);
-            yd    = min(yl) + yv; %*(yv+0.225); %(0.125*(max(yl)-min(yl))) + + (max(yl)-min(yl)) 
+            yd    = min(yl) + yv;    %*(yv+0.225); %(0.125*(max(yl)-min(yl))) + + (max(yl)-min(yl)) 
+            ydm   = min(yl) + yvm;
             
-            px = [xd(1) xd(end)] + [-0.1 0.1]; py = min(yl)+[-0.1 2.1]; pz = 200;
+            px = [xd(1) xd(end)] + [-0.1 0.1];
+            py = min(yl) + [0 1]*ydist*yscl - yofs; %min(yl)+[-0.1 2.1];
+            pz = 200;
             
             zd    = ones(size(xd))*pz;
             
@@ -382,11 +413,10 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             if isempty(xi),xi = 1; end;
             
             
-            try delete(obj.SubPlotObjects{m}); end
-            
-            try delete(obj.SubPlotMarker{m}); end
-            
-            try delete(obj.SubPlotBoxes{m}); end   
+            try delete(obj.SubPlotObjects{m,1}); end
+            try delete(obj.SubPlotObjects{m,2}); end
+            try delete(obj.SubPlotMarkers{m}); end
+            try delete(obj.SubPlotBoxes{m}); end  
             
             if (max(xl)-min(xl))>7 && (max(yl)-min(yl))>7
 
@@ -395,12 +425,16 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
               %obj.SubPlotBoxes{m} = plotbox;                  
               
               hold(label.ParentAxes.Handle, 'on');
-              marker  = line([xd(xi) xd(xi)], py, [1 1] * pz-1, 'Parent', label.ParentAxes.Handle, 'color', 'w', 'linewidth', 0.5, 'Tag', '@Screen');
+              marker  = line([xd(xi) xd(xi)], py, [1 1] * pz-1, 'Parent', label.ParentAxes.Handle, 'color', [0.5 0.75 0.75], 'linewidth', 0.25, 'LineStyle', '-', 'Tag', '@Screen');
               obj.SubPlotMarkers{m} = marker;
               
               hold(label.ParentAxes.Handle, 'on');
-              subPlot = line(xd, yd, zd, 'Parent', label.ParentAxes.Handle, 'color', 'k', 'linewidth', 0.25);  % 'linesmoothing', 'on', %, 'linesmoothing', 'on'
-              obj.SubPlotObjects{m} = subPlot;
+              subPlot1 = line(xd, ydm, zd, 'Parent', label.ParentAxes.Handle, 'color', [0.25 0.5 0.5], 'linewidth', 0.25);  % 'linesmoothing', 'on', %, 'linesmoothing', 'on'
+              obj.SubPlotObjects{m,2} = subPlot1;
+              
+              hold(label.ParentAxes.Handle, 'on');
+              subPlot2 = line(xd, yd, zd, 'Parent', label.ParentAxes.Handle, 'color', 'k', 'linewidth', 0.25);  % 'linesmoothing', 'on', %, 'linesmoothing', 'on'
+              obj.SubPlotObjects{m,1} = subPlot2;              
               
               %hold(label.ParentAxes.Handle, 'on');              
               %plotbox = line(px([1 2 2 1 1]), py([1 1 2 2 1]), [1 1 1 1 1] * pz+1, 'Parent', label.ParentAxes.Handle, 'color', 'w', 'linewidth', 0.25); %, 'linesmoothing', 'on'
@@ -415,7 +449,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             %obj.SubPlotObjects{end+1} = line([xd(1) xd(1)], yd, zd, 'Parent', label.ParentAxes.Handle, 'color', 'k', 'linesmoothing', 'on', 'linewidth', 0.25);
             
             %set(label.ParentAxes.Handle, 'Clipping', 'off');
-            %drawnow expose update;
+            drawnow expose update;
           end
           
         catch err

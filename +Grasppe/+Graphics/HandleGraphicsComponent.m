@@ -54,7 +54,7 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent ...
     end
     
     function delete(obj)
-      debugStamp(2, obj);
+      debugStamp(obj, 5);
       try set(obj.Handle, 'Visible', 'off'); end
       try
         children = obj.handleGet('Children');
@@ -89,7 +89,7 @@ classdef HandleGraphicsComponent < Grasppe.Core.HandleComponent ...
         
     function OnDelete(obj, source, event)
       % if isequal(obj.IsDestructing, true), return; end
-      debugStamp(2, obj);
+      debugStamp(obj, 5);
       obj.IsDestructing = true;
     end
     

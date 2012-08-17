@@ -28,7 +28,7 @@ classdef Component < Grasppe.Core.Instance
     end
     
     function delete(obj)
-      debugStamp(2, obj);
+      debugStamp(5, obj);
       obj.deleteHandles;
     end
     

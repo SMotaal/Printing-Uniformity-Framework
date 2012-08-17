@@ -33,13 +33,16 @@ function [ output_args ] = debugStamp( tag, level, obj )
   
   
   
-  d = dbstack('-completenames');
+  ds = dbstack('-completenames');
   
-  d = d(2);
-  
-  tx = [d.name ' (' int2str(d.line) ')'];
-  
-  dbstamp = sprintf('<a href="matlab: opentoline(%s, %d)">%s</a>', d.file, d.line, tx);
+  dbstamp = '';
+  for m = 2:min(numel(ds),4)
+    d = ds(m);
+
+    tx = [d.name ' (' int2str(d.line) ')'];
+
+    dbstamp = [dbstamp sprintf('\t<a href="matlab: opentoline(%s, %d)">%s</a>', d.file, d.line, tx)];
+  end
   
   n = stamp;
   
@@ -49,13 +52,18 @@ function [ output_args ] = debugStamp( tag, level, obj )
     stackloops  = 0;
   end  
  
+  nextstack = sprintf('\n%s',['@' dbstamp]);
+
   try
-    try if nargin>2 && isa(Grasppe.Core.Prototype(obj))
-      tag = [obj.ID '.' tag]; end; end
+    try if nargin>2 && isa(obj, Grasppe.Core.Prototype)
+        tag = [obj.ID '.' tag]; end; end
     
-    nextstack = sprintf('\n%s',[tag ':' dbstamp]);
-  catch
-    nextstack = sprintf('\n%s',['@' dbstamp]);
+    try if isa(tag, Grasppe.Core.Prototype)
+      tag = [obj.ID '.' tag]; end; end
+
+    if ischar(tag)
+      nextstack = sprintf('\n%s:\t%s', tag, strtrim(dbstamp));
+    end
   end
   
 %   if n > 10

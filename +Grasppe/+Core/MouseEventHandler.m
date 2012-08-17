@@ -88,7 +88,7 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
       
       doubleClickRate     = 0.2;
       
-      scrollingThreshold  = 0.0;
+      scrollingThreshold  = 0;
       
       currentXY           = get(0,'PointerLocation');
       
@@ -234,7 +234,7 @@ classdef MouseEventHandler < Grasppe.Core.Prototype & Grasppe.Core.EventHandler
           try
             event.Data.Scrolling.Length        = lastScrollToc;
             event.Data.Scrolling.Vertical      = [sourceData.VerticalScrollCount sourceData.VerticalScrollAmount];
-            event.Data.Scrolling.Momentum      = lastScrollToc < scrollingThreshold;
+            event.Data.Scrolling.Momentum      = lastScrollToc < scrollingThreshold; % && lastScrollToc>1;
             % disp(event);
           catch err
             disp(err.message);
