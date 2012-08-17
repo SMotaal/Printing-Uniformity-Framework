@@ -571,6 +571,12 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       
       obj.optimizeSetLimits@Grasppe.PrintUniformity.Data.UniformityDataSource(xLim, yLim, zLim, cLim);
       
+%       try 
+%         obj.PlotLabels.updateSubPlots;
+%       catch err
+%         disp(err);
+%       end      
+      
       try  
       
         cmap          = ones(64,3);

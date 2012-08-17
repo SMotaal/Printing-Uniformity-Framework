@@ -4,7 +4,7 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
   
   properties (Access=private)
     PlotOptions     = {'CaseID', 'rithp5501'};
-    PlotTypes       = {'Regionsurfs'}; %, 'Slope'}; %'Surface', 'Regions', 'Slope'}; Regionsurfs
+    PlotTypes       = {'Surface', 'Regionsurfs', 'Slope'}; %, 'Slope'}; %, 'Regions', 'Slope'}; Regionsurfs
     DataProperties  = {'CaseID', 'SetID', 'SheetID'};    
     AxesProperties  = {'View', 'Projection', {'PlotColor', 'Color'}};
     FigureOptions;   %= {'PlotAxesLength', 1}; %3    
@@ -17,9 +17,9 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
       
       obj.FigureOptions =  {'PlotAxesLength', numel(obj.PlotTypes)};      
           
-      obj.createFigure(obj.FigureOptions{:}, 'IsVisible', false, 'Renderer', 'Painters');
+      obj.createFigure(obj.FigureOptions{:}, 'IsVisible', false, 'Renderer', 'opengl');
       
-      obj.PlotFigure.handleSet('PaperPositionMode', 'auto');
+      %obj.PlotFigure.handleSet('PaperPositionMode', 'auto');
       
       obj.PlotFigure.PlotMediator = obj;
       
@@ -41,6 +41,13 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
     
     function showFigure(obj)
       obj.PlotFigure.show;
+      
+      for m = 1:numel(obj.DataSources);
+        dataSource = obj.DataSources{m};
+        
+        notify(dataSource.DataProcessor, 'SetChange');
+        %try dataSource.updateSetData; end
+      end
     end
     
     function createFigure(obj, varargin)

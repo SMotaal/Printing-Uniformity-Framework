@@ -395,7 +395,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
               %obj.SubPlotBoxes{m} = plotbox;                  
               
               hold(label.ParentAxes.Handle, 'on');
-              marker  = line([xd(xi) xd(xi)], py, [1 1] * pz-1, 'Parent', label.ParentAxes.Handle, 'color', 'w', 'linewidth', 0.5);
+              marker  = line([xd(xi) xd(xi)], py, [1 1] * pz-1, 'Parent', label.ParentAxes.Handle, 'color', 'w', 'linewidth', 0.5, 'Tag', '@Screen');
               obj.SubPlotMarkers{m} = marker;
               
               hold(label.ParentAxes.Handle, 'on');

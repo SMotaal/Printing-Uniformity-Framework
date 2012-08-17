@@ -13,6 +13,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
     PlotHeight;
     PlotArea;
     HiddenFigure    = figure('Visible', 'off');
+    OutputFigure    = [];
     
   end
   
@@ -27,6 +28,174 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       obj.OnResize@Grasppe.Graphics.PlotFigure;
       obj.layoutPlotAxes;
       obj.layoutOverlay;
+      
+    end
+    
+    function Export(obj)
+      
+      %% Options
+      pageScale   = 150;
+      pageSize    = [11 8.5] .* 150;
+      
+      figureOptions = { ...
+        'Visible', 'off', 'Renderer', 'painters', ...
+        'Position', floor([0 0 pageSize]), ...
+        'Color', 'none', ...
+        };
+      
+      %% Functions
+      deleteHandle = @(x) delete(ishandle(x));
+      
+      %% Setup Output Figure
+      try deleteHandle(obj.OutputFigure); end
+      
+      obj.OutputFigure = figure(figureOptions{:});
+      
+      %% Duplicate Figure
+      hdFigure = obj.Handle;
+      hdOutput = obj.OutputFigure;
+      
+      colormap(hdOutput, colormap(hdFigure));
+      
+      %% Duplicate Children
+      
+      children  = allchild(hdFigure);
+      nChildren = numel(children);
+      
+      hgObjects.Unsupported = cell(0,4);
+      
+      for m = 1:nChildren
+        
+        [hdObject, hgObject, clObject, hdInfo] = handleObject(children(m));
+        
+        try clObject = hgObject.type; end
+        
+        switch clObject
+          case {'axes'}
+            
+          otherwise
+            dispf('Not copying handle %d because %s objects are not supported.\t%s', floor(hdObject), clObject, hdInfo);
+            hgObjects.Unsupported(end+1,:) = {clObject, hdObject, hgObject, hdInfo};
+            continue;
+        end
+        
+        %% Shallow Copying
+        hdCopy  = copyobj(hdObject, hdOutput);
+        hgCopy  = handle(hdCopy);
+        
+        %%% Deep Copying
+        % switch clObject
+        %   case {'axes'}
+        % end
+        
+        if isfield(hgObjects, clObject)
+          hgObjects.(clObject)(end+1) = hgCopy;
+        else
+          hgObjects.(clObject)        = hgCopy;
+        end
+        
+      end
+      
+      %% Gather Decendents
+      
+      for ax = hgObjects.('axes')
+        decendents  = allchild(ax);
+        nDecendents = numel(decendents);
+        
+        for o = 1:nDecendents
+          
+          [hdObject, hgObject, clObject, hdInfo] = handleObject(decendents(o));
+          
+          try clObject = hgObject.type; end
+          
+          switch clObject
+            case {'text', 'surface'}
+              
+            otherwise
+              dispf('Not formatting handle %d because %s objects are not supported.\t%s', floor(hdObject), clObject, hdInfo);
+              hgObjects.Unsupported(end+1,:) = {clObject, hdObject, hgObject, hdInfo};
+              continue;
+          end
+          
+          if isfield(hgObjects, clObject)
+            hgObjects.(clObject)(end+1) = hgObject;
+          else
+            hgObjects.(clObject)        = hgObject;
+          end
+          
+        end
+      end
+      
+      %% Fix Objects
+      
+      %% Fix Surfs
+      for hgSurf = hgObjects.('surface')
+        if isa(hgSurf.Userdata, 'Grasppe.PrintUniformity.Graphics.UniformityPlotComponent')
+          objSurf   = hgSurf.Userdata(1);
+          
+          try
+            dataSource  = objSurf.DataSource;
+            
+            switch class(dataSource)
+              case ('Grasppe.PrintUniformity.Data.RegionStatsDataSource')
+                
+                regionMasks = dataSource.PlotRegions;
+                regionData  = dataSource.PlotValues;
+                regionRects = zeros(size(regionMasks,1), 4);
+                
+                regionPatch = [];
+                
+                for r = 1:size(regionMasks,1)
+                  region = squeeze(eval(['regionMasks(r' repmat(',:',1,ndims(regionMasks)-1)  ')']));
+                  
+                  y       = nanmax(region, [], 2);
+                  y1      = find(y>0, 1, 'first');
+                  y2      = find(y>0, 1, 'last')+1;
+                  
+                  x       = nanmax(region, [], 1);
+                  x1      = find(x>0, 1, 'first');
+                  x2      = find(x>0, 1, 'last')+1;
+                  
+                  region  = [x1 y1 x2-x1 y2-y1];
+                  
+                  regionRects(r, :) = region;
+                  
+                  xl      = [x1 x2];
+                  yl      = [y1 y2];
+                  
+                  zv      = regionData(r);
+                  
+                  xd      = xl([1 2 2 1 1])';
+                  yd      = yl([1 1 2 2 1])';
+                  zd      = zv([1 1 1 1 1]);
+                  
+                  regionPatch(end+1) = patch(xd, yd, zd, 'ZData', zd, 'Parent', hgSurf.Parent, 'FaceColor', 'flat', 'EdgeColor', 'none');
+                end
+                
+                hgSurf.Visible = 'off';
+            end
+            
+          catch err
+            disp(err);
+          end
+        end
+      end
+      
+      %% Fix Appearances
+      
+      %% Fix Layout
+      
+      %% Remove @Screen Objects
+      set(findobj(hdOutput, '-regexp','Tag','@Screen'), 'Visible', 'off');
+      
+      %% Output Results
+      assignin('base', 'hgObjects', hgObjects);
+      
+      %% Export Document
+      export_fig('export.pdf', '-painters', hdOutput);
+      
+      %% Delete Figure
+      %try deleteHandle(obj.OutputFigure); end
       
     end
   end
@@ -148,7 +317,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         %   titlePosition(3)]; %+plotArea(4)
         %
         % titlePosition = titlePosition - [0 plotInset(2)+plotInset(4) 0];
-
+        
         titlePosition = [plotArea(1) plotArea(2)+plotArea(4) titlePosition(3)];
         
         titlePosition = titlePosition + [0 plotInset(2)+plotInset(4) 0];
@@ -157,9 +326,9 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       try obj.TitleText.handleSet('Position', titlePosition); end
       
       obj.TitleText.handleSet('HorizontalAlignment', 'left');
-      obj.TitleText.handleSet('VerticalAlignment', 'bottom');      
+      obj.TitleText.handleSet('VerticalAlignment', 'bottom');
       
-    end    
+    end
     
     
     function layoutPlotAxes(obj)
@@ -245,7 +414,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         
         cellWidth       = max(cellWidth, plotWidth);
         cellHeight      = max(cellHeight, plotHeight);
-
+        
         lastOffset      = cellWidth/2*(columns - (cells - ((rows-1)*columns)));
         
         plotSize        = [plotWidth-padding(1)-padding(3) plotHeight-padding(2)-padding(4)];
@@ -266,7 +435,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
           end
           
           plotPosition(m, :) = round([plotLeft plotBottom plotSize]);
-
+          
           try
             if plotBottom < (plottingHeight)
               obj.PlotAxes{m}.handleSet('Parent', obj.Handle);
@@ -285,7 +454,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         end
         
         areaMin = min(plotPosition, [], 1);
-        areaMax = max(plotPosition, [], 1);        
+        areaMax = max(plotPosition, [], 1);
         areaPosition = [areaMin(1:2)  areaMin(1:2)-areaMax(1:2)+areaMax(3:4)];
         
         obj.PlotArea = areaPosition;
