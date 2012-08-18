@@ -690,11 +690,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
       firstSheet    = 1;
       lastSheet     = obj.getSheetCount;
       nextSheet     = currentSheet;
-      
-      if currentSheet>lastSheet
-        currentSheet=0;
-      end
-      
+            
       %Parse sheet
       if isInteger(sheet)
         nextSheet = sheet;
@@ -708,8 +704,12 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
           case {'omega', 'last'}
             nextSheet = lastSheet;
           case {'forward',  'next', '+1', '<'}
+            if currentSheet>lastSheet, currentSheet=0;
+            end
             step = +1;
           case {'previous', 'back', '-1', '>'}
+            if currentSheet>lastSheet, currentSheet=1;
+            end
             step = -1;
           otherwise
             try

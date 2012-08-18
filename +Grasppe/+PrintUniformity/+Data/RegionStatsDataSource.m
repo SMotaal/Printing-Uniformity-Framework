@@ -694,11 +694,13 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     end
     
     function updateSetData(obj, source, event)
-      obj.Stats = [];
-      obj.SetStats = [];
-      try obj.PlotLabels.deleteLabels; end
-      obj.updateSetData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
-      obj.updateVariableData(source, event);
+      try
+        obj.Stats = [];
+        obj.SetStats = [];
+        try obj.PlotLabels.deleteLabels; end
+        obj.updateSetData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
+        obj.updateVariableData(source, event);
+      end
       
       %obj.updatePlotLabels;
       try

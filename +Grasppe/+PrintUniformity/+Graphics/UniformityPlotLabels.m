@@ -188,11 +188,11 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         position  = region([1 2]) + dimension/2;
         
         
-        try
-          if all(dimension>7) %&& ~isempty([obj.SubPlotObjects{:}])  % && dimension>7
-            position = position + [0 1];
-          end
-        end
+%         try
+%           if all(dimension>7) %&& ~isempty([obj.SubPlotObjects{:}])  % && dimension>7
+%             position = position + [0 1];
+%           end
+%         end
         
         
         obj.LabelRegions(index, 1:4)    = region;
@@ -358,7 +358,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         %         end        
         
         yvs   = data';
-        ys    = size(yvs, 1);
+        ys    = obj.PlotObject.DataSource.getSheetCount; %size(yvs, 1);
         yn    = size(yvs, 2);
         
         ymean = mean(yvs,2);
@@ -375,7 +375,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             larea = obj.LabelAreas(m, :);
             lpos  = obj.LabelPositions(m, :);
             
-            xl    = lpos(1) + [-larea(1)+0 larea(1)+2] /2;
+            xl    = lpos(1)- 1 + [-larea(1)+0 larea(1)+2] /2;
             xdist = max(xl)-min(xl);
             yl    = lpos(2) + [-larea(2) larea(2)] /2;
             ydist = max(yl)-min(yl);
@@ -390,17 +390,18 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
              yv(n) = obj.SubPlotData{n}(m);
             end
             
-            yv    = yvs(:,m)';
+            yv    = yvs(:,m)' - ymin;
+            yv2   = abs(yvs(:,m)-ymean(:))';
             
-            yv    = (yv     - ymin)/ylen*ydist*yscl  - yofs;    %(yv-min(yv)); %*0.75; %((yv-min(yv))/(max(yv)-min(yv)));
-            yvm   = (ymean  - ymin)/ylen*ydist*yscl - yofs;
+            yv    = (yv )/ylen*ydist*yscl - yofs;    %(yv-min(yv)); %*0.75; %((yv-min(yv))/(max(yv)-min(yv)));
+            yv2   = (yv2)/ylen*ydist*yscl - yofs;    %(yv2  - ymin)/ylen*ydist*yscl - yofs;
             
             ys    = numel(yv);
             xs    = (max(xl)-min(xl))/(ys-1);
             
             xd    = [min(xl) min(xl)+(1:ys-1)/(ys-1)*(max(xl) - min(xl))]; %min(xl):xs:max(xl);
             yd    = min(yl) + yv;    %*(yv+0.225); %(0.125*(max(yl)-min(yl))) + + (max(yl)-min(yl)) 
-            ydm   = min(yl) + yvm;
+            ydm   = min(yl) + yv2;
             
             px = [xd(1) xd(end)] + [-0.1 0.1];
             py = min(yl) + [0 1]*ydist*yscl - yofs; %min(yl)+[-0.1 2.1];
@@ -425,16 +426,17 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
               %obj.SubPlotBoxes{m} = plotbox;                  
               
               hold(label.ParentAxes.Handle, 'on');
-              marker  = line([xd(xi) xd(xi)], py, [1 1] * pz-1, 'Parent', label.ParentAxes.Handle, 'color', [0.5 0.75 0.75], 'linewidth', 0.25, 'LineStyle', '-', 'Tag', '@Screen');
+              marker  = line([xd(xi) xd(xi)]-1, py, [1 1] * pz-1, 'Parent', label.ParentAxes.Handle, 'color', [0.5 0.75 0.75], 'linewidth', 0.25, 'LineStyle', '-', 'Tag', '@Screen');
               obj.SubPlotMarkers{m} = marker;
               
               hold(label.ParentAxes.Handle, 'on');
-              subPlot1 = line(xd, ydm, zd, 'Parent', label.ParentAxes.Handle, 'color', [0.25 0.5 0.5], 'linewidth', 0.25);  % 'linesmoothing', 'on', %, 'linesmoothing', 'on'
+              %subPlot1 = line(xd, ydm, zd, 'Parent', label.ParentAxes.Handle, 'color', [0.25 0.5 0.5], 'linewidth', 0.25);  % 'linesmoothing', 'on', %, 'linesmoothing', 'on'
+              subPlot1 = fill3([xd xd(end) xd(1)], [ydm min(yl)-1 min(yl)-1], [zd zd(1) zd(1)], 0.5+[0.25 0.0 0.0], 'Parent', label.ParentAxes.Handle);
               obj.SubPlotObjects{m,2} = subPlot1;
               
-              hold(label.ParentAxes.Handle, 'on');
-              subPlot2 = line(xd, yd, zd, 'Parent', label.ParentAxes.Handle, 'color', 'k', 'linewidth', 0.25);  % 'linesmoothing', 'on', %, 'linesmoothing', 'on'
-              obj.SubPlotObjects{m,1} = subPlot2;              
+%               hold(label.ParentAxes.Handle, 'on');
+%               subPlot2 = line(xd, yd, zd, 'Parent', label.ParentAxes.Handle, 'color', 'k', 'linewidth', 0.25);  % 'linesmoothing', 'on', %, 'linesmoothing', 'on'
+%               obj.SubPlotObjects{m,1} = subPlot2;              
               
               %hold(label.ParentAxes.Handle, 'on');              
               %plotbox = line(px([1 2 2 1 1]), py([1 1 2 2 1]), [1 1 1 1 1] * pz+1, 'Parent', label.ParentAxes.Handle, 'color', 'w', 'linewidth', 0.25); %, 'linesmoothing', 'on'

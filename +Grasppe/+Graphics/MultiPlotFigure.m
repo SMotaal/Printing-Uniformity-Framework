@@ -46,7 +46,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
             case 'uparrow'
               try obj.DataSources{1}.setSheet('+1'); end
               event.Consumed = true;
-            case 'downarraow'
+            case 'downarrow'
               try obj.DataSources{1}.setSheet('-1'); end
               event.Consumed = true;
             otherwise
@@ -97,9 +97,11 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         
         try clObject = hgObject.type; end
         
+        properties = {};
+        
         switch clObject
           case {'axes'}
-            
+            properties = {'XLim', 'YLim', 'ZLim', 'CLim'};
           otherwise
             dispf('Not copying handle %d because %s objects are not supported.\t%s', floor(hdObject), clObject, hdInfo);
             hgObjects.Unsupported(end+1,:) = {clObject, hdObject, hgObject, hdInfo};
@@ -111,9 +113,21 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         hgCopy  = handle(hdCopy);
         
         %%% Deep Copying
-        % switch clObject
-        %   case {'axes'}
-        % end
+        if ~isempty(properties)
+          for n = 1:numel(properties)
+            try
+              set(hdCopy, properties{n}, get(hdObject, properties{n}));
+            catch err
+              disp(err);
+            end
+          end
+        end
+%         switch clObject
+%           case {'axes'}
+%             for n = 1:numel(properties)
+%               set(hdCopy, properties{n}, get(hdObject(properties{n})));
+%             end
+%         end
         
         if isfield(hgObjects, clObject)
           hgObjects.(clObject)(end+1) = hgCopy;
@@ -128,6 +142,9 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       for ax = hgObjects.('axes')
         decendents  = allchild(ax);
         nDecendents = numel(decendents);
+        
+        ax.XLim = ax.XLim + [-1 +1];
+        ax.YLim = ax.YLim + [-1 +1];
         
         for o = 1:nDecendents
           
@@ -177,12 +194,12 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
                   region = squeeze(eval(['regionMasks(r' repmat(',:',1,ndims(regionMasks)-1)  ')']));
                   
                   y       = nanmax(region, [], 2);
-                  y1      = find(y>0, 1, 'first');
-                  y2      = find(y>0, 1, 'last')+1;
+                  y1      = find(y>0, 1, 'first')-1;
+                  y2      = find(y>0, 1, 'last');
                   
                   x       = nanmax(region, [], 1);
-                  x1      = find(x>0, 1, 'first');
-                  x2      = find(x>0, 1, 'last')+1;
+                  x1      = find(x>0, 1, 'first')-1;
+                  x2      = find(x>0, 1, 'last');
                   
                   region  = [x1 y1 x2-x1 y2-y1];
                   
