@@ -2,8 +2,8 @@ function [ output_args ] = debugStamp( tag, level, obj )
   %DEBUGSTAMP Summary of this function goes here
   %   Detailed explanation goes here
   
-  debugmode     = false;
-  if ~debugmode, return; end
+  debugmode     = true;
+  if isequal(debugmode, false), return; end
   
   persistent debugtimer debugstack stackdups stackloops stacktime;
   
@@ -14,6 +14,12 @@ function [ output_args ] = debugStamp( tag, level, obj )
   detailed      = false;
   stackLimit    = 5;
   latencyLimit  = stackLimit * 100;
+  
+  if isnumeric(debugmode) && debugmode>1
+    maxlevel = debugmode;
+  else
+    maxlevel = 5;
+  end  
 
   if isnumeric(tag)
     if nargin==2
@@ -55,10 +61,10 @@ function [ output_args ] = debugStamp( tag, level, obj )
   nextstack = sprintf('\n%s',['@' dbstamp]);
 
   try
-    try if nargin>2 && isa(obj, Grasppe.Core.Prototype)
+    try if nargin>2 && isa(obj, 'Grasppe.Core.Prototype')
         tag = [obj.ID '.' tag]; end; end
     
-    try if isa(tag, Grasppe.Core.Prototype)
+    try if isa(tag, 'Grasppe.Core.Prototype')
       tag = [obj.ID '.' tag]; end; end
 
     if ischar(tag)
@@ -92,7 +98,7 @@ function [ output_args ] = debugStamp( tag, level, obj )
   
   debugstack = [debugstack nextstack];
   
-  if verbose || level < 5
+  if verbose || level < maxlevel
     disp(nextstack);
   end  
   

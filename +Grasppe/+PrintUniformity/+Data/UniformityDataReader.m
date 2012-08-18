@@ -1,17 +1,17 @@
-classdef UniformityProcessor < Grasppe.Core.Component
-  %UNIFORMITYPROCESSOR Summary of this class goes here
+classdef UniformityDataReader < Grasppe.Core.Component
+  %UniformityDataReader Summary of this class goes here
   %   Detailed explanation goes here
   
   
   properties (Transient, Hidden)
     HandleProperties = {};
     HandleEvents = {};
-    ComponentType = 'PrintingUniformityDataProcessor';
+    ComponentType = 'PrintingUniformityDataReader';
     ComponentProperties = '';
     
     DataProperties = {'CaseID', 'SetID', 'SheetID'};
     
-    UniformityProcessorProperties = {
+    UniformityDataReaderProperties = {
       'CaseID',     'Case ID',          'Data Source',      'string',   '';   ...
       'SetID',      'Set ID',           'Data Source',      'int',      '';   ...
       'SheetID',    'Sheet ID',         'Data Source',      'int',      '';   ...
@@ -49,7 +49,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
   
   methods
     
-    function obj = UniformityProcessor(varargin)
+    function obj = UniformityDataReader(varargin)
       obj = obj@Grasppe.Core.Component(varargin{:});
       
       obj.PreloadTimer = timer('Tag',['PreloadTimer' obj.ID], ...
@@ -257,7 +257,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
     
     %% Data
     function data = get.Data(obj)
-      % if isempty(obj.Data) obj.Data = UniformityProcessor; end
+      % if isempty(obj.Data) obj.Data = UniformityDataReader; end
       data = obj.Data;
     end
     
@@ -291,7 +291,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
       if isempty(caseData)
         obj.Data.SheetData  = [];
         obj.Data.SetData    = [];
-        obj.Data.CaseData   = UniformityProcessor.processCaseData(obj.Parameters, obj.Data);
+        obj.Data.CaseData   = UniformityDataReader.processCaseData(obj.Parameters, obj.Data);
       end
       
       
@@ -303,7 +303,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
       if isempty(obj.SetID), return; end
       
       obj.Data.SheetData  = [];
-      obj.Data.SetData    = UniformityProcessor.processSetData(obj.Parameters, obj.Data);
+      obj.Data.SetData    = UniformityDataReader.processSetData(obj.Parameters, obj.Data);
       
     end
     
@@ -312,7 +312,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
       
       if isempty(obj.SheetID), return; end
       
-      obj.Data.SheetData  = UniformityProcessor.processSheetData(obj.Parameters, obj.Data, obj.AllData);
+      obj.Data.SheetData  = UniformityDataReader.processSheetData(obj.Parameters, obj.Data, obj.AllData);
       
     end
     
@@ -334,7 +334,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
       
       for s = sheetRange
         parameters.SheetID = s;
-        data(s,:)  = UniformityProcessor.processSheetData(parameters, obj.Data);
+        data(s,:)  = UniformityDataReader.processSheetData(parameters, obj.Data);
       end
 
     end
@@ -402,7 +402,7 @@ classdef UniformityProcessor < Grasppe.Core.Component
       if isempty(setData)
         data.Parameters.SetID = [];
         
-        caseData  = UniformityProcessor.processCaseData(parameters, data);
+        caseData  = UniformityDataReader.processCaseData(parameters, data);
         
         setData   = struct( 'sourceName', caseID, 'patchSet', setID, ...
           'setLabel', ['tv' int2str(setID) 'data'], 'patchFilter', [], ...
@@ -443,9 +443,23 @@ classdef UniformityProcessor < Grasppe.Core.Component
       if isempty(sheetData)
         data.Parameters.SheetID = [];
         
-        setData           = UniformityProcessor.processSetData(parameters, data);
+        setData           = UniformityDataReader.processSetData(parameters, data);
         
-        try sheetData     = setData.data(sheetID).zData; end
+        setLength         = numel(setData.data);
+        
+        if isequal(sheetID, setLength+1)
+          sumData         = zeros([setLength size(setData.data(1).zData)]);
+          sheetData       = {setData.data(:).zData};
+          
+          for m = 1:setLength
+            sumData(m,:) = sheetData{m}(:);
+          end
+          
+          meanData  = mean(sumData(m,:),3);
+          sheetData = meanData;
+        else
+          try sheetData     = setData.data(sheetID).zData; end
+        end
       end
       
       try data.SheetData  = sheetData;

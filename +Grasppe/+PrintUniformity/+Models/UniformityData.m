@@ -13,11 +13,43 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
     function obj = UniformityData(varargin)
       obj = obj@Grasppe.Data.Models.DataModel(varargin{:});
       
-      if isempty(obj.Parameters) 
+      obj.CaseData  = Grasppe.Data.Models.SimpleDataModel;
+      obj.SetData   = Grasppe.Data.Models.SimpleDataModel;
+      obj.SheetData = Grasppe.Data.Models.SimpleDataModel;
+      
+      if isempty(obj.Parameters)
         obj.Parameters = Grasppe.PrintUniformity.Models.DataParameters('Creator', obj);
       end
-        
-    end   
+      
+    end
+    
+%     function caseData = get.CaseData(obj)
+%       if isempty(obj.CaseData)
+%         obj.CaseData = Grasppe.Data.Models.SimpleDataModel;
+%       end
+%       caseData = obj.CaseData;
+%     end
+%     
+%     function set.CaseData(obj, caseData)
+%       data = obj.CaseData;
+%       if ~isa(obj.CaseData, 'Grasppe.Data.Models.SimpleDataModel')
+%       end
+%         
+%     end
+%     
+%     function setData = get.SetData(obj)
+%       if isempty(obj.SetData)
+%         obj.SetData = Grasppe.Data.Models.SimpleDataModel;
+%       end
+%       setData = obj.SetData;
+%     end
+%     
+%     function sheetData = get.SheetData(obj)
+%       if isempty(obj.CaseData)
+%         obj.SheetData = Grasppe.Data.Models.SimpleDataModel;
+%       end
+%       sheetData = obj.SheetData;
+%     end
   end
   
   methods (Access = protected)

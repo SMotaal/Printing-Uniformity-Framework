@@ -12,10 +12,13 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
   
   methods
     
-    function obj = UniformityPlotMediator
+    function obj = UniformityPlotMediator(plotTypes, plotOptions)
       obj = obj@Grasppe.PrintUniformity.UI.PlotMediator;
       
-      obj.FigureOptions =  {'PlotAxesLength', numel(obj.PlotTypes)};      
+      if nargin>0, obj.PlotTypes    = plotTypes; end
+      if nargin>1, obj.PlotOptions  = plotOptions; end
+      
+      obj.FigureOptions =  {'PlotAxesLength', numel(obj.PlotTypes)};   
           
       obj.createFigure(obj.FigureOptions{:}, 'IsVisible', false, 'Renderer', 'opengl');
       
@@ -44,7 +47,7 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
       
       for m = 1:numel(obj.DataSources);
         dataSource = obj.DataSources{m};
-        %notify(dataSource.DataProcessor, 'SetChange');
+        %notify(dataSource.DataReader, 'SetChange');
         %try obj.PlotLabels.clearLabels; end
         %try dataSource.PlotLabels.clearLabels; end
         %dataSource.updatePlotLabels; %end

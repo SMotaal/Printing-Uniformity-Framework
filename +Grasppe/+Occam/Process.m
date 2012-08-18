@@ -138,9 +138,9 @@ classdef Process < Grasppe.Occam.ProcessData & Grasppe.Core.Prototype % handle &
     
     function addProcess(obj, process)
       if (~isa(process, eval(CLASS)))
-        processorString = 'none';
-        try processorString = toString(process); end
-        error('Failed to add processor: %s', processorString);
+        readerString = 'none';
+        try readerString = toString(process); end
+        error('Failed to add reader: %s', readerString);
       end
       
       callback = @(source, data) obj.processUpdate(source, data);

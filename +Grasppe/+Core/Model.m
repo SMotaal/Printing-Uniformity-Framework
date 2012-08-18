@@ -16,10 +16,16 @@ classdef Model < Grasppe.Core.Prototype & matlab.mixin.Copyable
     function obj = Model(varargin)
       obj = obj@Grasppe.Core.Prototype;
       
+      obj.initializeModel;
+      
       % disp(class(obj));
       Grasppe.Core.Model.ModelRecord(obj);
       
       if (nargin > 0), obj.setOptions(varargin{:}); end
+    end
+    
+    function initializeModel(obj)
+      
     end
     
     function id = get.CreatorID(obj)
