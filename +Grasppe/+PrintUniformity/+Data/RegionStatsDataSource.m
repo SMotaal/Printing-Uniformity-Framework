@@ -80,7 +80,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         obj.AllData = obj.getAllData();
         obj.postprocessSheetData();
         
-        toc(R);
+        %toc(R);
         
       catch err
         try debugStamp(err.message, 1); catch, debugStamp(); end;

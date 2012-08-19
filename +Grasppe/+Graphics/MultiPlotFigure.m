@@ -71,6 +71,10 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
     
     function Export(obj)
       
+      S = warning('off', 'all');
+      
+      try
+      
       %% Options
       pageScale   = 150;
       pageSize    = [11 8.5] .* 150;
@@ -114,7 +118,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
           case {'axes'}
             properties = {'XLim', 'YLim', 'ZLim', 'CLim'};
           otherwise
-            dispf('Not copying handle %d because %s objects are not supported.\t%s', floor(hdObject), clObject, hdInfo);
+            %dispf('Not copying handle %d because %s objects are not supported.\t%s', floor(hdObject), clObject, hdInfo);
             hgObjects.Unsupported(end+1,:) = {clObject, hdObject, hgObject, hdInfo};
             continue;
         end
@@ -167,7 +171,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
             case {'text', 'surface'}
               
             otherwise
-              dispf('Not formatting handle %d because %s objects are not supported.\t%s', floor(hdObject), clObject, hdInfo);
+              %dispf('Not formatting handle %d because %s objects are not supported.\t%s', floor(hdObject), clObject, hdInfo);
               hgObjects.Unsupported(end+1,:) = {clObject, hdObject, hgObject, hdInfo};
               continue;
           end
@@ -250,11 +254,17 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       assignin('base', 'hgObjects', hgObjects);
       
       %% Export Document
-      export_fig('export.pdf', '-painters', hdOutput);
+      export_fig(fullfile('output','export.pdf'), '-painters', hdOutput);
       
       %% Delete Figure
       %try deleteHandle(obj.OutputFigure); end
       
+      catch err
+        warning(S);
+        rethrow(err);
+      end
+      
+      warning(S);
     end
   end
   
