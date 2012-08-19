@@ -171,35 +171,3 @@ function [mask rect] = rectMask (rows, columns, startRow, endRow, startColumn, e
   end
   
 end
-
-
-function [region] = pageRegions(dataSource)
-  %   Stats for patches within a page area across all sheets. Pages are the set
-  %   of all pages across the print area, and each page is all the patches in
-  %   an 8.5x11 section denoted it's location and orientation. Orientation is
-  %   relative to the printing direction. Locations are logical positions over
-  %   the print area, for instance, 2-up portrait pages at the center of the
-  %   print area, or, 1-up portrait page at the leading-left corner. Print
-  %   areas are specific to each press and as such, a one size fits all does
-  %   not apply. Locations are defined relative to optimal imopsition for the
-  %   print area.
-  
-  %   patchWidth  = dataSource.metrics.patchWidth;
-  %   patchLength = dataSource.metrics.patchLength;
-  %
-  %   pageSize    = millimeters([8.5 11], 'in');
-  %   pageWidth   = pageSize(1);
-  %   pageLength  = pageSize(2);
-  
-  %   blockComponents = bwconncomp(dataSource.sampling.masks.Target==1);
-  %   blockBounds     = regionprops(blockComponents,'BoundingBox'); % x y w h
-  %
-  %   for i = 1:numel(blockBounds)
-  %     bounds  = round(blockBounds(i));
-  %     width   = bounds(3).*patchWidth;
-  %     length  = bounds(4).*patchLength;
-  %   end
-  
-end
-
-

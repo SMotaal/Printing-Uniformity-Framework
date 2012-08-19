@@ -41,16 +41,44 @@ classdef SimpleDataModel  < Grasppe.Data.Models.DataModel
         % A = subsasgn(A, S, B)
         if numel(s)==1 && isequal(s(1).subs, 'DATA')
           a.DATA = b;
-          %subsasgn@Grasppe.Data.Models.DataModel(a, s, d);
-        else
-          a.DATA = subsasgn(a.DATA, s, b);
+          return; %subsasgn@Grasppe.Data.Models.DataModel(a, s, d);
         end
+        
+        %if isequal(s(1).type, '()') a.DATA(s(1).subs{:}) = 
+        
+        a.DATA = subsasgn(a.DATA, s, b);
         
       catch err
         try debugStamp(err.message, 1); catch, debugStamp(); end;
         rethrow(err);
       end
     end
+    
+    function et = isempty(a)
+      et = isempty(a.DATA);
+    end
+    
+    function dbl = double(a)
+      dbl = double(a.DATA);
+    end
+    
+    function chr = char(a)
+      chr = char(a.DATA);
+    end
+    
+    function ind = end(obj,k,n)
+      szd = size(obj.DATA);
+      if k < n
+        ind = szd(k);
+      else
+        ind = prod(szd(k:end));
+      end
+    end
+    
+    function sz = size(a)
+      sz = size(a.DATA);
+    end
+    
   end
   
   methods (Access = protected)

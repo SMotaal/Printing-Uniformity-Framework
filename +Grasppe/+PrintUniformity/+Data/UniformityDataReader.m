@@ -91,7 +91,7 @@ classdef UniformityDataReader < Grasppe.Core.Component
         obj.SetID                 = setID;
         
         stop(obj.PreloadTimer);
-        obj.AllData = [];        
+        obj.AllData = [];
         
         obj.notify('CaseChange');
       end
@@ -99,7 +99,6 @@ classdef UniformityDataReader < Grasppe.Core.Component
     end
     
     function resetDataModels(obj)
-      % obj.deleteDataModels;
       obj.initializeDataModels;
     end
     
@@ -133,8 +132,6 @@ classdef UniformityDataReader < Grasppe.Core.Component
     %% SetID
     
     function set.SetID(obj, setID)
-      
-      % obj.initializeDataModels;
       
       parameters      = obj.Parameters;
       
@@ -207,9 +204,9 @@ classdef UniformityDataReader < Grasppe.Core.Component
     
     %% Case Data
     function set.CaseData(obj, caseData)
-      data = obj.Data;
-      [data.CaseData changed] = changeSet(data.CaseData, caseData);
-      % if changed, obj.notify('CaseChange'); end
+      obj.Data.CaseData = caseData;
+      % data = obj.Data;
+      % [data.CaseData changed] = changeSet(data.CaseData, caseData);
     end
     
     function caseData = get.CaseData(obj)
@@ -224,15 +221,14 @@ classdef UniformityDataReader < Grasppe.Core.Component
     
     %% Set Data
     function set.SetData(obj, setData)
-      data = obj.Data;
-      [data.SetData changed] = changeSet(data.SetData, setData);
-      % if changed, obj.notify('SetChange'); end
+      obj.Data.SetData = setData;
+      % data = obj.Data;
+      % [data.SetData changed] = changeSet(data.SetData, setData);
     end
     
     function setData = get.SetData(obj)
       setData = [];
       
-      % try setData = obj.Data.SetData; end
       if isempty(setData), obj.getSetData; end
       
       try setData = obj.Data.SetData; end
@@ -241,15 +237,14 @@ classdef UniformityDataReader < Grasppe.Core.Component
     
     %% Sheet Data
     function set.SheetData(obj, sheetData)
-      data = obj.Data;
-      [data.SheetData changed] = changeSet(data.SheetData, sheetData);
-      % if changed, obj.notify('SheetChange'); end
+      obj.Data.SheetData = sheetData;
+      % data = obj.Data;
+      % [data.SheetData changed] = changeSet(data.SheetData, sheetData);
     end
     
     function sheetData = get.SheetData(obj)
       sheetData = [];
       
-      % try sheetData = obj.Data.SheetData; end
       if isempty(sheetData), obj.getSheetData; end
       
       try sheetData = obj.Data.SheetData; end
@@ -257,7 +252,6 @@ classdef UniformityDataReader < Grasppe.Core.Component
     
     %% Data
     function data = get.Data(obj)
-      % if isempty(obj.Data) obj.Data = UniformityDataReader; end
       data = obj.Data;
     end
     
@@ -282,7 +276,6 @@ classdef UniformityDataReader < Grasppe.Core.Component
       import Grasppe.PrintUniformity.Data.*;
       
       caseData  = [];   try caseData  = obj.Data.caseData;          end
-      % caseID    = [];   try caseID    = obj.Parameters.CaseID;  end
       
       
       if isempty(obj.CaseID), return; end
@@ -291,7 +284,7 @@ classdef UniformityDataReader < Grasppe.Core.Component
       if isempty(caseData)
         obj.Data.SheetData  = [];
         obj.Data.SetData    = [];
-        obj.Data.CaseData   = UniformityDataReader.processCaseData(obj.Parameters, obj.Data);
+        obj.Data.CaseData   = UniformityDataReader.loadCaseData(obj.Parameters, obj.Data);
       end
       
       
@@ -303,7 +296,7 @@ classdef UniformityDataReader < Grasppe.Core.Component
       if isempty(obj.SetID), return; end
       
       obj.Data.SheetData  = [];
-      obj.Data.SetData    = UniformityDataReader.processSetData(obj.Parameters, obj.Data);
+      obj.Data.SetData    = UniformityDataReader.loadSetData(obj.Parameters, obj.Data);
       
     end
     
@@ -312,7 +305,7 @@ classdef UniformityDataReader < Grasppe.Core.Component
       
       if isempty(obj.SheetID), return; end
       
-      obj.Data.SheetData  = UniformityDataReader.processSheetData(obj.Parameters, obj.Data, obj.AllData);
+      obj.Data.SheetData  = UniformityDataReader.loadSheetData(obj.Parameters, obj.Data, obj.AllData);
       
     end
     
@@ -334,7 +327,7 @@ classdef UniformityDataReader < Grasppe.Core.Component
       
       for s = sheetRange
         parameters.SheetID = s;
-        data(s,:)  = UniformityDataReader.processSheetData(parameters, obj.Data);
+        data(s,:)  = UniformityDataReader.loadSheetData(parameters, obj.Data);
       end
 
     end
@@ -368,6 +361,18 @@ classdef UniformityDataReader < Grasppe.Core.Component
   
   methods (Static)
     function caseData = processCaseData(parameters, data)
+      depricated;
+    end
+    
+    function setData = processSetData(parameters, data)
+      depricated;
+    end
+    
+    function sheetData = processSheetData(parameters, data, allData)
+      depricated;
+    end    
+    
+    function caseData = loadCaseData(parameters, data)
       import Grasppe.PrintUniformity.Data.*;
       
       caseData    = [];
@@ -386,9 +391,9 @@ classdef UniformityDataReader < Grasppe.Core.Component
       try data.CaseData 	= caseData;
         if ~isempty(caseData) data.Parameters.CaseID = caseID; end; end
       
-    end
+    end  
     
-    function setData = processSetData(parameters, data)
+    function setData = loadSetData(parameters, data)
       import Grasppe.PrintUniformity.Data.*;
       
       setData     = [];
@@ -402,7 +407,7 @@ classdef UniformityDataReader < Grasppe.Core.Component
       if isempty(setData)
         data.Parameters.SetID = [];
         
-        caseData  = UniformityDataReader.processCaseData(parameters, data);
+        caseData  = UniformityDataReader.loadCaseData(parameters, data);
         
         setData   = struct( 'sourceName', caseID, 'patchSet', setID, ...
           'setLabel', ['tv' int2str(setID) 'data'], 'patchFilter', [], ...
@@ -417,7 +422,7 @@ classdef UniformityDataReader < Grasppe.Core.Component
       
     end
     
-    function sheetData = processSheetData(parameters, data, allData)
+    function sheetData = loadSheetData(parameters, data, allData)
       import Grasppe.PrintUniformity.Data.*;
       
       sheetData   = [];
@@ -443,20 +448,20 @@ classdef UniformityDataReader < Grasppe.Core.Component
       if isempty(sheetData)
         data.Parameters.SheetID = [];
         
-        setData           = UniformityDataReader.processSetData(parameters, data);
+        setData           = UniformityDataReader.loadSetData(parameters, data);
         
         setLength         = numel(setData.data);
         
         if isequal(sheetID, setLength+1)
           sumData         = zeros([setLength size(setData.data(1).zData)]);
-          sheetData       = {setData.data(:).zData};
+          %sheetData       = {setData.data(:).zData};
           
           for m = 1:setLength
-            sumData(m,:) = sheetData{m}(:);
+            sumData(m,1,:) = setData.data(m).zData; %sheetData{m}(:);
           end
           
-          meanData  = mean(sumData(m,:),3);
-          sheetData = meanData;
+          meanData        = mean(sumData,1);
+          sheetData(1,:)  = meanData;
         else
           try sheetData     = setData.data(sheetID).zData; end
         end
@@ -464,6 +469,8 @@ classdef UniformityDataReader < Grasppe.Core.Component
       
       try data.SheetData  = sheetData;
         if ~isempty(sheetData) data.Parameters.SheetID = sheetID; end; end
+      
+      sheetData = data.SheetData;
     end
   end
   

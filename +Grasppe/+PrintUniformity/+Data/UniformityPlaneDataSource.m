@@ -27,12 +27,19 @@ classdef UniformityPlaneDataSource < Grasppe.PrintUniformity.Data.UniformityData
 
       [X Y Z]   = obj.processSheetData@Grasppe.PrintUniformity.Data.UniformityDataSource(sheetID, variableID);
       
-      caseData      = obj.CaseData; ...
-        setData   	= obj.SetData; ...
+      caseData      = obj.CaseData;
+        setData   	= obj.SetData;
         sheetData   = obj.SheetData;
       
       targetFilter  = caseData.sampling.masks.Target~=1;
       patchFilter   = setData.filterData.dataFilter~=1;
+      
+      if isempty(sheetData)
+        sheetData = obj.SheetData;
+        if isempty(sheetData)
+          beep;
+        end
+      end
       
       Z(~patchFilter)  = sheetData;
       Z(targetFilter) = NaN;

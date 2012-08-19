@@ -1,5 +1,5 @@
-classdef SheetData
-  %SHEETDATA Summary of this class goes here
+classdef StatsDataSource
+  %STATSDATASOURCE Summary of this class goes here
   %   Detailed explanation goes here
   
   properties

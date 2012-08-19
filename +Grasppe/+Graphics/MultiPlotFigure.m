@@ -36,23 +36,34 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       shiftKey = stropt('shift', event.Data.Modifier);
       commandKey = stropt('command', event.Data.Modifier) || stropt('control', event.Data.Modifier);
       
+      syncSheets = false;
+      
       if ~event.Consumed
       
         if commandKey && shiftKey
           switch event.Data.Key
             case 'h'
-              try obj.DataSources{1}.setSheet('sum'); end
+              try obj.DataSources{1}.setSheet('sum'); syncSheets = true; end
               event.Consumed = true;
             case 'uparrow'
-              try obj.DataSources{1}.setSheet('+1'); end
+              try obj.DataSources{1}.setSheet('+1'); syncSheets = true; end
               event.Consumed = true;
             case 'downarrow'
-              try obj.DataSources{1}.setSheet('-1'); end
+              try obj.DataSources{1}.setSheet('-1'); syncSheets = true; end
               event.Consumed = true;
             otherwise
-              disp(toString(event.Data.Key));
+              %disp(toString(event.Data.Key));
           end
         end
+      end
+      
+      if syncSheets
+        %if numel(obj.DataSources)>1
+          for m = 2:numel(obj.DataSources)
+            notify(obj.DataSources{m}, 'SheetChange');
+            %try obj.DataSources{m}.SheetID = obj.DataSources{1}.SheetID; end
+          end
+        %end
       end
       
       obj.OnKeyPress@Grasppe.Graphics.PlotFigure(source, event);

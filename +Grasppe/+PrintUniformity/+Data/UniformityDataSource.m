@@ -150,6 +150,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
     function data = getAllData(obj)
       
       bufferAllData = true; %Grasppe.PrintUniformity.Options.Defaults.BufferSurfData';
+      forceBuffer   = true;
       
       data = obj.AllData;
       if ~isempty(obj.AllData) || ~isequal(obj.AllDataEnabled, true), return; end;
@@ -174,7 +175,9 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         
         if bufferAllData, bufferedData = Data.dataSources(id, space); end
         
-        if isempty(bufferedData)
+        try forceBuffer = ~isfield(bufferedData, 'stats'); end
+        
+        if forceBuffer || isempty(bufferedData) || ~isstruct(bufferedData)
         
           sheetRange    = reader.Data.CaseData.range.Sheets;
 
@@ -190,9 +193,21 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
             %data{s,:}  = {X, Y, Z};
           end
           
-          Data.dataSources(id, data, true, space);
+          if isempty(cell2mat(data)), return; end
+          
+          bufferedData = struct;
+          
+          bufferedData.data = data;
+          
+          try
+            bufferedData.stats = obj.SetStats;
+          end
+          
+          Data.dataSources(id, bufferedData, true, space);
         else
-          data = bufferedData;
+          data = bufferedData.data;
+          
+          try obj.SetStats = bufferedData.stats; end
         end
         
         obj.AllData   = data;
@@ -471,7 +486,8 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
     function updateCaseData(obj, source, event)    
       
       try stop(obj.PreprocessTimer); end
-      obj.AllData = {};      
+      obj.AllData = {};
+      obj.LastVariableID = '';      
       
       try debugStamp(obj.ID, 3); catch, debugStamp(); end;
       
@@ -656,8 +672,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
           try plotObject(m).ParentAxes.ZLim = obj.ZLim; end
           try plotObject(m).ParentAxes.CLim = obj.CLim; end
         end
-      end
-      
+      end 
     end
     
     

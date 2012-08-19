@@ -1,5 +1,5 @@
-classdef SheetData
-  %SHEETDATA Summary of this class goes here
+classdef surf2 < graph3d.surfaceplot
+  %SURF2 Summary of this class goes here
   %   Detailed explanation goes here
   
   properties

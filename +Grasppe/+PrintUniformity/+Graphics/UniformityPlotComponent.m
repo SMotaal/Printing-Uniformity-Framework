@@ -88,7 +88,7 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype & Grasppe.Core.MouseEv
       %       end
       
       if ~event.Data.Scrolling.Momentum && event.Data.Scrolling.Length<2
-        disp(toString(event.Data.Scrolling));
+        %disp(toString(event.Data.Scrolling));
         % plotAxes = get(obj.handleGet('CurrentAxes'), 'UserData');
 %         if event.Data.Scrolling.Length>1.5 && event.Data.Scrolling.Length<2
 %           obj.setSheet('sum');

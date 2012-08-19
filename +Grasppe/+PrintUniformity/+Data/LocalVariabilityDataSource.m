@@ -33,6 +33,14 @@ classdef LocalVariabilityDataSource < Grasppe.PrintUniformity.Data.UniformityDat
       targetFilter  = caseData.sampling.masks.Target~=1;
       patchFilter   = setData.filterData.dataFilter~=1;
       
+      if isempty(sheetData)
+        sheetData = obj.SheetData;
+        if isempty(sheetData)
+          beep;
+        end
+      end
+      
+      
       Z(~patchFilter) = sheetData;
       Z(targetFilter) = NaN;
       Z(patchFilter)  = NaN;
