@@ -252,7 +252,7 @@ else
         try
           statValues = fieldStats;
         catch err
-          disp(err);
+          try debugStamp(err, 1); catch, debugStamp(); end;
           continue;
         end
         plotValues(s,m,mask) = statValues;
@@ -281,7 +281,7 @@ for sheet = 1:size(plotData,1)
   try
     data(sheet, :) = regionData(:);
   catch err
-    disp(err);
+    try debugStamp(err, 1); catch, debugStamp(); end;
     continue;
   end
 end
@@ -488,7 +488,7 @@ try
   
   mask(startRow:endRow, startColumn:endColumn) = 1;
 catch err
-  disp(err);
+  try debugStamp(err, 1); catch, debugStamp(); end;
   return;
 end
 

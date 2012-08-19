@@ -396,7 +396,7 @@ for f = 1:nFields
     try
       plotSpecs = plotting.Specs(p);
     catch err
-      disp(err);
+      try debugStamp(err, 1); catch, debugStamp(); end;
     end
         
     hold all;
@@ -565,7 +565,7 @@ for f = 1:nFields
         try
           xlim(hCB(f,p),dlim);
         catch err
-          disp(err);
+          try debugStamp(err, 1); catch, debugStamp(); end;
         end
         
         cbUnits = get(hCB(f,p),'Units');
@@ -581,7 +581,7 @@ for f = 1:nFields
 %         xlim(hCB(f,p))
       end
     catch err
-      disp(err);
+      try debugStamp(err, 1); catch, debugStamp(); end;
     end
     
     opt grid(plotSpecs.Grid);
@@ -630,7 +630,7 @@ for f = 1:nFields
         
         set(hText(f,p,m),'String', char(tStrings(f,p,m,1)));
       catch err
-        disp(err);
+        try debugStamp(err, 1); catch, debugStamp(); end;
       end
 
     end
@@ -788,7 +788,7 @@ for f = 1:nFields
         set(hCB(f,p), 'XTick', cbTicks);
       end
     catch err
-            disp(err);
+      try debugStamp(err, 1); catch, debugStamp(); end;
     end
   end
   drawnow;
@@ -953,7 +953,7 @@ for s = [1:nSheets]
           zT = 0.33; % 0.33
           when [zC<zT] tC = "w";
          catch err
-           disp(err);
+           try debugStamp(err, 1); catch, debugStamp(); end;
         end
         set(hText(f,p,m),'color', tC);
       end

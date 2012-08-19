@@ -47,11 +47,11 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         obj.updatePlotLabels;
         obj.PlotLabels.SubPlotData = obj.SetStats;
         obj.PlotLabels.updateSubPlots;
-        obj.optimizeSetLimits;
       catch err
         try debugStamp(err.message, 1); catch, debugStamp(); end;
       end
       
+      try obj.optimizeSetLimits; end
     end
     
     function updateSetStatistics(obj)
@@ -301,8 +301,8 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         summaryExtent = max(summaryRange);
         
         
-        xLim  = [1 obj.getColumnCount + summaryExtent];  % [];
-        yLim  = [1 obj.getRowCount    + summaryExtent];    % [];
+        xLim  = [0 obj.getColumnCount + summaryExtent];  % [];
+        yLim  = [0 obj.getRowCount    + summaryExtent];    % [];
         zLim  = [];
         cLim  = [];
         
@@ -376,6 +376,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         obj.PlotLabels.defineLabels(obj.PlotRegions, obj.PlotValues);
         obj.PlotLabels.SubPlotData = obj.SetStats;
         obj.PlotLabels.createLabels;
+        %try obj.optimizeSetLimits; end
       catch err
         try debugStamp(err.message, 1); catch, debugStamp(); end;
       end
@@ -415,10 +416,11 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       try
         obj.PlotLabels.SubPlotData = obj.SetStats;
         obj.PlotLabels.updateSubPlots;
-        obj.optimizeSetLimits;
       catch err
         try debugStamp(err.message, 1); catch, debugStamp(); end;
       end
+      
+      %try obj.optimizeSetLimits; end
     end
     
     function updateSheetData(obj, source, event)
@@ -503,6 +505,8 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       end
       
       obj.updateVariableData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
+      
+      %try obj.optimizeSetLimits; end
     end
     
     function postprocessSheetData(obj)

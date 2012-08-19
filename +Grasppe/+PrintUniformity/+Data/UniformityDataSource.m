@@ -213,7 +213,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         obj.AllData   = data;
       
       catch err
-        disp(err);
+        try debugStamp(err, 1, obj); catch, debugStamp(); end;
       end
       
     end
@@ -613,7 +613,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         if nargin > 1 && ~isempty(x) % isnumeric(x) && size(x)==[1 2];
           xLim = x;
         else
-          xLim = [1 obj.getColumnCount];
+          xLim = [0 obj.getColumnCount];
         end
       end
       
@@ -621,7 +621,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         if nargin > 2 && ~isempty(y) % isnumeric(y) && size(y)==[1 2];
           yLim = y;
         else
-          yLim = [1 obj.getRowCount];
+          yLim = [0 obj.getRowCount];
         end
       end
       
@@ -659,9 +659,9 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         end
       end
       
-      obj.ZLim  = zLim;
-      obj.CLim  = cLim;
-      
+      obj.ZLim      = zLim;
+      obj.CLim      = cLim;
+            
       %% Update to LinkedPlots
       try
         plotObject = obj.LinkedPlotObjects;
@@ -673,6 +673,23 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
           try plotObject(m).ParentAxes.CLim = obj.CLim; end
         end
       end 
+      
+      
+      %% Display Limits
+      limstr = '';
+      limids = {'XLim', 'YLim', 'ZLim', 'CLim'};
+      limval = {obj.XLim, obj.YLim, obj.ZLim, obj.CLim};
+      for m = 1:numel(limids)
+        try 
+          if ischar(limval{m})
+            limstr = [limstr sprintf('\t%s[%s]', limids{m}, limval{m})];
+          elseif isnumeric(limval{m})
+            limstr = [limstr sprintf('\t%s[%2.1f, %2.1f]', limids{m}, limval{m})];
+          end
+        end
+      end
+      debugStamp([obj.ID ':' limstr], 4); % dispf('Lims: X [%2.1f, %2.1f] \t Y [%2.1f, %2.1f] \t Z [%2.1f, %2.1f] \t C [%2.1f, %2.1f] '
+      
     end
     
     

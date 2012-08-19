@@ -129,7 +129,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
             try
               set(hdCopy, properties{n}, get(hdObject, properties{n}));
             catch err
-              disp(err);
+              try debugStamp(err, 1, obj); catch, debugStamp(); end;
             end
           end
         end
@@ -234,7 +234,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
             end
             
           catch err
-            disp(err);
+            try debugStamp(err, 1, obj); catch, debugStamp(); end;
           end
         end
       end
@@ -265,7 +265,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
     
     
     function preparePlotAxes(obj)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      try debugStamp(obj.ID); end; % catch, debugStamp(); end;
       nPlots      = obj.PlotAxesLength;
       plotStack   = obj.PlotAxesStack;
       plotTargets = obj.PlotAxesTargets;

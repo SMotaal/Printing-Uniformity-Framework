@@ -69,8 +69,8 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
         
         obj.handleSet(dataField, dataSource.(dataField));
       catch err
-        try debugStamp(obj.ID); end
-        disp(err);
+        %try debugStamp(obj.ID); end
+        try debugStamp(err, 1, obj); catch, debugStamp(); end;
       end
     end
     

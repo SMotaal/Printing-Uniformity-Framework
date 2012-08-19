@@ -45,7 +45,7 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype & Grasppe.Core.MouseEv
     
     function attachDataSource(obj)
       obj.resetPlotLimits;
-      %obj.DataSource.attachPlotObject(obj);
+      obj.DataSource.attachPlotObject(obj);
       
       if isempty(obj.ParentFigure.DataSources) || ~iscell(obj.ParentFigure.DataSources)
         obj.ParentFigure.DataSources = {};

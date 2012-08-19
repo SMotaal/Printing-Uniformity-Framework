@@ -70,7 +70,7 @@ classdef UniformityPatch < Grasppe.Graphics.Patch & Grasppe.PrintUniformity.Grap
         obj.handleSet(dataField, dataSource.(dataField));
       catch err
         try debugStamp(obj.ID); end
-        disp(err);
+        try debugStamp(err, 1); catch, debugStamp(); end;
       end
     end
     

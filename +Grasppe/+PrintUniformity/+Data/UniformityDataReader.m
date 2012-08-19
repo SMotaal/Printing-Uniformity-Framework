@@ -351,8 +351,7 @@ classdef UniformityDataReader < Grasppe.Core.Component
       end
       
       catch err
-        disp(err);
-        halt;
+        try debugStamp(err, 1, obj); catch, debugStamp(); end;
       end
         
     end

@@ -133,6 +133,7 @@ function varargout = PersistentSources(varargin)
     %       return;
     %     end
   catch err
+    try debugStamp(err, 1); catch, debugStamp(); end;
     rethrow(err);
   end
   
@@ -210,7 +211,7 @@ function datastore = loaddata(datastore, forced)
         loaded = true;
         statusbar(0, 'Processing persistent data...'); forcedraw(); % fprintf(1,'Done.\n\n');
       catch err
-        disp(err);
+        try debugStamp(err, 1); catch, debugStamp(); end;
       end
     else
       loaded = true;

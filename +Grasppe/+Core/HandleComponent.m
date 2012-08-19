@@ -178,7 +178,7 @@ classdef HandleComponent < Grasppe.Core.Component
       try
         obj.handleSet(propertyName, objectValue);
       catch err
-        disp(err); % keyboard;
+        try debugStamp(err.message, 1); catch, debugStamp(); end;
       end
       
       try

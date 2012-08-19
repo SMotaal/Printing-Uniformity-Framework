@@ -35,8 +35,7 @@ classdef InAxesComponent < Grasppe.Graphics.HandleGraphicsComponent ... % & Gras
         obj.ParentAxes = parentAxes;
         obj.Parent = parentAxes.Handle;
       catch err
-        try debugStamp(obj.ID); end
-        disp(err);
+        try debugStamp(err, 1, obj); catch, debugStamp(); end;
         obj.ParentAxes = [];
       end
       

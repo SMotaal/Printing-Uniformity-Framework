@@ -161,7 +161,7 @@ classdef MetaProperty < Grasppe.Core.Prototype
         
         return;
       catch err
-        disp(err); keyboard;
+        try debugStamp(err.message, 1); catch, debugStamp(); end;
       end
       
     end

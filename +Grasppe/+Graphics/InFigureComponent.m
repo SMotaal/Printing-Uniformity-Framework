@@ -43,7 +43,7 @@ classdef InFigureComponent < Grasppe.Graphics.HandleGraphicsComponent ... % & Gr
         obj.Parent = parentFigure.Handle;
       catch err
         try debugStamp(obj.ID); end
-        disp(err);
+        try debugStamp(err, 1, obj); catch, debugStamp(); end;
         obj.ParentFigure = [];
       end
       
