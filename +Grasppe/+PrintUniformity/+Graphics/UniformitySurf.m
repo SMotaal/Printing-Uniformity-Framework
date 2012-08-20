@@ -57,6 +57,15 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
       
       try obj.ParentFigure.BaseTitle    = [caseName ' ' setName]; end;
       try obj.ParentFigure.SampleTitle  = sheetName; end;
+      
+%       obj.ParentFigure.IsVisible = 'on';
+%       obj.ParentFigure.TitleText.IsVisible = 'off';
+%       
+%       try
+%         set(obj.ParentAxes.handleGet('Title'), 'String', obj.ParentFigure.Title);
+%         set(obj.ParentAxes.handleGet('Title'), 'Visible', 'on');
+%         set(obj.ParentAxes.handleGet('Title'), 'Tag', '@Print');
+%       end
     end    
     
     function refreshPlotData(obj, source, event)

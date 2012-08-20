@@ -99,6 +99,10 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       
       colormap(hdOutput, colormap(hdFigure));
       
+      %% Switch Print/Screen
+      set(findobj(hdFigure, '-regexp','Tag','@Screen'), 'Visible', 'off');
+      set(findobj(hdFigure, '-regexp','Tag','@Print'), 'Visible', 'on');  
+      
       %% Duplicate Children
       
       children  = allchild(hdFigure);
@@ -137,6 +141,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
             end
           end
         end
+        
 %         switch clObject
 %           case {'axes'}
 %             for n = 1:numel(properties)
@@ -151,6 +156,10 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         end
         
       end
+      
+      %% Restore Print/Non-Print
+      set(findobj(hdFigure, '-regexp','Tag','@Screen'), 'Visible', 'on');
+      set(findobj(hdFigure, '-regexp','Tag','@Print'), 'Visible', 'off');    
       
       %% Gather Decendents
       
@@ -191,6 +200,11 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       for hgSurf = hgObjects.('surface')
         if isa(hgSurf.Userdata, 'Grasppe.PrintUniformity.Graphics.UniformityPlotComponent')
           objSurf   = hgSurf.Userdata(1);
+          
+          hdAx      = hgSurf.Parent; %, 'Parent');
+          hdTitle   = get(hdAx, 'Title');
+          
+          set(hdTitle, 'String', obj.Title, 'FontSize', 7);
           
           try
             dataSource  = objSurf.DataSource;
@@ -249,6 +263,7 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       
       %% Remove @Screen Objects
       set(findobj(hdOutput, '-regexp','Tag','@Screen'), 'Visible', 'off');
+      set(findobj(hdOutput, '-regexp','Tag','@Print'), 'Visible', 'on');
       
       %% Output Results
       assignin('base', 'hgObjects', hgObjects);
@@ -358,6 +373,10 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
         plotAxesStruct.object = Grasppe.Graphics.PlotAxes('ParentFigure', obj);
       end
       
+      try
+        obj.formatPlotAxes(plotAxesStruct.object);
+      end
+      
       obj.PlotAxesTargets(nextIdx)  = plotAxesStruct;
       obj.PlotAxes(nextIdx)         = {plotAxesStruct.object};
       
@@ -395,6 +414,21 @@ classdef MultiPlotFigure < Grasppe.Graphics.PlotFigure
       
       obj.TitleText.handleSet('HorizontalAlignment', 'left');
       obj.TitleText.handleSet('VerticalAlignment', 'bottom');
+      
+    end
+  end
+  
+  methods
+    function formatPlotAxes(obj, axes)
+      if nargin==2
+        plotAxes  = {axes};
+      else
+        plotAxes  = obj.PlotAxes;        
+      end
+      
+      for m = 1:numel(plotAxes)
+        plotAxes{m}.FontSize = 6;
+      end
       
     end
     
