@@ -31,7 +31,7 @@ function [ sourceData ] = supLoad( source, forced )
   
   if (forced || isempty(sourceMatrix))
     
-    supFilePath = datadir('UniPrintAlpha', [supFilename '.mat']);
+    supFilePath = FS.dataDir('UniPrintAlpha', [supFilename '.mat']);
 
     if ~isempty(which(supFilePath))
       supFilePath = which(supFilePath);

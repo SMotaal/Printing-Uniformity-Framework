@@ -1,3 +1,3 @@
 isQuitting(true);
 
-PersistentSources('save');
+DS.PersistentSources('save');

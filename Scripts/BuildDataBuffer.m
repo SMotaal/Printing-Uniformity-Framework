@@ -1,8 +1,8 @@
 function [ output_args ] = BuildDataBuffer( input_args )
   %TESTBUFFERING Summary of this function goes here
   warnState = warning ('off', 'backtrace');
-  PersistentSources readwrite;
-  PersistentSources clear;
+  DS.PersistentSources('readwrite');
+  DS.PersistentSources('clear');
   
   Data.dataSources('clear');
   Data.dataSources([], 'verbose', true, 'sizeLimit', 1024);
@@ -49,8 +49,8 @@ function [ output_args ] = BuildDataBuffer( input_args )
   end
   toc(rt);
   disp('Saving PersistentSources Buffer');
-  PersistentSources force save;
-  PersistentSources 'readonly';
+  DS.PersistentSources('force save');
+  DS.PersistentSources('readonly');
   
   Data.dataSources('reset'); % [], 'verbose', 'reset', 'sizeLimit', 'reset');
   warning(warnState);

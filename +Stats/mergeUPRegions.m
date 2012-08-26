@@ -37,7 +37,7 @@ function [ dataSet ] = mergeUPRegions( dataSource, dataSet, params, options )
     end
   end
   
-%   setStatus(['Merging region data completed in ' num2str(toc(t)) ' seconds']);
+%   UI.setStatus(['Merging region data completed in ' num2str(toc(t)) ' seconds']);
 end
 
 function [regions fields] = surfParams(params)

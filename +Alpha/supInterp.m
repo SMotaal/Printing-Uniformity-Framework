@@ -13,7 +13,7 @@ function [ sourceData ] = supInterp( source, forcebuild, forcesave, forceclear, 
   end
   
   if forceclear
-    PersistentSources('clear');
+    DS.PersistentSources('clear');
   end
   
   if isstruct(source)
@@ -80,7 +80,7 @@ function [ sourceData ] = supInterp( source, forcebuild, forcesave, forceclear, 
   end
   
   if forcesave
-    PersistentSources('readonly save');
+    DS.PersistentSources('readonly save');
   end  
   
 end

@@ -18,7 +18,7 @@ function [result] = fixRITSM7402SheetSize(runList)
     
     try
       
-      sourcePath = datadir('uniprint2',runName);
+      sourcePath = FS.dataDir('uniprint2',runName);
       sourcePath = strtrim(ls([sourcePath '.*']));
       [folder name ext] = fileparts(sourcePath);
 

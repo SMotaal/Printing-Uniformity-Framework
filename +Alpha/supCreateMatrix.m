@@ -22,10 +22,10 @@ function [ output_args ] = supCreateMatrix( folder )
     folder  = 'ritsm7401'; %testing
   end
   
-  ticketFile = datadir('UniPrintRAW',[folder '.ticket.m']);
+  ticketFile = FS.dataDir('UniPrintRAW',[folder '.ticket.m']);
 
   [fileList sampleSections sampleCount sampleIndex] = Alpha.supListDataFiles(folder);
-  folder  = datadir('UniPrintRAW', folder);
+  folder  = FS.dataDir('UniPrintRAW', folder);
   
   t = parseTicket(ticketFile);
   

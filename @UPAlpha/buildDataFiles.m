@@ -1,6 +1,7 @@
 %ddir = fullfile('~','Documents','MATLAB','data');
 
-import Data.*;
+import Data.*
+improt Alpha.*
 
 tic
 

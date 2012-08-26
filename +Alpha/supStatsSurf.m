@@ -40,7 +40,7 @@ when [~exists('supData') && ~exists('source')] source = "ritsm7402a";
 
 try
   if(exists('source'))
-    supFilePath = datadir('uniprint',source);
+    supFilePath = FS.dataDir('uniprint',source);
     runName = whos('-file', supFilePath);
     runName = runName.name;
     stepTimer = tic; runlog(['Loading ' runName ' uniformity data ...']);    

@@ -3,7 +3,7 @@ function [ fileList nSections nSamples iSamples output_args ] = supListDataFiles
 %   Detailed explanation goes here
 
 %% Check that folder is set
-  folder  = datadir('UniPrintRaw', folder);
+  folder  = FS.dataDir('UniPrintRaw', folder);
   assert(exist(folder,'dir')==7,'Data folder is not found.')
 
   

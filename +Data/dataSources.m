@@ -12,12 +12,12 @@ function [ data ] = dataSources( sourceName, varargin )
   
   %   mlock;
   try
-    sources = PersistentSources('dataSources');
+    sources = DS.PersistentSources('dataSources');
     %     disp(sources);
   catch
     sources = [];
   end
-  %   onCleanup(@() PersistentSources('dataSources', sources));
+  %   onCleanup(@() DS.PersistentSources('dataSources', sources));
   
   defaults.verbose=false;
   defaults.sizeLimit=1024; % defaults.sizeLimit =  200 * (2^20);
@@ -53,7 +53,7 @@ function [ data ] = dataSources( sourceName, varargin )
     if ~isempty(sourceName)
       switch (lower(sourceName))
         case 'clear'
-          PersistentSources('dataSources', []); % clear sources;
+          DS.PersistentSources('dataSources', []); % clear sources;
           return;
         case 'lock'
           mlock;
@@ -123,10 +123,10 @@ function [ data ] = dataSources( sourceName, varargin )
     inputParams.space = upper(regexprep(inputParams.space, '\W+', '_'));
     space = inputParams.space;
     
-    spaceFilename     = datadir('Sources', [space '.mat']);
+    spaceFilename     = FS.dataDir('Sources', [space '.mat']);
     
     spaces = [];
-    try spaces = PersistentSources('dataSpaces'); end
+    try spaces = DS.PersistentSources('dataSpaces'); end
     if isempty(spaces)
       spaces = struct();
     end
@@ -136,7 +136,7 @@ function [ data ] = dataSources( sourceName, varargin )
     %   if isempty(spaceSources)
     %     try spaceSources  = load(spaceFilename); end
     %     spaces.(space) = spaceSources;
-    %     PersistentSources('dataSpaces', spaces);
+    %     DS.PersistentSources('dataSpaces', spaces);
     %   end
     
     if isempty(inputParams.name)
@@ -218,11 +218,11 @@ function [ data ] = dataSources( sourceName, varargin )
   
   if hasChanged
     if isequal(space, 'base')
-      PersistentSources('dataSources', sources); return;
+      DS.PersistentSources('dataSources', sources); return;
     else
       % try save(spaceFilename, '-struct', 'spaceSources'); end
       spaces.(space) = spaceSources;
-      PersistentSources('dataSpaces', spaces);
+      DS.PersistentSources('dataSpaces', spaces);
     end
     
     return;
@@ -273,17 +273,17 @@ function [ data ] = dataSources( sourceName, varargin )
         warning('Grasppe:DataSources:CollectingGarbage', [bufferWarning ...
           '. No unprotected data to clear while adding %s!\n'], sourcesSize, sizeLimit, inputParams.name);
       end
-      PersistentSources('dataSources', sources); return;
+      DS.PersistentSources('dataSources', sources); return;
     end
     sourcesDetails = whos('sources');
     sourcesSize = sourcesDetails.bytes/2^20;
   end
-  PersistentSources('dataSources', sources); return;
+  DS.PersistentSources('dataSources', sources); return;
   
 end
 
 function name = getSpaceFilename(space)
-  name = datadir('Sources', [space '.mat']);
+  name = FS.dataDir('Sources', [space '.mat']);
 end
 
 function data = loadSpaceData(space, name)

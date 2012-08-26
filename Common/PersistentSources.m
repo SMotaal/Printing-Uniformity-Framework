@@ -281,5 +281,5 @@ function filename = datafile(filename)
     dataFile = defaultFile;
   end
   
-  filename  = datadir('Sources', [dataFile '.mat']);	%fullfile(path, 'datastore.mat');
+  filename  = FS.dataDir('Sources', [dataFile '.mat']);	%fullfile(path, 'datastore.mat');
 end

@@ -433,7 +433,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             yv2   = (yv2)/ylen*ydist*yscl; % - yofs;    %(yv2  - ymin)/ylen*ydist*yscl - yofs;
             yv3   = (yv3)/ylen*ydist*yscl; % - yofs;
             
-            yv3a  = max(yv3, yv3 + yv2);
+            yv3a  = yv3 + yv2; %max(yv3, yv3 + yv2);
             
             ys    = numel(yv);
             %xs    = (max(xl)-min(xl))/(ys-1);
@@ -490,8 +490,8 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
               xdmf = [xd2,   fliplr(xd2)];
               ydmf = [ydma2  fliplr(ydmb2)];
               zdmf = ones(size(xdmf))*pz;
-              subPlot1 = fill3(xdmf, ydmf + yofs, zdmf, [0.75 0.0 0.0], 'Parent', label.ParentAxes.Handle, 'EdgeColor', [0.25 0 0], 'linewidth', 0.05);
-              obj.SubPlotObjects{m,1} = handle(subPlot1);
+              subPlot1 = fill3(xdmf, ydmf + yofs, zdmf, 'w', 'Parent', label.ParentAxes.Handle, 'EdgeColor', [0.25 0 0], 'linewidth', 0.05); % [0.75 0.0 0.0]
+              obj.SubPlotObjects{m,1} = handle(subPlot1); 
 
               xd3f = xdmf;
               yd3f = [yd3a2  fliplr(yd3b2)];
@@ -501,14 +501,14 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
               
               hold(label.ParentAxes.Handle, 'on');
               %subPlot3 = line(xd, yd3a + yofs, zd, 'Parent', label.ParentAxes.Handle, 'color', [0.35 0.0 0.0], 'linewidth', 1.5);  % 'linesmoothing', 'on', %, 'linesmoothing', 'on'
-              subPlot2 = fill3(xd3f, yd3f + yofs, zd3f, 'w' , 'Parent', label.ParentAxes.Handle, 'EdgeColor', [1 0 0], 'linewidth', 0.05);
+              subPlot2 = fill3(xd3f, yd3f + yofs, zd3f, 'w' , 'Parent', label.ParentAxes.Handle, 'EdgeColor', [0 0 0], 'linewidth', 0.05, 'FaceColor', 'none');
               obj.SubPlotObjects{m,2} = handle(subPlot2);
               
               try delete(obj.SubPlotObjects{m,3}); end
               
-              hold(label.ParentAxes.Handle, 'on');
-              subPlot3 = line([xd(1) xd(end)], pym, [1 1] * pz+1, 'Parent', label.ParentAxes.Handle, 'color', 'w', 'linewidth', 0.75, 'LineStyle', '-', 'Tag', '@Print');
-              obj.SubPlotObjects{m,3} = handle(subPlot3);
+%               hold(label.ParentAxes.Handle, 'on');
+%               subPlot3 = line([xd(1) xd(end)], pym, [1 1] * pz+1, 'Parent', label.ParentAxes.Handle, 'color', 'w', 'linewidth', 0.25, 'LineStyle', '-', 'Tag', '@Print');
+%               obj.SubPlotObjects{m,3} = handle(subPlot3);
               
               hold(label.ParentAxes.Handle, 'on');
               subPlot4 = line([xd(1) xd(end)], pym, [1 1] * pz+1, 'Parent', label.ParentAxes.Handle, 'color', [1 0.75 0.75], 'linewidth', 0.125, 'LineStyle', '-', 'Tag', '@Print');

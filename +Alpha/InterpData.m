@@ -5,10 +5,10 @@ function [ data ] = InterpData( forced )
   default forced false;
    
   if forced
-    PersistentSources('clear');
+    DS.PersistentSources('clear');
   end
   
-  PersistentSources('readonly');
+  DS.PersistentSources('readonly');
   
   data = struct;
   
@@ -17,7 +17,7 @@ function [ data ] = InterpData( forced )
   end
   
   if forced
-    PersistentSources('readonly save');
+    DS.PersistentSources('readonly save');
   end
   
 end

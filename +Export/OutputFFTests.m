@@ -1,7 +1,7 @@
 
 
 
-% supLoad(datadir('rithp5501')); supInterp;
+% supLoad(FS.dataDir('rithp5501')); supInterp;
 % close all; fSheet=1; fSet='u2'; supFFT;
 testData = zeros(20,56, 76);
 
@@ -24,7 +24,7 @@ jFrame.setExtendedState(6);
 
 % for fRun = {'ritsm7402a', 'ritsm7402b', 'ritsm7402c'}
 % for fRun = {'rithp5501', 'rithp7k01', 'ritsm7402a', 'ritsm7402b', 'ritsm7402c'}
-%   supLoad(datadir(fullfile('uniprint',char(fRun))));
+%   supLoad(FS.dataDir(fullfile('uniprint',char(fRun))));
 %   supInterp;
   for fSet = {'u'}; %, 'u2', 'u3', 'u4'}
     for fSheet = 1:1 %numel(supData.sheetIndex)
