@@ -185,12 +185,12 @@ drawnow();
 epsExt = '.png'; % '.eps';
 
 epsDir = '';
-for epsPath = {'output', ['supFFT-' datestr(now,'yymmdd')], [runName '-' fSet]}
+for epsPath = {'Output', ['supFFT-' datestr(now,'yymmdd')], [runName '-' fSet]}
   epsDir = fullfile(epsDir,char(epsPath));
   if ~exist(epsDir ,'dir')>0,  mkdir(epsDir); end
 end
 
-% epsDir = 'output';
+% epsDir = 'Output';
 % if ~exist(epsDir ,'dir')>0,  mkdir(epsDir); end
 % 
 % epsDir = fullfile(epsDir,'supFFT');

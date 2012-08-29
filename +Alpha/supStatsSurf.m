@@ -7,7 +7,7 @@ roundTimer = tic; roundActions=0; close all;
 sourceData = supDataBuffer(source);
 
 %% Prepare Log
-runlog(fullfile('output','testStats.log'),'optional');
+runlog(fullfile('Output','testStats.log'),'optional');
 runlog('\n');
 
 %% Constants
@@ -828,7 +828,7 @@ if (exportVideo || exportPng)
 end
 
 if (isExporting)
-  exporting.path = fullfile(cd, 'output',['statsVideo-' datestr(now, 'yymmdd')]);
+  exporting.path = fullfile(cd, 'Output',['statsVideo-' datestr(now, 'yymmdd')]);
   exporting.name = lower([runName '-' plotMode '-' int2str(supPatchValue)]);
   exporting.file = fullfile(exporting.path, exporting.name);
 end

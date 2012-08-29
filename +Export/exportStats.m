@@ -1,7 +1,7 @@
 clear;
 clc;
 
-exporting.path = fullfile('output',['statsVideo-' datestr(now, 'yymmdd')]);
+exporting.path = fullfile('Output',['statsVideo-' datestr(now, 'yymmdd')]);
 exporting.diary = fullfile(exporting.path, 'exportStats.log');
 
 warning off MATLAB:MKDIR:DirectoryExists;

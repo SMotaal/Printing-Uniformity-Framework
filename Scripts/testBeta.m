@@ -129,11 +129,11 @@ if exportProfiles
   % parfor pi = 1:numel(pInfo)
   %   profileName = ['GrasppeBeta' int2str(pi)];
   %   fprintf('Saving %s...\n', profileName);
-  %   profsave( pInfo(pi), fullfile(cd, 'output', 'profile', profileName));
+  %   profsave( pInfo(pi), fullfile(cd, 'Output', 'profile', profileName));
   % end
   profileName = 'GrasppeBeta';
   
-  save(fullfile(cd, 'output', 'profile', profileName), 'pInfo');
+  save(fullfile(cd, 'Output', 'profile', profileName), 'pInfo');
   
   fprintf('Saving Profiles Complete in %f s.\n', toc(rId));
 end

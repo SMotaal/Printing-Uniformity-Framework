@@ -43,7 +43,7 @@ if exportProfiles
   for pi = 1:numel(pInfo)
     profileName = ['Prototypes' int2str(pi)];
     fprintf('Saving %s...\n', profileName);
-    profsave( pInfo(pi), fullfile(cd, 'output', 'profile', profileName));
+    profsave( pInfo(pi), fullfile(cd, 'Output', 'profile', profileName));
   end
   
   fprintf('Saving Profiles Complete in %f s.\n', toc(rId));

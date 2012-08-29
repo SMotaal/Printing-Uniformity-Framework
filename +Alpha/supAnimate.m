@@ -35,7 +35,7 @@ function [ sourceData ] = supAnimate( sourceData )
 % % %% Video Preparation
 % % if isTrue(exportMovie)
 % %   [pathstr, name, ext, ver] = fileparts(mfilename('fullpath')); cd(pathstr);
-% %   exportAVI=false; aviName = fullfile(pathstr,'output','supVideo.avi');
+% %   exportAVI=false; aviName = fullfile(pathstr,'Output','supVideo.avi');
 % %   
 % %   %sheetSequence = supRITSM74{1,2}{1,1};
 % %   with 

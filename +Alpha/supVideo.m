@@ -9,7 +9,7 @@ function [ output_args ] = supVideo(sourceData, fview, fName, fSet, exportMovie 
   
 
   if ischar(fName) && isempty(fName)
-    fName = fullfile('output','video','supVideo.avi');
+    fName = fullfile('Output','video','supVideo.avi');
   end
   
   [pathstr filename ext] = fileparts(fName);

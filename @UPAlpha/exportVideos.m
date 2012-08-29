@@ -23,7 +23,7 @@ function exportVideos( forced, sources, fValues, fViews, fSets )
   
   allData = Alpha.InterpData(forced);
   
-  exportingPath = fullfile(cd, 'output',['supVideo-' datestr(now, 'yymmdd')]);
+  exportingPath = fullfile(cd, 'Output',['supVideo-' datestr(now, 'yymmdd')]);
   
   for source = sources
     sourceName  = char(source);
