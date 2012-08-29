@@ -30,6 +30,7 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
       
       % obj.ParentFigure.registerMouseEventHandler(obj);
       obj.ParentAxes.AspectRatio = [20 20 1];
+      grid(obj.ParentAxes.Handle, 'off');
       % obj.handleSet('EdgeAlpha', 0.5);
       % obj.handleSet('LineWidth', 0.25);
     end
