@@ -316,7 +316,8 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
     function initializeDataReader(obj)
       if ~isa(obj.DataReader, 'Grasppe.PrintUniformity.Data.UniformityDataReader') ...
           || ~isvalid(obj.DataReader)
-        obj.DataReader = Grasppe.PrintUniformity.Data.UniformityDataReader;
+        obj.DataReader = Grasppe.PrintUniformity.Data.UniformityDataReader; ...
+          obj.registerHandle(obj.DataReader);
         obj.DataReader.addlistener('CaseChange',   @obj.updateCaseData);
         obj.DataReader.addlistener('SetChange',    @obj.updateSetData);
         obj.DataReader.addlistener('SheetChange',  @obj.updateSheetData);

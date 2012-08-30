@@ -63,21 +63,35 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     function deleteSubPlots(obj)
       try
         for m = 1:numel(obj.SubPlotBoxes)
-          try delete(obj.SubPlotBoxes{m}); end
+          try
+            delete(obj.SubPlotBoxes{m});
+          catch err
+            debugStamp(err, 1);
+          end
           obj.SubPlotBoxes{m} = [];
         end
       end
       
+      % obj.SubPlotBoxes = {};
+      
       try
         for m = 1:numel(obj.SubPlotMarkers)
-          try delete(obj.SubPlotMarkers{m}); end
+          try
+            delete(obj.SubPlotMarkers{m});
+          catch err
+            debugStamp(err, 1);
+          end
           obj.SubPlotMarkers{m} = [];
         end
       end
       
       try
         for m = 1:numel(obj.SubPlotObjects)
-          try delete(obj.SubPlotObjects{m}); end
+          try 
+            delete(obj.SubPlotObjects{m});
+          catch err
+            debugStamp(err, 1);
+          end            
           obj.SubPlotObjects{m} = [];
         end
       end
@@ -87,7 +101,11 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
       obj.deleteSubPlots;
       try
         for m = 1:numel(obj.LabelObjects)
-          try delete(obj.LabelObjects{m}); end
+          try 
+            delete(obj.LabelObjects{m}); 
+          catch err
+            debugStamp(err, 1);
+          end
           obj.LabelObjects{m} = [];
         end
       end
@@ -109,6 +127,8 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
       obj.deleteSubPlots();
       obj.deleteLabels();
       obj.delete@Grasppe.Core.Component();
+      obj.PlotObject = [];
+      return;
     end
     
     function defineLabels(obj, regions, values)
@@ -159,7 +179,9 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         %% Label
         if isempty(label) % Create Label
           try
-            label = Grasppe.Graphics.TextObject(obj.PlotObject.ParentAxes, 'Text', int2str(index));
+            label = Grasppe.Graphics.TextObject(obj.PlotObject.ParentAxes, 'Text', int2str(index)); ...
+              obj.registerHandle(label);
+            
             label.HandleObject.HorizontalAlignment  = 'center';
             label.HandleObject.VerticalAlignment    = 'middle';
             % label.FontSize    = 5;
@@ -339,23 +361,21 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
           xOffset       = 0;
           xScale        = 1;
           
-          xSteps        = linspace(min(xExtent), max(xExtent), sheetCount);   %[min(xl) min(xl)+(1:ys-1)/(ys-1)*(max(xl) - min(xl))]; %min(xl):xs:max(xl);
-          %xInterp       = linspace(min(xExtent), max(xExtent), sheetCount * 12);
+          xSteps        = linspace(min(xExtent), max(xExtent), sheetCount);
           xInterp       = linspace(min(xExtent), max(xExtent), sheetCount+1);
           xInterp       = [xInterp(1) lace(xInterp(2:end-1), 3) xInterp(end)];
           
-          xData         = reflect(xInterp, xInterp); %fliplr(xInterp)];
+          xData         = reflect(xInterp, xInterp);
           
           xMarker       = [xSteps(1) xSteps(1)];
           try xMarker   = [xSteps(markerIndex) xSteps(markerIndex)]; end
                
-          yLength       = zoneArea(2)*2/4; %max(yExtent)-min(yExtent);          
-          yExtent       = zonePosition(2) + [0 0] + [-yLength yLength]/2;   % zonePosition(2) - zoneArea(2) / 2 + [-zoneArea(2) zoneArea(2)] / 2; %
+          yLength       = zoneArea(2)*2/4; 
+          yExtent       = zonePosition(2) + [0 0] + [-yLength yLength]/2;
           yOffset       = -zoneArea(2)*1.25/4;
           yScale        = 1/3;
           
           yInterp       = @(y) spline(xSteps, y, xInterp);
-          % yInterp       = @(y) interp1(xSteps, y, xInterp, 'nearest');
           
           yFx           = @(y) lace(y/setRange * yLength * yScale, 3);
           yCenter       = min(yExtent) + yLength/2 + yOffset;
@@ -370,18 +390,15 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
           
           yMeanData     = yFx(meanData);
           yMeanData     = yMeanData(1:end-1);
-          yMeanLines    = yMeanData;
-          yMeanLines(3:3:end) = NaN;
-          yMeanData     = yCenter + reflect(yMeanData, -yMeanData);
-          yMeanLines     = yCenter + reflect(yMeanLines, -yMeanLines);
-          %yZoneData     = yCenter + reflect(yFx(zoneData), -yFx(zoneData));          
-          %yMeanData     = yCenter + reflect(yFx(meanData), -yFx(meanData));
           
-          %yZoneData(3:3:end) = yCenter; %yZoneData = yZoneData(2:end-1);
-          %yMeanData(3:3:end) = yCenter; %yMeanData = yMeanData(2:end-1);
+          yMeanLines    = yMeanData;
+          yMeanLines(3:3:end) = NaN;          
+          
+          yMeanData     = yCenter + reflect(yMeanData, -yMeanData);        
+          yMeanLines    = yCenter + reflect(yMeanLines, -yMeanLines);
           
           zDataFcn      = @(z) ones(z) * setMax;
-          zData         = zDataFcn(size(xData)); %ones(size(xData)) * setMax;
+          zData         = zDataFcn(size(xData));
           
           if zoneArea(1)>7 && zoneArea(2)>7
             
@@ -392,7 +409,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             marker  = line( ...
               xMarker, yExtent + [1 -1], zDataFcn(2) + 4, parentOpt{:}, ...
               'Color', [1 0.5 0.5], 'LineWidth', 2, 'LineStyle', '-', ...
-              'Tag', '@Screen', 'Visible', 'on');
+              'Tag', '@Screen', 'Visible', 'on', 'HitTest', 'off');
             
             obj.SubPlotMarkers{m} = handle(marker);            
                         
@@ -403,7 +420,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             subPlot1 = fill3( ...
               xData, yZoneData, zData + 1.5, 'w', parentOpt{:}, ...
               'EdgeColor', [1 0 0], 'LineWidth', 0.125, ...
-              'LineStyle', '-', 'FaceAlpha', 1); % [0.75 0.0 0.0]
+              'LineStyle', '-', 'FaceAlpha', 1, 'HitTest', 'off'); % [0.75 0.0 0.0]
             
             obj.SubPlotObjects{m, 1} = handle(subPlot1);
             
@@ -413,7 +430,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             hold(parentAxes, 'on');
             subPlot3 = fill3( ...
               xData, yMeanData, zData + 1.25, [0.5 0.25 0.25], parentOpt{:}, ...
-              'LineStyle', 'none', 'FaceAlpha', 0.75);
+              'LineStyle', 'none', 'FaceAlpha', 0.75, 'HitTest', 'off');
             
             obj.SubPlotObjects{m, 3} = handle(subPlot3);            
             
@@ -423,7 +440,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             hold(parentAxes, 'on');
             subPlot2 = line( ...
               xData, yMeanLines, zData + 2, parentOpt{:}, ...
-              'Color', [0 0 0], 'LineWidth', 0.125, 'LineStyle', '-');
+              'Color', [0 0 0], 'LineWidth', 0.125, 'LineStyle', '-', 'HitTest', 'off');
             
             obj.SubPlotObjects{m, 2} = handle(subPlot2);
             
@@ -434,7 +451,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
             centerline  = line( ...
               xExtent, [1 1] .* yCenter, zDataFcn(2) + 2.5, parentOpt{:}, ...
               'color', [1 0 0], 'linewidth', 0.125, 'LineStyle', '-', ...
-              'Visible', 'on'); %'Tag', '@Screen', 
+              'Visible', 'on', 'HitTest', 'off'); %'Tag', '@Screen', 
             
             obj.SubPlotObjects{m, 4} = handle(centerline);
             
@@ -454,7 +471,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         drawnow expose update;
         
       catch err
-        try debugStamp(err, 1); catch, debugStamp(); end;
+        debugStamp(err, 1);
       end
       
     end

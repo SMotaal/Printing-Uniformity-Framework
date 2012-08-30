@@ -309,14 +309,24 @@ function saveSpaceData(space, name, data)
   try
     save(spaceFilename, '-append', '-struct', 'saveStruct', name);
     statusbar(0, sprintf('Appending %s:%s.', space, name));
+    recycleSpace(space);
   catch
     try
       save(spaceFilename, '-struct', 'saveStruct', name);
       statusbar(0, sprintf('Saving %s:%s.', space, name));
+      recycleSpace(space);
     catch err
       if ~isequal(err.identifier, 'MATLAB:save:permissionDenied')
         halt(err, 'Data.dataSources');
       end
     end
   end
+end
+
+function recycleSpace(space)
+  spaceFilename = getSpaceFilename(space);
+
+  s = load(spaceFilename, '-mat');
+  save(spaceFilename, '-struct', 's');
+  
 end

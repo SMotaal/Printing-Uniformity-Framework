@@ -40,9 +40,11 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       try plotObject.ParentAxes.setView([0 90], true); end
       try plotObject.ParentAxes.Box = false; end
       
-      try delete(obj.PlotLabels); end
+      try delete(obj.PlotLabels); catch err, debugStamp(err,1); end
       try
-        obj.PlotLabels = Grasppe.PrintUniformity.Graphics.UniformityPlotLabels;
+        obj.PlotLabels = Grasppe.PrintUniformity.Graphics.UniformityPlotLabels; ...
+          obj.registerHandle(obj.PlotLabels);
+        
         obj.PlotLabels.attachPlot(plotObject);
         obj.updatePlotLabels;
         obj.PlotLabels.SubPlotData = obj.SetStats;
@@ -355,7 +357,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     try
       
       cmap          = ones(64,3);
-      cmap(:,2)     = 1-(0:1/(size(cmap,1)-1):1);
+      cmap(:,2)     = linspace(0.95, 0, size(cmap,1)); % 1-(0:1/(size(cmap,1)-1):1);
       cmap(:,3)     = cmap(:,2); %1-(0:1/(size(cmap,1)-1):1);
       
       plotObject = obj.LinkedPlotObjects;

@@ -28,7 +28,7 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
     
     function resetParameters(obj)
       try delete(obj.Parameters); end
-      obj.Parameters = eval(obj.ParametersClass); %Grasppe.PrintUniformity.Models.DataParameters();
+      obj.Parameters = eval(obj.ParametersClass); % ~Component
       obj.resetCaseData;
     end
     
@@ -58,7 +58,7 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
     
     function model = modelSet(obj, model, value, modelClass)
       if ~isa(model, modelClass) || ~isvalid(model)
-        model = eval(modelClass);
+        model = eval(modelClass); % ~Component
       end
       if isa(value, modelClass)
         model.DATA = value.DATA;

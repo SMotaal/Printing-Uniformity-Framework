@@ -16,8 +16,9 @@ classdef UniformityPlaneDataSource < Grasppe.PrintUniformity.Data.UniformityData
     
     function attachPlotObject(obj, plotObject)
       obj.attachPlotObject@Grasppe.PrintUniformity.Data.UniformityDataSource(plotObject);
-      try plotObject.ParentAxes.ViewLock  = false; end
-      try plotObject.ParentAxes.Box       = false; end
+      try plotObject.ParentAxes.ViewLock    = false; end
+      try plotObject.ParentAxes.Box         = false; end
+      try plotObject.ParentAxes.AspectRatio = [10 10 2]; end
     end
     
 

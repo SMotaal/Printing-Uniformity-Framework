@@ -89,6 +89,7 @@ classdef UniformityDataReader < Grasppe.Core.Component
         
         obj.Parameters.CaseID     = caseID;
         obj.SetID                 = setID;
+        obj.SheetID               = 1;
         
         stop(obj.PreloadTimer);
         obj.AllData = [];
