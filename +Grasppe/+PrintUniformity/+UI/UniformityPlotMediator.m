@@ -15,15 +15,15 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
     function obj = UniformityPlotMediator(plotTypes, plotOptions)
       obj = obj@Grasppe.PrintUniformity.UI.PlotMediator;
       
-      if nargin>0, obj.PlotTypes    = plotTypes; end
-      if nargin>1, obj.PlotOptions  = plotOptions; end
+      if exist('plotTypes', 'var') && ~isempty(plotTypes), ...
+          obj.PlotTypes   = plotTypes; end
+      if exist('plotOptions', 'var') && ~isempty(plotOptions), ...
+          obj.PlotOptions = plotOptions; end
       
       obj.FigureOptions =  {'PlotAxesLength', numel(obj.PlotTypes)};   
           
       obj.createFigure(obj.FigureOptions{:}, 'IsVisible', false, 'Renderer', 'opengl');
-      
-      %obj.PlotFigure.handleSet('PaperPositionMode', 'auto');
-      
+            
       obj.PlotFigure.PlotMediator = obj;
       
       mPos = get(0,'MonitorPositions');

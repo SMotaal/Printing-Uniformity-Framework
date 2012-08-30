@@ -4,7 +4,7 @@ global debugmode; debugmode=false;
 RT = tic;
 
 T = tic; fprintf(1,'Preparing plot figure... ');
-m = Grasppe.PrintUniformity.UI.UniformityPlotMediator;
+m = Grasppe.PrintUniformity.UI.UniformityPlotMediator; %([], {'CaseID', 'ritsm7402a'});
 
 m.PlotFigure.handleSet('Position', [0 0 800 800]);
 
@@ -15,10 +15,15 @@ toc(T);
 
 nplots = 0;
 
-for source = SourceIDs
+caseID    = m.DataSources{1}.CaseID;
+sourceIDs = [caseID, SourceIDs(~strcmpi(caseID,SourceIDs))];
+
+for source = sourceIDs
   T = tic; fprintf(1,'\tLoading %s case data... ', char(source));
   m.DataSources{1}.CaseID = char(source);
   toc(T);
+  setID     = m.DataSources{1}.SetID;
+  patchValues = [setID PatchValues(PatchValues~=setID)];
   for p = 1:numel(PatchValues)
     setID = PatchValues(p);
     T = tic; fprintf(1,'\t\tLoading %s %d%% set data... ', char(source), setID);

@@ -279,17 +279,18 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         %         end
         %
         %         try obj.LabelObjects{index}.Position = [position 200]; end %obj.LabelElevation]; end
-        
-        marker  = obj.SubPlotMarkers{index};
-        xi      = obj.MarkerIndex;
-        xd = obj.MarkerPositions{index};
-        %if isobject(marker) && ishandle(marker)
         try
-          %marker.XData = [xd(xi) xd(xi)];
-          %marker.Visible = 'on';
-          set(marker, 'XData',  [xd(xi) xd(xi)],  'Visible', 'on');
-        catch err
-          set(marker, 'XData',  [xd(1)  xd(1)],   'Visible', 'off');
+          marker  = obj.SubPlotMarkers{index};
+          xi      = obj.MarkerIndex;
+          xd      = obj.MarkerPositions{index};
+          %if isobject(marker) && ishandle(marker)
+          try
+            %marker.XData = [xd(xi) xd(xi)];
+            %marker.Visible = 'on';
+            set(marker, 'XData',  [xd(xi) xd(xi)],  'Visible', 'on');
+          catch err
+            set(marker, 'XData',  [xd(1)  xd(1)],   'Visible', 'off');
+          end
         end
         
         

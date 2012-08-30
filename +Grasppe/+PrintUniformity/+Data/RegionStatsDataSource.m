@@ -72,8 +72,8 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         sheetRange  = reader.Data.CaseData.range.Sheets;
         
         statsData   = obj.Stats.(variableID); % obj.getAllData();
-        dataSize    = size(statsData(1).(statsMode));
-        setStats    = cell(numel(sheetRange), 1); % dataSize(2));
+        %dataSize    = size(statsData(1).(statsMode));
+        %setStats    = cell(numel(sheetRange), 1); % dataSize(2));
         
         
         obj.AllDataEnabled = true;
@@ -83,8 +83,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         %toc(R);
         
       catch err
-        try debugStamp(err.message, 1); catch, debugStamp(); end;
-        % keyboard;
+        debugStamp(err, 1);
       end
       
     end
@@ -125,24 +124,38 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         dataFunction  = obj.CurrentDataFunction;
         
         %% Surf Calcualtion
-        
-        switch variableID
+        varID = variableID; %'Stats'; 
+        switch varID
           case {'sections', 'around', 'across'}
             aroundID = 'around';
             acrossID = 'across';
           otherwise
-            aroundID = [variableID 'Around'];
-            acrossID = [variableID 'Across'];
+            aroundID = [varID 'Around'];
+            acrossID = [varID 'Across'];
         end
         
-        regionMasks     = stats.metadata.regions.(variableID);
-        regionData      = stats.(variableID)(:, sheetID);
-        runData         = stats.run;
+        regionMasks     = stats.metadata.regions.(varID);
+        
+        regionData = Grasppe.Stats.DataStats.empty;
+        aroundData = Grasppe.Stats.DataStats.empty;
+        acrossData = Grasppe.Stats.DataStats.empty;
+        
+        
+        for m = 1:size(stats.(varID),1)
+          regionData(m) = stats.(varID)(m, sheetID).Stats;
+        end
+        
+        runData         = stats.run.Stats;
         
         try
           aroundMasks = stats.metadata.regions.(aroundID);
           aroundMasks = max(aroundMasks, [], 3);
-          aroundData  = stats.(aroundID)(:, sheetID);
+          %aroundData  = stats.(aroundID)(:, sheetID);
+          
+          for m = 1:size(stats.(aroundID),1)
+            aroundData(m) = stats.(aroundID)(m, sheetID).Stats;
+          end
+          
         catch
           aroundMasks = [];
           aroundData  = [];
@@ -151,7 +164,12 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         try
           acrossMasks = stats.metadata.regions.(acrossID);
           acrossMasks = max(acrossMasks, [], 2);
-          acrossData  = stats.(acrossID)(:, sheetID);
+          %acrossData  = stats.(acrossID)(:, sheetID);
+          
+          for m = 1:size(stats.(acrossID),1)
+            acrossData(m) = stats.(acrossID)(m, sheetID).Stats;
+          end
+                    
         catch
           acrossMasks = [];
           acrossData  = [];
@@ -199,7 +217,8 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
             regionMasks(n, :, :)  = xMask;
             regionStats(n)        = aroundStats(m);
           end
-          
+        catch err
+          debugStamp(err, 1);          
         end
         
         try
@@ -219,7 +238,8 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
             regionMasks(n, :, :)  = xMask;
             regionStats(n)        = acrossStats(m);
           end
-          
+        catch err
+          debugStamp(err, 1);          
         end
         
         try
@@ -235,7 +255,8 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
           
           regionMasks(n, :, :)  = xMask;
           regionStats(n)        = sampleStats;
-          
+        catch err
+          debugStamp(err, 1);          
         end
         
         if size(newData, 2) > columns,  newData(1, :, rows + offsetRange)     = nan; end
@@ -246,12 +267,11 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         try
           obj.SetStats{sheetID} = regionStats;
         catch err
-          try debugStamp(err.message, 1); catch, debugStamp(); end;
-          %keyboard;
+          debugStamp(err, 1);
         end
         
       catch err
-        try debugStamp(err.message, 1); catch, debugStamp(); end;
+        try debugStamp(err, 1); catch, debugStamp(); end;
         % keyboard;
       end
       
@@ -417,7 +437,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         obj.PlotLabels.SubPlotData = obj.SetStats;
         obj.PlotLabels.updateSubPlots;
       catch err
-        try debugStamp(err.message, 1); catch, debugStamp(); end;
+        try debugStamp(err, 1); catch, debugStamp(); end;
       end
       
       %try obj.optimizeSetLimits; end
@@ -430,7 +450,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       
       obj.updatePlotLabels;
       try obj.PlotLabels.updateLabels; catch err 
-        try debugStamp(err.message, 1); catch, debugStamp(); end; end
+        try debugStamp(err, 1); catch, debugStamp(); end; end
     end
     
     function updateVariableData(obj, source, event)
