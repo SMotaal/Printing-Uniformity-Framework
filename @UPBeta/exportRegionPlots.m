@@ -3,13 +3,13 @@ global debugmode; debugmode=false;
 
 RT = tic;
 
-T = tic; fprintf(1,'Preparing plot figure... ');
-m = Grasppe.PrintUniformity.UI.UniformityPlotMediator({'Regions'}); %, 'Surface' ([], {'CaseID', 'ritsm7402a'});
-
-m.PlotFigure.handleSet('Position', [0 0 800*1 800*1]);
-
 SourceIDs   = {'rithp5501', 'rithp7k01', 'ritsm7402a', 'ritsm7402b', 'ritsm7402c'}; % 'ritsm7402a'}; %
 PatchValues = fliplr([0 25 50 75 100]); %  [100];
+
+T = tic; fprintf(1,'Preparing plot figure... ');
+m = Grasppe.PrintUniformity.UI.UniformityPlotMediator({'Regions'},{'CaseID', SourceIDs{1}, 'StatsMode', 'PeakLimits'}); %, 'Surface' ([], {'CaseID', 'ritsm7402a'});
+
+m.PlotFigure.handleSet('Position', [0 0 800*1 800*1]);
 
 toc(T);
 

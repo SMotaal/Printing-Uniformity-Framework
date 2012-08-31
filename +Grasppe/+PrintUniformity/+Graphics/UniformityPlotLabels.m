@@ -5,6 +5,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
   properties
     LabelObjects    = {};
     LabelValues     = [];
+    LabelStrings    = {};
     LabelRegions    = [];
     LabelPositions  = [];
     LabelActivePositions  = [];
@@ -14,6 +15,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     SubPlotMarkers  = {};
     SubPlotBoxes    = {};
     SubPlotData     = {};
+    SubPlotStats    = [];
     MarkerPositions = {};
     MarkerIndex     = 1;
     PlotObject
@@ -65,8 +67,8 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         for m = 1:numel(obj.SubPlotBoxes)
           try
             delete(obj.SubPlotBoxes{m});
-          catch err
-            debugStamp(err, 1);
+          %catch err
+            %debugStamp(err, 5);
           end
           obj.SubPlotBoxes{m} = [];
         end
@@ -78,8 +80,8 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         for m = 1:numel(obj.SubPlotMarkers)
           try
             delete(obj.SubPlotMarkers{m});
-          catch err
-            debugStamp(err, 1);
+          %catch err
+            %debugStamp(err, 3);
           end
           obj.SubPlotMarkers{m} = [];
         end
@@ -89,8 +91,8 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         for m = 1:numel(obj.SubPlotObjects)
           try 
             delete(obj.SubPlotObjects{m});
-          catch err
-            debugStamp(err, 1);
+          %catch err
+            %debugStamp(err, 3);
           end            
           obj.SubPlotObjects{m} = [];
         end
@@ -104,7 +106,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
           try 
             delete(obj.LabelObjects{m}); 
           catch err
-            debugStamp(err, 1);
+            debugStamp(err, 3);
           end
           obj.LabelObjects{m} = [];
         end
@@ -131,23 +133,25 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
       return;
     end
     
-    function defineLabels(obj, regions, values)
+    function defineLabels(obj, regions, values, strings)
       %obj.deleteLabels;
       obj.LabelRegions    = regions;
       obj.LabelValues     = values;
+      obj.LabelStrings    = strings;
       obj.LabelPositions  = [];
     end
     
     function createLabels(obj)
       try
         values  = obj.LabelValues;
+        strings = obj.LabelStrings;
         regions = obj.LabelRegions;
         
         
         for m = 1:numel(obj.LabelValues)
           try
             region = eval(['regions(m' repmat(',:',1,ndims(regions)-1)  ')']);
-            obj.createLabel(m, squeeze(region), values(m));
+            obj.createLabel(m, squeeze(region), strings{m});
           end
         end
       catch err
@@ -232,10 +236,10 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         
         %% Value
         if nargin < 3, value = []; end
+        try if isempty(value), value = obj.LabelStrings{index}; end; end
+        try if isempty(value), value = obj.LabelValues(index); end; end        
         
-        try if isempty(value), value = obj.LabelValues(index); end; end
-        
-        obj.LabelValues(index) = value;
+        %obj.LabelValues(index) = value;
         
         obj.updateLabel(index);
         obj.updateLabelPosition(index)
@@ -252,18 +256,18 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
       try
         position = obj.LabelPositions(index, :);
         
-        try
-          extent = obj.LabelObjects{index}.HandleObject.Extent;
-          region = obj.LabelAreas(index, :);
-          
-          if extent(3)*0.8 > region(1)
-            position(2) = position(2) + (rem(index,2)*2-1)*1.5;
-          end
-          
-          if extent(4)*0.8 > region(2)
-            position(1) = position(1) + (rem(index,2)*2-1)*1.5;
-          end
-        end
+        % try
+        %   extent = obj.LabelObjects{index}.HandleObject.Extent;
+        %   region = obj.LabelAreas(index, :);
+        %
+        %   if extent(3)*0.8 > region(1)
+        %     position(2) = position(2) + (rem(index,2)*2-1)*1.5;
+        %   end
+        %
+        %   if extent(4)*0.8 > region(2)
+        %     position(1) = position(1) + (rem(index,2)*2-1)*1.5;
+        %   end
+        % end
       end
       
       try obj.LabelObjects{index}.Position = [position 200]; end %obj.LabelElevation]; end
@@ -274,12 +278,13 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
       try
         value = [];
         
-        try value = obj.LabelValues(index); end
+        try value = obj.LabelValues(index);   end
+        try value = obj.LabelStrings{index};  end
         
-        if isa(value, 'double'), value = num2str(value, '%3.1f');
-        end
+        if isa(value, 'double'), value = num2str(value, '%3.1f'); end
+        if ~ischar(value), value = toString(value); end
         
-        try obj.LabelObjects{index}.Text = toString(value); end
+        try obj.LabelObjects{index}.Text = value; end
         
         
         %         position = [-100 -100];
@@ -323,7 +328,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     
     function updateSubPlots(obj)
       
-      try debugStamp(obj.ID, 1); catch, debugStamp(); end;
+      try debugStamp(obj.ID, 3); catch, debugStamp(); end;
       
       try
         obj.deleteSubPlots;
@@ -458,7 +463,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
           else
             plotstr = sprintf('Skipping SubPlot %d: %0.1f x %0.1f', m, zoneArea(1), zoneArea(2));
             %disp(plotstr);
-            debugStamp([obj.ID ':' plotstr], 1);
+            debugStamp([obj.ID ':' plotstr], 5);
           end
           
           obj.MarkerPositions{m}   = xSteps;

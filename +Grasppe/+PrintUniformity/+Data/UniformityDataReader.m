@@ -1,16 +1,19 @@
 classdef UniformityDataReader < Grasppe.Core.Component
-  %UniformityDataReader Summary of this class goes here
+  %UniformityDataReader Read Uniformity Data
   %   Detailed explanation goes here
   
   
   properties (Transient, Hidden)
+    %% HandleComponent 
     HandleProperties = {};
     HandleEvents = {};
     ComponentType = 'PrintingUniformityDataReader';
     ComponentProperties = '';
     
+    %% Mediator-Controlled Properties
     DataProperties = {'CaseID', 'SetID', 'SheetID'};
     
+    %% Prototype Meta Properties
     UniformityDataReaderProperties = {
       'CaseID',     'Case ID',          'Data Source',      'string',   '';   ...
       'SetID',      'Set ID',           'Data Source',      'int',      '';   ...
@@ -27,7 +30,6 @@ classdef UniformityDataReader < Grasppe.Core.Component
   
   properties (Hidden)
     CaseData, SetData, SheetData
-    
   end
   
   properties
@@ -52,10 +54,13 @@ classdef UniformityDataReader < Grasppe.Core.Component
     function obj = UniformityDataReader(varargin)
       obj = obj@Grasppe.Core.Component(varargin{:});
       
-      obj.PreloadTimer = timer('Tag',['PreloadTimer' obj.ID], ...
-        'StartDelay', 0.5, ...
-        'TimerFcn', @(s,e)obj.preloadSheetData() ...
-        );
+      %       obj.PreloadTimer = timer('Tag',['PreloadTimer' obj.ID], ...
+      %         'StartDelay', 0.5, ...
+      %         'TimerFcn', @(s,e)obj.preloadSheetData() ...
+      %         );
+      
+      obj.PreloadTimer = ...
+        GrasppeKit.DelayedCall(@(s,e)obj.preloadSheetData(), 0.5, 'persists');
     
     end
     
@@ -68,7 +73,8 @@ classdef UniformityDataReader < Grasppe.Core.Component
       obj.createComponent@Grasppe.Core.Component;
     end
   end
-  methods;
+  
+  methods
     
     %% CaseID
     

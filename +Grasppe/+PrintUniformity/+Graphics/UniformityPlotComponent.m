@@ -26,22 +26,12 @@ classdef UniformityPlotComponent < Grasppe.Core.Prototype & Grasppe.Core.MouseEv
   
   methods
     function obj = UniformityPlotComponent(dataSource, varargin)
-      obj = obj@Grasppe.Core.Prototype; %Component(varargin{:}, 'DataSource', dataSource);
+      obj = obj@Grasppe.Core.Prototype;
       obj.DataSource = dataSource;
-      
-      %obj.attachDataSource;
     end
   end
   
-  methods %(Access=protected)
-    
-    %     function createComponent(obj, type)
-    % %       if ~UniformityPlotObject.checkInheritence(obj.DataSource, 'UniformityDataSource')
-    % %         obj.DataSource = RawUniformityDataSource.Create(obj);
-    % %       end
-    % %
-    %
-    %     end
+  methods
     
     function attachDataSource(obj)
       obj.resetPlotLimits;

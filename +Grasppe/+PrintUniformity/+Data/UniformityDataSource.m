@@ -173,9 +173,9 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         [id space]    = obj.getDataID;
         bufferedData  = {};
         
-        if bufferAllData, bufferedData = Data.dataSources(id, space); end
+        %if bufferAllData, bufferedData = Data.dataSources(id, space); end
         
-        try forceBuffer = ~isfield(bufferedData, 'stats'); end
+        %try forceBuffer = ~all(isfield(bufferedData, {'stats', 'strings'})); end
         
         if forceBuffer || isempty(bufferedData) || ~isstruct(bufferedData)
         
@@ -200,14 +200,16 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
           bufferedData.data = data;
           
           try
-            bufferedData.stats = obj.SetStats;
+            bufferedData.stats    = obj.SetStats;
+            bufferedData.strings  = obj.SetStrings;
           end
           
-          Data.dataSources(id, bufferedData, true, space);
+          %Data.dataSources(id, bufferedData, true, space);
         else
           data = bufferedData.data;
           
           try obj.SetStats = bufferedData.stats; end
+          try obj.SetStrings = bufferedData.strings; end
         end
         
         obj.AllData   = data;
@@ -661,17 +663,29 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
       end
       
       obj.ZLim      = zLim;
-      obj.CLim      = cLim;
+      obj.CLim      = [min(cLim) max(cLim)];
             
       %% Update to LinkedPlots
       try
         plotObject = obj.LinkedPlotObjects;
         
         for m = 1:numel(plotObject)
-          try plotObject(m).ParentAxes.XLim = obj.XLim; end
-          try plotObject(m).ParentAxes.YLim = obj.YLim; end
-          try plotObject(m).ParentAxes.ZLim = obj.ZLim; end
-          try plotObject(m).ParentAxes.CLim = obj.CLim; end
+          try 
+            plotObject(m).ParentAxes.XLim = obj.XLim; 
+            %plotObject(m).ParentAxes.handleSet('xlim', obj.XLim);
+          end
+          try 
+            plotObject(m).ParentAxes.YLim = obj.YLim; 
+            %plotObject(m).ParentAxes.handleSet('ylim', obj.YLim);
+          end
+          try 
+            plotObject(m).ParentAxes.ZLim = obj.ZLim; 
+            %plotObject(m).ParentAxes.handleSet('zlim', obj.ZLim);
+          end
+          try 
+            plotObject(m).ParentAxes.CLim = obj.CLim;
+            %plotObject(m).ParentAxes.handleSet('clim', obj.CLim);
+          end
         end
       end 
       

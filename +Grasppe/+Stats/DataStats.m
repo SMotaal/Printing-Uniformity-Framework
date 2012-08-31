@@ -12,6 +12,11 @@ classdef DataStats
     Outliers
     OutlierIndex
     Samples
+    
+    UpperLimit
+    LowerLimit
+    PeakLimit
+    Limits
   end
   
   properties (GetAccess=protected, SetAccess=immutable)
@@ -88,6 +93,38 @@ classdef DataStats
     function sixSigma = get.SixSigma(val)
       sixSigma  =  6 * val.Sigma;
     end
+    
+    function limits = get.Limits(val)
+      mu        = val.Mean;
+      sigma     = val.Sigma;
+      limits    = mu + sigma * [3 -3];
+    end
+    
+    function limit = get.PeakLimit(val)
+      mu        = val.Mean;
+      sigma     = val.Sigma;
+      limit     = mu + sigma*[3 -3];      
+      Mu        = val.ReferenceMean;
+      if isnumeric(Mu) && isscalar(Mu)
+        delta   = abs(Mu - limit);
+        idx     = 1+(delta(1)>delta(2));
+        limit   = limit(idx);
+      end
+    end
+    
+    
+    function limit = get.UpperLimit(val)
+      mu        = val.Mean;
+      sigma     = val.Sigma;
+      limit     = mu + sigma * 3;
+    end
+    
+    function limit = get.LowerLimit(val)
+      mu        = val.Mean;
+      sigma     = val.Sigma;
+      limit     = mu - sigma * 3;
+    end    
+    
     
     function outliers = get.Outliers(val)
       outliers  = val.data(val.OutlierIndex);
