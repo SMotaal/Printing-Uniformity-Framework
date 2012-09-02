@@ -83,7 +83,7 @@ classdef DataStats
         sigma             = val.ReferenceSigma;
         if isempty(sigma),  sigma = nanstd(data(:)); end
         
-        outliers          = abs(data - mu) > 2*sigma;
+        outliers          = abs(data - mu) > 3*sigma;
         val.outlierIndex  = outliers; %find(outliers);
       end
       outlierIndex = val.outlierIndex;

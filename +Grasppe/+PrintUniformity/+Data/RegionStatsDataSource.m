@@ -154,7 +154,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         for k=2:numel(regionData)
           sheetData = [sheetData(:); regionData(k).Data(:)];
         end
-        sheetData       = Grasppe.Stats.DataStats(sheetData);
+        sheetData       = Grasppe.Stats.DataStats(sheetData, runData.Mean, runData.Sigma);
         
         try
           aroundMasks = stats.metadata.regions.(aroundID);
@@ -405,7 +405,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
       cmap(:,2)     = linspace(0.95, 0, size(cmap,1));
       cmap(:,3)     = cmap(:,2);
       
-      %cmap = [flipud(cmap); cmap(2:end,:)];
+      cmap = [flipud(cmap); cmap(2:end,:)];
       
       plotObject = obj.LinkedPlotObjects;
       
@@ -667,10 +667,11 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
           statsMode         = 'PeakLimits';
           statsFunction{1}  = @(d, r) vertcat(d.Mean);
           dataFunction{1}   = @(s)    nanmean(s(:));
-          %labelFunction{1}  = @(d)    sprintf('{\\bf %1.1f}\n{\\fontsize{4}({\\it\\mu_{R}}%+1.1f)}\n{\\fontsize{4.5}{\\it\\mu_{r}}=%1.1f±%1.1f}', d.PeakLimit(1), d.PeakLimit(1)-d.ReferenceMean, d.Mean, d.Sigma*3);
-          labelFunction{1}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{4}%+1.1f}\n{\\fontsize{4}({\\it\\mu_{R}}%+1.1f)}', d.PeakLimit(1), 2*(d.Mean-d.PeakLimit(1)), d.PeakLimit(1)-d.ReferenceMean); %d.Sigma*3);
-          labelFunction{2}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{4}±%1.1f}   ', [d.Mean   d.Sigma*3]);
-          labelFunction{3}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{4}±%1.1f}   ', [d.Mean   d.Sigma*3]);
+          labelFunction{1}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{4}%+1.1f} \n{\\fontsize{4}({\\itpeak_{r}} = {\\it\\mu_{R}}%+1.1f)}', d.PeakLimit(1), 2*(d.Mean-d.PeakLimit(1)), d.PeakLimit(1)-d.ReferenceMean); %d.Sigma*3);
+          labelFunction{2}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{4}±%1.1f}   \n{\\fontsize{4}({\\it\\mu_{b}} = {\\it\\mu_{R}}%+1.1f)}  ', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
+          labelFunction{3}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{4}±%1.1f}   \n{\\fontsize{4}({\\it\\mu_{s}} = {\\it\\mu_{R}}%+1.1f)}  ', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
+          %labelFunction{1}  = @(d)    sprintf('{\\bf %1.1f}\n{\\fontsize{4}({\\it\\mu_{R}}%+1.1f)}\n{\\fontsize{4.5}{\\it\\mu_{r}}=%1.1f±%1.1f}', d.PeakLimit(1), d.PeakLimit(1)-d.ReferenceMean, d.Mean, d.Sigma*3);          
+          %labelFunction{2}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{4}±%1.1f}   ', [d.Mean   d.Sigma*3]);
         otherwise % case {'mean', 'average'}
           statsMode         = 'Mean';
           statsFunction{1}  = @(d, r) vertcat(d.Mean);
