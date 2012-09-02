@@ -52,6 +52,8 @@ classdef UniformitySurf < Grasppe.Graphics.Surf & Grasppe.PrintUniformity.Graphi
     
     function updatePlotTitle(obj, base, sample)
       
+      sheetName = '';      
+      
       try caseName  = obj.DataSource.CaseName;  end
       try setName   = obj.DataSource.SetName;   end
       try sheetName = obj.DataSource.SheetName; end

@@ -6,6 +6,7 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
     Parameters
     CaseData
     SetData
+    VariableData
     SheetData
   end
   
@@ -34,26 +35,31 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
     
     function resetCaseData(obj)
       try delete(obj.CaseData); end
-      obj.CaseData = [];
+      obj.CaseData      = [];
       obj.resetSetData;
     end
     
     function resetSetData(obj)
       try delete(obj.SetData); end
-      obj.SetData   = [];
-      obj.resetSheetData;
+      obj.SetData       = [];
+      obj.resetVariableData;
     end
     
+    function resetVariableData(obj)
+      obj.VariableData  = [];
+      obj.resetSheetData;
+    end    
+    
     function resetSheetData(obj)
-      obj.SheetData = [];
+      obj.SheetData     = [];
     end
     
     function set.CaseData(obj, caseData)
-      obj.CaseData = obj.modelSet(obj.CaseData, caseData, obj.CaseDataClass);
+      obj.CaseData  = obj.modelSet(obj.CaseData, caseData, obj.CaseDataClass);
     end
     
     function set.SetData(obj, setData)
-      obj.SetData = obj.modelSet(obj.SetData, setData, obj.SetDataClass);
+      obj.SetData   = obj.modelSet(obj.SetData, setData, obj.SetDataClass);
     end
     
     function model = modelSet(obj, model, value, modelClass)

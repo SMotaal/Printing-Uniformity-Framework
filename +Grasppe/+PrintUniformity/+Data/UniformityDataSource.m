@@ -427,9 +427,13 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
     end
     
     function sampleName = get.SheetName(obj)
-      sampleName = [];
+      sampleName = '';
       try sampleName = obj.CaseData.index.Sheets(obj.SheetID); end
-      if isnumeric(sampleName), sampleName = int2str(sampleName); end
+      if isnumeric(sampleName) && isscalar(sampleName)
+        sampleName = int2str(sampleName);
+      else
+        sampleName = '';
+      end
     end
     
     function sheetData = get.SheetData(obj)

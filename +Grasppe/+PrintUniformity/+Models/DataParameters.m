@@ -1,53 +1,25 @@
-classdef DataParameters < Grasppe.Data.Models.DataParameters
+classdef DataParameters < Grasppe.Core.Model
   %UNIFORMITYSAMPLEDATAPARAMETERS Case, Set, Sample, Variable Details
   %   Detailed explanation goes here
   
   properties (GetObservable, SetObservable, Dependent, AbortSet)
     CaseID
     SetID
-    SheetID
     VariableID
+    SheetID
   end
   
-  methods
+  properties (SetAccess=protected, GetAccess=protected)
+    caseID
+    setID
+    variableID
+    sampleID
+  end  
+  
+  methods    
     
     function obj = DataParameters(varargin)
-      obj = obj@Grasppe.Data.Models.DataParameters(varargin{:});
-    end
-    
-%     function model = DataParameters(caseID, setID, sheetID, variableID)
-%       model = model@Grasppe.Data.Models.DataParameters();
-%       try model.CaseID      = caseID;     end
-%       try model.SetID       = setID;      end
-%       try model.SheetID     = sheetID;    end
-%       try model.VariableID  = variableID; end
-%     end
-    
-    function model = duplicate(model, varargin)
-      
-      model = Grasppe.PrintUniformity.Models.DataParameters( ...
-        'CaseID', model.CaseID,   'SetID', model.SetID, ... 
-        'SheetID', model.SheetID, 'VariableID', model.VariableID);
-      
-      [pargin ineven innames invalues] = pairedArgs(varargin{:});
-      for i = 1:pargin
-        model.(innames{i}) = invalues{i};
-      end
-      
-    end
-    
-    function clear(model)
-      
-      fields = {'CaseID', 'SetID', 'SheetID', 'VariableID'}
-      
-      for i = 1:numel(fields)
-        try
-          model.(fields{i}) = model.findprop('CaseID').DefaultValue;
-        catch
-          model.(fields{i}) = [];
-        end
-      end
-      
+      obj = obj@Grasppe.Core.Model(varargin);
     end
     
     function caseID = get.CaseID(model)
@@ -85,4 +57,45 @@ classdef DataParameters < Grasppe.Data.Models.DataParameters
   end
   
 end
+
+
+%     function clear(model)
+%       
+%       fields = {'CaseID', 'SetID', 'SheetID', 'VariableID'}
+%       
+%       for i = 1:numel(fields)
+%         try
+%           model.(fields{i}) = model.findprop('CaseID').DefaultValue;
+%         catch
+%           model.(fields{i}) = [];
+%         end
+%       end
+%       
+%     end
+
+
+%     function model = DataParameters(caseID, setID, sheetID, variableID)
+%       model = model@Grasppe.Data.Models.DataParameters();
+%       try model.CaseID      = caseID;     end
+%       try model.SetID       = setID;      end
+%       try model.SheetID     = sheetID;    end
+%       try model.VariableID  = variableID; end
+%     end
+    
+%     function model = duplicate(model, varargin)
+%       
+%       model = Grasppe.PrintUniformity.Models.DataParameters( ...
+%         'CaseID', model.CaseID,   'SetID', model.SetID, ... 
+%         'SheetID', model.SheetID, 'VariableID', model.VariableID);
+%       
+%       [pargin ineven innames invalues] = pairedArgs(varargin{:});
+%       for i = 1:pargin
+%         model.(innames{i}) = invalues{i};
+%       end
+%       
+%     end
+    
+%     function obj = DataParameters(varargin)
+%       obj = obj@Grasppe.Data.Models.DataParameters(varargin{:});
+%     end
 
