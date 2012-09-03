@@ -667,9 +667,9 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
           statsMode         = 'PeakLimits';
           statsFunction{1}  = @(d, r) vertcat(d.Mean);
           dataFunction{1}   = @(s)    nanmean(s(:));
-          labelFunction{1}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{s}%+1.1f }\n{\\fontsize{t}({\\itpeak_{r}} = {\\it\\mu_{R}}%+1.1f)}', d.PeakLimit(1), 2*(d.Mean-d.PeakLimit(1)), d.PeakLimit(1)-d.ReferenceMean); %d.Sigma*3);
-          labelFunction{2}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{s}±%1.1f  } \n{\\fontsize{t}({\\it\\mu_{b}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
-          labelFunction{3}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{s}±%1.1f  } \n{\\fontsize{t}({\\it\\mu_{s}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
+          labelFunction{1}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}%+1.1f }}\n{\\fontsize{t}({\\itpeak_{r}} = {\\it\\mu_{R}}%+1.1f)}', d.PeakLimit(1), 2*(d.Mean-d.PeakLimit(1)), d.PeakLimit(1)-d.ReferenceMean); %d.Sigma*3);
+          labelFunction{2}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}±%1.1f  } }\n{\\fontsize{t}({\\it\\mu_{b}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
+          labelFunction{3}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}±%1.1f  } }\n{\\fontsize{t}({\\it\\mu_{s}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
           %labelFunction{1}  = @(d)    sprintf('{\\bf %1.1f}\n{\\fontsize{4}({\\it\\mu_{R}}%+1.1f)}\n{\\fontsize{4.5}{\\it\\mu_{r}}=%1.1f±%1.1f}', d.PeakLimit(1), d.PeakLimit(1)-d.ReferenceMean, d.Mean, d.Sigma*3);          
           %labelFunction{2}  = @(d)    sprintf('{\\bf %1.1f}{\\fontsize{4}±%1.1f}   ', [d.Mean   d.Sigma*3]);
         otherwise % case {'mean', 'average'}
