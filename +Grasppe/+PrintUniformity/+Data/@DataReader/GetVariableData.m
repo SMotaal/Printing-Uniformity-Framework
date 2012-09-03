@@ -1,35 +1,66 @@
-function [ variableData parameters ] = GetVariableData(obj, newData, parameters, setData)
+function [ variableData parameters ] = GetVariableData(obj, sheetID) % newData, parameters, setData, )
   %GetVariableData Load and Get Variable Data
   %   Detailed explanation goes here
   
   %% Data
-  if isempty(newData)
-    newData           = copy(obj.Data);
-  end
+  %if isempty(newData)
+  newData               = obj.Data; %copy(obj.Data);
+  dataReader            = newData.DataReader;
+  %end
   
   %% Parameters
-  if ~exist('parameters', 'var')
-    parameters          = newData.Parameters;
-    updatedParameters   = false;
-  else
-    updatedParameters   = ~isvalid(newData.Parameters) || ~(newData.Parameters==parameters);
-    newData.Parameters  = parameters;
-  end
+  %   if ~exist('parameters', 'var') || isempty(parameters)
+  %     parameters            = newData.Parameters;
+  %     updatedParameters     = false;
+  %   else
+  %     updatedParameters     = ~isvalid(newData.Parameters) || ~(newData.Parameters==parameters);
+  %     newData.Parameters    = parameters;
+  %   end
   
-  variableData          = newData.VariableData;
+  variableData            = newData.VariableData;
   
-  if updatedParameters || isempty(variableData)
-    
-    %% Get Container Data
-    if ~exist('setData', 'var')
-      setData                   = obj.GetSetData(newData);
+  %% Get State
+  customFunction          = false;
+  variableReady           = false;
+  variableLoading         = false;
+  setReady                = false;
+  
+  try customFunction      = all(isa(obj.GetVariableDataFunction, 'function_handle')); end
+  try variableReady       = dataReader.CheckState('VariableReady'); end
+  try variableLoading     = dataReader.CheckState('VariableLoading'); end
+  try setReady            = dataReader.CheckState('SetReady'); end
+  
+  %% Get single sheet
+  if ~variableReady && exist('sheetID', 'var') && isscalar(sheetID)
+    while ~setReady % isempty(newData.SetData)
+      obj.GetSetData();
+      setReady            = dataReader.CheckState('SetReady');
     end
     
-    %% Execute Custom Processing Function
-    skip                        = false;
+    variableData          = getRawData(newData.Parameters, newData.SetData, sheetID);
+    return;
+  end
+  
+  %% Load Data
+  if ~variableLoading || ~variableReady || isempty(variableData) % || updatedParameters
     
-    if isa(obj.GetVariableDataFunction, 'function_handle')
-      [variableData skip]       = obj.GetVariableDataFunction(newData.Parameters, setData);
+    %% Get Container Data
+    %if ~setReady || ~exist('setData', 'var') % || isempty(setData) %
+    while ~setReady % isempty(newData.SetData)
+      obj.GetSetData();
+      setReady        = dataReader.CheckState('SetReady');
+    end
+    %end
+    
+    setData             = newData.SetData;
+    
+    try dataReader.PromoteState('VariableLoading', true); end
+    
+    %% Execute Custom Processing Function
+    skip                    = false;
+    
+    if customFunction
+      [variableData skip]   = obj.GetVariableDataFunction(newData);
     end
     
     %% Execute Default Processing Function
@@ -37,51 +68,69 @@ function [ variableData parameters ] = GetVariableData(obj, newData, parameters,
       if ~isequal(newData.Parameters.VariableID, 'Raw')
         newData.Parameters.VariableID   = 'Raw';
       end
-      variableData = getRawData(newData.Parameters, setData);
+      variableData.Raw      = getRawData(newData.Parameters, setData);
     end
     
     %% Update Data Model
-    newData.VariableData        = variableData;
+    newData.VariableData    = variableData;
+    
+    newData.Parameters.VariableID   = dataReader.Parameters.VariableID;
+    
+    try dataReader.PromoteState('VariableReady', true); end
     
   end
   
   %% Return
   if nargout<1, clear variableData; end
   if nargout<2, clear parameters;   end
-
+  
 end
 
-function variableData = getRawData(parameters, setData)
+function variableData = getRawData(parameters, setData, sheetID)
   import Grasppe.PrintUniformity.Data.*;
   
-  variableData          = [];
-  
-  %parameters          = parameters; %copy(obj.Parameters);  
-  sheetRange            = [];
-  try sheetRange        = [0:numel(setData.data)]; end
+  try
     
-  sheetID               = parameters.SheetID;
-  
-  if isnumeric(sheetID) && isscalar(sheetID) && any(sheetRange==sheetID)
-    sheetRange          = [sheetID sheetRange(sheetRange~=sheetID)];
-  else
-    sheetID             = 0;  % summary sheet
-    parameters.SheetID  = 0;
-  end
-   
-  for s = sheetRange
-    sheetData             = getRawSheetData(setData, s);
-    if isempty(variableData) 
-      variableData          = zeros(numel(sheetRange+1), size(sheetData,2));
+    if exist('sheetID', 'var')
+      variableData.Raw(1, :)  = getRawSheetData(setData, sheetID);
+      return;
     end
-    variableData(s+1,:) = sheetData;
+    
+    variableData          = [];
+    
+    %parameters          = parameters; %copy(obj.Parameters);
+    sheetRange            = [];
+    try sheetRange        = [0:numel(setData.data)]; end
+    
+    sheetID               = parameters.SheetID;
+    
+    if isnumeric(sheetID) && isscalar(sheetID) && any(sheetRange==sheetID)
+      sheetRange          = [sheetID sheetRange(sheetRange~=sheetID)];
+    else
+      sheetID             = 0;  % summary sheet
+      parameters.SheetID  = 0;
+    end
+    
+    for s = sheetRange
+      sheetData             = getRawSheetData(setData, s);
+      if isempty(variableData)
+        variableData          = zeros(numel(sheetRange+1), size(sheetData,2));
+      end
+      variableData(s+1,:) = sheetData;
+    end
+    
+    
+  catch err
+    throw( ...
+      Grasppe.PrintUniformity.Data.ReaderException.SheetRangeError(err, sheetID, parameters));
   end
+  
 end
 
 function sheetData = getRawSheetData(setData, sheetID)
   import Grasppe.PrintUniformity.Data.*;
   
-  sheetData   = [];
+  sheetData               = [];
   
   setData                 = (setData.SetData);
   

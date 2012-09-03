@@ -4,6 +4,7 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
   
   properties
     Parameters
+    DataReader
     CaseData
     SetData
     VariableData

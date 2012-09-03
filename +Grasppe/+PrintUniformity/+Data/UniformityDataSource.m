@@ -81,7 +81,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
     ProcessorChange
   end
   
-  methods (Hidden)
+  methods %(Hidden)
     function obj = UniformityDataSource(varargin)
       obj = obj@Grasppe.Core.Component(varargin{:});
             
@@ -97,7 +97,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
       %obj.attachPlotObject(plotObject);
       
     end
-    
+        
     function preprocessSheetData(obj) %, variableID)
       isRunning   = @(x) isequal(x.Running, 'on');
       

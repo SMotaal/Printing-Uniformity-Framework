@@ -59,6 +59,10 @@ classdef Reader < Grasppe.Core.Component
       obj.(field)   = newModel;
     end
     
+    function UpdateDataModel(obj, field, newModel)
+      disp(fieldnames(obj.(field)));
+    end
+    
     function PrepareDataModels(obj)
       if ~isstruct(obj.DataModels) || isempty(fieldnames(obj.DataModels)), return;  end
       modelFields = fieldnames(obj.DataModels);

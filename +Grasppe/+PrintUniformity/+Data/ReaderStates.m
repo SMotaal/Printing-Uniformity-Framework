@@ -6,33 +6,17 @@ classdef ReaderStates
     Uninitialized   (0,   'Constructing Object' )
     Initialized     (1,   'Object Constructed'  );
     
-    Busy            (10,  'Is Busy',        'Initialized');
-    Ready           (90,  'Not Busy',       'Initialized');
+    CaseLoading     (120, 'Loading Case',   'Uninitialized',  'Initialized');
+    CaseReady       (190, 'Case Ready',     'Uninitialized',  'Initialized',  'CaseLoading');
     
-    Loading         (20,  'Loading',        'Initialized', 'Busy'   );
-    Loaded          (40,  'Loaded',         'Initialized', 'Ready'  );
-    Pasring         (60,  'Pasing',         'Initialized', 'Busy'   );
-    Parsed          (60,  'Parsed',         'Initialized', 'Ready'  );
+    SetLoading      (220, 'Loading Set',    'Uninitialized',  'Initialized',  'CaseLoading',  'CaseReady');
+    SetReady        (290, 'Set Ready',      'Uninitialized',  'Initialized',  'CaseLoading',  'CaseReady',  'SetLoading');
     
-    CaseLoading     (120, 'Loading Case',   'Initialized',  'Loading',    'Busy'                );
-    CaseLoaded      (140, 'Case Loaded',    'Initialized',  'Loaded',     'Ready'               );
-    CaseParsing     (160, 'Parsing Case',   'Initialized',  'CaseLoaded', 'Pasring',    'Busy'  );
-    CaseParsed      (180, 'Parsing Case',   'Initialized',  'CaseLoaded', 'Parsed',     'Ready' );
-    CaseReady       (190, 'Case Ready',     'Initialized',  'CaseParsed', 'CaseLoaded', 'Ready' );
+    VariableLoading (320, 'Loading Set',    'Uninitialized',  'Initialized',  'CaseLoading',  'CaseReady',  'SetLoading',   'SetReady');
+    VariableReady   (390, 'Set Ready',      'Uninitialized',  'Initialized',  'CaseLoading',  'CaseReady',  'SetLoading',   'SetReady',   'VariableLoading');
     
-    SetLoading      (220, 'Loading Set',    'Initialized',  'CaseReady',  'Loading',    'Busy'                  );
-    SetLoaded       (240, 'Set Loaded',     'Initialized',  'CaseReady',  'Loaded',     'Ready'                 );
-    SetParsing      (260, 'Parsing Set',    'Initialized',  'CaseReady',  'SetLoaded',  'Pasring',      'Busy'  );
-    SetParsed       (280, 'Parsing Set',    'Initialized',  'CaseReady',  'SetLoaded',  'Parsed',       'Ready' );
-    SetReady        (290, 'Set Ready',      'Initialized',  'CaseReady',  'SetParsed',  'SetLoaded',    'Ready' );
-    
-    SheetLoading    (320, 'Loading Sheet',  'Initialized',  'CaseReady',  'SetReady',   'Loading',      'Busy'                  );
-    SheetLoaded     (340, 'Sheet Loaded',   'Initialized',  'CaseReady',  'SetReady',   'Loaded',       'Ready'                 );
-    SheetParsing    (360, 'Parsing Sheet',  'Initialized',  'CaseReady',  'SetReady',   'SheetLoaded',  'Pasring',      'Busy'  );
-    SheetParsed     (380, 'Parsing Sheet',  'Initialized',  'CaseReady',  'SetReady',   'SheetLoaded',  'Parsed',       'Ready' );
-    SheetReady      (390, 'Sheet Ready',    'Initialized',  'CaseReady',  'SetReady',   'SheetParsed',  'SheetLoaded',  'Ready' );
-    
-    
+    SheetLoading    (420, 'Loading Sheet',  'Uninitialized',  'Initialized',  'CaseLoading',  'CaseReady',  'SetLoading',   'SetReady',   'VariableLoading',  'VariableReady');
+    SheetReady      (490, 'Sheet Ready',    'Uninitialized',  'Initialized',  'CaseLoading',  'CaseReady',  'SetLoading',   'SetReady',   'VariableLoading',  'VariableReady',  'SheetLoading');
   end
   
   properties %(SetAccess=immutable)
@@ -58,13 +42,13 @@ classdef ReaderStates
           
           if isa(pre, class(enu))
             if pre > enu %any(pre.Precondition==enu)
-              dispf('enu:%s < pre:%s', enu.char, pre.char);
+              %dispf('enu:%s < pre:%s', enu.char, pre.char);
               error('Grasppe:Precondition:CircularReference', ...
                 'Cannot create %s due to circular preconditioning with %s.', ...
                 enu.char, pre.char);
             end
             if enu > pre %any(enu.Precondition==pre)
-              dispf('enu:%s > pre:%s', enu.char, pre.char);
+              %dispf('enu:%s > pre:%s', enu.char, pre.char);
               continue;
             end
             
@@ -91,7 +75,7 @@ classdef ReaderStates
             %               %enu.Precondition(end+1) = pre.Precondition(n);
             %             end
             
-            dispf('enu:%s | pre:%s', enu.char, pre.char);
+            %dispf('enu:%s | pre:%s', enu.char, pre.char);
             enu.Precondition(end+1) = pre;
             
           end
