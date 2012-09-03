@@ -20,7 +20,7 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
     MarkerIndex     = 1;
     PlotObject
     ComponentType   = '';
-    FontSize        = 6;
+    FontSize        = 9;
   end
   
   methods
@@ -283,6 +283,12 @@ classdef UniformityPlotLabels < Grasppe.Core.Component
         
         if isa(value, 'double'), value = num2str(value, '%3.1f'); end
         if ~ischar(value), value = toString(value); end
+        
+        value = regexprep(value, '(\\fontsize{)t(})', ['$1' int2str(floor(obj.FontSize.*0.75)) '$2']);
+        value = regexprep(value, '(\\fontsize{)s(})', ['$1' int2str(floor(obj.FontSize.*0.85)) '$2']);
+        value = regexprep(value, '(\\fontsize{)n(})', ['$1' int2str(obj.FontSize) '$2']);
+        value = regexprep(value, '(\\fontsize{)l(})', ['$1' int2str(floor(obj.FontSize.*1.15)) '$2']);
+        value = regexprep(value, '(\\fontsize{)h(})', ['$1' int2str(floor(obj.FontSize.*1.25)) '$2']);
         
         try obj.LabelObjects{index}.Text = value; end
         

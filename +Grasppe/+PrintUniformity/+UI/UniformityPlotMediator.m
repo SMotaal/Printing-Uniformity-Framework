@@ -43,7 +43,7 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
     end
     
     function showFigure(obj)
-      obj.PlotFigure.show;
+      obj.PlotFigure.present; % show;
       
       for m = 1:numel(obj.DataSources);
         dataSource = obj.DataSources{m};
