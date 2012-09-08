@@ -10,14 +10,14 @@ classdef DataReader < Grasppe.Data.Reader
     ComponentProperties = '';
     
     %% Mediator-Controlled Properties
-    DataProperties    = {'CaseID', 'SetID', 'VariableID', 'SheetID'};
+    DataProperties    = Grasppe.PrintUniformity.Data.DataReader.GetDataParameters; %%{'CaseID', 'SetID', 'VariableID', 'SheetID'};
     
     %% Prototype Meta Properties
     DataReaderProperties  = {
-      'CaseID',     'Case ID',          'Data Source',      'string',   '';   ...
-      'SetID',      'Set ID',           'Data Source',      'int',      '';   ...
-      'VariableID', 'Variable ID',      'Data Source',      'string',   '';   ...
-      'SheetID',    'Sheet ID',         'Data Source',      'int',      '';   ...
+      'CaseID',     'Case ID',          'Data',      'string',   '';   ...
+      'SetID',      'Set ID',           'Data',      'int',      '';   ...
+      'VariableID', 'Variable ID',      'Data',      'string',   '';   ...
+      'SheetID',    'Sheet ID',         'Data',      'int',      '';   ...
       };
     
     DataModels = struct( ...
@@ -26,7 +26,7 @@ classdef DataReader < Grasppe.Data.Reader
       )
   end
   
-  properties (AbortSet, Dependent)
+  properties (AbortSet, Dependent, SetObservable, GetObservable)
     CaseID        = '';
     SetID         = 100;
     VariableID    = 'raw';
@@ -38,6 +38,10 @@ classdef DataReader < Grasppe.Data.Reader
     SetData
     VariableData
     SheetData
+    CaseName
+    SetName
+    VariableName
+    SheetName
   end
   
   properties
@@ -48,8 +52,9 @@ classdef DataReader < Grasppe.Data.Reader
   end
   
   properties (GetAccess=public, SetAccess=protected)
-    State         = Grasppe.PrintUniformity.Data.ReaderStates.Uninitialized;
+    %State         = Grasppe.PrintUniformity.Data.ReaderStates.Uninitialized;
     PreloadTimer  = [];
+    TestTimer     = [];
   end
   
   events
@@ -57,11 +62,10 @@ classdef DataReader < Grasppe.Data.Reader
     SetChange
     VariableChange
     SheetChange
-    FailedChange
   end
   
-  methods
-    SetParameters(obj, newParameters, delayed, oldParameters, oldData);
+  methods (Access=protected)
+    change        = SetParameters(obj, eventData);
     caseData      = GetCaseData     (obj); %, data, parameters, sourceData);
     setData       = GetSetData      (obj); %, data, parameters, caseData);
     variableData  = GetVariableData (obj, sheetID); %, data, parameters, setData, sheetID);
@@ -73,109 +77,49 @@ classdef DataReader < Grasppe.Data.Reader
     function obj = DataReader(varargin)
       obj = obj@Grasppe.Data.Reader(varargin{:});
     end
+    
+    function eventData = UpdateData( obj, varargin)
+      %% Fallback to parameter defaults (if necessary)
+      if numel(varargin) == 0
+        if isempty(obj.Parameters.SetID),       obj.Parameters.SetID      = obj.DefaultValue('SetID'); end
+        if isempty(obj.Parameters.VariableID),  obj.Parameters.VariableID = obj.DefaultValue('VariableID'); end
+        if isempty(obj.Parameters.SheetID),     obj.Parameters.SheetID    = obj.DefaultValue('SheetID'); end
+      end
+      
+      eventData = obj.UpdateData@Grasppe.Data.Reader(varargin{:});
+    end
   end
   
   methods (Access=protected)
     
     function createComponent(obj)
-      obj.PrepareDataModels;
-      %obj.PreloadTimer = GrasppeKit.DelayedCall(@(s,e)obj.PreloadSheetData(), 0.5, 'persists');
-      
-      obj.createComponent@Grasppe.Core.Component;
-      
-      obj.PromoteState(Grasppe.PrintUniformity.Data.ReaderStates.Initialized);
-      %obj.SetParameters;
+      obj.createComponent@Grasppe.Data.Reader;
     end
     
-    %% State Routines
-    function PromoteState(obj, targetState, abortOnFail)
-      
-      try
-        if ischar(targetState)
-          targetState = Grasppe.PrintUniformity.Data.ReaderStates.(targetState);
-        end
-        
-        if all(obj.State < targetState) || all(obj.State.ID < targetState.ID)
-          obj.State = targetState;
-        elseif exist('abortOnFail', 'var') && isequal(abortOnFail, true)
-          evalin('caller', 'return;'); return;
-        end
-      catch err
-        debugStamp(err,1);
-      end
+    function state = GetNamedState(obj, state)
+      try state   = Grasppe.PrintUniformity.Data.ReaderStates.(state);
+        return; end
+      state       = obj.GetNamedState@Grasppe.Data.Reader(state);
     end
-    
-    function DemoteState(obj, targetState, abortOnFail)
-      
-      try
-        
-        if ischar(targetState)
-          targetState = Grasppe.PrintUniformity.Data.ReaderStates.(targetState);
-        end
-        
-        if obj.State > targetState || obj.State.ID > targetState.ID
-          obj.State = targetState;
-        elseif exist('abortOnFail', 'var') && isequal(abortOnFail, true)
-          evalin('caller', 'return;'); return;
-        end
-      catch err
-        debugStamp(err,1);
-      end
-    end
-    
-    function tf = CheckState(obj, targetState, abortOnFail)
-      
-      tf = false;
-      
-      try
-        
-        if ischar(targetState)
-          targetState = Grasppe.PrintUniformity.Data.ReaderStates.(targetState);
-        end
-        
-        try tf = obj.State >= targetState; end
-        
-        if ~isequal(tf, true) && exist('abortOnFail', 'var') && isequal(abortOnFail, true)
-          evalin('caller', 'return;'); return;
-        end
-        
-      catch err
-        debugStamp(err,1);
-      end
-      
-      tf = isequal(tf, true);
-      try tf = isequal(all(tf), true); end
-      
-    end
-    
-    
   end
   
   %% Getters / Setters Parameters CaseID, SetID, VariableID, SheetID
   methods
     
     function set.CaseID(obj, caseID)
-      parameters          = copy(obj.Parameters);
-      obj.Parameters.CaseID   = caseID;
-      obj.SetParameters([], true);
+      obj.UpdateData('CaseID', caseID);
     end
     
     function set.SetID(obj, setID)
-      parameters          = copy(obj.Parameters);
-      obj.Parameters.SetID    = setID;
-      obj.SetParameters([], true);
+      obj.UpdateData('SetID', setID);
     end
     
     function set.VariableID(obj, variableID)
-      parameters          = copy(obj.Parameters);
-      obj.Parameters.VariableID  = variableID;
-      obj.SetParameters([], true);
+      obj.UpdateData('VariableID', variableID);
     end
     
     function set.SheetID(obj, sheetID)
-      parameters          = copy(obj.Parameters);
-      obj.Parameters.SheetID  = sheetID;
-      obj.SetParameters([], true);
+      obj.UpdateData('SheetID', sheetID);
     end
     
     function caseID = get.CaseID(obj)
@@ -212,9 +156,8 @@ classdef DataReader < Grasppe.Data.Reader
       caseData        = [];
       try caseData    = obj.Data.CaseData; end
       
-      if isempty(caseData),
-        %try stop(obj.PreloadTimer);   end
-        obj.SetParameters;
+      if isempty(caseData)
+        obj.UpdateData();
         caseData      = obj.GetCaseData();
       end
     end
@@ -229,8 +172,7 @@ classdef DataReader < Grasppe.Data.Reader
       try setData    = obj.Data.SetData; end
       
       if isempty(setData)
-        %try stop(obj.PreloadTimer);   end
-        obj.SetParameters;
+        obj.UpdateData();
         setData      = obj.GetSetData();
       end
       
@@ -242,12 +184,11 @@ classdef DataReader < Grasppe.Data.Reader
     end
     
     function variableData = get.VariableData(obj)
-      variableData        = [];
-      try variableData    = obj.Data.VariableData; end
+      variableData       = [];
+      try variableData   = obj.Data.VariableData; end
       if isempty(variableData)
-        %try stop(obj.PreloadTimer);   end
-        obj.SetParameters;
-        variableData      = obj.GetVariableData();
+        obj.UpdateData();
+        variableData     = obj.GetVariableData();
       end
     end
     
@@ -258,15 +199,60 @@ classdef DataReader < Grasppe.Data.Reader
     end
     
     function sheetData = get.SheetData(obj)
-      sheetData        = [];
-      try sheetData    = obj.Data.SheetData; end
+      sheetData         = [];
+      try sheetData     = obj.Data.SheetData; end
       
       if isempty(sheetData)
-        %try stop(obj.PreloadTimer);   end
-        obj.SetParameters;
-        sheetData      = obj.GetSheetData();
+        obj.UpdateData();
+        sheetData       = obj.GetSheetData();
       end
     end
+    
+    %% CaseName, SetName, VariableName, SheetName
+    function caseName = get.CaseName(obj)
+     caseName = ''; pressName = ''; runCode = '';
+      
+      try pressName     = obj.CaseData.metadata.testrun.press.name; end
+      
+      try runCode       = obj.CaseData.name; end
+      try runCode       = sprintf('#%s', char(regexpi(runCode, '[0-9]{2}[a-z]?$', 'match'))); end
+      
+      try caseName      = strtrim([pressName ' ' runCode]); end
+    end
+    
+    function setName = get.SetName(obj)
+      setName = '';
+      %try setName = obj.SetData.setLabel; end
+      try
+        setName         = [int2str(obj.SetData.patchSet) '%'];
+      end
+      if isnumeric(setName)
+        setName = int2str(setName);
+      end
+    end
+    
+    function variableName = get.VariableName(obj)
+      variableName      = '';
+      try variableName  = obj.VariableID; end
+    end
+    
+    function sheetName = get.SheetName(obj)
+      sheetName         = '';
+      if isequal(obj.SheetID,0)
+        sheetName       = 'Run Summary';
+        return;
+      end
+      try sheetName     = obj.CaseData.index.Sheets(obj.SheetID); end
+      if isnumeric(sheetName) && isscalar(sheetName)
+        sheetName       = int2str(sheetName);
+      else
+        sheetName       = '';
+      end      
+    end    
+    
+    
+    
+
   end
   
   
@@ -275,6 +261,13 @@ classdef DataReader < Grasppe.Data.Reader
       options = [];
     end
   end
+  
+  methods(Static)
+    function parameters = GetDataParameters()
+      parameters  = {'CaseID', 'SetID', 'VariableID', 'SheetID'};
+    end
+  end
+  
   
   
 end

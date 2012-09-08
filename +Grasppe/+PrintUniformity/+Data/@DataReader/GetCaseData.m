@@ -3,8 +3,8 @@ function [ caseData parameters ] = GetCaseData(obj) %, parameters)
   %   Detailed explanation goes here
   
   %% Data
-  newData           = obj.Data;
-  dataReader        = newData.DataReader;
+  newData               = obj.Data;
+  dataReader            = newData.DataReader;
   
   caseData              = newData.CaseData;
   sourceData            = [];
@@ -36,7 +36,7 @@ function [ caseData parameters ] = GetCaseData(obj) %, parameters)
     skip                = false;
     
     if isa(obj.GetCaseDataFunction, 'function_handle')
-      [caseData skip]   = obj.CaseDataFunction(newData);
+      [caseData skip]   = obj.GetCaseDataFunction(newData);
     end
     
     %% Execute Default Processing Function

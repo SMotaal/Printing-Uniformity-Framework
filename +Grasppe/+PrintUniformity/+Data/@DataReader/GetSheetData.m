@@ -6,6 +6,8 @@ function [ sheetData parameters ] = GetSheetData(obj) %, newData, parameters, va
   % if isempty(newData)
   newData           = obj.Data; % copy(obj.Data);
   dataReader        = newData.DataReader;
+  
+  if isempty(dataReader), dataReader = obj; end
   % end
   
   %% Parameters
@@ -48,10 +50,18 @@ function [ sheetData parameters ] = GetSheetData(obj) %, newData, parameters, va
   
   %% Execute Default Processing Function
   if isequal(skip, false)
-    if size(variableData.Raw,1)==1
-      sheetData             = variableData.Raw(1, :);
-    else
-      sheetData             = variableData.Raw(sheetID+1, :);
+    
+    %if ~isscalar(sheetID) || (isnumeric(sheetID) && sheetID > size(variableData.Raw+1
+    
+    try
+      if size(variableData.Raw,1)==1
+        sheetData             = variableData.Raw(1, :);
+      else
+        sheetData             = variableData.Raw(sheetID+1, :);
+      end
+    catch err
+      debugStamp(err, 1);
+      rethrow(err);
     end
   end
   
@@ -60,7 +70,7 @@ function [ sheetData parameters ] = GetSheetData(obj) %, newData, parameters, va
   
   newData.Parameters.SheetID  = dataReader.Parameters.SheetID;
   
-  %try newData.DataReader.PromoteState('SheetReady'); end
+  try newData.DataReader.PromoteState('SheetReady'); end
   
   %end
   

@@ -15,32 +15,39 @@ function testNewReaderFunction()
     'GetSheetDataFunction', @(d, v)processSheetData(d, v), ...
     'CaseID', 'rithp5501', 'SetID', 100, 'SheetID', 5);
   
-  dataReader.addlistener('CaseChange',      @updateData);
-  dataReader.addlistener('SetChange',       @updateData);
-  dataReader.addlistener('SheetChange',     @updateData);
-  dataReader.addlistener('VariableChange',  @updateData);
-  dataReader.addlistener('FailedChange',    @updateData);
+  dataReader.addlistener('CaseChange',        @updateData);
+  dataReader.addlistener('SetChange',         @updateData);
+  dataReader.addlistener('SheetChange',       @updateData);
+  dataReader.addlistener('VariableChange',    @updateData);
+  dataReader.addlistener('AttemptingChange',  @updateData);
+  dataReader.addlistener('FailedChange',      @updateData);
+  dataReader.addlistener('SuccessfulChange',  @updateData);
   
   sheetReady = false;
   
-  for m = [round(rand(1,15)*30) 150] %, disp([ x.SheetID m]);
+  dataReader.TestState();
+  
+  sheetRange = [round(rand(1,15)*30) ];
+  
+  sheetRange = [sheetRange 150];
+  
+  for m = sheetRange %150] %, disp([ x.SheetID m]);
     dataReader.SheetID = m;
     dispf('@Set:\tCase: %s\tSet: %d\tSheet: %d/%d\tDataSize: %d x %d', ...
       dataReader.Data.Parameters.CaseID, dataReader.Data.Parameters.SetID, dataReader.Data.Parameters.SheetID, dataReader.SheetID,  size(dataReader.SheetData));
     
-    c = tic;
-    while ~isequal(dataReader.Data.Parameters.SheetID, m) %dataReader.SheetID)
-      try
-        pauseTest; %pause(0.1);     
-      catch err
-        debugStamp(err, 1);
-        throw(err);
-      end
-      if toc(c)>20, error('Time out!'), end
-    end
+    %     c = tic;
+    %     while ~isequal(dataReader.Data.Parameters.SheetID, m) %dataReader.SheetID)
+    %       try
+    %         pauseTest; %pause(0.1);
+    %       catch err
+    %         debugStamp(err, 1);
+    %         throw(err);
+    %       end
+    %       if toc(c)>60*5, error('Time out!'), end
+    %     end
   end
-  
-  try delete(dataReader); end
+  % try delete(dataReader); end
 end
 
 function pauseTest(fail, e)
@@ -68,27 +75,28 @@ function pauseTest(fail, e)
 end
 
 function updateData(source, event)
-  caseID = ''; setID = []; variableID = ''; sheetID = []; oldSheetID = [];
-  sheetData = [];
+  %   caseID = ''; setID = []; variableID = ''; sheetID = []; oldSheetID = [];
+  %   sheetData = [];
+  %
+  %   try caseID      = event.Data.Parameters.CaseID;     end
+  %   try setID       = event.Data.Parameters.SetID;      end
+  %   try variableID  = event.Data.Parameters.VariableID; end
+  %   try sheetID     = event.Data.Parameters.SheetID;    end
+  %   try oldSheetID  = event.OldData.Parameters.SheetID; end
+  %   try sheetData   = event.Data.SheetData;             end
+  %   try err         = event.Exception;                  end
+  %
+  %   dispf('@%s\tCase: %s\tSet: %d\tVariable: %s\tSheet: %d/%d\tDataSize: %d x %d', ...
+  %     event.EventName, ...
+  %     caseID, setID, variableID, sheetID, ...
+  %     oldSheetID, size(sheetData) ...
+  %     );
+  display(event);
   
-  try caseID      = event.Data.Parameters.CaseID;     end
-  try setID       = event.Data.Parameters.SetID;      end
-  try variableID  = event.Data.Parameters.VariableID; end
-  try sheetID     = event.Data.Parameters.SheetID;    end
-  try oldSheetID  = event.OldData.Parameters.SheetID; end
-  try sheetData   = event.Data.SheetData;             end
-  try err         = event.Exception;                  end
-  
-  dispf('@%s\tCase: %s\tSet: %d\tVariable: %s\tSheet: %d/%d\tDataSize: %d x %d', ...
-    event.EventName, ...
-    caseID, setID, variableID, sheetID, ...
-    oldSheetID, size(sheetData) ...
-    );
-  
-  if all(isa(err, 'MException'))
-    debugStamp(err, 1);
-    pauseTest(true, err);
-  end
+%   if all(isa(err, 'MException'))
+%     debugStamp(err, 1);
+%     pauseTest(true, err);
+%   end
 end
 
 function [variableData skip] = processVariableData(newData)
@@ -103,7 +111,9 @@ function [variableData skip] = processVariableData(newData)
     end
   end
   
-  variableData.SetStats = Grasppe.Stats.DataStats(setData);
+  try
+    variableData.SetStats = Grasppe.Stats.DataStats(setData);
+  end
   
   skip = false;
   %disp('Processing Variable Data...');

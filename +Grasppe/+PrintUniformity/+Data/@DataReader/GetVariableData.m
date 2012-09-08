@@ -31,14 +31,18 @@ function [ variableData parameters ] = GetVariableData(obj, sheetID) % newData, 
   try setReady            = dataReader.CheckState('SetReady'); end
   
   %% Get single sheet
-  if ~variableReady && exist('sheetID', 'var') && isscalar(sheetID)
-    while ~setReady % isempty(newData.SetData)
-      obj.GetSetData();
-      setReady            = dataReader.CheckState('SetReady');
+  if ~variableReady && exist('sheetID', 'var') 
+    if isscalar(sheetID)
+      while ~setReady % isempty(newData.SetData)
+        obj.GetSetData();
+        setReady            = dataReader.CheckState('SetReady');
+      end
+
+      variableData          = getRawData(newData.Parameters, newData.SetData, sheetID);
+      return;
+    else
+      throw(Grasppe.PrintUniformity.Data.ReaderException.SheetRangeError([], sheetID, dataReader.Parameters));
     end
-    
-    variableData          = getRawData(newData.Parameters, newData.SetData, sheetID);
-    return;
   end
   
   %% Load Data
@@ -48,11 +52,11 @@ function [ variableData parameters ] = GetVariableData(obj, sheetID) % newData, 
     %if ~setReady || ~exist('setData', 'var') % || isempty(setData) %
     while ~setReady % isempty(newData.SetData)
       obj.GetSetData();
-      setReady        = dataReader.CheckState('SetReady');
+      setReady              = dataReader.CheckState('SetReady');
     end
     %end
     
-    setData             = newData.SetData;
+    setData                 = newData.SetData;
     
     try dataReader.PromoteState('VariableLoading', true); end
     
@@ -65,14 +69,14 @@ function [ variableData parameters ] = GetVariableData(obj, sheetID) % newData, 
     
     %% Execute Default Processing Function
     if isequal(skip, false)
-      if ~isequal(newData.Parameters.VariableID, 'Raw')
-        newData.Parameters.VariableID   = 'Raw';
+      if ~isequal(dataReader.Parameters.VariableID, 'Raw')
+        dataReader.Parameters.VariableID     = 'Raw';
       end
-      variableData.Raw      = getRawData(newData.Parameters, setData);
+      variableData.Raw              = getRawData(dataReader.Parameters, setData);
     end
     
     %% Update Data Model
-    newData.VariableData    = variableData;
+    newData.VariableData            = variableData;
     
     newData.Parameters.VariableID   = dataReader.Parameters.VariableID;
     
@@ -98,7 +102,6 @@ function variableData = getRawData(parameters, setData, sheetID)
     
     variableData          = [];
     
-    %parameters          = parameters; %copy(obj.Parameters);
     sheetRange            = [];
     try sheetRange        = [0:numel(setData.data)]; end
     

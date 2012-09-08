@@ -44,7 +44,7 @@ classdef ReaderException < MException
     
     function err = SheetRangeError(cause, sheetID, parameters)
       if exist('cause', 'var')~=1, cause = []; end
-      msg = {'Data reader failed to load sheet %d', sheetID};
+      msg = {'Data reader failed to load sheet %s', toString(sheetID)};
       err = feval(eval(NS.CLASS), 'SheetRangeError', msg, cause, parameters);
     end    
   end

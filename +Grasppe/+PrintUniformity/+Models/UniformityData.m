@@ -64,15 +64,18 @@ classdef UniformityData < Grasppe.Data.Models.DataModel
     end
     
     function model = modelSet(obj, model, value, modelClass)
+      oldModel  = model;
       if ~isa(model, modelClass) || ~isvalid(model)
-        model = eval(modelClass); % ~Component
+        model   = eval(modelClass); % ~Component
       end
       if isa(value, modelClass)
         model.DATA = value.DATA;
-        return;
+        %return;
       else
         model.DATA = value;
       end
+      try if ~isequal(model, oldModel)
+          delete(oldModel); end; end
     end
     
   end
