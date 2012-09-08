@@ -103,7 +103,6 @@ classdef PlotMediator < Grasppe.Core.Mediator
           end
         end
       end
-      
     end
     
     function createControls(obj, parentFigure)
@@ -149,11 +148,13 @@ classdef PlotMediator < Grasppe.Core.Mediator
     function selectCaseID(obj, source, event)
       % disp(source); caseID = source.getSelectedItem;
       try obj.CaseID = source.getSelectedItem; end
+      %figure(gcf);
     end
     
     function selectSetID(obj, source, event)
       % disp(source); setID = source.getSelectedItem;
       try obj.SetID = source.getSelectedItem; end
+      %figure(gcf);
     end
     
     function jText = createCommandPrompt(obj, hFigure, left, bottom, width, height)
@@ -177,6 +178,7 @@ classdef PlotMediator < Grasppe.Core.Mediator
           s         = jText.getMaximumSize;
           s.width   = width;
           jText.setMaximumSize(s);
+          jText.setFocusable(false);
         end
       end
       
@@ -325,6 +327,7 @@ classdef PlotMediator < Grasppe.Core.Mediator
           s         = jCombo.getMaximumSize;
           s.width   = width;
           jCombo.setMaximumSize(s);
+          jCombo.setFocusable(false);
         end
       end
       

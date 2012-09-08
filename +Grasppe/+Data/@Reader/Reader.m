@@ -24,10 +24,6 @@ classdef Reader < Grasppe.Core.Component
     function obj = Reader(varargin)
       obj = obj@Grasppe.Core.Component(varargin{:});
     end
-    
-    function delete(obj)
-      beep;
-    end
   end
    
   methods (Access=protected)
@@ -65,6 +61,7 @@ classdef Reader < Grasppe.Core.Component
         for m = 1:numel(parameters)
           property      = parameters{m};
           idx           = find( strcmpi(property, componentOptions), 1, 'last');
+          try obj.(property)            = componentOptions{ idx  + 1}; end
           try obj.Parameters.(property) = componentOptions{ idx  + 1}; end
         end
       end

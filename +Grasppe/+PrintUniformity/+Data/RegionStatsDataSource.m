@@ -779,7 +779,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
   
   methods (Static)
     function obj = Create(varargin)
-      obj = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource(varargin{:});
+      obj = feval(eval(NS.CLASS), varargin{:});
     end
   end
   

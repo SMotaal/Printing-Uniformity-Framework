@@ -34,7 +34,7 @@ classdef DataSource < Grasppe.Data.Source
     %   )
   end
   
-  properties (Dependent, SetObservable, GetObservable)
+  properties (AbortSet, Dependent, SetObservable, GetObservable)
     CaseID,       SetID,        VariableID,     SheetID;
     CaseData,     SetData,      VariableData,   SheetData;
     CaseName,     SetName,      VariableName,   SheetName;
@@ -46,7 +46,14 @@ classdef DataSource < Grasppe.Data.Source
     caseID, setID, variableID, sheetID
   end
   
-  properties (Dependent)
+  properties
+    ProcessCaseDataFunction       = [];
+    ProcessSetDataFunction        = [];
+    ProcessVariableDataFunction   = [];
+    ProcessSheetDataFunction      = [];
+    DataLoadingFunction           = [];
+    DataSuccessFunction           = [];
+    DataFailureFunction           = [];    
   end
   
   events
@@ -57,6 +64,7 @@ classdef DataSource < Grasppe.Data.Source
     AttemptingChange
     FailedChange
     SuccessfulChange
+    AbortedChange
   end
   
   methods
@@ -66,7 +74,7 @@ classdef DataSource < Grasppe.Data.Source
     
   end
     
-  methods (Access=protected)
+  methods (Access=protected, Sealed)
     
     function fireReaderEvent(obj, source, eventData)
       
@@ -78,18 +86,25 @@ classdef DataSource < Grasppe.Data.Source
           case 'CaseChange'
             if validReader
               obj.caseID      = source.Parameters.CaseID; end
+            obj.ProcessCaseData(eventData);      % ProcessCaseDataFunction
           case 'SetChange'
             if validReader
               obj.setID       = source.Parameters.SetID; end
+            obj.ProcessSetData(eventData);       % ProcessSetDataFunction
           case 'VariableChange'
             if validReader
               obj.variableID  = source.Parameters.VariableID; end
+            obj.ProcessVariableData(eventData);  % ProcessVariableDataFunction
           case 'SheetChange'
             if validReader
               obj.sheetID     = source.Parameters.SheetID; end
+            obj.ProcessSheetData(eventData);     % ProcessSheetDataFunction
+          case 'AttemptingChange'
+            obj.OnDataLoad(eventData);
+          case 'SuccessfulChange'
+            obj.OnDataSuccess(eventData);
           case 'FailedChange'
-            % if validReader
-            %   obj.caseID      = source.Parameters.CaseID; end
+            obj.OnDataFailure(eventData);
           otherwise
             return;
         end
@@ -102,6 +117,9 @@ classdef DataSource < Grasppe.Data.Source
       
     end
     
+  end
+  
+  methods (Access=protected)
     
     function tf = attachReaderListeners(obj, reader)
       tf                  = false;
@@ -144,6 +162,26 @@ classdef DataSource < Grasppe.Data.Source
       skip          = false;
     end
     
+    function ProcessCaseData(obj, eventData)
+    end
+    
+    function ProcessSetData(obj, eventData)
+    end
+    
+    function ProcessVariableData(obj, eventData)
+    end
+    
+    function ProcessSheetData(obj, eventData)
+    end    
+    
+    function OnDataLoad(obj, eventData)
+    end
+    
+    function OnDataSuccess(obj, eventData)
+    end
+    
+    function OnDataFailure(obj, eventData)
+    end 
     
     
   end

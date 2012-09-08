@@ -59,10 +59,10 @@ classdef Source  < Grasppe.Core.Component
       
       if ~Grasppe.Data.Source.ValidateReader(reader), return; end;
       
-      disp(isequal(reader, obj.reader))
+      %disp(isequal(reader, obj.reader));
       
-%       try if ~isequal(reader, obj.reader)
-%           obj.detachReader; end; end
+      try if ~isequal(reader, obj.reader)
+          obj.detachReader; end; end
       tf  = obj.attachReaderListeners(reader);
       
       obj.reader    = reader;
@@ -82,7 +82,8 @@ classdef Source  < Grasppe.Core.Component
     end
     
     function fireReaderEvent(obj, source, eventData)
-      notify(obj, eventData.EventName, eventData);
+      % Notify datasource listeners of event triggered initially by reader
+      try notify(obj, eventData.EventName, eventData); end
     end
     
   end

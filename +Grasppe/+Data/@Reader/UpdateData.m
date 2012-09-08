@@ -5,9 +5,14 @@ function eventData = UpdateData( obj, parameter, value )
     try stop(obj.updateDelayTimer);     end
     
     if nargin==1
+%       timerRunning = false;
+%       try timerRunning = ~isequal(obj.updateDelayTimer.Running, 'off'); end
+%       if timerRunning, return; end
       eventData = obj.ResetEventData('Change', [], []);
+      delay     = 0.5;
     elseif nargin==3
       eventData = obj.ResetEventData('Change', parameter, value);
+      delay     = 0.1;
     else
       error('Grasppe:UpdateData:MissingArguments', ...
         'UpdateData requires neither or both parameter and value.');
@@ -16,7 +21,7 @@ function eventData = UpdateData( obj, parameter, value )
     
     updateCallBack = @(s, e) updateData(obj, eventData);
     
-    resetUpdateTimer(obj, updateCallBack);
+    resetUpdateTimer(obj, updateCallBack, delay);
     
     try start(obj.updateDelayTimer); end
   catch err
@@ -90,16 +95,19 @@ end
 %   newParameters.(parameter) = value;
 % end
 
-function resetUpdateTimer(obj, updateCallBack)
+function resetUpdateTimer(obj, updateCallBack, delay)
   if ~exist('updateCallBack', 'var') || ~isa(updateCallBack, 'function_handle')
     updateCallBack                = obj.UpdateData();
   end
   
+  try stop(obj.updateDelayTimer); end
+  
   if isa(obj.updateDelayTimer, 'timer') && isvalid(obj.updateDelayTimer)
-    obj.updateDelayTimer.TimerFcn = (updateCallBack);
+      obj.updateDelayTimer.TimerFcn = (updateCallBack);
+      obj.updateDelayTimer.Period   = delay;
   else
     try delete(obj.updateDelayTimer); end
-    obj.updateDelayTimer = GrasppeKit.DelayedCall(updateCallBack);
+    obj.updateDelayTimer = GrasppeKit.DelayedCall(updateCallBack, delay);
   end
 end
 

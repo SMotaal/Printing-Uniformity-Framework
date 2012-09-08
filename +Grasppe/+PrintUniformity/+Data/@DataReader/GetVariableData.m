@@ -69,7 +69,7 @@ function [ variableData parameters ] = GetVariableData(obj, sheetID) % newData, 
     
     %% Execute Default Processing Function
     if isequal(skip, false)
-      if ~isequal(dataReader.Parameters.VariableID, 'Raw')
+      if isempty(dataReader.Parameters.VariableID) %~isequal(dataReader.Parameters.VariableID, 'Raw')
         dataReader.Parameters.VariableID     = 'Raw';
       end
       variableData.Raw              = getRawData(dataReader.Parameters, setData);

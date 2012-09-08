@@ -74,17 +74,17 @@ classdef DataReader < Grasppe.Data.Reader
   
   %% Prototype Methods
   methods
-    function obj = DataReader(varargin)
+    function obj = DataReader(varargin)   
       obj = obj@Grasppe.Data.Reader(varargin{:});
     end
     
     function eventData = UpdateData( obj, varargin)
       %% Fallback to parameter defaults (if necessary)
-      if numel(varargin) == 0
-        if isempty(obj.Parameters.SetID),       obj.Parameters.SetID      = obj.DefaultValue('SetID'); end
-        if isempty(obj.Parameters.VariableID),  obj.Parameters.VariableID = obj.DefaultValue('VariableID'); end
-        if isempty(obj.Parameters.SheetID),     obj.Parameters.SheetID    = obj.DefaultValue('SheetID'); end
-      end
+      % if numel(varargin) == 0
+      %   if isempty(obj.Parameters.SetID),       obj.Parameters.SetID      = obj.DefaultValue('SetID'); end
+      %   if isempty(obj.Parameters.VariableID),  obj.Parameters.VariableID = obj.DefaultValue('VariableID'); end
+      %   if isempty(obj.Parameters.SheetID),     obj.Parameters.SheetID    = obj.DefaultValue('SheetID'); end
+      % end
       
       eventData = obj.UpdateData@Grasppe.Data.Reader(varargin{:});
     end
@@ -93,6 +93,10 @@ classdef DataReader < Grasppe.Data.Reader
   methods (Access=protected)
     
     function createComponent(obj)
+      obj.CaseID      = [];
+      obj.VariableID  = [];
+      obj.SetID       = [];
+      obj.SheetID     = [];      
       obj.createComponent@Grasppe.Data.Reader;
     end
     
@@ -115,6 +119,8 @@ classdef DataReader < Grasppe.Data.Reader
     end
     
     function set.VariableID(obj, variableID)
+      try if isempty(obj.Parameters.VariableID), obj.Parameters.VariableID = variableID;
+          return; end; end
       obj.UpdateData('VariableID', variableID);
     end
     
@@ -210,7 +216,24 @@ classdef DataReader < Grasppe.Data.Reader
     
     %% CaseName, SetName, VariableName, SheetName
     function caseName = get.CaseName(obj)
-     caseName = ''; pressName = ''; runCode = '';
+     caseName       = obj.GetCaseName();
+    end
+    
+    function setName = get.SetName(obj)
+      setName       = obj.GetSetName();
+    end
+    
+    function variableName = get.VariableName(obj)
+      variableName  = obj.GetVariableName();
+    end
+    
+    function sheetName = get.SheetName(obj)
+      sheetName     = obj.GetSheetName();
+    end    
+    
+    function caseName = GetCaseName(obj, caseID)
+      try if nargin<2, caseID = obj.CaseID; end; end
+      caseName = ''; pressName = ''; runCode = '';
       
       try pressName     = obj.CaseData.metadata.testrun.press.name; end
       
@@ -220,37 +243,40 @@ classdef DataReader < Grasppe.Data.Reader
       try caseName      = strtrim([pressName ' ' runCode]); end
     end
     
-    function setName = get.SetName(obj)
+    
+    function setName = GetSetName(obj, setID)
+      try if nargin<2, setID = obj.SetID; end; end
       setName = '';
       %try setName = obj.SetData.setLabel; end
       try
-        setName         = [int2str(obj.SetData.patchSet) '%'];
+        setName         = [int2str(setID) '%'];
       end
       if isnumeric(setName)
         setName = int2str(setName);
       end
     end
-    
-    function variableName = get.VariableName(obj)
+
+    function variableName = GetVariableName(obj, variableID)
+      try if nargin<2, variableID = obj.VariableID; end; end
       variableName      = '';
-      try variableName  = obj.VariableID; end
+      try variableName  = variableID; end        
     end
     
-    function sheetName = get.SheetName(obj)
+    function sheetName  = GetSheetName(obj, sheetID)
+      try if nargin<2, sheetID = obj.SheetID; end; end
+        
       sheetName         = '';
-      if isequal(obj.SheetID,0)
-        sheetName       = 'Run Summary';
+      if isequal(sheetID,0)
+        sheetName       = 'Run';
         return;
       end
-      try sheetName     = obj.CaseData.index.Sheets(obj.SheetID); end
+      try sheetName     = obj.CaseData.index.Sheets(sheetID); end
       if isnumeric(sheetName) && isscalar(sheetName)
         sheetName       = int2str(sheetName);
       else
         sheetName       = '';
       end      
-    end    
-    
-    
+    end
     
 
   end
