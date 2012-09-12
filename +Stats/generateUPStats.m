@@ -35,7 +35,7 @@ function [ dataSource stats ] = generateUPStats( dataSource, dataSet, regions  )
     
     try
       if ~isstruct(regionStatsData) || ~isfield(regionStatsData,'Stats') || ...
-          ~isa(regionStatsData(1).Stats, 'Grasppe.Stats.DataStats')
+          ~isa(regionStatsData(1).Stats, 'Grasppe.Stats.TransientStats')
         regionStatsData = [];
       end
     catch err
@@ -99,13 +99,13 @@ function [runStats] = generateRunStats( stats )
   runStats.Stats  = generateDataStats(stats.data(:));
 end
 
-function stats = generateDataStats(data, mu, sigma)
-  opt = {data};
-  if exist('mu', 'var')  && exist('sigma', 'var')
-    opt = {data, mu, sigma};
-  end
+function stats = generateDataStats(data, varargin)
+  %   opt = {data};
+  %   if exist('mu', 'var')  && exist('sigma', 'var')
+  %     opt = {data, struct('Mean', mu, 'Sigma', sigma)};
+  %   end
   
-  stats = Grasppe.Stats.DataStats(opt{:});
+  stats = Grasppe.Stats.TransientStats(data, varargin{:}); %opt{:});
 end
 
 function [localStats] = calculateStats( data,  masks, population )
@@ -143,12 +143,14 @@ function [localStats] = calculateStats( data,  masks, population )
   rMean = [];
   rStd  = [];
   
-  try
-    if isa(population.Stats, 'Grasppe.Stats.DataStats')
-      rMean = population.(tStats).Mean;
-      rStd  = population.(tStats).Sigma;
-    end
+  %try
+  if ~isa(population.Stats, 'Grasppe.Stats.TransientStats')
+    % rMean = population.(tStats).Mean;
+    %rStd  = population.(tStats).Sigma;
+    
+    error('Grasppe:Stats:PopulationInvalid', 'Stats can only be computed with TransientStats population reference.');
   end
+  %end
     
   %% Masks
   if ~exists('masks') || isempty(masks)
@@ -174,26 +176,28 @@ function [localStats] = calculateStats( data,  masks, population )
       localMask   = masks(m,:,:)==1;
       regionData  = sheetData(localMask); % regionData  = zeros(size(localMask)) * NaN; % regionData(localMask)  = sheetData(localMask);
       
-      if isempty(rMean) || isempty(rStd)
-        localStats(m,si).(tStats) = generateDataStats(regionData);
-        error('Grasppe:UP:InvalidRunStats', 'Cannot find run mean or run std.');
-      else
-        localStats(m,si).(tStats) = generateDataStats(regionData, rMean, rStd);
-      end
+      localStats(m,si).(tStats) = generateDataStats(regionData, population.Stats);
+      
+      % if isempty(rMean) || isempty(rStd)
+      %   localStats(m,si).(tStats) = generateDataStats(regionData);
+      %   error('Grasppe:UP:InvalidRunStats', 'Cannot find run mean or run std.');
+      % else
+      %   localStats(m,si).(tStats) = generateDataStats(regionData, rMean, rStd);
+      % end
       
       
       %localStats(m,si).(tMean)  = nanmean(regionData);
       %localStats(m,si).(tStd )  = nanstd(regionData);
       %localStats(m,si).(tLim )  = localStats(m,si).(tMean) + [-3 +3].*localStats(m,si).(tStd);
       
-%       if validCheck('rMean', 'double')
-%         %localStats(m,si).(tRMean) = localStats(m,si).(tMean) - rMean;
-%       end
-%       
-%       if validCheck('rLim',  'double')
-%         %localStats(m,si).(tRLim) = localStats(m,si).(tLim)-rLim;
-%         %localStats(m,si).(tPLim) = nanmax(localStats(m,si).(tRLim),[],2);
-%       end
+      %       if validCheck('rMean', 'double')
+      %         %localStats(m,si).(tRMean) = localStats(m,si).(tMean) - rMean;
+      %       end
+      %
+      %       if validCheck('rLim',  'double')
+      %         %localStats(m,si).(tRLim) = localStats(m,si).(tLim)-rLim;
+      %         %localStats(m,si).(tPLim) = nanmax(localStats(m,si).(tRLim),[],2);
+      %       end
     end
   end
   

@@ -147,13 +147,13 @@ classdef PlotMediator < Grasppe.Core.Mediator
     
     function selectCaseID(obj, source, event)
       % disp(source); caseID = source.getSelectedItem;
-      try obj.CaseID = source.getSelectedItem; end
+      obj.CaseID = source.getSelectedItem;
       %figure(gcf);
     end
     
     function selectSetID(obj, source, event)
       % disp(source); setID = source.getSelectedItem;
-      try obj.SetID = source.getSelectedItem; end
+      obj.SetID = source.getSelectedItem;
       %figure(gcf);
     end
     

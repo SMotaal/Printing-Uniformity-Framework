@@ -9,7 +9,8 @@ classdef UPBeta
     exportRegionPlots
     demoViewerRegions
     demoViewerMultiPlots
-    demoViewerNewSurf
+    demoNewSurfs
+    demoNewRegions
   end
   
 end

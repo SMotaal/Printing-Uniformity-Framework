@@ -36,6 +36,18 @@ function stats = GetStatistics( obj, sheetID, variableID)
   end
 end
 
+function [setStats] = getSetStatistics(obj, variableID)
+  
+end
+
+function stats = getStats(varargin)
+  if nargin==0
+    stats = Grasppe.Stats.TransientStats.empty();
+  else
+    stats = Grasppe.Stats.TransientStats(varargin{:});
+  end
+end
+
 function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
   
   sheetStats = struct('Data', [], 'Masks', [], 'Values', [], 'Strings', []);
@@ -49,6 +61,8 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
     stats       = obj.Stats;
     caseID      = obj.CaseID;
     setID       = obj.SetID;
+    
+    debugStamp(5);
     
     %% Get Stats Functions
     
@@ -73,29 +87,36 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
         acrossID = [varID 'Across'];
     end
     
+    runStats        = stats.run.Stats;
+    
     %% Get Region Masks
     regionMasks     = stats.metadata.regions.(varID);
     
-    %% Get Region Data
-    regionData      = Grasppe.Stats.DataStats.empty;
-    aroundData      = Grasppe.Stats.DataStats.empty;
-    acrossData      = Grasppe.Stats.DataStats.empty;
+    %% Get Sheet Data
+    regionData      = getStats(); % Grasppe.Stats.TransientStats.empty;    
+    
+    if sheetID == 0, sheetID = obj.SheetCount + 1; end
     
     for m = 1:size(stats.(varID),1)
       regionData(m) = stats.(varID)(m, sheetID).Stats;
     end
     
-    runData         = stats.run.Stats;
-    sheetData       = regionData(1).Data(:);
-    for k=2:numel(regionData)
-      sheetData = [sheetData(:); regionData(k).Data(:)];
+    if sheetID > obj.SheetCount
+      sheetData       = stats.data;
+    else
+      sheetData       = stats.data(sheetID, :, :); % regionData(1).Data(:);
     end
-    sheetData       = Grasppe.Stats.DataStats(sheetData, runData.Mean, runData.Sigma);
+    % for k=2:numel(regionData)
+    %   sheetData     = [sheetData(:); regionData(k).Data(:)];
+    % end
+    sheetData       = getStats(sheetData, runStats);
+    
+    %% Get Circumferential Data
+    aroundData      = getStats(); % Grasppe.Stats.TransientStats.empty;    
     
     try
       aroundMasks = stats.metadata.regions.(aroundID);
       aroundMasks = max(aroundMasks, [], 3);
-      %aroundData  = stats.(aroundID)(:, sheetID);
       
       for m = 1:size(stats.(aroundID),1)
         aroundData(m) = stats.(aroundID)(m, sheetID).Stats;
@@ -106,10 +127,12 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
       aroundData  = [];
     end
     
+    %% Get Axial Data
+    acrossData      = getStats(); % Grasppe.Stats.TransientStats.empty;    
+    
     try
       acrossMasks = stats.metadata.regions.(acrossID);
       acrossMasks = max(acrossMasks, [], 2);
-      %acrossData  = stats.(acrossID)(:, sheetID);
       
       for m = 1:size(stats.(acrossID),1)
         acrossData(m) = stats.(acrossID)(m, sheetID).Stats;
@@ -120,12 +143,9 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
       acrossData  = [];
     end
     
-    %% Stats Calcualtions
-    
-    regionStats = statsFunction{1}(regionData, runData);
-    
-    rows      = size(Z,2);
-    columns   = size(Z,1);
+    %% Prepare Plot Data
+    rows          = size(Z,2);
+    columns       = size(Z,1);
     
     summaryOffset = obj.SummaryOffset;
     offsetRange   = 1:summaryOffset;
@@ -141,25 +161,49 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
     
     newData       = zeros(1, xColumns, xRows);
     
-    for m = 1:size(regionMasks,1)
-      maskData          = regionMasks(m, :, :)==1;
-      newData(maskData) = regionStats(m);
+    %% Region Stats
+    try
+      %regionStats   = statsFunction{1}(regionData, runStats);
+      
+      regionCount = size(regionMasks,1);
+      regionStats = NaN(1, regionCount);
+            
+      for m = 1:regionCount
+        regionStats(m)    = statsFunction{1}(regionData(m), runStats);
+        maskData          = regionMasks(m, :, :)==1;
+        newData(maskData) = regionStats(m);
+      end
+      
+    catch err
+      try
+        if ~isequal(size(newData), size(maskData))
+          obj.Regions = [];
+          obj.ProcessVariableData();
+          return;
+        end
+      end
+      debugStamp(1);
     end
     
+    %% Circumferential Stats    
     try
-      aroundStats = statsFunction{2}(aroundData, runData);
       
-      for m = 1:size(aroundMasks,1)
-        xMask       = zeros(1, xColumns, xRows)==1;
+      aroundCount   = size(aroundMasks,1);
+      aroundStats   = NaN(1, aroundCount);
+      
+      for m = 1:aroundCount
+        aroundStats(m)  = statsFunction{2}(aroundData(m), runStats);
         
-        r = rows + summaryRange;
-        aroundMask  = aroundMasks(m, :, :)==1;
+        xMask           = zeros(1, xColumns, xRows)==1;
+        
+        r               = rows + summaryRange;
+        aroundMask      = aroundMasks(m, :, :)==1;
         xMask(1, aroundMask(:), r) = true;
         
         
-        newData(xMask) = aroundStats(m);
+        newData(xMask)  = aroundStats(m);
         
-        n = size(regionMasks,1)+1;
+        n               = size(regionMasks,1)+1;
         
         regionMasks(n, :, :)  = xMask;
         regionStats(n)        = aroundStats(m);
@@ -168,40 +212,47 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
       debugStamp(err, 1);
     end
     
+    %% Axial Stats    
     try
-      acrossStats = statsFunction{2}(acrossData, runData);
       
-      for m = 1:size(acrossMasks,1)
-        xMask       = zeros(1, xColumns, xRows)==1;
+      acrossCount       = size(acrossMasks,1);
+      acrossStats       = NaN(1, acrossCount);
+      
+      for m = 1:acrossCount
+        acrossStats(m)  = statsFunction{2}(acrossData(m), runStats);
+        xMask           = zeros(1, xColumns, xRows)==1;
         
-        c = columns + summaryRange;
-        acrossMask  = acrossMasks(m, :, :)==1;
+        c               = columns + summaryRange;
+        acrossMask      = acrossMasks(m, :, :)==1;
         xMask(1, c, acrossMask(:)) = true;
         
-        newData(xMask) = acrossStats(m);
+        newData(xMask)  = acrossStats(m);
         
         n = size(regionMasks,1)+1;
         
         regionMasks(n, :, :)  = xMask;
-        regionStats(n)        = acrossStats(m);
+        regionStats(n)  = acrossStats(m);
       end
     catch err
       debugStamp(err, 1);
     end
     
+    %% Summary Stats    
     try
-      sampleStats = statsFunction{3}(sheetData, runData);
-      r = rows    + summaryRange;
-      c = columns + summaryRange;
-      newData(1, c, r) = sampleStats;
+      sampleStats           = statsFunction{3}(sheetData, runStats);
       
-      xMask           = zeros(1, xColumns, xRows)==1;
-      xMask(1, c, r)  = true;
+      r                     = rows    + summaryRange;
+      c                     = columns + summaryRange;
+      newData(1, c, r)      = sampleStats;
+      
+      xMask                 = zeros(1, xColumns, xRows)==1;
+      xMask(1, c, r)        = true;
       
       n = size(regionMasks,1)+1;
       
       regionMasks(n, :, :)  = xMask;
       regionStats(n)        = sampleStats;
+      
     catch err
       debugStamp(err, 1);
     end
@@ -224,20 +275,13 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
     end
     regionLabels{end+1}   = [labelPrefix labelFunction{3}(sheetData)     ];
     
+    newData               = squeeze(newData);
     
     sheetStats = struct('Data', newData, 'Masks', regionMasks, 'Values', regionStats, 'Strings', {regionLabels});
     
-    try
-      obj.SetStats{sheetID}   = regionStats;
-    catch err
-      debugStamp(err, 1);
-    end
-    
-    try
-      obj.SetStrings{sheetID} = regionLabels;
-    catch err
-      debugStamp(err, 1);
-    end
+    try obj.RegionData{sheetID}   = regionStats; end    
+    try obj.RegionLabels{sheetID} = regionLabels; end
+    try obj.SheetStats{sheetID}   = sheetStats; end
     
   catch err
     debugStamp(err, 1);
@@ -247,6 +291,8 @@ end
 
 
 function updateStatsFunctions(obj)
+  
+  debugStamp(5);
   
   if ~isempty(obj.CurrentStatsMode) && ...
       ~isempty(obj.CurrentStatsFunction) && ...
@@ -267,7 +313,7 @@ function updateStatsFunctions(obj)
   dataFunction  = {};
   labelFunction = {};
   
-  switch statsMode
+  switch statsMode     
     case {'limits'}
       statsMode     = 'Limits';
       statsFunction{1}  = @(d, r) vertcat(d.Mean);
@@ -276,11 +322,14 @@ function updateStatsFunctions(obj)
       labelFunction{2}  = @(d)    sprintf('%1.1f±%1.1f', mean(d.Mean), (d.Sigma.*3));
     case {'peaklimits'}
       statsMode         = 'PeakLimits';
-      statsFunction{1}  = @(d, r) vertcat(d.Mean);
+      statsFunction{1}  = @(d, r) d.Sample.Peak; %vertcat(d.detailed);
       dataFunction{1}   = @(s)    nanmean(s(:));
-      labelFunction{1}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}%+1.1f }}\n{\\fontsize{t}({\\itpeak_{r}} = {\\it\\mu_{R}}%+1.1f)}', d.PeakLimit(1), 2*(d.Mean-d.PeakLimit(1)), d.PeakLimit(1)-d.ReferenceMean); %d.Sigma*3);
-      labelFunction{2}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}±%1.1f  } }\n{\\fontsize{t}({\\it\\mu_{b}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
-      labelFunction{3}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}±%1.1f  } }\n{\\fontsize{t}({\\it\\mu_{s}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
+      
+      labelFunction{1}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}', d.Sample.Peak);
+      
+      % labelFunction{1}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}%+1.1f }}\n{\\fontsize{t}({\\itpeak_{r}} = {\\it\\mu_{R}}%+1.1f)}', d.PeakLimit(1), 2*(d.Mean-d.PeakLimit(1)), d.PeakLimit(1)-d.ReferenceMean); %d.Sigma*3);
+      % labelFunction{2}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}±%1.1f  } }\n{\\fontsize{t}({\\it\\mu_{b}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
+      % labelFunction{3}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}±%1.1f  } }\n{\\fontsize{t}({\\it\\mu_{s}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
     otherwise
       statsMode         = 'Mean';
       statsFunction{1}  = @(d, r) vertcat(d.Mean);
@@ -300,9 +349,13 @@ function updateStatsFunctions(obj)
 end
 
 function resetStatsOptions(obj)
+  
+  debugStamp(1);
+  
   obj.Stats                 = [];
-  obj.SetStats              = [];
-  obj.SetStrings            = {};
+  obj.SheetStats            = {};
+  obj.RegionData            = {};
+  obj.RegionLabels          = {};
   obj.CurrentStatsMode      = 'Limits';
   obj.CurrentStatsFunction  = [];
   obj.CurrentDataFunction   = [];

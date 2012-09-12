@@ -1,28 +1,17 @@
 function change  = SetParameters(obj, eventData)
   
   try
+    
+    debugStamp(5);
+    
     eventData.CheckStatusWithException();
-    
-    %   if ~exist('newParameters',  'var'), newParameters = []; end
-    %   if ~exist('change',         'var'), change = 'all';     end
-    
-    %change            = obj.SetParameters@Grasppe.Data.Reader(newParameters, change);
-    
+        
     newParameters     = obj.Parameters;
     
     obj.Data.DataReader = obj;
     
     if isempty(eventData.Parameter)
       change          = 'all';
-      
-      %     try obj.Data.Parameters.CaseID      = obj.Parameters.CaseID;     end
-      %     try obj.Data.Parameters.SetID       = obj.Parameters.SetID;      end
-      %     try obj.Data.Parameters.VariableID  = obj.Parameters.VariableID; end
-      %     try obj.Data.Parameters.SheetID     = obj.Parameters.SheetID;    end
-      % %     try obj.Parameters.CaseID           = obj.CaseID;     end
-      % %     try obj.Parameters.SetID            = obj.SetID;      end
-      %     try obj.Parameters.VariableID       = obj.VariableID; end
-      %     try obj.Parameters.SheetID          = obj.SheetID;    end
     else
       change          = eventData.Parameter;
       parameter       = eventData.Parameter;
@@ -54,7 +43,11 @@ function change  = SetParameters(obj, eventData)
     variableUpdated   = false;
     sheetUpdated      = false;
     
-    if ~(updateCase || updateSet || updateVariable || updateSheet), return; end
+    debugStamp(5);
+    
+    if ~(updateCase || updateSet || updateVariable || updateSheet)
+      return; 
+    end
     
     obj.DemoteState('Initialized');
     

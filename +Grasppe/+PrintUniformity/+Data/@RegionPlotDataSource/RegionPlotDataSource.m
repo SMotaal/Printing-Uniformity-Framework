@@ -11,8 +11,9 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
   properties (AbortSet)
     Regions
     Stats
-    SetStats      = {};
-    SetStrings    = {};
+    RegionData    = {};
+    SheetStats    = {};
+    RegionLabels  = {};
     
     StatsFunction = [];
     DataFunction  = [];
@@ -27,7 +28,7 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
   end
   
   properties
-    StatsMode = 'Mean';
+    StatsMode = 'PeakLimits';
   end
   
   properties (SetAccess=private, GetAccess=private)
@@ -65,7 +66,7 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
   methods
     function attachPlotObject(obj, plotObject)
       
-      try debugStamp(obj.ID, 4); catch, debugStamp(); end;
+      try debugStamp(obj.ID, 4); catch, debugStamp(5); end;
       
       obj.attachPlotObject@Grasppe.PrintUniformity.Data.PlotDataSource(plotObject);
       try plotObject.ParentAxes.setView([0 90], true);  end
@@ -85,7 +86,7 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
         %   obj.PlotLabels.updateSubPlots;
         % end
       catch err
-        try debugStamp(err.message, 1); catch, debugStamp(); end;
+        try debugStamp(err.message, 1); catch, debugStamp(5); end;
       end
       
       % try obj.optimizeSetLimits; end
@@ -95,40 +96,54 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
   
   methods
     function ProcessCaseData(obj, eventData)
-      if nargin>1, obj.ProcessCaseData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData); end
+      debugStamp(5);
       
-      obj.Regions         = obj.GetRegionMetrics();
-      try obj.RegionMasks     = obj.GetRegionMasks(); end
+      obj.Stats               = [];
+      obj.Regions             = [];
+      obj.RegionMasks         = [];
       
-      if nargin==1, obj.ProcessSetData; end
+      if nargin>1, obj.ProcessCaseData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData);
+      else obj.ProcessCaseData@Grasppe.PrintUniformity.Data.PlotDataSource(); end
+            
     end
     
     function ProcessSetData(obj, eventData)
-      if nargin>1, obj.ProcessSetData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData); 
-      else obj.ProcessVariableData; end
+      debugStamp(5);
+      
+      obj.Stats               = [];
+      obj.SheetStats          = {};
+      obj.RegionData          = {};
+      obj.RegionLabels        = {};      
+      try obj.Regions         = obj.GetRegionMetrics(); end
+      try obj.RegionMasks     = obj.GetRegionMasks(); end      
+      
+      
+      if nargin>1, obj.ProcessSetData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData);
+      else obj.ProcessSetData@Grasppe.PrintUniformity.Data.PlotDataSource(); end
+      
     end
     
     function ProcessVariableData(obj, eventData)
       
-      variableID = [];
+      debugStamp(5);
+      
+      variableID = obj.VariableID;
       try
         variableID = eventData.NewValue;
       end
       
-      if ~isequal(obj.VariableID, variableID)
-        obj.VariableID = variableID;
+      if ~isempty(obj.Stats) && isequal(obj.VariableID, variableID) && ...
+          ~(isempty(obj.Regions) || ~isstruct(obj.Regions))
+        return;
       end
       
-      obj.GetStatistics('reset update');   
-      
-      if ~isempty(obj.VariableID)
+      if ~isempty(variableID)
+        obj.GetStatistics('reset update');
         
-        if isempty(obj.Regions) || ~isstruct(obj.Regions)
-          obj.Regions         = obj.GetRegionMetrics();
-          try obj.RegionMasks     = obj.GetRegionMasks(); end
-        end
+        obj.Regions             = obj.GetRegionMetrics();
+        try obj.RegionMasks     = obj.GetRegionMasks(); end
         
-        switch lower(obj.VariableID)
+        switch lower(variableID)
           case {'raw'}
             obj.Stats = [];
             regions = [];
@@ -138,23 +153,45 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
             regions.across    = obj.Regions.across;
           otherwise
             regions.(obj.VariableID)  = obj.Regions.(obj.VariableID);
-            try regions.([obj.VariableID 'Around']) = obj.Regions.([obj.VariableID 'Around']); end
-            try regions.([obj.VariableID 'Across']) = obj.Regions.([obj.VariableID 'Across']); end
+            try regions.([obj.VariableID 'Around']) = obj.Regions.([variableID 'Around']); end
+            try regions.([obj.VariableID 'Across']) = obj.Regions.([variableID 'Across']); end
         end
         
         try if ~isempty(regions)
             [dataSource stats]    = Stats.generateUPStats(obj.CaseData, obj.SetData.DATA, regions);
             obj.Stats = stats;
+            
+            obj.ProcessStatistics(variableID);
+            
           end
+        catch err
+          debugStamp(err, 1);
         end
       end
       
-      if nargin>1, obj.ProcessVariableData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData); 
-      else obj.ProcessSheetData; end
+      if nargin>1, obj.ProcessVariableData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData);
+      else obj.ProcessVariableData@Grasppe.PrintUniformity.Data.PlotDataSource(); end
+
+    end
+    
+    function ProcessStatistics(obj, variableID)
+      if ~exist('variableID', 'var')
+        variableID = obj.VariableID;
+      end
+      
+      if isempty(variableID), return; end
+      
+      for m = 0:obj.SheetCount
+        obj.GetStatistics(m, variableID);
+      end
+      
     end
     
     function ProcessSheetData(obj, eventData)
-      if nargin>1, obj.ProcessSheetData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData); end
+      debugStamp(5);
+      
+      if nargin>1, obj.ProcessSheetData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData);
+      else obj.ProcessSheetData@Grasppe.PrintUniformity.Data.PlotDataSource(); end
     end
     
     function OnDataLoad(obj, eventData)
@@ -172,35 +209,45 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
     function [X Y Z skip]         = GetPlotData(obj, data)
       X = []; Y = []; Z = [];
       skip          = false;
-      
-      %       if iscell(sheetID)
-      %         sheetStats  = obj.getSheetStatistics([sheetID{:}], variableID);
-      %       else
-      %         sheetID     = obj.SheetID;
-      %         variableID  = obj.VariableID;
-      %         sheetStats  = obj.getSheetStatistics(sheetID, variableID);
-      %       end
-      
+            
       sheetID           = obj.SheetID;
       variableID        = obj.VariableID;
-      sheetStats        = obj.GetStatistics(sheetID, variableID);
       
+      if sheetID == 0, sheetID = obj.SheetCount+1; end
       
-      newData           = sheetStats.Data; ...
-        Z               = squeeze(newData);
-      [X Y]             = meshgrid(1:size(newData, 3), 1:size(newData, 2));
+      sheetStats        = [];
+      try sheetStats    = obj.SheetStats{sheetID}; end
+      if isempty(sheetStats), sheetStats = obj.GetStatistics(sheetID, variableID); end
       
-      obj.PlotRegions   = sheetStats.Masks;
-      obj.PlotValues    = sheetStats.Values;
-      obj.PlotStrings   = sheetStats.Strings;
+      if isempty(sheetStats)
+        [X Y Z]         = meshgrid(1:obj.RowCount, 1:obj.ColumnCount, NaN);
+        
+      else
+        tries           = 0;
+        
+        while tries < 2
+          try
+            newData           = sheetStats.Data; ...
+              Z               = squeeze(newData);
+            [X Y]             = meshgrid(1:size(newData, 2), 1:size(newData, 1));
+            
+            obj.PlotRegions   = sheetStats.Masks;
+            obj.PlotValues    = sheetStats.Values;
+            obj.PlotStrings   = sheetStats.Strings;
+            tries             = tries + 1;
+          catch err
+            try sheetStats    = obj.GetStatistics(sheetID, variableID); end
+          end
+        end
+      end
       
-      skip              = true;
+      skip                = true;
       
     end
     
     
     function optimizeSetLimits(obj, x, y, z, c)
-      try debugStamp(obj.ID, 4); catch, debugStamp(); end;
+      try debugStamp(obj.ID, 4); catch, debugStamp(5); end;
       
       xLim  = [];
       yLim  = [];
@@ -250,46 +297,21 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
     end
     
   end
-  
-  %     function [caseData skip]      = GetCaseData(obj, newData)
-  %       caseData            = [];     % Replaced with sourceData if not skipping
-  %       skip                = false;
-  %
-  %       obj.GetRegionMaetrics();
-  %       obj.GetRegionMasks();
-  %     end
-  %
-  %     function [setData skip]       = GetSetData(obj, newData)
-  %       setData       = [];     % Replaced with setData when skipped
-  %       skip          = false;
-  %     end
-  %
-  %     function [variableData skip]  = GetVariableData(obj, newData)
-  %       variableData  = [];     % Amended with raw data field when skipped
-  %       skip          = false;
-  %     end
-  %
-  %     function [sheetData skip]     = GetSheetData(obj, newData, variableData)
-  %       sheetData     = [];     % Replaced with raw sheetData when skipped
-  %       skip          = false;
-  %     end
-  
-  
+
   methods
     
     function set.StatsMode(obj, value)
-      %if isequal(lower(obj.StatsMode), lower(value)), return; end
       obj.StatsMode         = value;
       GrasppeKit.DelayedCall(@(s,e)obj.updateVariableData(obj,e), 1, 'start');
     end
     
     function set.Stats(obj, stats)
       obj.Stats = stats;
-      obj.ProcessSetData();   %obj.updateSetStatistics;
+      if ~isempty(obj.Stats), obj.ProcessVariableData(); end
     end
     
     function value = get.StatsMode(obj)
-      value = obj.StatsMode; %CurrentStatsMode;
+      value = obj.StatsMode;
     end
     
     

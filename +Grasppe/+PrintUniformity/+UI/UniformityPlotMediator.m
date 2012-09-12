@@ -72,7 +72,7 @@ classdef UniformityPlotMediator < Grasppe.PrintUniformity.UI.PlotMediator
           if createSource, dataSource  = RegionPlotDataSource(varargin{:}); end
           plotObject    = Grasppe.PrintUniformity.Graphics.UniformitySurf(plotAxes, dataSource);        
           
-        case {'newsurf'}
+        case {'newsurf', 'newsurfs', 'new surf', 'new surfs'}
           
           if createSource, dataSource  = PlotDataSource(varargin{:}); end
           plotObject    = Grasppe.PrintUniformity.Graphics.UniformitySurf(plotAxes, dataSource);        

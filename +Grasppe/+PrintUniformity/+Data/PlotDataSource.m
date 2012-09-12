@@ -104,15 +104,16 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
     function ProcessVariableData(obj, eventData)
       try obj.optimizeSetLimits;  end
       try obj.ResetColorMaps;     end
-      obj.ProcessSheetData();
       if nargin>1
         obj.ProcessVariableData@Grasppe.PrintUniformity.Data.DataSource(eventData);
       end
+      obj.ProcessSheetData();
     end
     
     function ProcessSheetData(obj, eventData)
       if nargin>1
-        try if ~isequal(obj.NextSheet, eventData.NewValue), return; end; end;
+        dispf('Plot Source Process %s:\tCurrent:%d\tPrevious:%d\tNew:%d\tReader:%d\tNext:%d', eventData.EventName, eventData.CurrentValue, eventData.PreviousValue, eventData.NewValue, obj.Reader.SheetID,  obj.NextSheet);
+        try if any(strcmpi(eventData.Parameter, 'SheetID')) && ~isequal(obj.NextSheet, eventData.NewValue), return; end; end;
       end
       obj.UpdatePlotData;
       if nargin>1      
@@ -121,21 +122,16 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
     end
     
     function OnDataLoad(obj, eventData)
-      try
       try Parameter = eventData.Parameter;  end
-      try Value     = eventData.NewValue;   end        
-        if isequal(char(Parameter), 'SheetID')
-          % obj.LinkedPlotObjects(1).ParentFigure.SampleTitle = obj.Reader.GetSheetName(Value);
-          % drawnow expose update;
-          if isscalar(obj.NextSheet) && isnumeric(obj.NextSheet) ...
-              && ~isequal(eventData.NewValue, obj.NextSheet)
-            %eventData.Abort;
-          else
-            % dispf('Attempt: %d', eventData.NewValue);
-          end
+      try Value     = eventData.NewValue;   end
+      if isequal(char(Parameter), 'SheetID')
+        try obj.LinkedPlotObjects(1).ParentFigure.SampleTitle = obj.Reader.GetSheetName(obj.NextSheet); end
+        drawnow expose update;
+        
+        if isscalar(obj.NextSheet) && isnumeric(obj.NextSheet) && ~isequal(eventData.NewValue, obj.NextSheet)
+          eventData.Abort('interrupt');
+          return;
         end
-      catch err
-        debugStamp(err, 1);
       end
       obj.OnDataLoad@Grasppe.PrintUniformity.Data.DataSource(eventData);
     end
@@ -229,70 +225,6 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
   end
   
   methods (Access=protected)
-    
-    %     function fireReaderEvent(obj, source, eventData)
-    %
-    %       try
-    %
-    %         % validReader    = isequal(source, obj.reader) && ~isempty(obj.reader);
-    %
-    %
-    %         %         try
-    %         %           dispf('SheetID: %d\tNext: %d\tEvent: %s',...
-    %         %             obj.SheetID , obj.NextSheet , eventData);
-    %         %         end
-    %         disp(eventData.EventName);
-    %         switch eventData.EventName
-    %           case 'AttemptingChange'
-    %             try
-    %               if isequal(char(Parameter), 'SheetID')
-    %                 if iscalar(obj.NextSheet) && isnumeric(obj.NextSheet) && ~isequal(eventData.NewValue, obj.NextSheet)
-    %                   eventData.NewValue = obj.NextSheet;
-    %                 end
-    %               end
-    %             end
-    %           case 'SuccessfulChange'
-    %             if isequal(obj.SheetID, obj.NextSheet)
-    %               obj.SheetSteps  = 0;
-    %               obj.NextSheet   = obj.SheetID;
-    %             elseif isscalar(obj.NextSheet) && isnumeric(obj.NextSheet)
-    %               obj.Reader.SheetID = obj.NextSheet;
-    %             end
-    %           case 'SheetChange'
-    %             obj.updateSheetData;
-    %           case 'VariableChange'
-    %             obj.updateVariableData;
-    %           case 'SetChange'
-    %             obj.updateSetData;
-    %           case 'CaseChange'
-    %             obj.updateCaseData;
-    %           otherwise
-    %         end
-    %
-    %         obj.fireReaderEvent@Grasppe.PrintUniformity.Data.DataSource(source, eventData);
-    %
-    %       catch err
-    %         debugStamp(err, 1);
-    %       end
-    %
-    %     end
-    %
-    %     function updateSheetData(obj)
-    %       try obj.UpdatePlotData; end
-    %     end
-    %
-    %     function updateVariableData(obj)
-    %       try obj.optimizeSetLimits; end
-    %       obj.updateSheetData;
-    %     end
-    %
-    %     function updateSetData(obj)
-    %       try obj.updateVariableData; end
-    %     end
-    %
-    %     function updateCaseData(obj)
-    %       try obj.updateSetData; end
-    %     end
     
     function setPlotData(obj, XData, YData, ZData)
       try debugStamp(obj.ID, 5); catch, debugStamp(); end;
@@ -474,27 +406,16 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
               end
             end
         end
-        %         obj.SheetSteps = obj.SheetSteps + step;
-        %
-        %         if ~isequal(obj.SheetSteps, 0)
+
         if isempty(nextSheet)
           nextSheet = stepSet(currentSheet, step, lastSheet, 1);
         end
         %         end
       end
-      
-      %       try
-      %         dispf('SheetID:\tSource: %d\tReader: %d\tParameters: %d\tData: %d',...
-      %           obj.SheetID , obj.Reader.SheetID, ...
-      %           obj.Reader.Parameters.SheetID, obj.Reader.Data.Parameters.SheetID);
-      %       catch err
-      %         debugStamp(err,1)
-      %       end
 
       obj.LinkedPlotObjects(1).ParentFigure.SampleTitle = obj.Reader.GetSheetName(nextSheet);
       drawnow expose update;
       
-      % dispf('Sheet #%d >> %s', round(nextSheet), obj.ID);
       obj.NextSheet = nextSheet;
       obj.SheetID   = nextSheet;
       
