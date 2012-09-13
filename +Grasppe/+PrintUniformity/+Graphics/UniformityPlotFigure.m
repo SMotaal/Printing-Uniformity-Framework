@@ -43,6 +43,9 @@ classdef UniformityPlotFigure < Grasppe.Graphics.MultiPlotFigure
             case 'h'
               try obj.DataSources{1}.setSheet('sum'); syncSheets = true; end
               event.Consumed = true;
+            case 'e'
+              try obj.Export; end
+              event.Consumed = true;
             case 'uparrow'
               try obj.DataSources{1}.setSheet('+1'); syncSheets = true; end
               event.Consumed = true;

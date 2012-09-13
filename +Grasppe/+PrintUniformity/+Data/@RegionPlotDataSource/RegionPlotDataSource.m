@@ -18,10 +18,11 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
     StatsFunction = [];
     DataFunction  = [];
     LabelFunction = [];
-    SummaryLength = 5;
+    SummaryLength = 12;
     SummaryOffset = 1;
     
-    PlotLabels    = [];
+    PlotOverlay   = Grasppe.PrintUniformity.Graphics.UniformityPlotOverlay.empty();
+    
     PlotRegions   = [];
     PlotValues    = [];
     PlotStrings   = [];
@@ -69,21 +70,23 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
       try debugStamp(obj.ID, 4); catch, debugStamp(5); end;
       
       obj.attachPlotObject@Grasppe.PrintUniformity.Data.PlotDataSource(plotObject);
-      try plotObject.ParentAxes.setView([0 90], true);  end
-      try plotObject.ParentAxes.Box = false;            end
+      try plotObject.ParentAxes.setView([0 90], true); end
+      try plotObject.ParentAxes.Box       = false; end
+      try plotObject.ParentAxes.handleSet('Clipping', 'off'); end
+      %try plotObject.ParentAxes.ZDir  = 'reverse'; end
       
-      try delete(obj.PlotLabels); end %; catch err, debugStamp(err,1); end
+      try delete(obj.PlotOverlay); end %; catch err, debugStamp(err,1); end
       try
-        % obj.PlotLabels = Grasppe.PrintUniformity.Graphics.UniformityPlotLabels; ...
-        %   obj.registerHandle(obj.PlotLabels);
+        obj.PlotOverlay = Grasppe.PrintUniformity.Graphics.UniformityPlotOverlay; ...
+          obj.registerHandle(obj.PlotOverlay);
+        
+        obj.PlotOverlay.attachPlot(plotObject);
+        obj.UpdatePlotLabels;
         %
-        % obj.PlotLabels.attachPlot(plotObject);
-        % obj.updatePlotLabels;
-        %
-        % if isa(obj.PlotLabels, 'Grasppe.PrintUniformity.Graphics.UniformityPlotLabels') && isvalid(obj.PlotLabels)
-        %   obj.PlotLabels.SubPlotData = obj.SetStats;
-        %   obj.PlotLabels.SubPlotStats = obj.Stats;
-        %   obj.PlotLabels.updateSubPlots;
+        % if isa(obj.PlotOverlay, 'Grasppe.PrintUniformity.Graphics.UniformityPlotLabels') && isvalid(obj.PlotOverlay)
+        %   obj.PlotOverlay.SubPlotData = obj.SetStats;
+        %   obj.PlotOverlay.SubPlotStats = obj.Stats;
+        %   obj.PlotOverlay.updateSubPlots;
         % end
       catch err
         try debugStamp(err.message, 1); catch, debugStamp(5); end;
@@ -92,6 +95,65 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
       % try obj.optimizeSetLimits; end
     end
     
+%     function createPlotOverlay(obj)
+%     end
+    
+    function UpdatePlotLabels(obj)
+      
+      try debugStamp(obj.ID, 4); catch, debugStamp(); end;
+      
+      try
+        if ~isscalar(obj.PlotOverlay) || ~isa(obj.PlotOverlay, 'Grasppe.PrintUniformity.Graphics.UniformityPlotOverlay') ...
+            || ~isvalid(obj.PlotOverlay)
+          return;
+        end
+        try
+          if ~isempty(obj.RegionData{obj.SheetID})
+            obj.PlotValues  = obj.RegionData{obj.SheetID};
+          end
+          if ~isempty(obj.RegionLabels{obj.SheetID})
+            obj.PlotStrings = obj.RegionLabels{obj.SheetID};
+          end
+        end
+        obj.PlotOverlay.MarkerIndex = obj.SheetID;
+        obj.PlotOverlay.defineLabels(obj.PlotRegions, obj.PlotValues, obj.PlotStrings);
+        obj.PlotOverlay.SubPlotData = obj.RegionData;
+        obj.PlotOverlay.SubPlotStats = obj.Stats;
+        obj.PlotOverlay.createLabels;
+        %try obj.optimizeSetLimits; end
+      catch err
+        try debugStamp(err, 1); catch, debugStamp(); end;
+      end
+      
+%       try obj.PlotOverlay.updateLabels; catch err 
+%         try debugStamp(err, 1); catch, debugStamp(); end; end
+      
+    end
+    
+    
+  end
+  
+  methods (Access=protected)
+    function setPlotData(obj, XData, YData, ZData)
+      try debugStamp(obj.ID, 5); catch, debugStamp(); end;
+      
+      obj.XData               = XData;
+      obj.YData               = YData;
+      
+      zLim                    = obj.ZLim;
+      zData                   = ZData;      
+      zData(zData<min(zLim))  = min(zLim);
+      zData(zData>max(zLim))  = max(zLim);      
+      obj.ZData               = zData; %zeros(size(ZData));
+      
+      cLim                    = obj.CLim;
+      cData                   = ZData;      
+      cData(cData<min(cLim))  = min(cLim);
+      cData(cData>max(cLim))  = max(cLim);
+      obj.CData               = cData;
+      
+      obj.updatePlots();
+    end
   end
   
   methods
@@ -99,12 +161,17 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
       debugStamp(5);
       
       obj.Stats               = [];
+      obj.SheetStats          = {};
+      obj.RegionData          = {};
+      obj.RegionLabels        = {};      
       obj.Regions             = [];
       obj.RegionMasks         = [];
       
+      
       if nargin>1, obj.ProcessCaseData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData);
-      else obj.ProcessCaseData@Grasppe.PrintUniformity.Data.PlotDataSource(); end
+      else try obj.ProcessCaseData@Grasppe.PrintUniformity.Data.PlotDataSource(); end; end
             
+      try obj.PlotOverlay.updateSubPlots(); end
     end
     
     function ProcessSetData(obj, eventData)
@@ -113,35 +180,62 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
       obj.Stats               = [];
       obj.SheetStats          = {};
       obj.RegionData          = {};
-      obj.RegionLabels        = {};      
+      obj.RegionLabels        = {};
+      obj.Regions             = [];
+      obj.RegionMasks         = [];      
       try obj.Regions         = obj.GetRegionMetrics(); end
-      try obj.RegionMasks     = obj.GetRegionMasks(); end      
+      try obj.RegionMasks     = obj.GetRegionMasks(); end     
+      
+      try obj.GetStatistics('reset update'); end
       
       
       if nargin>1, obj.ProcessSetData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData);
-      else obj.ProcessSetData@Grasppe.PrintUniformity.Data.PlotDataSource(); end
+      else try obj.ProcessSetData@Grasppe.PrintUniformity.Data.PlotDataSource(); end; end
       
+      try obj.PlotOverlay.deleteLabels(); end
+      try obj.PlotOverlay.updateSubPlots(); end
+      try obj.UpdatePlotLabels(); end      
+      %try obj.PlotOverlay.updateSubPlots(); end
     end
     
     function ProcessVariableData(obj, eventData)
       
-      debugStamp(5);
+      debugStamp(1);
       
       variableID = obj.VariableID;
       try
         variableID = eventData.NewValue;
       end
       
+      %       updateVariable = false; newVariable=false;
+      %       try updateVariable  = isequal(eventData.Parameter, 'VariableID'); end
+      %       try newVariable     = updateVariable && ...
+      %           (isempty(eventData.PreviousValue) || ~isempty(eventData.NewValue)) && ...
+      %           ~isequal(eventData.NewValue, eventData.PreviousValue), end
+      %
+      %       if ~newVariable && ...
+      %           (~isempty(obj.Stats) && isequal(obj.VariableID, variableID) && ...
+      %           ~(isempty(obj.Regions) || ~isstruct(obj.Regions)))
+      %         return;
+      %       end
+      
       if ~isempty(obj.Stats) && isequal(obj.VariableID, variableID) && ...
           ~(isempty(obj.Regions) || ~isstruct(obj.Regions))
         return;
       end
       
+      debugStamp(1);
+      
+      %obj.GetStatistics('reset update');
+      %       obj.Stats               = [];
+      %       obj.SheetStats          = {};
+      %       obj.RegionData          = {};
+      %       obj.RegionLabels        = {};
+
+      
       if ~isempty(variableID)
-        obj.GetStatistics('reset update');
-        
-        obj.Regions             = obj.GetRegionMetrics();
-        try obj.RegionMasks     = obj.GetRegionMasks(); end
+        % try obj.Regions             = obj.GetRegionMetrics(); end
+        % try obj.RegionMasks     = obj.GetRegionMasks(); end
         
         switch lower(variableID)
           case {'raw'}
@@ -170,8 +264,11 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
       end
       
       if nargin>1, obj.ProcessVariableData@Grasppe.PrintUniformity.Data.PlotDataSource(eventData);
-      else obj.ProcessVariableData@Grasppe.PrintUniformity.Data.PlotDataSource(); end
+      else try obj.ProcessVariableData@Grasppe.PrintUniformity.Data.PlotDataSource(); end; end
 
+      %       try obj.PlotOverlay.deleteLabels(); end
+      %       try obj.PlotOverlay.updateSubPlots(); end
+      %       try obj.UpdatePlotLabels(); end
     end
     
     function ProcessStatistics(obj, variableID)
@@ -184,7 +281,6 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
       for m = 0:obj.SheetCount
         obj.GetStatistics(m, variableID);
       end
-      
     end
     
     function ProcessSheetData(obj, eventData)
@@ -200,6 +296,11 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
     
     function OnDataSuccess(obj, eventData)
       if nargin>1, obj.OnDataSuccess@Grasppe.PrintUniformity.Data.PlotDataSource(eventData); end
+      obj.UpdatePlotLabels;
+      
+      if isequal(eventData.Parameter, 'VariableID') || isequal(eventData.Parameter, 'SetID') % || isequal(eventData.Parameter, 'SetID')
+        try obj.PlotOverlay.updateSubPlots(); end
+      end
     end
     
     function OnDataFailure(obj, eventData)
@@ -302,16 +403,16 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
     
     function set.StatsMode(obj, value)
       obj.StatsMode         = value;
-      GrasppeKit.DelayedCall(@(s,e)obj.updateVariableData(obj,e), 1, 'start');
+      GrasppeKit.DelayedCall(@(s,e)obj.ProcessSetData(obj), 1, 'start');
     end
     
     function set.Stats(obj, stats)
       obj.Stats = stats;
-      if ~isempty(obj.Stats), obj.ProcessVariableData(); end
     end
     
     function value = get.StatsMode(obj)
       value = obj.StatsMode;
+      %if ~isempty(obj.Stats), obj.ProcessSetData(); end      
     end
     
     

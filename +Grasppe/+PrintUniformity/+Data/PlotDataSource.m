@@ -132,7 +132,17 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
           eventData.Abort('interrupt');
           return;
         end
+%       else
+%         state = 'Loading...';
+%         try state = ['Loading ' eventData.Parameter ' ' toString(eventData.NewValue) '...' ]; end
+%         try UI.setStatus(state, obj.PlotObjects(1).ParentFigure.Handle); end
       end
+      
+      % state = 'Loading...';
+      % try state = ['Loading ' eventData.Parameter ' ' toString(eventData.NewValue) '...' ]; end
+      % try UI.setStatus(state, obj.PlotObjects(1).ParentFigure.Handle); end
+      
+      
       obj.OnDataLoad@Grasppe.PrintUniformity.Data.DataSource(eventData);
     end
     
@@ -151,14 +161,23 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
           end
           
           %dispf('Success: %d %d %d', eventData.NewValue, obj.Reader.SheetID,  obj.NextSheet);
+%         else
+%           try UI.setStatus('Updating...', obj.PlotObjects(1).ParentFigure.Handle); end
         end
         
       end
+      
+      % try UI.setStatus('Updating...', obj.PlotObjects(1).ParentFigure.Handle); end
+      
       obj.OnDataSuccess@Grasppe.PrintUniformity.Data.DataSource(eventData);
+      
+      % try GrasppeKit.DelayedCall(@(s, e) UI.setStatus('', obj.PlotObjects(1).ParentFigure.Handle), 1, 'start'); end
     end
     
     function OnDataFailure(obj, eventData)
+      % try UI.setStatus('Terminating...', obj.PlotObjects(1).ParentFigure); end
       obj.OnDataFailure@Grasppe.PrintUniformity.Data.DataSource(eventData);
+      % try UI.setStatus('', obj.PlotObjects(1).ParentFigure.Handle); end
     end
     
     
@@ -330,6 +349,9 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
       end
       debugStamp([obj.ID ':' limstr], 4); % dispf('Lims: X [%2.1f, %2.1f] \t Y [%2.1f, %2.1f] \t Z [%2.1f, %2.1f] \t C [%2.1f, %2.1f] '
       
+      obj.PlotObjects(1).ParentFigure.ColorBar.createPatches;
+      obj.PlotObjects(1).ParentFigure.ColorBar.createLabels;
+      
       
     end
     
@@ -437,17 +459,35 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
     
     function ResetColorMaps(obj, map)
       try
-        smap          = diff(obj.CLim)/2;
-        cmap(:,1)     = ...
-          [linspace(0,  0,  smap)  0     0          1/4     1/4     1/2   linspace(1, 1, smap)  ];
-        cmap(:,2)     = ...
-          [linspace(0,  7/8,  smap)  7/8     7/8     1      1     1     linspace(1, 0, smap) ];
-        cmap(:,3)     = ...
-          [linspace(1,  1,  smap)  1/2   1/4   1/4     0       0     linspace(0, 0, smap)    ];
+        cmap = [ ...
+          4/4 0/4 0/4 % 6
+          4/4 2/4 0/4 % 5          
+          4/4 3/4 0/4 % 4
+          4/4 4/4 0/4 % 3
+          3/4 4/4 0/4 % 2
+          2/4 4/4 0/4 % 1
+          0/4 4/4 0/4 % 0
+          3/8 7/8 3/8 % 1
+          4/8 7/8 4/8 % 2
+          4/8 6/8 4/8 % 3
+          4/8 4/8 4/8 % 4
+          3/8 3/8 3/8 % 5
+          2/8 2/8 2/8 % 6
+          ];
+          
+%         smap          = diff(obj.CLim)/2;
+%         cmap(:,1)     = ...
+%           [linspace(0,  0,  smap)  0     0          1/4     1/4     1/2   linspace(1, 1, smap)  ];
+%         cmap(:,2)     = ...
+%           [linspace(0,  7/8,  smap)  7/8     7/8     1      1     1     linspace(1, 0, smap) ];
+%         cmap(:,3)     = ...
+%           [linspace(1,  1,  smap)  1/2   1/4   1/4     0       0     linspace(0, 0, smap)    ];
 %         cmap(:,2)     = linspace(0.95, 0, size(cmap,1));
 %         cmap(:,3)     = cmap(:,2);
         
         %cmap = [flipud(cmap); cmap(2:end,:)];
+        
+        cmap = flipud(cmap);
         
         plotObject = obj.LinkedPlotObjects;
         
@@ -523,6 +563,8 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
         try plotObject.refreshPlot(obj); end
         % try plotObject.updatePlotTitle; end
       end
+      
+      % try UI.setStatus('', obj.PlotObjects(1).ParentFigure.Handle); end      
     end
     
   end

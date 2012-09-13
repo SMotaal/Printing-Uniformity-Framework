@@ -126,6 +126,12 @@ classdef TransientStats
     end
     
 %     function sample = get.Sample(val)
+%       if isempty(val.Sample)
+%         sample  = val;
+%       else
+%         sample  = val.Sample;
+%       end
+%     end
 %       sample = val.Sample;
 %       if isempty(val.Sample) && isempty(val.Outliers) && val.Count>0
 %         sample = val;
@@ -134,17 +140,48 @@ classdef TransientStats
     
     function delta =  get.Delta(val)
       delta = [0 0];
-      try delta = val.Reference.Bounds - val.Bounds; end
+      try 
+        delta = [ ...
+          abs(val.Reference.Bounds(2) - val.Bounds(1)) ...
+          abs(val.Bounds(2) - val.Reference.Bounds(1)) ...
+          ];
+        
+        % val.Bounds(2) - val.Reference.Bounds(2); 
+      end
+    end
+    
+    function [peak delta reference] = GetPeakMeasure(val)
+      delta       = val.Delta;
+      if delta(1)-delta(2) > 0.05
+        peak      = val.Bounds(1);
+        reference = val.Reference.Bounds(2);
+        delta     = peak-reference;
+      elseif delta(2)-delta(1) > 0.05
+        peak      = val.Bounds(2);
+        reference = val.Reference.Bounds(1);
+        delta     = peak-reference;
+      else
+        peak      = val.Mean;
+        reference = val.Reference.Mean;
+        delta     = 0;
+      end
+      
+      if nargout==1
+        peak = [delta reference peak ];
+        clear delta reference;
+      end
     end
     
     function peak = get.Peak(val)
-      peak      = NaN;
-      try 
-        delta   = val.Delta;
-        if delta(1) > delta(2),     peak  = val.Bounds(1);
-        elseif delta(1) < delta(2), peak  = val.Bounds(2);
-        end
-      end
+      [peak delta reference]  = val.GetPeakMeasure; % val.Mean; % NaN;
+      %       try
+      %         delta   = val.Delta;
+      %         if delta(1)-delta(2) > 0.01
+      %           peak = val.Bounds(1);
+      %         elseif delta(2)-delta(1) >0.01
+      %           peak = val.Bounds(2);
+      %         end
+      %       end
     end
 
     function bounds = get.UpperBound(val)

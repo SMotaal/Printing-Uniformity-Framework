@@ -87,7 +87,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
         acrossID = [varID 'Across'];
     end
     
-    runStats        = stats.run.Stats;
+    runStats        = stats.run.Stats.Sample;
     
     %% Get Region Masks
     regionMasks     = stats.metadata.regions.(varID);
@@ -98,7 +98,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
     if sheetID == 0, sheetID = obj.SheetCount + 1; end
     
     for m = 1:size(stats.(varID),1)
-      regionData(m) = stats.(varID)(m, sheetID).Stats;
+      regionData(m) = stats.(varID)(m, sheetID).Stats.Sample;
     end
     
     if sheetID > obj.SheetCount
@@ -110,6 +110,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
     %   sheetData     = [sheetData(:); regionData(k).Data(:)];
     % end
     sheetData       = getStats(sheetData, runStats);
+    sheetData       = sheetData.Sample;
     
     %% Get Circumferential Data
     aroundData      = getStats(); % Grasppe.Stats.TransientStats.empty;    
@@ -119,7 +120,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
       aroundMasks = max(aroundMasks, [], 3);
       
       for m = 1:size(stats.(aroundID),1)
-        aroundData(m) = stats.(aroundID)(m, sheetID).Stats;
+        aroundData(m) = stats.(aroundID)(m, sheetID).Stats.Sample;
       end
       
     catch
@@ -135,7 +136,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
       acrossMasks = max(acrossMasks, [], 2);
       
       for m = 1:size(stats.(acrossID),1)
-        acrossData(m) = stats.(acrossID)(m, sheetID).Stats;
+        acrossData(m) = stats.(acrossID)(m, sheetID).Stats.Sample;
       end
       
     catch
@@ -322,10 +323,48 @@ function updateStatsFunctions(obj)
       labelFunction{2}  = @(d)    sprintf('%1.1f±%1.1f', mean(d.Mean), (d.Sigma.*3));
     case {'peaklimits'}
       statsMode         = 'PeakLimits';
-      statsFunction{1}  = @(d, r) d.Sample.Peak; %vertcat(d.detailed);
+      statsFunction{1}  = @(d, r) d.Peak; %vertcat(d.detailed);
       dataFunction{1}   = @(s)    nanmean(s(:));
       
-      labelFunction{1}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}', d.Sample.Peak);
+      medium            = @(x) ['{\\fontsize{n}' x '}' ];
+      small             = @(x) ['{\\fontsize{s}' x '}' ];
+      tiny              = @(x) ['{\\fontsize{t}' x '}' ];
+      bold              = @(x) ['{\\bf ' x '}' ];
+      
+      singlePrecision   = ['%1.1f'];
+      singleSigned      = ['%+1.1f'];
+      
+      
+      labelFormat       = [ ...
+        medium([ bold('\\mu: ')    singlePrecision ' (±' singlePrecision ')' ])  '\n'...        
+        small([ bold('\\Delta: ') singleSigned    ' ('  singlePrecision '-' singlePrecision  ')'     ])  '\n' ...
+        small([ bold('\\sigma: ') singlePrecision ' - ' singlePrecision]     )  '\n'...
+        ];
+      
+      labelFormatTiny       = [ ...
+        small([ bold('\\mu: ')    singlePrecision ' (±' singlePrecision ')' ])  '\n'...        
+        tiny([ bold('\\Delta: ') singleSigned    ' ('  singlePrecision '-' singlePrecision  ')'     ])  '\n' ...
+        tiny([ bold('\\sigma: ') singlePrecision ' - ' singlePrecision]     )  '\n'...
+        ];
+      
+      
+%       labelFormatTiny       = [ ...
+%         tiny([bold('\\Delta: ')      singlePrecision  ' (' singleSigned ')'])  '\n' ...
+%         tiny([bold('\\Mu: ') singlePrecision ' (±' singlePrecision ')'])  '\n'...
+%         tiny([bold('\\Sigma: ')      singlePrecision ' - ' singlePrecision])  '\n'...
+%         ];
+      
+      labelFunction{1}  = @(d)    sprintf(labelFormatTiny, ...
+        d.Mean, d.Sigma*3, ...
+        d.GetPeakMeasure, ...
+        d.LowerBound, d.UpperBound ...
+        );
+      
+%       labelFunction{2}  = @(d)    sprintf(labelFormatTiny, ...
+%         d.Mean, d.Sigma*3, ...
+%         d.GetPeakMeasure, ...
+%         d.LowerBound, d.UpperBound ...
+%         );
       
       % labelFunction{1}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}%+1.1f }}\n{\\fontsize{t}({\\itpeak_{r}} = {\\it\\mu_{R}}%+1.1f)}', d.PeakLimit(1), 2*(d.Mean-d.PeakLimit(1)), d.PeakLimit(1)-d.ReferenceMean); %d.Sigma*3);
       % labelFunction{2}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}±%1.1f  } }\n{\\fontsize{t}({\\it\\mu_{b}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);

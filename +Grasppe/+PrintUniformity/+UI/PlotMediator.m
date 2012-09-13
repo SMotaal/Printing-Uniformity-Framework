@@ -145,6 +145,10 @@ classdef PlotMediator < Grasppe.Core.Mediator
       
     end
     
+    function ExportFigure(obj)
+      try obj.PlotFigure.Export; end
+    end
+    
     function selectCaseID(obj, source, event)
       % disp(source); caseID = source.getSelectedItem;
       obj.CaseID = source.getSelectedItem;

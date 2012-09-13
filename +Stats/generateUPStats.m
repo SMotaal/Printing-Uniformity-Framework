@@ -44,7 +44,7 @@ function [ dataSource stats ] = generateUPStats( dataSource, dataSet, regions  )
     
     if (isempty(regionStatsData))
       regionStatsData = calculateStats(data, regions.(regionName), stats.run);
-      Data.dataSources(regionID, regionStatsData, true, sourceSpace);
+      Data.dataSources(regionID, regionStatsData, false, sourceSpace);
     end
     
     stats.(regionName)  = regionStatsData;
@@ -176,7 +176,7 @@ function [localStats] = calculateStats( data,  masks, population )
       localMask   = masks(m,:,:)==1;
       regionData  = sheetData(localMask); % regionData  = zeros(size(localMask)) * NaN; % regionData(localMask)  = sheetData(localMask);
       
-      localStats(m,si).(tStats) = generateDataStats(regionData, population.Stats);
+      localStats(m,si).(tStats) = generateDataStats(regionData, population.Stats.Sample);
       
       % if isempty(rMean) || isempty(rStd)
       %   localStats(m,si).(tStats) = generateDataStats(regionData);
