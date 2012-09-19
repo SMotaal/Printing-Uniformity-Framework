@@ -37,6 +37,7 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
     CurrentStatsFunction
     CurrentDataFunction
     CurrentLabelFunction
+    IsLoading     = 0;
   end
   
   
@@ -291,6 +292,7 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
     end
     
     function OnDataLoad(obj, eventData)
+      obj.IsLoading = true;
       if nargin>1, obj.OnDataLoad@Grasppe.PrintUniformity.Data.PlotDataSource(eventData); end
     end
     
@@ -301,10 +303,14 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
       if isequal(eventData.Parameter, 'VariableID') || isequal(eventData.Parameter, 'SetID') % || isequal(eventData.Parameter, 'SetID')
         try obj.PlotOverlay.updateSubPlots(); end
       end
+      
+      obj.IsLoading = false;
     end
     
     function OnDataFailure(obj, eventData)
       if nargin>1, obj.OnDataFailure@Grasppe.PrintUniformity.Data.PlotDataSource(eventData); end
+      
+      obj.IsLoading = false;
     end
     
     function [X Y Z skip]         = GetPlotData(obj, data)
@@ -400,6 +406,13 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
   end
 
   methods
+    
+    function Wait(obj)
+      % waitfor(obj, 'IsLoading', false);
+      while ~isequal(obj.IsLoading, false)
+        pause(1);
+      end
+    end
     
     function set.StatsMode(obj, value)
       obj.StatsMode         = value;

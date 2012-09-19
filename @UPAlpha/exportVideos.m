@@ -14,7 +14,7 @@ function exportVideos( forced, sources, fValues, fViews, fSets )
   DS.PersistentSources('readonly');
   
   if isempty(sources)
-    sources = {'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01', 'rithp5501'};
+    sources = {'ritsm74001', 'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01', 'rithp5501'};
   end
   
   if isempty(fSets)

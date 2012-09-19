@@ -35,6 +35,7 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
     YLim,       YTick,      YTickLabel    %YLimMode   YTickMode,  YTickLabelMode
     ZLim,       ZTick,      ZTickLabel    %ZLimMode   ZTickMode,  ZTickLabelMode
     
+    PatchGrid = [];
   end
   
   properties (Hidden)
@@ -349,6 +350,8 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
       end
       debugStamp([obj.ID ':' limstr], 4); % dispf('Lims: X [%2.1f, %2.1f] \t Y [%2.1f, %2.1f] \t Z [%2.1f, %2.1f] \t C [%2.1f, %2.1f] '
       
+      obj.ResetColorMaps;
+      
       obj.PlotObjects(1).ParentFigure.ColorBar.createPatches;
       obj.PlotObjects(1).ParentFigure.ColorBar.createLabels;
       
@@ -531,6 +534,8 @@ classdef PlotDataSource < Grasppe.PrintUniformity.Data.DataSource
       xData = obj.XData; yData = obj.YData; zData = obj.ZData;
       
       % cData = obj.CData;
+      z = zData; z(isnan(z)) = 100;
+      obj.PatchGrid = z;
       
       linkedPlots = [];
       

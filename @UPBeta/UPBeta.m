@@ -11,6 +11,8 @@ classdef UPBeta
     demoViewerMultiPlots
     demoNewSurfs
     demoNewRegions
+    tallyRegionStats
+    outputRegionStats(tally);
   end
   
 end

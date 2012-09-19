@@ -50,17 +50,21 @@ end
 
 function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
   
-  sheetStats = struct('Data', [], 'Masks', [], 'Values', [], 'Strings', []);
+  sheetStats    = struct('Data', [], 'Masks', [], 'Values', [], 'Strings', []);
   
   try
-    rows    = obj.RowCount;
-    columns = obj.ColumnCount;
+    rows        = obj.RowCount;
+    columns     = obj.ColumnCount;
     
-    [X Y Z] = meshgrid(1:columns, 1:rows, 1);
+    [X Y Z]     = meshgrid(1:columns, 1:rows, 1);
     
-    stats       = obj.Stats;
     caseID      = obj.CaseID;
     setID       = obj.SetID;
+    
+    caseData    = obj.CaseData;
+    setData     = obj.SetData;    
+    
+    stats       = obj.Stats;
     
     debugStamp(5);
     
@@ -98,19 +102,28 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
     if sheetID == 0, sheetID = obj.SheetCount + 1; end
     
     for m = 1:size(stats.(varID),1)
-      regionData(m) = stats.(varID)(m, sheetID).Stats.Sample;
+      regionData(m) = stats.(varID)(m, sheetID).Stats; % .Sample;
     end
     
     if sheetID > obj.SheetCount
-      sheetData       = stats.data;
+      %sheetData       = stats.data;
+      sheetData       = runStats;
     else
-      sheetData       = stats.data(sheetID, :, :); % regionData(1).Data(:);
+      
+      % targetFilter    = caseData.sampling.masks.Target~=1;
+      % patchFilter     = setData.filterData.dataFilter~=1;
+      % sheetFilter     = targetFilter~=1 & patchFilter~=1;
+      
+      dataFilter      = stats.filter;
+      
+      sheetData       = stats.data(sheetID, :, :); % regionData(1).Data(:);      
+      sheetData       = sheetData(~dataFilter);
+      
+      sheetData       = getStats(sheetData, runStats);
     end
     % for k=2:numel(regionData)
     %   sheetData     = [sheetData(:); regionData(k).Data(:)];
     % end
-    sheetData       = getStats(sheetData, runStats);
-    sheetData       = sheetData.Sample;
     
     %% Get Circumferential Data
     aroundData      = getStats(); % Grasppe.Stats.TransientStats.empty;    
@@ -120,7 +133,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
       aroundMasks = max(aroundMasks, [], 3);
       
       for m = 1:size(stats.(aroundID),1)
-        aroundData(m) = stats.(aroundID)(m, sheetID).Stats.Sample;
+        aroundData(m) = stats.(aroundID)(m, sheetID).Stats; % .Sample;
       end
       
     catch
@@ -136,7 +149,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
       acrossMasks = max(acrossMasks, [], 2);
       
       for m = 1:size(stats.(acrossID),1)
-        acrossData(m) = stats.(acrossID)(m, sheetID).Stats.Sample;
+        acrossData(m) = stats.(acrossID)(m, sheetID).Stats; % .Sample;
       end
       
     catch
@@ -336,15 +349,15 @@ function updateStatsFunctions(obj)
       
       
       labelFormat       = [ ...
-        medium([ bold('\\mu: ')    singlePrecision ' (±' singlePrecision ')' ])  '\n'...        
-        small([ bold('\\Delta: ') singleSigned    ' ('  singlePrecision '-' singlePrecision  ')'     ])  '\n' ...
-        small([ bold('\\sigma: ') singlePrecision ' - ' singlePrecision]     )  '\n'...
+        medium([ bold('\\mu: ')    singlePrecision  ' (±' singlePrecision               ')' ])  '\n'...        
+        small([ bold('\\Delta: ') singlePrecision   ' ('  singlePrecision singleSigned  ')' ])  '\n' ...
+        small([ bold('\\sigma: ') singlePrecision   ' - ' singlePrecision]     )                '\n'...
         ];
       
       labelFormatTiny       = [ ...
-        small([ bold('\\mu: ')    singlePrecision ' (±' singlePrecision ')' ])  '\n'...        
-        tiny([ bold('\\Delta: ') singleSigned    ' ('  singlePrecision '-' singlePrecision  ')'     ])  '\n' ...
-        tiny([ bold('\\sigma: ') singlePrecision ' - ' singlePrecision]     )  '\n'...
+        small([ bold('\\mu: ')    singlePrecision   ' (±' singlePrecision               ')' ])  '\n'...        
+        tiny([ bold('\\Delta: ')  singlePrecision   ' ('  singlePrecision singleSigned  ')' ])  '\n' ...
+        tiny([ bold('\\sigma: ')  singlePrecision   ' - ' singlePrecision]     )                '\n'...
         ];
       
       
@@ -356,7 +369,7 @@ function updateStatsFunctions(obj)
       
       labelFunction{1}  = @(d)    sprintf(labelFormatTiny, ...
         d.Mean, d.Sigma*3, ...
-        d.GetPeakMeasure, ...
+        fliplr(d.GetPeakMeasure), ...
         d.LowerBound, d.UpperBound ...
         );
       

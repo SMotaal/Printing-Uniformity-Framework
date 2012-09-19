@@ -352,7 +352,7 @@ function queueRecycleSpace(space)
   
   try stop(recycleTimers.(space)); end
   try delete(recycleTimers.(space)); end
-  try recycleTimers.(space) = GrasppeKit.DelayedCall(@(s, e) recycleSpace(space), 5, 'start');
+  try recycleTimers.(space) = GrasppeKit.DelayedCall(@(s, e) recycleSpace(space), 30, 'start');
   catch err, recycleSpace(space); end  
 end
 

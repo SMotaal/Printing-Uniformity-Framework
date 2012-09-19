@@ -151,19 +151,25 @@ classdef TransientStats
     end
     
     function [peak delta reference] = GetPeakMeasure(val)
-      delta       = val.Delta;
-      if delta(1)-delta(2) > 0.05
-        peak      = val.Bounds(1);
-        reference = val.Reference.Bounds(2);
-        delta     = peak-reference;
-      elseif delta(2)-delta(1) > 0.05
-        peak      = val.Bounds(2);
-        reference = val.Reference.Bounds(1);
-        delta     = peak-reference;
-      else
-        peak      = val.Mean;
-        reference = val.Reference.Mean;
-        delta     = 0;
+      try
+        delta       = val.Delta;
+        if delta(1)-delta(2) > 0.05
+          peak      = val.Bounds(1);
+          reference = val.Reference.Bounds(2);
+          delta     = peak-reference;
+        elseif delta(2)-delta(1) > 0.05
+          peak      = val.Bounds(2);
+          reference = val.Reference.Bounds(1);
+          delta     = peak-reference;
+        else
+          peak      = val.Mean;
+          reference = val.Reference.Mean;
+          delta     = 0;
+        end
+      catch err
+        peak        = val.Mean;
+        reference   = val.Mean;
+        delta       = 0;
       end
       
       if nargout==1
