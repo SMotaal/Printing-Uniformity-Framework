@@ -12,34 +12,30 @@ function [ data ] = dataSources( sourceName, varargin )
   
   %   mlock;
   try
-    sources = DS.PersistentSources('dataSources');
-    %     disp(sources);
+    sources                   = DS.PersistentSources('dataSources');
   catch
-    sources = [];
+    sources                   = [];
   end
-  %   onCleanup(@() DS.PersistentSources('dataSources', sources));
   
-  defaults.verbose=false;
-  defaults.sizeLimit=1024; % defaults.sizeLimit =  200 * (2^20);
+  defaults.verbose            = true;   % display debugging information
+  defaults.sizeLimit          = 2^10;   % 2^10==1024
   
-  default('verbose', int2str(defaults.verbose));
-  default('sizeLimit', int2str(defaults.sizeLimit));
+  if isempty(verbose), verbose = defaults.verbose; end    % default('verbose',    int2str(defaults.verbose)   );
+  %default('sizeLimit',  int2str(defaults.sizeLimit) );
   
-  data = [];
-  
+  data                        = [];
   if (~exist('sourceName', 'var'))
-    %     disp(whos('sources'));
-    whosDetails = whos('sources');
-    sourcesDetails.name = whosDetails.name;
-    sourcesDetails.megabytes = whosDetails.bytes/2^20;
+    whosDetails               = whos('sources');
+    sourcesDetails.name       = whosDetails.name;
+    sourcesDetails.megabytes  = whosDetails.bytes/2^20;
     
     if isstruct(sources) && ~isempty(sources)
       sourcesDetails.elements = numel(fieldnames(sources));
-      sourcesDetails.names = strtrim(reshape(char(strcat(fieldnames(sources),{' '}))',[],1)');%char(fieldnames(sources));
-      sourcesDetails.names = regexprep(sourcesDetails.names,'\s+',' ');
+      sourcesDetails.names    = strtrim(reshape(char(strcat(fieldnames(sources),{' '}))',[],1)');%char(fieldnames(sources));
+      sourcesDetails.names    = regexprep(sourcesDetails.names,'\s+',' ');
     else
       sourcesDetails.elements = 0;
-      sourcesDetails.names = '';
+      sourcesDetails.names    = '';
     end
     data = sourcesDetails;
     if (nargout==0) && (numel(dbstack)>1)
@@ -63,6 +59,7 @@ function [ data ] = dataSources( sourceName, varargin )
           return;
         case 'recycle'
           recycleSpace(varargin{:});
+          return;        
         case 'reset'
           Data.dataSources([], 'verbose', 'reset', 'sizeLimit', 'reset');
           return;
@@ -76,7 +73,7 @@ function [ data ] = dataSources( sourceName, varargin )
   parser = grasppeParser;
   
   %% Parameters
-  parser.addRequired('name',              @(x) isempty(x) || ischar(x) | isstruct(x));
+  parser.addRequired('name',              @(x) isempty(x) || ischar(x) || isstruct(x));
   
   preCondition = ~isempty(sourceName) || isempty(varargin);
   
@@ -135,11 +132,6 @@ function [ data ] = dataSources( sourceName, varargin )
     
     spaceSources        = [];
     try spaceSources    = spaces.(space); end
-    %   if isempty(spaceSources)
-    %     try spaceSources  = load(spaceFilename); end
-    %     spaces.(space) = spaceSources;
-    %     DS.PersistentSources('dataSpaces', spaces);
-    %   end
     
     if isempty(inputParams.name)
       data = spaceSources;
@@ -319,7 +311,7 @@ function saveSpaceData(space, name, data)
     try
       save(spaceFilename, '-struct', 'saveStruct', name);
       statusbar(0, sprintf('Saving %s:%s.', space, name));
-      queueRecycleSpace(space) % recycleSpace(space);
+      % queueRecycleSpace(space) % recycleSpace(space);
     catch err
       if ~isequal(err.identifier, 'MATLAB:save:permissionDenied')
         halt(err, 'Data.dataSources');

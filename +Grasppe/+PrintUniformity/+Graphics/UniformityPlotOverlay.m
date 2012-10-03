@@ -405,8 +405,8 @@ classdef UniformityPlotOverlay < Grasppe.Core.Component
                
           yLength       = zoneArea(2)*2/4; 
           yExtent       = zonePosition(2) + [0 0] + [-yLength yLength]/2;
-          yOffset       = -zoneArea(2)*1.25/4;
-          yScale        = 1/3;
+          yOffset       = -zoneArea(2)*1.5/4;
+          yScale        = 20; %2/8;
           
           yInterp       = @(y) spline(xSteps, y, xInterp);
           
@@ -430,7 +430,7 @@ classdef UniformityPlotOverlay < Grasppe.Core.Component
           yMeanData     = yCenter + reflect(yMeanData, -yMeanData);        
           yMeanLines    = yCenter + reflect(yMeanLines, -yMeanLines);
           
-          zDataFcn      = @(z) ones(z) * 100;
+          zDataFcn      = @(z) ones(z) * 200;
           zData         = zDataFcn(size(xData));
           
           if zoneArea(1)>7 && zoneArea(2)>7

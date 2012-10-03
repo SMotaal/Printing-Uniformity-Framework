@@ -11,19 +11,9 @@ caseIDs             = {'rithp5501', 'rithp7k01', 'ritsm7402a', 'ritsm7402b', 'ri
 
 setIDs              = [100 75 50 25 0];
 
-unitID              = 'density';
-
-switch lower(unitID)
-  case {'v', 'density', 'iso visual density', 'd'}
-    unitID              = 'ISO Visual Density';
-    standardValues      = [ 1.6779    0.92575   0.51709   0.24656   0.057405];
-    standardTolerances  = [ 0.1       0.1       0.1       0.1       0.05];
-  otherwise % case {'l', 'l*', 'cie-l', 'cie-l*', 'ciel', 'ciel*'}
-    unitID              = 'CIE-L';
-    % standardValues      = [ 16    NaN   NaN   NaN   93  ];  % Black Backing (12647-2)
-    standardValues      = [ 16    41    62    80    95  ];  % White Backing Informative (Photoshop Fogra39 > Absolute Colorimetric > Lab)
-    standardTolerances  = [  4    4     4     4     3   ];   % Extrapolated from ISO 12647-2
-end
+% standardValues      = [16 NaN NaN NaN 93];  % Black Backing (12647-2)
+standardValues      = [ 16  41  62  80	95];  % White Backing Informative (Photoshop Fogra39 > Absolute Colorimetric > Lab)
+standardTolerances  = [ 4   4   4   4   3];   % Extrapolated from ISO 12647-2
 
 caseCount           = numel(caseIDs);
 setCount            = numel(setIDs);
@@ -45,7 +35,6 @@ tallyMetadata.SetData           = cell(caseCount, setCount);
 tallyMetadata.SetStats          = cell(caseCount, setCount);
 tallyMetadata.Standard          = standardValues;
 tallyMetadata.Tolerance         = standardTolerances;
-tallyMetadata.Unit              = unitID; %% 'ISO Visual Density'; % 'CIE-L'
 
 
 for m = 1:caseCount
@@ -90,23 +79,24 @@ for m = 1:caseCount
     %% Tally sheet data
     tallyData(m, n).sheetCount          = size(tallyData(m, n).runData, 1);
     tallyData(m, n).sheetSize           = [size(tallyData(m, n).runData, 2) size(tallyData(m, n).runData, 3)];
-        
+    
+    % targetFilter              = stats.metadata.masks.Target~=1;
+    % patchFilter               = stats.metadata.setData.filterData.dataFilter~=1;
+    %
+    % runData                   = stats.data;
+    % runData(:, targetFilter)  = NaN;
+    % runData(:, patchFilter)   = NaN;
+    
     dataFilter                          = stats.filter;
     
     tallyData(m, n).dataFilter          = dataFilter;
     
     for s = 1:tallyData(m, n).sheetCount
+      
       sheetData                         = tallyData(m, n).runData(s, ~dataFilter);
       tallyData(m, n).sheetStats(1, s)  = feval(statsClass, sheetData);
-    end
-    
-    tallyData(m, n).patchIndex          = find(~dataFilter);
-    tallyData(m, n).patchCount          = numel(tallyData(m, n).patchIndex);
-    
-    for p = 1:tallyData(m, n).patchCount
-      patchIdx                          = tallyData(m, n).patchIndex(p);
-      patchData                         = tallyData(m, n).runData(:,patchIdx);
-      tallyData(m, n).patchStats(1,p)   = feval(statsClass, patchData(:));
+
+      % tallyData(m, n).sheetStats(1, s)  = feval(statsClass, tallyData(m, n).runData(s, :, :));
     end
     
     %% Tally region data
@@ -151,8 +141,6 @@ for m = 1:caseCount
     standardTolerance                       = standardTolerances(n);
     
     runData                                 = tallyData(m, n).runData;
-    patchCount                              = tallyData(m, n).patchCount;
-    patchIndex                              = tallyData(m, n).patchIndex;
     sheetCount                              = tallyData(m, n).sheetCount;
     regionCount                             = tallyData(m, n).regionCount;
     
@@ -179,66 +167,21 @@ for m = 1:caseCount
     
     referenceValue                          = tallyStats(m, n).Run.Mean;
     
-    % Run Precision
+    % Run Uniformity
     % Spread between upper and lower bounds for all patches across all sheets.
     
-    tallyStats(m, n).Run.Precision          = tallyStats(m, n).Run.Sigma*6;
-    
-    %% Patch Statistics
+    tallyStats(m, n).Run.Uniformity         = tallyStats(m, n).Run.Sigma*6;
     
     % Patch Mean (Patch Accuracy ve. Run Mean)
     % Mean of one patch across sheets. Patch is a spatial unit with
     % a mean value taken from samples across the sheet (temporal) domain.
     
-    % Patch Repeatability (Patch Precision)
+    % Patch Repeatability (Patch Uniformity)
     % Spread between upper and lower bounds for one patch across sheets.
-    
-    patchMean                               = NaN(1, patchCount);
-    patchAccuracy                           = NaN(1, patchCount);
-    patchSigma                              = NaN(1, patchCount);
-    
-    for p=1:patchCount
-      
-      patchIdx                                  = tallyData(m, n).patchIndex(p);
-      patchData                                 = tallyData(m, n).runData(:,patchIdx);
-
-      nanSamples                                = isnan(patchData(:));
-      
-      tallyStats(m, n).Patch(p).Size            = size(patchData);
-      tallyStats(m, n).Patch(p).Samples         = sum(~nanSamples);
-      tallyStats(m, n).Patch(p).Outliers        = sum(nanSamples);
-      
-      tallyStats(m, n).Patch(p).Mean            = tallyData(m, n).patchStats(1, p).Mean;
-      tallyStats(m, n).Patch(p).Sigma           = tallyData(m, n).patchStats(1, p).Sigma;
-      
-      %% Patch Mean (Sheet Accuracy vs. Run Mean)
-      % Mean of one patches in all sheets. Each patch is a spatial unit
-      % with a mean value taken from samples across the sheets (temporal) domain.
-      
-      tallyStats(m, n).Patch(p).Accuracy        = tallyStats(m, n).Patch(p).Mean - referenceValue;
-      
-      %% Patch Repeatability (Patch Precision)
-      % Spread between upper and lower bounds for one patch across sheets.
-      
-      tallyStats(m, n).Patch(p).Precision       = []; % tallyData(m, n).patchStats(1, p).Sigma*6;
-      
-      tallyStats(m, n).Patch(p).Repeatability   = tallyData(m, n).patchStats(1, p).Sigma*6;
-      
-      tallyStats(m, n).Patch(p).Precision       = tallyStats(m, n).Patch(p).Repeatability;
-      
-      
-      patchMean(p)                              = tallyStats(m, n).Patch(p).Mean;
-      patchAccuracy(p)                          = tallyStats(m, n).Patch(p).Accuracy;
-      patchSigma(p)                             = tallyStats(m, n).Patch(p).Sigma;      
-      
-    end
-    
-    
-    %% Sheet Statistics
     
     sheetMean                               = NaN(1, sheetCount);
     sheetAccuracy                           = NaN(1, sheetCount);
-    sheetSigma                              = NaN(1, sheetCount);
+    sheetEvenness                           = NaN(1, sheetCount);
     
     for s=1:sheetCount
       
@@ -258,111 +201,84 @@ for m = 1:caseCount
       
       tallyStats(m, n).Sheet(s).Accuracy    = tallyStats(m, n).Sheet(s).Mean - referenceValue;
       
-      %% Sheet Evenness (Sheet Precision)
+      %% Sheet Evenness (Sheet Uniformity)
       % Spread between upper and lower bounds for one sheet across patches.
       
-      tallyStats(m, n).Sheet(s).Precision   = [];
       tallyStats(m, n).Sheet(s).Evenness    = tallyData(m, n).sheetStats(1, s).Sigma*6;
-      
-      tallyStats(m, n).Sheet(s).Precision   = tallyStats(m, n).Sheet(s).Evenness;
       
       sheetMean(s)                          = tallyStats(m, n).Sheet(s).Mean;
       sheetAccuracy(s)                      = tallyStats(m, n).Sheet(s).Accuracy;
-      sheetSigma(s)                         = tallyStats(m, n).Sheet(s).Sigma;
+      sheetEvenness(s)                      = tallyStats(m, n).Sheet(s).Evenness;
       
     end
-    
-    %% Run Statistics (Precision)
     
     % Run Evenness
     % Mean across all sheets of the spread between the upper and lower
     % bounds of all the patches within each sheet. Run evenness is the mean
     % of the sheet evenness across all sheets.
     
-    tallyStats(m, n).Run.Evenness                     = nanmean(sheetSigma(:).*6);
+    tallyStats(m, n).Run.Evenness               = nanmean(sheetEvenness(:));
     
     % Run Repeatability
     % Spread between the upper and lower bounds of the sheet mean
     % across all sheets.
     
-    tallyStats(m, n).Run.Repeatability                = nanmean(patchSigma(:).*6);
+    tallyStats(m, n).Run.Repeatability          = nanstd(sheetMean(:))*6;
     
     
     %% Region Statistics
     
-    regionSheetMean                                   = NaN(regionCount, sheetCount);
-    regionSheetSigma                                  = NaN(regionCount, sheetCount);
-    regionSheetAccuracy                               = NaN(regionCount, sheetCount);
+    regionMean                                  = NaN(regionCount, sheetCount);
+    regionSigma                                 = NaN(regionCount, sheetCount);
+    regionAccuracy                              = NaN(regionCount, sheetCount);
     
-    regionData                                        = cell(1, regionCount); %NaN(regionCount, sheetCount, regionSize
+    regionData                                  = cell(1, regionCount); %NaN(regionCount, sheetCount, regionSize
     
-    for r = 1:regionCount
+    for p = 1:regionCount
       
-      regionMask                                      = tallyMasks(m).regions(r,:,:)==1;
+      regionMask                                      = tallyMasks(m).regions(p,:,:)==1;
       
       regionMask                                      = squeeze(regionMask) & ~dataFilter;
       
       sampleData                                      = runData(:, regionMask);
       nanSample                                       = isnan(sampleData(:));
       
-      tallyStats(m, n).Region(r).Size                 = size(sampleData);
-      tallyStats(m, n).Region(r).Samples              = sum(~nanSample);
-      tallyStats(m, n).Region(r).Outliers             = sum(nanSample);
+      tallyStats(m, n).Region(p).Size                 = size(sampleData);
+      tallyStats(m, n).Region(p).Samples              = sum(~nanSample);
+      tallyStats(m, n).Region(p).Outliers             = sum(nanSample);
       
-      tallyStats(m, n).Region(r).Mean                 = [];
-      tallyStats(m, n).Region(r).Sigma                = [];
-            
+      tallyStats(m, n).Region(p).Mean                 = [];
+      tallyStats(m, n).Region(p).Sigma                = [];
+      
       for s=1:sheetCount
         
-        regionData{r}(s,:)                            = runData(s, regionMask);
+        regionData{p}(s,:)                            = runData(s, regionMask);
         
         % Region Mean
         % Mean of all patches in one region in one sheet. Each region is a
         % spatial unit with a mean value take from samples across the patch
         % (spatial) domain.
         
-        sampleData                                    = regionData{r}(s,:);
+        sampleData                                    = regionData{p}(s,:);
         nanSamples                                    = isnan(sampleData(:));
         
-        tallyStats(m, n).Region(r).Sheet(s).Size      = size(sampleData);
-        tallyStats(m, n).Region(r).Sheet(s).Samples   = sum(~nanSamples);
-        tallyStats(m, n).Region(r).Sheet(s).Outliers  = sum(nanSamples);
+        tallyStats(m, n).Region(p).Sheet(s).Size      = size(sampleData);
+        tallyStats(m, n).Region(p).Sheet(s).Samples   = sum(~nanSamples);
+        tallyStats(m, n).Region(p).Sheet(s).Outliers  = sum(nanSamples);
         
         
-        tallyStats(m, n).Region(r).Sheet(s).Mean      = nanmean(regionData{r}(s,:));% tallyData(m, n).regionStats(p, s).Mean;
-        tallyStats(m, n).Region(r).Sheet(s).Sigma     = nanstd(regionData{r}(s,:));% tallyData(m, n).regionStats(p, s).Sigma;
+        tallyStats(m, n).Region(p).Sheet(s).Mean      = nanmean(regionData{p}(s,:));% tallyData(m, n).regionStats(p, s).Mean;
+        tallyStats(m, n).Region(p).Sheet(s).Sigma     = nanstd(regionData{p}(s,:));% tallyData(m, n).regionStats(p, s).Sigma;
         
-        tallyStats(m, n).Region(r).Sheet(s).Accuracy  = tallyStats(m, n).Region(r).Sheet(s).Mean  - referenceValue;
+        tallyStats(m, n).Region(p).Sheet(s).Accuracy  = tallyStats(m, n).Region(p).Sheet(s).Mean  - referenceValue;
         
-        regionSheetMean(r, s)                         = tallyStats(m, n).Region(r).Sheet(s).Mean;
-        regionSheetSigma(r, s)                        = tallyStats(m, n).Region(r).Sheet(s).Sigma;
-        regionSheetAccuracy(r, s)                     = tallyStats(m, n).Region(r).Sheet(s).Accuracy;
+        regionMean(p, s)                              = tallyStats(m, n).Region(p).Sheet(s).Mean;
+        regionSigma(p, s)                             = tallyStats(m, n).Region(p).Sheet(s).Sigma;
+        regionAccuracy(p, s)                          = tallyStats(m, n).Region(p).Sheet(s).Accuracy;
       end
       
-      for p=1:size(regionData{r},2) % tallyStats(m, n).Region(r).Count
-        patchData                                     = regionData{r}(:,p);
-
-        nanSamples                                    = isnan(patchData(:));        
-        
-        tallyStats(m, n).Region(r).Patch(p).Size      = size(patchData);
-        tallyStats(m, n).Region(r).Patch(p).Samples   = sum(~nanSamples);
-        tallyStats(m, n).Region(r).Patch(p).Outliers  = sum(nanSamples);
-        
-        
-        tallyStats(m, n).Region(r).Patch(p).Mean      = nanmean(patchData(:));% tallyData(m, n).regionStats(p, s).Mean;
-        tallyStats(m, n).Region(r).Patch(p).Sigma     = nanstd(patchData(:));% tallyData(m, n).regionStats(p, s).Sigma;
-        
-        tallyStats(m, n).Region(r).Patch(p).Accuracy  = tallyStats(m, n).Region(r).Patch(p).Mean  - referenceValue;
-        
-        regionPatchMean(r, p)                         = tallyStats(m, n).Region(r).Patch(p).Mean;
-        regionPatchSigma(r, p)                        = tallyStats(m, n).Region(r).Patch(p).Sigma;
-        regionPatchAccuracy(r, p)                     = tallyStats(m, n).Region(r).Patch(p).Accuracy;
-        
-      end
-      
-      
-      tallyStats(m, n).Region(r).Mean                 = nanmean(regionData{r}(:));
-      tallyStats(m, n).Region(r).Sigma                = nanstd(regionData{r}(:));
+      tallyStats(m, n).Region(p).Mean           = nanmean(regionData{p}(:));
+      tallyStats(m, n).Region(p).Sigma          = nanstd(regionData{p}(:));
       
       % Region Norm (Region Accuracy)
       % Mean of all the patches in one region across all sheets. Each region
@@ -370,25 +286,25 @@ for m = 1:caseCount
       % patch (spatial) and sheet (temporal) domains. Norm is also the mean
       % of all region means for one region across all sheets.
       
-      tallyStats(m, n).Region(r).Norm                 = tallyStats(m, n).Region(r).Mean;
-      tallyStats(m, n).Region(r).Accuracy             = tallyStats(m, n).Region(r).Norm  - referenceValue;
+      tallyStats(m, n).Region(p).Norm           = tallyStats(m, n).Region(p).Mean;
+      tallyStats(m, n).Region(p).Accuracy       = tallyStats(m, n).Region(p).Norm  - referenceValue;
       
-      % Region Precision
+      % Region Uniformity
       % Spread between upper and lower bounds for all patches in one region
       % across all sheets.
       
-      tallyStats(m, n).Region(r).Precision            = tallyStats(m, n).Region(r).Sigma*6;
+      tallyStats(m, n).Region(p).Uniformity   	= tallyStats(m, n).Region(p).Sigma*6;
       
       % Region Evenness
       % Mean across all sheets of the spread between the upper and lower
       % bounds of all the patches in one region within each sheet.
       
-      tallyStats(m, n).Region(r).Evenness             = nanmean(regionSheetSigma(r,:)*6);
+      tallyStats(m, n).Region(p).Evenness       = nanmean(regionSigma(p,:)*6);
       
       % Region Repeatability
       % Spread between upper and lower bounds of region mean across all sheets.
       
-      tallyStats(m, n).Region(r).Repeatability        = nanmean(regionPatchSigma(r,:)*6); %nanstd(regionSheetMean(r,:))*6;
+      tallyStats(m, n).Region(p).Repeatability  = nanstd(regionMean(p,:))*6;
       
     end
     
@@ -396,107 +312,86 @@ for m = 1:caseCount
     
     for bandSet = {'around', 'across'}
       
-      band                                              = char(bandSet);
-      bandCount                                         = tallyData(m, n).([band 'Count']);
-      bandStats                                         = tallyData(m, n).([band 'Stats']);
-      bandMasks                                         = tallyMasks(m).(band);
+      band                                      = char(bandSet);
+      bandCount                                 = tallyData(m, n).([band 'Count']);
+      bandStats                                 = tallyData(m, n).([band 'Stats']);
+      bandMasks                                 = tallyMasks(m).(band);
       
-      bandSheetMean                                     = NaN(bandCount, sheetCount);
-      bandSheetSigma                                    = NaN(bandCount, sheetCount);
-      bandSheetAccuracy                                 = NaN(bandCount, sheetCount);
+      bandMean                                  = NaN(bandCount, sheetCount);
+      bandSigma                                 = NaN(bandCount, sheetCount);
+      bandAccuracy                              = NaN(bandCount, sheetCount);
       
-      bandData                                          = cell(1, bandCount); %NaN(regionCount, sheetCount, regionSize
+      bandData                                  = cell(1, bandCount); %NaN(regionCount, sheetCount, regionSize
       
-      bandTally                                         = struct();
+      bandTally                                 = struct();
       
-      for r = 1:bandCount
-        bandMask                                        = bandMasks(r,:,:)==1;
-        bandMask                                        = squeeze(bandMask) & ~dataFilter;
+      for p = 1:bandCount
+        bandMask                                = bandMasks(p,:,:)==1;
+        bandMask                                = squeeze(bandMask) & ~dataFilter;
         
-        sampleData                                      = runData(:, bandMask);
-        nanSamples                                      = isnan(sampleData(:));
+        sampleData                              = runData(:, bandMask);
+        nanSamples                              = isnan(sampleData(:));
         
-        bandTally(r).Size                               = size(sampleData);
-        bandTally(r).Samples                            = sum(~nanSample);
-        bandTally(r).Outliers                           = sum(nanSample);
+        bandTally(p).Size         = size(sampleData);
+        bandTally(p).Samples      = sum(~nanSample);
+        bandTally(p).Outliers     = sum(nanSample);
         
-        bandTally(r).Mean                               = [];
-        bandTally(r).Sigma                              = [];
+        bandTally(p).Mean         = [];
+        bandTally(p).Sigma        = [];
         
         
         for s=1:sheetCount
           
-          bandData{r}(s,:)                              = runData(s, bandMask);
+          bandData{p}(s,:)                      = runData(s, bandMask);
           
-          sampleData                                    = bandData{r}(s,:);
-          nanSamples                                    = isnan(sampleData(:));
+          sampleData                            = bandData{p}(s,:);
+          nanSamples                            = isnan(sampleData(:));
           
-          bandTally(r).Sheet(s).Size                    = size(sampleData);
-          bandTally(r).Sheet(s).Samples                 = sum(~nanSamples);
-          bandTally(r).Sheet(s).Outliers                = sum(nanSamples);
+          bandTally(p).Sheet(s).Size            = size(sampleData);
+          bandTally(p).Sheet(s).Samples         = sum(~nanSamples);
+          bandTally(p).Sheet(s).Outliers        = sum(nanSamples);
           
           
           % Band Mean
           % Mean of region means in a set of regions in one sheet.
           
-          bandTally(r).Sheet(s).Mean                    = nanmean(bandData{r}(s,:)); % bandStats(p, s).Mean;
-          bandTally(r).Sheet(s).Sigma                   = nanstd(bandData{r}(s,:)); % bandStats(p, s).Sigma;
+          bandTally(p).Sheet(s).Mean            = nanmean(bandData{p}(s,:)); % bandStats(p, s).Mean;
+          bandTally(p).Sheet(s).Sigma           = nanstd(bandData{p}(s,:)); % bandStats(p, s).Sigma;
           
-          bandTally(r).Sheet(s).Accuracy                = bandTally(r).Sheet(s).Mean - referenceValue;
+          bandTally(p).Sheet(s).Accuracy        = bandTally(p).Sheet(s).Mean - referenceValue;
           
-          bandSheetMean(r, s)                           = bandTally(r).Sheet(s).Mean;
-          bandSheetSigma(r, s)                          = bandTally(r).Sheet(s).Sigma;
-          bandSheetAccuracy(r, s)                       = bandTally(r).Sheet(s).Accuracy;
+          bandMean(p, s)                        = bandTally(p).Sheet(s).Mean;
+          bandSigma(p, s)                       = bandTally(p).Sheet(s).Sigma;
+          bandAccuracy(p, s)                    = bandTally(p).Sheet(s).Accuracy;
         end
         
-        
-        for p=1:size(bandData{r},2) % tallyStats(m, n).Region(r).Count
-          patchData                                     = bandData{r}(:,p);
-          
-          nanSamples                                    = isnan(patchData(:));
-          
-          bandTally(r).Patch(p).Size                    = size(patchData);
-          bandTally(r).Patch(p).Samples                 = sum(~nanSamples);
-          bandTally(r).Patch(p).Outliers                = sum(nanSamples);
-          
-          
-          bandTally(r).Patch(p).Mean                    = nanmean(patchData(:));% tallyData(m, n).regionStats(p, s).Mean;
-          bandTally(r).Patch(p).Sigma                   = nanstd(patchData(:));% tallyData(m, n).regionStats(p, s).Sigma;
-          
-          bandTally(r).Patch(p).Accuracy                = bandTally(r).Patch(p).Mean  - referenceValue;
-          
-          bandPatchMean(r, p)                           = bandTally(r).Patch(p).Mean;
-          bandPatchSigma(r, p)                          = bandTally(r).Patch(p).Sigma;
-          bandPatchAccuracy(r, p)                       = bandTally(r).Patch(p).Accuracy;
-          
-        end
-        
-        
-        bandTally(r).Mean                               = nanmean(bandData{r}(:));
-        bandTally(r).Sigma                              = nanstd(bandData{r}(:));
+        bandTally(p).Mean                       = nanmean(bandData{p}(:));
+        bandTally(p).Sigma                      = nanstd(bandData{p}(:));
         
         % Band Norm (Band Accuracy)
         % Mean of region means in a set of regions across all sheets.
         
-        bandTally(r).Norm                               = bandTally(r).Mean;
-        bandTally(r).Accuracy                           = bandTally(r).Norm  - referenceValue;
+        bandTally(p).Norm                         = bandTally(p).Mean;
+        bandTally(p).Accuracy                     = bandTally(p).Norm  - referenceValue;
         
         
-        % Band Precision
+        % Band Uniformity
         % Spread between upper and lower bounds for all the patches in a set of
         % regions across all sheets.
         
-        bandTally(r).Precision                          = bandTally(r).Sigma*6;
+        bandTally(p).Uniformity                   = bandTally(p).Sigma*6;
         
         % Band Evenness
         % Mean across all sheets of the spread between the upper and lower
         % bounds of all the patches in a set of regions within each sheet.
         
-        bandTally(r).Evenness                           = nanmean(bandSheetSigma(r,:).*6);
+        bandTally(p).Evenness                     = nanmean(bandSigma(p,:)*6);
         
         % Band Repeatability
+        % Spread between upper and lower bounds for band mean for a set of
+        % regions across all sheets.
         
-        bandTally(r).Repeatability                      = nanmean(bandPatchSigma(r,:).*6); % nanstd(bandSheetMean(r,:))*6;
+        bandTally(p).Repeatability                = nanstd(bandMean(p,:))*6;
         
       end
       

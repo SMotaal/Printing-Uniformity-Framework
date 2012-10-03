@@ -317,76 +317,103 @@ function updateStatsFunctions(obj)
   
   debugStamp(obj.ID, 4);
   
-  if isempty(obj.StatsMode)
-    obj.StatsMode = 'Mean';
+  if isempty(obj.StatsMode) || ~ischar(obj.StatsMode)
+    obj.StatsMode  = 'Mean';
   end
   
-  statsMode = regexprep(lower(obj.StatsMode), '\W', '');
+  statsMode         = regexprep(lower(obj.StatsMode), '\W', '');
   
-  statsFunction = {};
-  dataFunction  = {};
-  labelFunction = {};
+  statsFunction     = {};
+  dataFunction      = {};
+  labelFunction     = {};
+  
+  medium            = @(x) ['{\\fontsize{n}' x '}' ];
+  small             = @(x) ['{\\fontsize{s}' x '}' ];
+  tiny              = @(x) ['{\\fontsize{t}' x '}' ];
+  bold              = @(x) ['{\\bf ' x '}' ];
+  
+  singlePrecision   = ['%1.2f'];
+  singleSigned      = ['%+1.2f'];
+  
+  try
+  
+%   labelFormat       = [ ...
+%     medium([ bold('\\mu: ')   singlePrecision   ' (±' singlePrecision               ')' ])  '\n'...
+%     small([ bold('\\Delta: ') singlePrecision   ' ('  singlePrecision singleSigned  ')' ])  '\n' ...
+%     small([ bold('\\sigma: ') singlePrecision   ' - ' singlePrecision]     )                '\n'...
+%     ];  
   
   switch statsMode     
     case {'limits'}
+      
       statsMode     = 'Limits';
       statsFunction{1}  = @(d, r) vertcat(d.Mean);
       dataFunction{1}   = @(s)    nanmean(s(:));
       labelFunction{1}  = @(d)    sprintf('%1.1f-%1.1f-%1.1f', min(d.Limits), mean(d.Mean), max(d.Limits));
       labelFunction{2}  = @(d)    sprintf('%1.1f±%1.1f', mean(d.Mean), (d.Sigma.*3));
+      
     case {'peaklimits'}
+      
       statsMode         = 'PeakLimits';
       statsFunction{1}  = @(d, r) d.Peak; %vertcat(d.detailed);
-      dataFunction{1}   = @(s)    nanmean(s(:));
-      
-      medium            = @(x) ['{\\fontsize{n}' x '}' ];
-      small             = @(x) ['{\\fontsize{s}' x '}' ];
-      tiny              = @(x) ['{\\fontsize{t}' x '}' ];
-      bold              = @(x) ['{\\bf ' x '}' ];
-      
-      singlePrecision   = ['%1.1f'];
-      singleSigned      = ['%+1.1f'];
+      dataFunction{1}   = @(s)    nanmean(s(:));      
       
       
-      labelFormat       = [ ...
-        medium([ bold('\\mu: ')    singlePrecision  ' (±' singlePrecision               ')' ])  '\n'...        
-        small([ bold('\\Delta: ') singlePrecision   ' ('  singlePrecision singleSigned  ')' ])  '\n' ...
-        small([ bold('\\sigma: ') singlePrecision   ' - ' singlePrecision]     )                '\n'...
-        ];
-      
-      labelFormatTiny       = [ ...
+      labelFormat       = [ ... %labelFormatTiny
         small([ bold('\\mu: ')    singlePrecision   ' (±' singlePrecision               ')' ])  '\n'...        
         tiny([ bold('\\Delta: ')  singlePrecision   ' ('  singlePrecision singleSigned  ')' ])  '\n' ...
         tiny([ bold('\\sigma: ')  singlePrecision   ' - ' singlePrecision]     )                '\n'...
         ];
       
-      
-%       labelFormatTiny       = [ ...
-%         tiny([bold('\\Delta: ')      singlePrecision  ' (' singleSigned ')'])  '\n' ...
-%         tiny([bold('\\Mu: ') singlePrecision ' (±' singlePrecision ')'])  '\n'...
-%         tiny([bold('\\Sigma: ')      singlePrecision ' - ' singlePrecision])  '\n'...
-%         ];
-      
-      labelFunction{1}  = @(d)    sprintf(labelFormatTiny, ...
+      labelFunction{1}  = @(d)    sprintf(labelFormat, ...
         d.Mean, d.Sigma*3, ...
         fliplr(d.GetPeakMeasure), ...
         d.LowerBound, d.UpperBound ...
         );
       
-%       labelFunction{2}  = @(d)    sprintf(labelFormatTiny, ...
-%         d.Mean, d.Sigma*3, ...
-%         d.GetPeakMeasure, ...
-%         d.LowerBound, d.UpperBound ...
-%         );
+    case {'peakmean', 'peakmeans', 'meanpeak', 'meanpeaks'}
       
-      % labelFunction{1}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}%+1.1f }}\n{\\fontsize{t}({\\itpeak_{r}} = {\\it\\mu_{R}}%+1.1f)}', d.PeakLimit(1), 2*(d.Mean-d.PeakLimit(1)), d.PeakLimit(1)-d.ReferenceMean); %d.Sigma*3);
-      % labelFunction{2}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}±%1.1f  } }\n{\\fontsize{t}({\\it\\mu_{b}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
-      % labelFunction{3}  = @(d)    sprintf('{\\fontsize{n}{\\bf %1.1f}{\\fontsize{s}±%1.1f  } }\n{\\fontsize{t}({\\it\\mu_{s}} = {\\it\\mu_{R}}%+1.1f)  }', [d.Mean   d.Sigma*3 d.Mean-d.ReferenceMean]);
-    otherwise
-      statsMode         = 'Mean';
-      statsFunction{1}  = @(d, r) vertcat(d.Mean);
+      statsMode         = 'PeakMean';
+      statsFunction{1}  = @(d, r) d.Peak; %vertcat(d.detailed);
       dataFunction{1}   = @(s)    nanmean(s(:));
-      labelFunction{1}  = @(d)    sprintf('%1.1f', d.Mean);
+      
+      labelFormat       = [ ... %labelFormatTiny
+        medium( [ bold('\\mu: '    ) singlePrecision ' (±' singlePrecision   ')' ])  '\n'...        
+        small(  [ bold('\\sigma: ' ) singlePrecision ' - ' singlePrecision       ]) 	'\n'...
+        ];
+            
+      labelFunction{1}  = @(d) sprintf(labelFormat, ...
+        d.Mean, d.Sigma*3, ...
+        d.LowerBound, d.UpperBound ...
+        );
+      
+      
+    otherwise
+      
+      statsMode         = 'Mean';
+      statsFunction{1}  = @(d, r) d.Mean; %vertcat(d.detailed);
+      dataFunction{1}   = @(s)    nanmean(s(:));
+      
+      labelFormat       = [ ... %labelFormatTiny
+        medium( [ bold('\\mu: '    ) singlePrecision ' (±' singlePrecision   ')' ])  '\n'...        
+        small(  [ bold('\\sigma: ' ) singlePrecision ' - ' singlePrecision       ]) 	'\n'...
+        ];
+      
+      % summaryFormat       = [ ... %labelFormatTiny
+      %   small([ bold('\\Mu: ')    singlePrecision   ' (±' singlePrecision               ')' ])  '\n'...
+      %   tiny([ bold('6\\Sigma: ')  singlePrecision   ' - ' singlePrecision]     )                '\n'...
+      %   ];
+      
+      labelFunction{1}  = @(d) sprintf(labelFormat, ...
+        d.Mean, d.Sigma*3, ...
+        d.LowerBound, d.UpperBound ...
+        );
+            
+  end
+  
+  catch err
+    debugStamp;
+    rethrow(err);
   end
   
   try while numel(statsFunction) < 3, statsFunction(end+1)  = statsFunction(end); end; end

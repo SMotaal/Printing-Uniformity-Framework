@@ -1,13 +1,17 @@
 cleardebug; cleardebug; clc;
+DS.PersistentSources('clear');
+
 global debugmode; debugmode=false;
 
 RT = tic;
 
-SourceIDs   = {'rithp5501', 'rithp7k01', 'ritsm7402a', 'ritsm7402b'}; %, 'ritsm7402c'};
-PatchValues = fliplr([0 25 50 75 100]); %  [100];
-nplots = 0;
+SourceIDs   = {'rithp5501', 'rithp7k01', 'ritsm7402a', 'ritsm7402b', 'ritsm7402c'}; %, 'rithp5501', 'rithp7k01',  'ritsm7402c'};
+PatchValues = [100 75 50 25 0]; %fliplr([0 25 50 75 100]); %  [100];
+nplots      = 0;
 
 sourceIDs = SourceIDs;
+
+statsMode = 'Mean'; % 'PeakMeans';
 
 for source = sourceIDs
   for p = 1:numel(PatchValues)
@@ -15,7 +19,7 @@ for source = sourceIDs
     
     T = tic; fprintf(1,'Preparing plot figure... ');
     m = Grasppe.PrintUniformity.UI.UniformityPlotMediator({'New Regions'}, ...
-      {'CaseID', char(source), 'StatsMode', 'PeakLimits', 'SetID', setID, 'SheetID', 0}); %, 'Surface' ([], {'CaseID', 'ritsm7402a'});
+      {'CaseID', char(source), 'StatsMode', statsMode, 'SetID', setID, 'SheetID', 0}); %, 'Surface' ([], {'CaseID', 'ritsm7402a'});
     
     m.PlotFigure.handleSet('Position', [0 0 800*1 1200*1]);
     

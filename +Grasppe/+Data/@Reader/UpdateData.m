@@ -5,9 +5,9 @@ function eventData = UpdateData( obj, parameter, value )
     try stop(obj.updateDelayTimer);     end
     
     if nargin==1
-%       timerRunning = false;
-%       try timerRunning = ~isequal(obj.updateDelayTimer.Running, 'off'); end
-%       if timerRunning, return; end
+      % timerRunning = false;
+      % try timerRunning = ~isequal(obj.updateDelayTimer.Running, 'off'); end
+      % if timerRunning, return; end
       eventData = obj.ResetEventData('Change', [], []);
       delay     = 0.5;
     elseif nargin==3
@@ -17,6 +17,8 @@ function eventData = UpdateData( obj, parameter, value )
       error('Grasppe:UpdateData:MissingArguments', ...
         'UpdateData requires neither or both parameter and value.');
     end
+    
+    % updateData(obj, eventData);
     
     
     updateCallBack = @(s, e) updateData(obj, eventData);

@@ -2,15 +2,28 @@ function [ dataSource stats ] = generateUPStats( dataSource, dataSet, regions  )
   %GENERATEUPSTATS Summary of this function goes here
   %   Detailed explanation goes here
   
-  persistent dataField;
+  % persistent dataField;
   
-  %default dataField surfData;
-  
-  version                   = 1013;
+  Forced                    = false;
+    
+  version                   = 1016;
   
   masks                     = getDataMasks(dataSource);
   
   [data filter]             = getPatchData(dataSet, masks);
+  
+  L2V                       = @(L)      -log10(((L+16)./116).^3);
+  
+  if ~isfield(dataSet.data, 'lZData')
+    try
+      for m = 1:numel(dataSet.data)
+        dataSet.data(m).lZData  = dataSet.data(m).zData;
+        dataSet.data(m).zData   = L2V(dataSet.data(m).zData);
+      end
+    catch err
+      debugStamp;
+    end
+  end
   
   metrics                   = getMetrics(dataSource, size(data,1));
   
@@ -35,7 +48,7 @@ function [ dataSource stats ] = generateUPStats( dataSource, dataSet, regions  )
     
     regionStatsData = Data.dataSources(regionID, sourceSpace);
     
-    if ~( isstruct(regionStatsData) && ...
+    if Forced || ~( isstruct(regionStatsData) && ...
         isfield(regionStatsData, 'Version') && ...
         regionStatsData.Version >= version)
       regionStatsData = [];

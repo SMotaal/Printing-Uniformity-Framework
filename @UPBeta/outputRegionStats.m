@@ -80,11 +80,13 @@ function outputRegionStats(tally)
       setData             = tally.Metadata.SetData{m, n};
       setStats            = tally.Metadata.SetStats{m, n};
       
-      setPath             = fullfile(caseFolder, [caseID '-' num2str(setID, '%03.0f')]);
+      setFile             = [caseID '-' num2str(setID, '%03.0f')];
+      
+      setPath             = fullfile(caseFolder, setFile);
       
       stats               = tally.Stats(m, n);
       
-      [row htmlRow]       = getSummaryRow();
+      [row htmlRow]       = getSummaryRow(setFile);
       
       summaryTable        = row;
       
@@ -179,21 +181,24 @@ end
 function [row tr] = getSummaryRow(id, stat, maskPath)
   
   headers           = {'ID', 'Mask',  ...
-    'Accuracy', 'Uniformity', 'Evenness', 'Repeatability', ...
+    'Accuracy', 'Precision', 'Evenness', 'Repeatability', ...
     'Samples', 'Outliers',  ...
     'Mean', 'Sigma', 'Norm', 'Size' ...
     };
   
-  if nargin==0,
+  if nargin==0 || nargin==1
+    
     row             = headers;
     
-    tr              = '<thead><tr>';
+    if nargin==1, row{1} = id; end
     
-    for f = 1:numel(headers)
-      tr            = [tr '<th>' headers{f} '</th>'];
+    tr              = '<tr>';
+    
+    for f = 1:numel(row)
+      tr            = [tr '<th>' row{f} '</th>'];
     end
     
-    tr              = [tr '</tr></thead>'];
+    tr              = [tr '</tr>'];
 
     return;
 

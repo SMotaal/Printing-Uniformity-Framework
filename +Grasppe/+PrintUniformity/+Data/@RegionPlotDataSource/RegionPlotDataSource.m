@@ -261,6 +261,7 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
           end
         catch err
           debugStamp(err, 1);
+          rethrow(err);
         end
       end
       
@@ -362,7 +363,7 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
       cLim  = [];
       
       try
-        zLength = 6;
+        zLength = 0.2; % 6;
         
         summaryOffset = obj.SummaryOffset;
         offsetRange   = 1:summaryOffset;
@@ -375,13 +376,15 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
         zLim  = [];
         cLim  = [];
         
+        % zLim  = [0 2];  % [];
+        % cLim  = [0 2];  % [];
         
         switch regexprep(lower(obj.StatsMode), '\W', '')
           case {'mean', 'average', 'limits', 'peaklimits'}
             setData   = obj.SetData;
             zData     = [setData.data(:).zData];
             zMean     = nanmean(zData);
-            
+        
             zLim      = zMean + [+zLength/2 -zLength/2];
             %cLim      = zLim;
           case {'lowerlimit', 'upperlimit'}
@@ -416,7 +419,8 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
     
     function set.StatsMode(obj, value)
       obj.StatsMode         = value;
-      GrasppeKit.DelayedCall(@(s,e)obj.ProcessSetData(obj), 1, 'start');
+      obj.ProcessSetData;
+      %GrasppeKit.DelayedCall(@(s,e)obj.ProcessSetData(obj), 1, 'start');
     end
     
     function set.Stats(obj, stats)

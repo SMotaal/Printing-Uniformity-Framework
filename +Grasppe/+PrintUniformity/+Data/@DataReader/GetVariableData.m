@@ -115,9 +115,9 @@ function variableData = getRawData(parameters, setData, sheetID)
     end
     
     for s = sheetRange
-      sheetData             = getRawSheetData(setData, s);
+      sheetData           = getRawSheetData(setData, s);
       if isempty(variableData)
-        variableData          = zeros(numel(sheetRange+1), size(sheetData,2));
+        variableData      = zeros(numel(sheetRange+1), size(sheetData,2));
       end
       variableData(s+1,:) = sheetData;
     end
@@ -133,24 +133,23 @@ end
 function sheetData = getRawSheetData(setData, sheetID)
   import Grasppe.PrintUniformity.Data.*;
   
-  sheetData               = [];
+  sheetData             = [];
   
-  setData                 = (setData.SetData);
+  setData               = (setData.SetData);
   
-  setLength               = numel(setData.data);
+  setLength             = numel(setData.data);
   
   if isequal(sheetID, 0)
-    sumData               = zeros([setLength size(setData.data(1).zData)]);
+    sumData             = zeros([setLength size(setData.data(1).zData)]);
     
     for m = 1:setLength
-      sumData(m,1,:)      = setData.data(m).zData;
+      sumData(m,1,:)    = setData.data(m).zData;
     end
     
-    meanData              = mean(sumData,1);
-    sheetData(1,:)        = meanData;
+    meanData            = mean(sumData,1);
+    sheetData(1,:)      = meanData;
   else
-    try sheetData         = setData.data(sheetID).zData; end
+    try sheetData       = setData.data(sheetID).zData; end
   end
   
 end
-

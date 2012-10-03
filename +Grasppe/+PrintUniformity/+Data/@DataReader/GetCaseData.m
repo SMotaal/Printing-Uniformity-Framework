@@ -126,11 +126,11 @@ function [ sourceStruct ] = loadSource( source )
       sourcePath = source;
       
       try
-        sourceContents = whos('-file', sourcePath);
+        sourceContents    = whos('-file', sourcePath);
       catch err
         try
-          sourcePath = FS.dataDir('uniprint',  source);
-          sourceContents = whos('-file', sourcePath);
+          sourcePath      = FS.dataDir('uniprint',  source);
+          sourceContents  = whos('-file', sourcePath);
         catch err
           error('UniPrint:Stats:Load:SourceNotFound', 'Source %s is not found.', sourcePath);
         end

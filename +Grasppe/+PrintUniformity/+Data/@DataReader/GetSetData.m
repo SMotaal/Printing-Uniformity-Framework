@@ -178,6 +178,24 @@ function [ dataSet ] = filterUPDataSet( dataSource, sourceName, patchSet )
     dataSet.filterData  = filterStruct;
   end
   
+  if ~isfield(dataSet.data, 'lZData')
+      % Y2V                 = @(Y, Yn)  -log10(Y./Yn);
+      % Y2L                 = @(Y, Yn)  (116.*(Y./Yn).^(1./3))-16;
+      % V2Y                 = @(D, Yn)  Yn./10.^D;
+      % L2Y                 = @(L, Yn)  ((L+16)./116).^3.*Yn;
+      L2V                       = @(L)      -log10(((L+16)./116).^3);
+      % V2L                 = @(D)      (116./10.^(D./3))-16;
+    
+    try
+      for m = 1:numel(dataSet.data)
+        dataSet.data(m).lZData  = dataSet.data(m).zData;
+        dataSet.data(m).zData   = L2V(dataSet.data(m).zData);
+      end
+    catch err
+      debugStamp;
+    end
+  end
+  
 end
 
 function [ setName  ] = filterDataSetID(sourceName, patchSet)

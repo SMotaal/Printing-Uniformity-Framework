@@ -6,13 +6,14 @@ classdef UPBeta
   end
   
   methods (Static)
-    exportRegionPlots
-    demoViewerRegions
-    demoViewerMultiPlots
-    demoNewSurfs
-    demoNewRegions
-    tallyRegionStats
+    exportRegionPlots;
+    demoViewerRegions;
+    demoViewerMultiPlots;
+    demoNewSurfs;
+    demoNewRegions;
+    tallyRegionStats;
     outputRegionStats(tally);
+    tallyRegionStats1;
   end
   
 end

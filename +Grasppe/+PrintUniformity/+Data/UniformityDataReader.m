@@ -469,14 +469,14 @@ classdef UniformityDataReader < Grasppe.Core.Component
           meanData        = mean(sumData,1);
           sheetData(1,:)  = meanData;
         else
-          try sheetData     = setData.data(sheetID).zData; end
+          try sheetData   = setData.data(sheetID).zData; end
         end
       end
       
       try data.SheetData  = sheetData;
         if ~isempty(sheetData) data.Parameters.SheetID = sheetID; end; end
       
-      sheetData = data.SheetData;
+      sheetData           = data.SheetData;
     end
   end
   
