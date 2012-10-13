@@ -1,7 +1,7 @@
 function outputRegionStats(tally)
   outputFolder            = fullfile('Output', 'Stats');
   
-  statGroups              = {'Run', 'Around', 'Across', 'Region', 'Sheet'};
+  statGroups              = {'Run', 'Around', 'Across', 'Region', 'Sheet', 'Zone'};
   
   if nargin==0
     tally = load(fullfile('Output', 'tallyStats.mat'));
@@ -16,8 +16,16 @@ function outputRegionStats(tally)
     masksFolder           = fullfile(caseFolder, 'Masks');
     
     caseMasks             = tally.Masks(m);
+    caseFlip              = tally.Metadata.CaseFlip(m);
     
     maskStruct            = struct();
+    
+    % %% Fix Orientation (HPs)
+    % % Trail-Edge-Down / Operator-Side-Right
+    %
+    %
+    % %% Flip Orientation
+    % % Trail-Edge-Up / Operator-Side-Left
     
     %% Output Region Mask Images
     FS.mkDir(masksFolder);
@@ -34,14 +42,9 @@ function outputRegionStats(tally)
         
         for u = 1:maskCount
           maskID          = [caseID '-' maskGroup '-' int2str(u)];
-          mask            = squeeze(masks(u, :, :));
+          mask            = squeeze(masks(u, :, :)); %fliplr
           
-          % maskImage       =  zeros([size(mask) 3]);
-          % maskImage(:,:,1) = mask;
-          % %maskImage(:,:,2) = zeros(size(mask));
-          % %maskImage(:,:,3) = zeros(size(mask));
-          
-          maskImage       = mask;
+          maskImage       = fliplr(mask);
           
           maskFilename    = [maskID '.png'];
           maskPath        = fullfile(masksFolder, maskFilename);
@@ -62,10 +65,35 @@ function outputRegionStats(tally)
           catch err
             debugStamp(err, 1);
             % beep;
+            rethrow(err);
           end
           
+          % maskImage(maskImage==0) = 0;
+          maskImage = 1-maskImage;
           
-          imwrite(maskImage, maskPath);
+          maskGap   = 8;          
+          
+          padValue  = 0;
+          
+          markLength = ceil(min(size(maskImage,2), size(maskImage,1)/3));
+          
+          maskImage = padarray(maskImage', 1, 0);
+          maskImage = padarray(maskImage', 1, 0);
+          
+          maskLead  = repmat(1, 1, maskGap) .* 1;
+          
+          maskImage = [repmat(maskLead', 1, size(maskImage,2)); maskImage];
+          
+          maskImage = [repmat(maskLead,  size(maskImage,1), 1), maskImage];
+          
+          maskImage(1:3, 1:markLength) = padValue;
+          maskImage(1:markLength, 1:3) = padValue;
+          
+          maskImage = rot90(maskImage,2);
+          
+          maskAlpha = 0+(maskImage~=1);
+          
+          imwrite(maskImage, maskPath, 'png', 'Alpha', maskAlpha);
         end
         
       end
@@ -77,8 +105,8 @@ function outputRegionStats(tally)
       setID               = tally.Metadata.SetIDs(n);
       
       setName             = tally.Metadata.SetNames{m, n};
-      setData             = tally.Metadata.SetData{m, n};
-      setStats            = tally.Metadata.SetStats{m, n};
+      % setData             = tally.Metadata.SetData{m, n};
+      % setStats            = tally.Metadata.SetStats{m, n};
       
       setFile             = [caseID '-' num2str(setID, '%03.0f')];
       
@@ -94,7 +122,7 @@ function outputRegionStats(tally)
         '<html>'
         '<head><style>'
         '   body    {font-family: Sans-Serif; font-size: 12px;}'
-        '   img     {height: 20px; border: #000 1px solid;}'        
+        '   img     {height: 20px; border: #000 1px none;}'        
         '   th      {background-color: #000; color: #fff; text-align: center; white-space: nowrap; border: none;}'
         '   td      {min-width: 100px; text-align: center; white-space: nowrap; border: none;}'        
         '   td:nth-of-type(odd)  {background-color: #eee;} '
@@ -112,24 +140,32 @@ function outputRegionStats(tally)
         
         statGroup         = statGroups{p};
         
-        groupStats        = stats.(statGroup);
+        if ~isfield(stats, statGroup), continue; end
         
+        groupStats        = stats.(statGroup);
         groupMasks        = [];
+        
+        groupFlip         = false;
         
         try
           switch(lower(statGroup))
             case {'region', 'regions'};
-              groupMasks  = maskStruct.regions;
+              groupMasks  = maskStruct.region;
+              groupFlip   = caseFlip;
             case {'around', 'circumferential'};
               groupMasks  = maskStruct.around;
+              groupFlip   = caseFlip;
             case {'across', 'axial'};
               groupMasks  = maskStruct.across;
+              groupFlip   = caseFlip;
             otherwise
               groupMasks  = maskStruct.(lower(statGroup));
           end
         catch err
           debugStamp(err, 1);
         end
+        
+
         
         
         for q = 1:numel(groupStats)
@@ -143,7 +179,9 @@ function outputRegionStats(tally)
             
             try maskPath            = fullfile('Masks', groupMasks(q).Filename); end
             
-            rowStats                = groupStats(q);
+            rowStats              = groupStats(q);
+            
+            %rowStats                = groupStats(q);
             
             [row htmlRow]           = getSummaryRow(rowID, rowStats, maskPath);
             
@@ -154,6 +192,7 @@ function outputRegionStats(tally)
           catch err
             debugStamp(err, 1);
             % beep;
+            rethrow(err);
           end
         end
         
@@ -183,7 +222,7 @@ function [row tr] = getSummaryRow(id, stat, maskPath)
   headers           = {'ID', 'Mask',  ...
     'Accuracy', 'Precision', 'Evenness', 'Repeatability', ...
     'Samples', 'Outliers',  ...
-    'Mean', 'Sigma', 'Norm', 'Size' ...
+    'Mean', 'Sigma', 'EvennessN', 'RepeatabilityN', 'Size', ... % 'Norm', 
     };
   
   if nargin==0 || nargin==1
@@ -235,7 +274,7 @@ function [row tr] = getSummaryRow(id, stat, maskPath)
         if isequal(round(row{f}), row{f})
           tr        = [tr int2str(row{f})];
         else
-          tr        = [tr num2str(row{f}, '%1.2f')];
+          tr        = [tr num2str(row{f}, '%1.3f')];
         end
       else
         tr          = [tr toString(row{f})];

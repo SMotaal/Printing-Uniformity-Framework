@@ -3,11 +3,17 @@ DS.PersistentSources('clear');
 
 global debugmode; debugmode=false;
 
+testing     = false;
+
 RT = tic;
 
-SourceIDs   = {'rithp5501', 'rithp7k01', 'ritsm7402a', 'ritsm7402b', 'ritsm7402c'}; %, 'rithp5501', 'rithp7k01',  'ritsm7402c'};
+SourceIDs   = {'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01', 'rithp5501'}; %, 'rithp5501', 'rithp7k01',  'ritsm7402c'};
 PatchValues = [100 75 50 25 0]; %fliplr([0 25 50 75 100]); %  [100];
 nplots      = 0;
+
+if testing
+  SourceIDs = SourceIDs([1 4]);
+end
 
 sourceIDs = SourceIDs;
 

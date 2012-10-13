@@ -27,7 +27,7 @@ function [ dataSource stats ] = generateUPStats( dataSource, dataSet, regions  )
   
   metrics                   = getMetrics(dataSource, size(data,1));
   
-  if nargin < 3, regions = getRegionMasks(dataSource); end
+  if nargin < 3, regions    = getRegionMasks(dataSource); end
   
   stats                     = struct('metadata', [], 'run', [], 'version', version, 'filter', filter); % 'data', data, 
   
@@ -203,9 +203,9 @@ end
 function [data filter] = getPatchData( dataSet, masks )
   
   try
-    if ~exists('masks') || isempty(masks)
-      masks                   = ones(sData([1 2:end]));
-    end
+    % if ~exists('masks') || isempty(masks)
+    %   masks                   = ones(sData([1 2:end]));
+    % end
     
     dataField                 = 'zData';
     

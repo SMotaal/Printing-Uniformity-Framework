@@ -105,6 +105,10 @@ function [ sampling ] = processPatchSampling( data )
   sampling.masks.Rows     = linearMask(data.length.Rows, data.index.Rows);
   
   sampling.masks.Target   = sampling.masks.Rows*sampling.masks.Columns';
+    
+  sampling.Flip           = false;
+  
+  try sampling.Flip       = isequal(data.metadata.testdata.samples.flipped, true); end
 end
 
 function [mask] = linearMask(length, index)
@@ -147,12 +151,12 @@ function [ sourceStruct ] = loadSource( source )
       assert(isSolo,[sourcePath ...
         ' contains more than one variable. Uniformity data structures must be stored seperately.']);
       
-      sourceName = sourceContents.name;
-      sourceData = getfield(load(sourcePath), sourceName);
+      sourceName    = sourceContents.name;
+      sourceData    = getfield(load(sourcePath), sourceName);
       
-      sourceFields = fieldnames(sourceData)';
+      sourceFields  = fieldnames(sourceData)';
       
-      sourceStruct = emptyStruct('name', 'path', sourceFields{:});
+      sourceStruct  = emptyStruct('name', 'path', sourceFields{:});
       
       sourceStruct.('name') = sourceName;
       sourceStruct.('path') = sourcePath;

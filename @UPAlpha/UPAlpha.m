@@ -6,7 +6,8 @@ classdef UPAlpha
   end
   
   methods (Static)
-    exportVideos( forced, sources, fValues, fViews, fSets );
+    buildDataFiles();
+    exportVideos(forced, sources, fValues, fViews, fSets);
   end
   
 end

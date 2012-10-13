@@ -242,10 +242,12 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
           case {'raw'}
             obj.Stats = [];
             regions = [];
-          case {'sections', 'around', 'across'}
-            regions.sections  = obj.Regions.sections;
-            regions.around    = obj.Regions.around;
-            regions.across    = obj.Regions.across;
+          case {'sections', 'around', 'across', 'zones', 'zoneBands'}
+            try regions.sections  = obj.Regions.sections;   end
+            try regions.around    = obj.Regions.around;     end
+            try regions.across    = obj.Regions.across;     end
+            try regions.zones     = obj.Regions.zones;      end
+            try regions.zoneBands = obj.Regions.zoneBands;  end
           otherwise
             regions.(obj.VariableID)  = obj.Regions.(obj.VariableID);
             try regions.([obj.VariableID 'Around']) = obj.Regions.([variableID 'Around']); end

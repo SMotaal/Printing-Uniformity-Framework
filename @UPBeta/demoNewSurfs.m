@@ -1,4 +1,4 @@
-opt = {{'newsurf'}, {'CaseID', 'ritsm7402a'}};
+opt = {{'newsurf'}, {'CaseID', 'rithp7k01'}};
 
 m = Grasppe.PrintUniformity.UI.UniformityPlotMediator(opt{:}); %, 'StatsMode', 'PeakLimits'});
 

@@ -16,6 +16,8 @@ function [ output_args ] = supCreateMatrix( folder )
 %   sheet, row, and column for a given reading by referencing the index
 %   matrix with respective element index for each.
 
+import Data.*
+
 
 %% File List Preparation
   if ~exist('folder','var')
@@ -25,7 +27,8 @@ function [ output_args ] = supCreateMatrix( folder )
   ticketFile = FS.dataDir('UniPrintRAW',[folder '.ticket.m']);
 
   [fileList sampleSections sampleCount sampleIndex] = Alpha.supListDataFiles(folder);
-  folder  = FS.dataDir('UniPrintRAW', folder);
+  caseID    = folder;
+  folder    = FS.dataDir('UniPrintRAW', folder);
   
   t = parseTicket(ticketFile);
   
@@ -165,6 +168,8 @@ for sample = sort(sheetOrder)
     
     refData   = load(fullfile(folder,fileName))';
     
+    refData(:, 2) = 0;
+    
     xyzData   = Color.ref2XYZ(refData, refCMF, refIll);
     labData   = Color.XYZ2Lab(xyzData, XYZn);
     rgbData   = Color.XYZ2sRGB(xyzData);
@@ -209,9 +214,24 @@ for sample = sort(sheetOrder)
   
 end
 
-output.sparseData   = sparseMatrix;
-output.sparseIndex  = sparseIndex;
-output.sourceTicket = t;
+dataImage = zeros(size(rowIndex,2), size(columnIndex,2));
+dataImage(rowIndex', columnIndex') = squeeze(sparseMatrix.LAB(sample,:,:,1)./100);
+
+if isequal(t.testdata.samples.flipped, true)
+  sheetImage = flipud(fliplr(dataImage));
+else
+  sheetImage = dataImage;
+end
+
+imwrite(dataImage, fullfile('Output','Thumbnails', [caseID '-d.png'])); %int2str(sheet)
+imwrite(sheetImage, fullfile('Output','Thumbnails', [caseID '-s.png'])); %int2str(sheet)
+
+
+output.sparseData       = sparseMatrix;
+output.sparseIndex      = sparseIndex;
+output.sourceTicket     = t;
+output.imageCheck.sheet = sheetImage;
+output.imageCheck.data  = dataImage;
 % output.
 
 output_args = output;

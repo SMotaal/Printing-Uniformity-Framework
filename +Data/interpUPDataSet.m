@@ -22,6 +22,10 @@ function [ setData filterData] = interpUPDataSet( dataSource, setFilter )
     'Valid filters may be specified using tone value or case-senstive fieldname for a valid dataSource mask, or, a logical filter matrix.']);  
   
   %% Prepare Set Filter
+  
+  flipping      = false;
+  try flipping  = isequal(dataSource.sampling.Flip, true); end  
+  
   try
     targetSize    = dataSource.metrics.sampleSize;
 
@@ -36,17 +40,19 @@ function [ setData filterData] = interpUPDataSet( dataSource, setFilter )
       
       if validCheck('setFilter','char') && ...
           isVerified('all(islogical(dataSource.sampling.masks.(setFilter)))',1)
-        setFilter = dataSource.sampling.masks.(setFilter);
+        setFilter   = dataSource.sampling.masks.(setFilter);
       end
       filterSize    = size(setFilter);
       filterRepeat  = dataSource.sampling.Repeats;
     end
     
     % Create Patch Map
-    dataFilter    = repmat(setFilter, filterRepeat);
+    dataFilter                = repmat(setFilter, filterRepeat);
+    
+    if flipping, dataFilter   = rot90(dataFilter,2); end
     
     % Filter out pattern
-    [dataRows,dataColumns]   = find(dataFilter==1);
+    [dataRows,dataColumns]    = find(dataFilter==1);
     
   catch err
     throw(addCause(filterException, err));
@@ -88,11 +94,15 @@ function [ setData filterData] = interpUPDataSet( dataSource, setFilter )
   try
     s = 0;
     for s = sheetsRange;
-      % Extract Sample dataSource
+      % Extract reflectance
       sheetData   = squeeze(sourceRef(s,:,:,:));
+      refData     = reshape(sheetData, [], size(sheetData,3));
+      
+      if flipping
+        refData   = flipud(refData);
+      end
       
       % Calculate Colorimetry
-      refData     = reshape(sheetData, [], size(sheetData,3));
       xyzData     = ref2XYZ(refData', refCMF, refIll);
       
       % Calculate CIE-Lab

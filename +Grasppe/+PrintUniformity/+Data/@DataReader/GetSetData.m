@@ -169,7 +169,7 @@ function [ dataSet ] = filterUPDataSet( dataSource, sourceName, patchSet )
   setStruct     = Data.dataSources(setID,     sourceSpace);
   filterStruct  = Data.dataSources(filterID,  sourceSpace);
   
-  if (isempty(setStruct) || isempty(filterStruct)) || Forced
+  if (isempty(setStruct) || isempty(filterStruct)) || Forced % || true
     [dataSet.data dataSet.filterData] = Data.interpUPDataSet(dataSource, dataSet.patchSet);
     Data.dataSources(setID,     dataSet.data,       true, sourceSpace);
     Data.dataSources(filterID,  dataSet.filterData, true, sourceSpace);
