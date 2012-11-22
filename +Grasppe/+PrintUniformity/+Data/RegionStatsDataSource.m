@@ -461,7 +461,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
     function updateCaseData(obj, source, event)
       try debugStamp(obj.ID, 3); catch, debugStamp(); end;
       
-      [dataSource regions] = Metrics.generateUPRegions(obj.CaseData);
+      [dataSource regions] = Alpha.Metrics.generateUPRegions(obj.CaseData);
       obj.Regions = regions;
       
       obj.updateCaseData@Grasppe.PrintUniformity.Data.UniformityDataSource(source, event);
@@ -577,7 +577,7 @@ classdef RegionStatsDataSource < Grasppe.PrintUniformity.Data.UniformityDataSour
         end
         
         try obj.PlotLabels.clearLabels; end
-        [dataSource stats]    = Stats.generateUPStats(obj.CaseData, obj.SetData.DATA, regions);
+        [dataSource stats]    = Alpha.Stats.generateUPStats(obj.CaseData, obj.SetData.DATA, regions);
         obj.Stats = stats;
       end
       

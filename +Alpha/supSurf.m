@@ -1,6 +1,8 @@
 function [ hFig, hSurf ] = supSurf( sourceData, hFig, mView, pBar, cl, input_args )
 %SUPSURF plots supSample as a surf
 %   Detailed explanation goes here
+import Alpha.*;
+
 
 %% Plot Design Notes (To be implemented)
 % Layers:

@@ -1,6 +1,7 @@
 function sup = supStruct(sup)
   
-  import Color.* Alpha.*;
+  import Color.*;
+  import Alpha.*;
   
   %% Define data set
   

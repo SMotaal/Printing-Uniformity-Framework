@@ -3,6 +3,9 @@ function [ plotStats ] = supPlotStats( plotData, supData, plotStats )
 %   Returns statistics structure for interpolated plot data matrix. Plot
 %   data matrix must 4-D in SRCV order (sheet, row, column, value).
 
+import Alpha.*;
+
+
 %regionROI(11,22,6,6)
 %return;
 

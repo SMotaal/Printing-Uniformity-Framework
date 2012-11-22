@@ -2,6 +2,8 @@ function [ data ] = InterpData( forced )
   %INTERPDATA Summary of this function goes here
   %   Detailed explanation goes here
   
+import Alpha.*;
+  
   default forced false;
    
   if forced

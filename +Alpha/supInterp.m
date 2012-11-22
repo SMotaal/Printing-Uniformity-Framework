@@ -88,6 +88,7 @@ end
 function [interpData] = interpSet(sourceData, PatchValue)
   
   import Color.*;
+  import Alpha.*;
   
   supData   = sourceData.Data; %evalin('base','supData');
   CMS       = sourceData.CMS; %evalin('base','cms');

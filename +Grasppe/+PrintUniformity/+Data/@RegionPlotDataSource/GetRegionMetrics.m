@@ -4,7 +4,8 @@ function regions = GetRegionMetrics(obj)
   
   regions = [];
   
-  [dataSource regions] = Metrics.generateUPRegions(obj.CaseData);
+  %[dataSource regions] = Metrics.generateUPRegions(obj.CaseData);
+  [dataSource regions] = Grasppe.PrintUniformity.Data.DataReader.ProcessRegions(obj.CaseData);
   
   if nargout==0,
     obj.Region = regions;

@@ -78,7 +78,8 @@ function [ data ] = loadCaseData( source )
     data.sampling     = processPatchSampling(data);
     data.colorimetry  = processColorimetry(data);
     
-    data              = Metrics.processUPMetrics(data);
+    % data              = Metrics.processUPMetrics(data);
+    data              = Grasppe.PrintUniformity.Data.DataReader.ProcessMetrics(data);
   else
     data = source;
   end
@@ -123,7 +124,7 @@ function [ sourceStruct ] = loadSource( source )
     
     sourceSpace   = sourceID;
     
-    sourceStruct  = Data.dataSources(sourceID, sourceSpace);
+    sourceStruct  = DS.dataSources(sourceID, sourceSpace);
     
     if (isempty(sourceStruct))
 
@@ -165,7 +166,7 @@ function [ sourceStruct ] = loadSource( source )
         sourceStruct.(char(field)) = sourceData.(char(field));
       end
       
-      Data.dataSources(sourceID, sourceStruct, true, sourceSpace);
+      DS.dataSources(sourceID, sourceStruct, true, sourceSpace);
 
     end
     

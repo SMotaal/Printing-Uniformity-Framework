@@ -1,6 +1,9 @@
 function [ surfs ] = supMergeSurfs( statPlots, statMasks, field )
 %SUPMERGESURFS Merges stats surfs creating data / label timeseries array
 
+import Alpha.*;
+
+
 %% Extract field data & masks
 data      = statPlots.(field).Values;           % SMRC Order
 

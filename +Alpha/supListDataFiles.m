@@ -2,6 +2,8 @@ function [ fileList nSections nSamples iSamples output_args ] = supListDataFiles
 %SUPDATAFILES checks files data folder and returns a list
 %   Detailed explanation goes here
 
+import Alpha.*;
+
 %% Check that folder is set
   folder  = FS.dataDir('UniPrintRaw', folder);
   assert(exist(folder,'dir')==7,'Data folder is not found.')

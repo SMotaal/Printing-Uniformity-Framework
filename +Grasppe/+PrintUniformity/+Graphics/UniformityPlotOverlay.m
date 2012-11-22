@@ -390,7 +390,7 @@ classdef UniformityPlotOverlay < Grasppe.Core.Component
           zonePosition  = obj.LabelPositions(m, :);
           
           xLength       = zoneArea(1); %max(xExtent)-min(xExtent);          
-          xExtent       = zonePosition(1) + [-1 0] + [-xLength xLength] /2;
+          xExtent       = zonePosition(1) + [0 1] + [-xLength xLength] /2; % [-1 0]
           xOffset       = 0;
           xScale        = 1;
           

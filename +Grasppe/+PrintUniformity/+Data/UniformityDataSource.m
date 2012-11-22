@@ -173,7 +173,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
         [id space]    = obj.getDataID;
         bufferedData  = {};
         
-        %if bufferAllData, bufferedData = Data.dataSources(id, space); end
+        %if bufferAllData, bufferedData = DS.dataSources(id, space); end
         
         %try forceBuffer = ~all(isfield(bufferedData, {'stats', 'strings'})); end
         
@@ -204,7 +204,7 @@ classdef UniformityDataSource < Grasppe.Core.Component & Grasppe.Occam.Process %
             bufferedData.strings  = obj.SetStrings;
           end
           
-          %Data.dataSources(id, bufferedData, true, space);
+          %DS.dataSources(id, bufferedData, true, space);
         else
           data = bufferedData.data;
           

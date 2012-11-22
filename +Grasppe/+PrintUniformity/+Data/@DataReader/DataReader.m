@@ -292,6 +292,11 @@ classdef DataReader < Grasppe.Data.Reader
     function parameters = GetDataParameters()
       parameters  = {'CaseID', 'SetID', 'VariableID', 'SheetID'};
     end
+    
+    [ dataSource regions ]  = ProcessRegions( dataSource );
+    [ dataSource ]          = ProcessMetrics( dataSource );
+    [ dataSource stats ]    = ProcessStatistics( dataSource, dataSet, regions  );
+    [ strID ]               = GenerateCacheID( dataSource, dataSet, dataClass )
   end
   
   

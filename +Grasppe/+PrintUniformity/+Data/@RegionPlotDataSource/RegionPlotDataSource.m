@@ -255,7 +255,8 @@ classdef RegionPlotDataSource < Grasppe.PrintUniformity.Data.PlotDataSource
         end
         
         try if ~isempty(regions)
-            [dataSource stats]    = Stats.generateUPStats(obj.CaseData, obj.SetData.DATA, regions);
+            %[dataSource stats]    = Stats.generateUPStats(obj.CaseData, obj.SetData.DATA, regions);
+            [dataSource stats]    = Grasppe.PrintUniformity.Data.DataReader.ProcessStatistics(obj.CaseData, obj.SetData.DATA, regions);
             obj.Stats = stats;
             
             obj.ProcessStatistics(variableID);

@@ -2,6 +2,8 @@ function [ data SID MID ] = supDataBuffer( source )
   %SUPDATABUFFER Summary of this function goes here
   %   Detailed explanation goes here
   
+  import Alpha.*;
+  
   if ischar(source)
     data    = [];
   elseif isstruct(source) && validCheck('source.Filename','char')  % Setting

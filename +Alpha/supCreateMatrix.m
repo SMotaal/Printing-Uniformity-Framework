@@ -16,7 +16,8 @@ function [ output_args ] = supCreateMatrix( folder )
 %   sheet, row, and column for a given reading by referencing the index
 %   matrix with respective element index for each.
 
-import Data.*
+import Alpha.Data.*
+import Alpha.*;
 
 
 %% File List Preparation

@@ -2,7 +2,9 @@ function [ sourceData ] = supLoad( source, forced )
   %SUPLOAD Loads the workspace for sup plotting
   %   Detailed explanation goes here
   
-  import Color.* Alpha.*;
+  import Color.*;
+  import Alpha.*;
+
   default forced false;
   
   %% Do we need to load?
