@@ -6,7 +6,7 @@ function [ output_args ] = cleardebug( input_args )
   
   warning('off');
   
-  try evalin('base', 'Grasppe.Core.Prototype.ClearPrototypes'); end
+  try evalin('base', 'GrasppeAlpha.Core.Prototype.ClearPrototypes'); end
 %   
 %   evalin('base', 'clear');
   

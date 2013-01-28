@@ -23,10 +23,10 @@ disp('Running Tests...');
 
 newProfile();
 
-x = Grasppe.Graphics.Figure('WindowStyle', 'docked');
+x = GrasppeAlpha.Graphics.Figure('WindowStyle', 'docked');
 endProfile(); snapnow(); newProfile();
 
-a = Grasppe.Graphics.Axes('ParentFigure', x);
+a = GrasppeAlpha.Graphics.Axes('ParentFigure', x);
 endProfile(); snapnow(); newProfile();
 
 delete(a);

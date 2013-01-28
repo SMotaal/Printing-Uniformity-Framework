@@ -22,7 +22,7 @@ rId = tic;
 disp('Running Tests...');
 
 newProfile();
-x = Grasppe.PrintUniformity.Graphics.UniformityPlotFigure('PlotAxesLength', 3); 
+x = PrintUniformityBeta.Graphics.UniformityPlotFigure('PlotAxesLength', 3); 
 endProfile(); snapnow(); newProfile();
 
 mPos = get(0,'MonitorPositions');
@@ -32,22 +32,22 @@ endProfile(); snapnow(); newProfile();
 a1 = x.PlotAxes{1}; a2 = x.PlotAxes{2}; a3 = x.PlotAxes{3};
 endProfile(); snapnow(); newProfile();
 
-d1 = Grasppe.PrintUniformity.Data.RawUniformityDataSource('CaseID', 'rithp5501');
+d1 = PrintUniformityBeta.Data.RawUniformityDataSource('CaseID', 'rithp5501');
 endProfile(); snapnow(); newProfile();
 
-p1 = Grasppe.PrintUniformity.Graphics.UniformitySurf(a1, d1);
+p1 = PrintUniformityBeta.Graphics.UniformitySurf(a1, d1);
 endProfile(); snapnow(); newProfile();
 
-d2 = Grasppe.PrintUniformity.Data.UniformityPlaneDataSource('CaseID', 'rithp5501'); 
+d2 = PrintUniformityBeta.Data.UniformityPlaneDataSource('CaseID', 'rithp5501'); 
 endProfile(); snapnow(); newProfile();
 
-p2 = Grasppe.PrintUniformity.Graphics.UniformitySurf(a2, d2);
+p2 = PrintUniformityBeta.Graphics.UniformitySurf(a2, d2);
 endProfile(); snapnow(); newProfile();
 
-d3 = Grasppe.PrintUniformity.Data.LocalVariabilityDataSource('CaseID', 'rithp5501');
+d3 = PrintUniformityBeta.Data.LocalVariabilityDataSource('CaseID', 'rithp5501');
 endProfile(); snapnow(); newProfile();
 
-p3 = Grasppe.PrintUniformity.Graphics.UniformitySurf(a3, d3);
+p3 = PrintUniformityBeta.Graphics.UniformitySurf(a3, d3);
 endProfile(); snapnow(); newProfile();
 
 x.prepareMediator;

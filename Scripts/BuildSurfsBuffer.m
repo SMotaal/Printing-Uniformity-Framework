@@ -40,7 +40,7 @@ function [ output_args ] = BuildSurfsBuffer( input_args )
         patchValue = patchSets(p);
         
         
-        d1 = Grasppe.PrintUniformity.Data.RegionStatsDataSource(... 
+        d1 = PrintUniformityBeta.Data.RegionStatsDataSource(... 
         'CaseID', caseID, 'VariableID', variableID, 'SetID', patchValue);
         
         for s = 1:numel(surfStats)
@@ -62,7 +62,7 @@ function [ output_args ] = BuildSurfsBuffer( input_args )
         
       end
       
-      evalin('base', 'Grasppe.Core.Prototype.ClearPrototypes');
+      evalin('base', 'GrasppeAlpha.Core.Prototype.ClearPrototypes');
       
     end
     

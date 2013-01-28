@@ -5,9 +5,9 @@ function [ result ] = stropt( strings,  list, length)
   %   list or a set of mutually exclusive string lists.
   %
   %   The strings may be a char or a cellstr with 1 or more strings to look
-  %   for. Each string must be single alphanumeric word such that a single
+  %   for. Each string must be single PrintUniformityAlpha.umeric word such that a single
   %   string may be used to specify a set of strings, separated by
-  %   non-alphanumeric characters like spaces, commas, etc (i.e., 'png,
+  %   non-PrintUniformityAlpha.umeric characters like spaces, commas, etc (i.e., 'png,
   %   eps' is same as {'png', 'eps'}).
   %
   %   The list may be a cell containing both char and cellstr, or a

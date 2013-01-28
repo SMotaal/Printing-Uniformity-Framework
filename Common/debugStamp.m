@@ -71,10 +71,10 @@ function [ output_args ] = debugStamp( tag, level, obj )
     nextstack = sprintf('\n%s',['@' dbstamp]);
     
     try
-      try if nargin>2 && isa(obj, 'Grasppe.Core.Prototype')
+      try if nargin>2 && isa(obj, 'GrasppeAlpha.Core.Prototype')
           tag = [obj.ID '.' tag]; end; end
       
-      try if isa(tag, 'Grasppe.Core.Prototype')
+      try if isa(tag, 'GrasppeAlpha.Core.Prototype')
           tag = [obj.ID '.' tag]; end; end
       
       if ischar(tag)
