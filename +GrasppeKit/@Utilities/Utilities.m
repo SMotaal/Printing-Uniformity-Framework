@@ -18,6 +18,9 @@ classdef (Sealed) Utilities
     
     delayTimer                  = DelayedCall(callback, delay, mode)
     [names values paired pairs] = ParseOptions(varargin)
+    
+    
+    ProgressUpdate(progress, varargin)
   end
   
 end

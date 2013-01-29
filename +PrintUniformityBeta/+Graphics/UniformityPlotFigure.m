@@ -27,7 +27,6 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
       obj.PlotMediator.createControls(obj);
     end
     
-    
     function OnKeyPress(obj, source, event)
       obj.bless;
       
@@ -38,28 +37,41 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
       
       if ~event.Consumed
       
-        if commandKey && shiftKey
-          switch event.Data.Key
-            case 'h'
-              try obj.DataSources{1}.setSheet('sum'); syncSheets = true; end
-              event.Consumed = true;
-            case 'e'
-              try obj.Export; end
-              event.Consumed = true;
-            case 'uparrow'
-              try obj.DataSources{1}.setSheet('+1'); syncSheets = true; end
-              event.Consumed = true;
-            case 'downarrow'
-              try obj.DataSources{1}.setSheet('-1'); syncSheets = true; end
-              event.Consumed = true;
-            otherwise
-              %disp(toString(event.Data.Key));
+        if commandKey
+          if shiftKey
+            switch event.Data.Key
+              case 'h'
+                try obj.DataSources{1}.setSheet('sum'); syncSheets = true; end
+                event.Consumed = true;
+              case 'e'
+                try obj.Export; end
+                event.Consumed = true;
+              case 'uparrow'
+                try obj.DataSources{1}.setSheet('+1'); syncSheets = true; end
+                event.Consumed = true;
+              case 'downarrow'
+                try obj.DataSources{1}.setSheet('-1'); syncSheets = true; end
+                event.Consumed = true;
+              otherwise
+                %disp(toString(event.Data.Key));
+            end
+          else
+            switch event.Data.Key
+              case 'uparrow'
+                try obj.DataSources{1}.setSheet('+1', true); syncSheets = true; end
+                event.Consumed = true;
+              case 'downarrow'
+                try obj.DataSources{1}.setSheet('-1', true); syncSheets = true; end
+                event.Consumed = true;              
+            end
           end
         end
       end
       
       if syncSheets
         %if numel(obj.DataSources)>1
+        try obj.StatusText = obj.DataSources{1}.GetSheetName(obj.DataSources{1}.NextSheetID); end % int2str(obj.DataSource.NextSheetID)
+        drawnow expose update;
           for m = 2:numel(obj.DataSources)
             notify(obj.DataSources{m}, 'SheetChange');
             %try obj.DataSources{m}.SheetID = obj.DataSources{1}.SheetID; end

@@ -4,7 +4,9 @@ function resetAxesLimits(obj, x, y, z, c)
   
   try debugStamp(obj.ID, 3); catch, debugStamp(); end;
   
-  threshold                     = 0.3;
+  means                           = obj.Reader.getSheetData(0);
+  threshold                       = 0.15;
+  stdThreshold                    = 0;
   
   try
     
@@ -36,13 +38,13 @@ function resetAxesLimits(obj, x, y, z, c)
       else
         setData                   = obj.SetData;
         
-        zData                     = [setData.data(:).zData];
-        zMean                     = nanmean(zData);
+        zData                     = means; %[setData.data(:).zData];
+        zMean                     = nanmean(zData(:));
         zStd                      = nanstd(zData,1);
         zSigma                    = [-threshold +threshold] * zStd;
         
         
-        zMedian                   = round(zMean*2)/2;
+        zMedian                   = round(zMean*20)/20;
         zRange                    = [-threshold +threshold];
         zLim                      = zMedian + zRange;
       end

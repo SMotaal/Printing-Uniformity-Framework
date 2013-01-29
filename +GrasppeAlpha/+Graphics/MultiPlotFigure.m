@@ -322,18 +322,7 @@ classdef MultiPlotFigure < GrasppeAlpha.Graphics.PlotFigure
           set(hx, 'VerticalAlignment', 'Cap', 'HorizontalAlignment', 'Center'); %, 'Units', 'Pixels');
           
           set(hy, 'VerticalAlignment', 'Middle', 'HorizontalAlignment', 'Right'); % ', 'Units', 'Pixels');
-          
-          %
-          %           for n = 1:numel(hx)
-          %             hn = handle(hx(n));
-          %             hn.Position = (hn.Position .* [1 0 1]) - [-hn.Position(3) 5 0]; %+ [0 hn.Extent(4)-5 0];
-          %           end
-          %
-          %           for n = 1:numel(hy)
-          %             hn = handle(hy(n));
-          %             hn.Position = (hn.Position .* [0 1 1]) - [5 0 0]; %[hn.Position(3)+5 0 0];
-          %           end
-          
+                    
           set(hxyz, 'Margin', 2, ... %'BackgroundColor', 'g', ...
             'FontUnits', ax.FontUnits, 'FontSize', ax.FontSize);
           

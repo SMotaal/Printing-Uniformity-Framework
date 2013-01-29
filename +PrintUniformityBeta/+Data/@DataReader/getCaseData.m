@@ -93,7 +93,7 @@ function [ data ] = loadCaseData( source )
     data.range.Sets             = data.sampling.PatchSets;
     data.length.Sets            = numel(data.range.Sets);
     data.colorimetry            = processColorimetry(data);
-    data                        = PrintUniformityBeta.Data.DataReader.ProcessMetrics(data);
+    data                        = PrintUniformityBeta.Data.DataReader.ProcessDataMetrics(data);
   else
     data = source;
   end

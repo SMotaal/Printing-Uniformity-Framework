@@ -8,6 +8,8 @@ classdef PlotDataEventHandler < PrintUniformityBeta.Data.DataEventHandler
   events
     PlotChange            % Plot object has changed
     PlotDataChange        % Plot data has changed (need to refresh plot)
+    PlotTitleChange       % Plot title has been updated
+    PlotStateChange       % Plot state has changed (busy or ready)
     PlotAxesChange        % Plot axes (lim, label... etc.) has changed
     PlotMapChange         % Plot map (colormap, clim... etc.) has changed
     PlotViewChange        % Plot view has changed
@@ -17,7 +19,7 @@ classdef PlotDataEventHandler < PrintUniformityBeta.Data.DataEventHandler
     function obj = PlotDataEventHandler()
       obj = obj@PrintUniformityBeta.Data.DataEventHandler;  % Calls obj.attachDataEvents;
       
-      obj.attachSelfEventListeners('PlotDataEventHandlers', {'PlotChange', 'PlotDataChange', 'PlotAxesChange', 'PlotMapChange', 'PlotViewChange'});
+      obj.attachSelfEventListeners('PlotDataEventHandlers', {'PlotChange', 'PlotDataChange', 'PlotTitleChange', 'PlotStateChange', 'PlotAxesChange', 'PlotMapChange', 'PlotViewChange'});
       % obj.attachSelfPropertyListeners('PlotDataEventHandlers', {});      
     end
         

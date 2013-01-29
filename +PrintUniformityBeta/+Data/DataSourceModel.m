@@ -2,7 +2,7 @@ classdef DataSourceModel < handle
   %DATASOURCEMODEL PrintUniformity Data Source Struct Model
   %   Detailed explanation goes here
   
-  properties (AbortSet, Dependent, SetObservable, GetObservable)
+  properties (Dependent, SetObservable, GetObservable, AbortSet) % AbortSet
     CaseID,       CaseData,     CaseName;
     SetID,        SetData,      SetName;
     SheetID,      SheetData,    SheetName;
@@ -28,6 +28,8 @@ classdef DataSourceModel < handle
     
     function set.CaseID(obj, caseID)
       
+      if isequal(caseID, obj.caseID), return; end
+      
       if ~ischar(caseID), caseID  = ''; end
       
       assert(obj.validateCaseID(caseID), 'PrintUniformity:DataSource:InvalidCaseID', ...
@@ -43,6 +45,8 @@ classdef DataSourceModel < handle
     
     function set.SetID(obj, setID)
       
+      if isequal(setID, obj.setID), return; end
+      
       if ~isnumeric(setID), setID  = []; end
       
       assert(obj.validateSetID(setID), 'PrintUniformity:DataSource:InvalidSetID', ...
@@ -57,6 +61,8 @@ classdef DataSourceModel < handle
     
     function set.SheetID(obj, sheetID)
       
+      if isequal(sheetID, obj.sheetID), return; end
+      
       if ~isnumeric(sheetID), sheetID  = []; end
       
       assert(obj.validateSheetID(sheetID), 'PrintUniformity:DataSource:InvalidSheetID', ...
@@ -69,6 +75,8 @@ classdef DataSourceModel < handle
     end
     
     function set.VariableID(obj, variableID)
+      
+      if isequal(variableID, obj.variableID), return; end
       
       if ~ischar(variableID), variableID  = ''; end
       
@@ -196,7 +204,7 @@ classdef DataSourceModel < handle
       try
         validCaseID             = ...
           ~isempty(DS.dataSources(caseID, caseID)) || ...
-          exist(FS.dataDir('uniprint',  caseID), 'file') > 0;
+          exist(FS.dataDir('uniprint',  [caseID '.mat']), 'file') > 0;
       end
       % bufferedSource            = ~isempty(DS.dataSources(caseID, caseID));
       % diskSource                = exist(FS.dataDir('uniprint',  caseID), 'file') > 0;

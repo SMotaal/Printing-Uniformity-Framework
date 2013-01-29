@@ -1,16 +1,13 @@
-function regions = GetRegionMetrics(obj)
+function regions = getRegionMetrics(obj)
   %GETREGIONMETRICS Printing Uniformity Sampling Metrics
   %   Detailed explanation goes here
   
   regions = [];
+
   
-  %[dataSource regions] = Metrics.generateUPRegions(obj.CaseData);
-  [dataSource regions] = PrintUniformityBeta.Data.DataReader.ProcessRegions(obj.CaseData);
-  
-  if nargout==0,
-    obj.Region = regions;
-    clear regions;
-  end
+  regionMetrics         = PrintUniformityBeta.Data.UniformityMetricsDataSource.ProcessRegionMetrics(obj.CaseData);
+    
+  obj.RegionMetrics     = 
   
 end
 

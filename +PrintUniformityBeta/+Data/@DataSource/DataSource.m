@@ -36,11 +36,23 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
   end
   
   properties (AbortSet, SetObservable, GetObservable)
+    State                       = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
   end
   
   properties (Access=protected)
     parameterSetTimer;                            % Threaded parameter Set timer
-    parameterSetDelay           = 0.05;           % Threaded parameter Set delay
+    parameterSetDelay           = 0.25;           % Threaded parameter Set delay
+    
+    %caseState                   = ;
+    %setState                    = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
+    %sheetState                  = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
+    %variableState               = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
+    states                      = struct( ...
+      'GetCase',      GrasppeAlpha.Core.Enumerations.TaskStates.Ready, ...
+      'GetSet',       GrasppeAlpha.Core.Enumerations.TaskStates.Ready, ...
+      'GetSheet',     GrasppeAlpha.Core.Enumerations.TaskStates.Ready, ...
+      'GetVariable',  GrasppeAlpha.Core.Enumerations.TaskStates.Ready       );
+    
   end
   
   
@@ -54,7 +66,10 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
         'CaseID', 'SetID', 'SheetID', 'VariableID', ...
         'CaseData', 'SetData', 'SheetData', 'VariableData', ...
         'CaseName', 'SetName', 'SheetName', 'VariableName', ...
+        'State', ...
         });
+      
+      obj.State                 = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
       
       if ~isempty(obj.CaseID), obj.OnCaseIDChange(); end
     end
@@ -91,12 +106,17 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       switch lower(name)
         case {'caseid', 'case'}
           name                  = 'CaseID';
+          obj.states.GetCase    = GrasppeAlpha.Core.Enumerations.TaskStates.Starting;
         case {'setid', 'set'}
           name                  = 'SetID';
+          obj.states.GetSet     = GrasppeAlpha.Core.Enumerations.TaskStates.Starting;
         case {'sheetid', 'sheet'}
           name                  = 'SheetID';
+          obj.states.GetSheet   = GrasppeAlpha.Core.Enumerations.TaskStates.Starting;
+          disp(value);
         case {'variableid', 'variable'}
           name                  = 'VariableID';
+          obj.states.GetVariable  = GrasppeAlpha.Core.Enumerations.TaskStates.Starting;
         otherwise
           error('PrintUniformity:DataSource:InvalidParameterTarget', ...
             'Could not reset parameter timer due to an invalid target.');
@@ -120,27 +140,31 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     
     %% CaseID, SetID, SheetID, VariableID change event handling
     
-    function consumed = OnCaseIDChange(obj, source, event)
-      consumed                  = false;
+    function OnCaseIDChange(obj, source, event)
+      % consumed                  = false;
+      obj.states.GetCase        = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.Reader.CaseID         = obj.CaseID;
       try disp(event); end
       obj.processCaseData();
     end
     
-    function consumed = OnSetIDChange(obj, source, event)
-      consumed                  = false;
+    function OnSetIDChange(obj, source, event)
+      % consumed                  = false;
+      obj.states.GetSet         = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.Reader.SetID          = obj.SetID;
       obj.processSetData();
     end
     
-    function consumed = OnSheetIDChange(obj, source, event)
-      consumed                  = false;
+    function OnSheetIDChange(obj, source, event)
+      % consumed                  = false;
+      obj.states.GetSheet       = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.Reader.SheetID        = obj.SheetID;
       obj.processSheetData();
     end
     
-    function consumed = OnVariableIDChange(obj, source, event)
-      consumed                  = false;
+    function OnVariableIDChange(obj, source, event)
+      % consumed                  = false;
+      obj.states.GetVariable    = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.processVariableData();
     end
     
@@ -149,7 +173,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     function processCaseData(obj, recursive)
       obj.caseID                = obj.Reader.CaseID;          % skip ID change event
       obj.CaseData              = obj.Reader.getCaseData();   % fire Data change event
-      obj.CaseName              = obj.Reader.CaseName;        % fire Name change event
+      obj.CaseName              = obj.Reader.GetCaseTag();    % fire Name change event %obj.Reader.CaseName;
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSetData(); end      % obj.processSheetData(obj); obj.processVariableData(obj);
     end
@@ -172,30 +196,78 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     
     function processVariableData(obj, recursive)
       % obj.variableID            = obj.VariableID;           % skip ID change event
-      obj.VariableData          = [];                         % fire Data change event
+      obj.VariableData          = obj.SheetData;              % fire Data change event
       obj.VariableName          = '';                         % fire Name change event
     end
     
     
-    function consumed = OnCaseDataChange(obj, source, event)
-      consumed                  = false;
+    function OnCaseDataChange(obj, source, event)
+      % % consumed                  = false;
+      obj.states.GetCase        = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
       obj.notify('DataChange', event);
     end
     
-    function consumed = OnSetDataChange(obj, source, event)
-      consumed                  = false;
+    function OnSetDataChange(obj, source, event)
+      % consumed                  = false;
+      obj.states.GetSet         = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
       obj.notify('DataChange', event);
     end
     
-    function consumed = OnSheetDataChange(obj, source, event)
-      consumed                  = false;
+    function OnSheetDataChange(obj, source, event)
+      % consumed                  = false;
+      obj.states.GetSheet       = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
       obj.notify('DataChange', event);
     end
     
-    function consumed = OnVariableDataChange(obj, source, event)
-      consumed                  = false;
+    function OnVariableDataChange(obj, source, event)
+      % consumed                  = false;
+      obj.states.GetVariable    = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
       obj.notify('DataChange', event);
     end
+    
+    function set.State(obj, state)
+      obj.State                 = state;
+      %disp(state);
+    end
+    
+    function set.states(obj, states)
+      obj.states                = states;
+      obj.updateState;
+    end    
+    
+    function updateState(obj)
+      statesFields              = {'GetCase', 'GetSet', 'GetSheet', 'GetVariable'};
+      
+      currentState              = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
+      
+      for m = 1:numel(statesFields)
+        currentState            = obj.states.(statesFields{m});
+        if ~isequal(currentState, GrasppeAlpha.Core.Enumerations.TaskStates.Ready), break; end
+      end
+      
+      if ~isequal(obj.State, currentState), obj.State = currentState; end
+      
+    end
+    
+    function caseName = GetCaseName(obj, varargin)
+      caseName                  = '';
+      try caseName              = obj.Reader.GetCaseTag(varargin{:}); end
+    end
+
+    function setName = GetSetName(obj, varargin)
+      setName                   = '';
+      try setName               = obj.Reader.GetSetName(varargin{:}); end
+    end
+    
+    function sheetName = GetSheetName(obj, varargin)
+      sheetName                 = '';
+      try sheetName             = obj.Reader.GetSheetName(varargin{:}); end
+    end
+    
+    function variableName  = GetVariableName(obj, variableID)
+      variableName              = '';
+      % try variableName          = obj.reader.GetCaseName(varargin{:}); end
+    end    
     
   end
   

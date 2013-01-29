@@ -122,14 +122,17 @@ classdef DataReader < GrasppeAlpha.Data.Reader
     
     
     function set.CaseID(obj, caseID)
+      try if isequal(caseID, obj.Parameters.CaseID), return; end; end
       obj.setCaseID(caseID);
     end
     
     function set.SetID(obj, setID)
+      try if isequal(setID, obj.Parameters.SetID), return; end; end
       obj.setSetID(setID);
     end
         
     function set.SheetID(obj, sheetID)
+      try if isequal(sheetID, obj.Parameters.SheetID), return; end; end
       obj.setSheetID(sheetID);
     end
     
@@ -180,6 +183,22 @@ classdef DataReader < GrasppeAlpha.Data.Reader
       try caseName              = strtrim([pressName ' ' runCode]); end
     end
     
+    function caseTag = GetCaseTag(obj, caseID)
+      try if nargin<2, caseID   = obj.Parameters.CaseID; end; end
+      
+      caseTag                   = '';
+      
+      try caseTag               = obj.GetCaseName(caseID); end
+      
+      caseTags                  = struct( ...
+        'ritsm7401',  'L0', ...
+        'ritsm7402a', 'L1', 'ritsm7402b', 'L2', 'ritsm7402c', 'L3', ...
+        'rithp7k01',  'X1', 'rithp5501',  'X2'                            );
+      
+      try caseTag               = caseTags.(lower(caseID)); end
+      
+    end
+    
     
     function setName = GetSetName(obj, setID)
       try if nargin<2, setID    = obj.Parameters.SetID; end; end
@@ -211,10 +230,10 @@ classdef DataReader < GrasppeAlpha.Data.Reader
   end
   
   methods(Static)
-    [ dataSource regions      ] = ProcessRegions(dataSource)
-    [ dataSource              ] = ProcessMetrics(dataSource)
-    [ dataSource stats        ] = ProcessStatistics(dataSource, dataSet, regions)
-    [ strID                   ] = GenerateCacheID(dataSource, dataSet, dataClass)
+    % [ dataSource regions      ] = ProcessRegions(dataSource)
+    [ dataSource              ] = ProcessDataMetrics(dataSource)
+    % [ dataSource stats        ] = ProcessStatistics(dataSource, dataSet, regions)
+    % [ strID                   ] = GenerateCacheID(dataSource, dataSet, dataClass)
     
     function parameters = GetDataParameters()
       parameters                = {'CaseID', 'SetID', 'SheetID'}; % Variable ID

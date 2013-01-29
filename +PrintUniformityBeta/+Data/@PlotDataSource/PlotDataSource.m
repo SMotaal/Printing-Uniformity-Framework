@@ -31,6 +31,8 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
     ZLim,       ZTick,      ZTickLabel    %ZLimMode   ZTickMode,  ZTickLabelMode
     
     ColorMap
+    
+    NextSheetID
   end
   
   methods
@@ -42,11 +44,11 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
     end
   end
   
-  methods (Access=protected)
-    function createComponent(obj)      
-      obj.createComponent@PrintUniformityBeta.Data.DataSource;
-    end
-  end
+  % methods (Access=protected)
+  %   function createComponent(obj)
+  %     obj.createComponent@PrintUniformityBeta.Data.DataSource;
+  %   end
+  % end
   
   methods
     resetAxesLimits(obj, x, y, z, c);
@@ -94,12 +96,12 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
       try plotObject.ParentAxes.handleSet('Clipping', 'off'); end
     end
     
-    function sheet = setSheet (obj, sheet)
+    function sheet = setSheet (obj, sheet, wait)
       
       try debugStamp(obj.ID, 5); catch, debugStamp(); end;
       
       try
-        currentSheet            = obj.SheetID;
+        currentSheet            = obj.NextSheetID;
         lastSheet               = obj.SheetCount;
         
         if isInteger(sheet)
@@ -130,7 +132,13 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
           error('Invalid Sheet');
         end
         
-        obj.setSheetID(nextSheet);
+        obj.NextSheetID         = nextSheet;
+        
+        if ~exist('wait', 'var') || ~isequal(wait, true);
+        	obj.setSheetID(nextSheet);
+        else
+          obj.SheetID           = nextSheet;
+        end
         
       catch err
         if isnumeric(sheet) || islogical(sheet), sheet = num2str(sheet); end
@@ -147,18 +155,19 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
       rows                      = obj.RowCount;
       columns                   = obj.ColumnCount;
       
-      [X Y Z]                   = meshgrid(1:columns, 1:rows, 1);   % % X = []; Y = []; Z = [];
+      [X Y Z]                   = meshgrid(1:columns, 1:rows, NaN);   % % X = []; Y = []; Z = [];
       
       caseData                  = obj.CaseData;
       setData                   = obj.SetData;
       sheetData                 = obj.SheetData;
+      variableData              = obj.VariableData;
       
       targetFilter              = caseData.sampling.masks.Target~=1;
       patchFilter               = setData.filterData.dataFilter~=1;
       
-      if ~isempty(sheetData)
+      if ~isempty(variableData)
         try
-          Z(~patchFilter)       = sheetData;
+          Z(~patchFilter)       = variableData;
           Z(targetFilter)       = NaN;
           Z(patchFilter)        = NaN;
           
@@ -199,32 +208,48 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
   
   methods
     
-    function processCaseData(obj)
+    function processCaseData(obj, recursive)
       obj.processCaseData@PrintUniformityBeta.Data.DataSource(false);     % non-recursive
       
-      obj.processSetData();
+      if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSetData(); end
     end
     
-    function processSetData(obj)
+    function processSetData(obj, recursive)
       obj.processSetData@PrintUniformityBeta.Data.DataSource(false);      % non-recursive
       
       obj.resetAxesLimits();
-      obj.resetColorMap();
+      obj.resetColorMap();      
       
-      obj.processSheetData();
+      if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSheetData(); end
     end
     
-    function processSheetData(obj)
+    function processSheetData(obj, recursive)
       obj.processSheetData@PrintUniformityBeta.Data.DataSource(false);    % non-recursive
       
-      obj.processVariableData();
+      if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processVariableData(); end
     end    
     
-    function processVariableData(obj)
+    function processVariableData(obj, recursive)
       obj.processVariableData@PrintUniformityBeta.Data.DataSource(false); % non-recursive
       
       obj.updatePlotData();
+      
+      % if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.updatePlotData(); end
     end
+    
+    function consumed = OnSheetDataChange(obj, source, event)
+      obj.NextSheetID           = obj.SheetID;
+      obj.OnSheetDataChange@PrintUniformityBeta.Data.DataSource(source, event);
+    end
+    
+    function consumed = OnStateChange(obj, source, event)
+      consumed                  = false;
+      
+      obj.notify('PlotStateChange', event);
+      
+      %disp(obj.State);
+    end
+    
     
   end
 

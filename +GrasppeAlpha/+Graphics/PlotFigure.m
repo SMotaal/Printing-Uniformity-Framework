@@ -49,7 +49,13 @@ classdef PlotFigure < GrasppeAlpha.Graphics.Figure
     
     %% SampleTitle
     function set.SampleTitle(obj, value)
-      obj.SampleTitle = changeSet(obj.SampleTitle, value);
+      obj.SampleTitle           = changeSet(obj.SampleTitle, value);
+      obj.updatePlotTitle;
+    end
+    
+    %% StatusText
+    function set.StatusText(obj, value)
+      obj.StatusText            = changeSet(obj.StatusText, value);
       obj.updatePlotTitle;
     end
     
@@ -110,11 +116,23 @@ classdef PlotFigure < GrasppeAlpha.Graphics.Figure
     function updatePlotTitle(obj)
       obj.bless;
       
-      if isempty(obj.SampleTitle)
-        obj.Title = [obj.BaseTitle]; % ' (' obj.SampleTitle ')'];
-      else
-        obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')'];
+      newTitle                  = obj.BaseTitle;
+      
+      if ~isempty(obj.SampleTitle)
+        newTitle                = [newTitle ' #' obj.SampleTitle];
       end
+      
+      if ~isempty(obj.StatusText)
+        newTitle                = [newTitle ' (' obj.StatusText ')'];
+      end
+      
+      obj.Title                 = newTitle;
+      
+      % if isempty(obj.SampleTitle)
+      %   obj.Title = [obj.BaseTitle]; % ' (' obj.SampleTitle ')'];
+      % else
+      %   obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')'];
+      % end
       try statusbar(obj.Handle, ''); end
       try refresh(obj.Handle); end
     end

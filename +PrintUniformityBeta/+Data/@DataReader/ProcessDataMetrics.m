@@ -1,4 +1,4 @@
-function [ dataSource ] = ProcessMetrics( dataSource )
+function [ dataSource ] = ProcessDataMetrics( dataSource )
   %GENERATEUPMETRICS generate metrics for printing uniformity plots
   %   Using metrics extracted from the dataSource metrics cartesian metrics
   %   are constructed defining the metric boundaries of the sampled target
