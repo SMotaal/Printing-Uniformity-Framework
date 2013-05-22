@@ -9,13 +9,20 @@ classdef Component < GrasppeAlpha.Core.Instance
     SubHandleObjects = {};
     IsDeleting  = false;
   end
+
+  properties (AbortSet, SetObservable, GetObservable, SetAccess=protected)
+    State                       = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
+  end
   
-  properties (Access=private)
+  properties (Access=protected, Hidden)
     ComponentOptions
   end
   
   methods
     function obj = Component(varargin)
+      % initializer = true; try initializer = ~isequal(evalin('caller', 'initializer'), true); end
+      % disp([mfilename ' initializer: ' num2str(nargout) '<' num2str(initializer)]);
+      
       obj = obj@GrasppeAlpha.Core.Instance;
       
       obj.ComponentOptions = varargin;
@@ -26,6 +33,12 @@ classdef Component < GrasppeAlpha.Core.Instance
     
     function componentOptions = getComponentOptions(obj)
       componentOptions = obj.ComponentOptions;
+    end
+    
+    function setDefaultComponentOption(obj, key, value)
+      if ~any(strcmpi(obj.ComponentOptions, key))
+        obj.ComponentOptions  = [obj.ComponentOptions, key, value];
+      end
     end
     
     function delete(obj)
@@ -44,6 +57,12 @@ classdef Component < GrasppeAlpha.Core.Instance
       end
       debugStamp('Component Blessed', 5, obj);
     end
+    
+    function set.State(obj, state)
+      obj.State                 = state;
+      %disp(state);
+    end
+    
     
     
   end
@@ -140,6 +159,9 @@ classdef Component < GrasppeAlpha.Core.Instance
       
       componentOptions  = obj.ComponentOptions;
       
+      currentState                  = obj.State;
+      obj.State                     = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
+            
       [defaultNames defaultValues]  = obj.setOptions(obj.Defaults);
       [initialNames initialValues]  = obj.setOptions(componentOptions{:});
       
@@ -150,6 +172,8 @@ classdef Component < GrasppeAlpha.Core.Instance
       else
         values  = names;
       end
+      
+      obj.State                     = currentState;
       
     end
     

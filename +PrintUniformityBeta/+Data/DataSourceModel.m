@@ -14,7 +14,7 @@ classdef DataSourceModel < handle
     RowCount,     ColumnCount;
   end
   
-  properties (Access=protected)
+  properties (Access=protected, AbortSet)
     caseID,       caseData,     caseName;
     setID,        setData,      setName;
     sheetID,      sheetData,    sheetName;

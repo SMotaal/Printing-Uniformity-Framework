@@ -1,4 +1,4 @@
-function [ sheetData ] = getSheetData(obj, sheetID) %, newData, parameters, variableData)
+function [ sheetData ] = getSheetData(obj, sheetID, varargin) %, newData, parameters, variableData)
   %GetSheetData Load and Get Sheet Data
   %   Detailed explanation goes here
   

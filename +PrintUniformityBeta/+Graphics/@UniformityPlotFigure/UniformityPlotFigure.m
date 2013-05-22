@@ -11,7 +11,9 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
     function obj = UniformityPlotFigure(varargin)
       obj = obj@GrasppeAlpha.Graphics.MultiPlotFigure(varargin{:});
       refresh(obj.Handle);
-    end   
+    end
+    
+    Export(obj);
 
     function prepareMediator(obj, dataProperties, axesProperties)
       if isempty(obj.PlotMediator) || ~isa(obj, 'PrintUniformityBeta.UI.PlotMediator')

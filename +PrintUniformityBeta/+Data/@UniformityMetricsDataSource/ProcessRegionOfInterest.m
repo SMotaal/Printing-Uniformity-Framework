@@ -9,7 +9,6 @@ function [ rois ] = ProcessRegionOfInterest( dataSource )
   % dataSource.regions.zones      (inkzone print area subdivision)
   % dataSource.regions.zoneBands  (circumferential inkzones subdivisions)
   
-  
   [masks metrics]               = regionROI(dataSource.metrics);
   try [masks metrics]           = zoneROI(metrics, masks); end
   
@@ -29,9 +28,9 @@ function [masks, metrics] = zoneROI(metrics, masks)
   lengthMetrics = bandMetrics(length, 3, pitch(1));
   
   lengthBands = lengthMetrics.Bands;
-  zoneBands  = numel(zones);
+  zoneBands   = numel(zones);
   
-  zoneBandMasks = zeros(zoneBands * lengthBands, rows, columns);
+  % zoneBandMasks = zeros(zoneBands * lengthBands, rows, columns);
   zoneMasks = zeros(zoneBands, rows, columns);
   
   metrics.zoneSteps   = ([reshape(zones',1,[]) zones(end)+1] - zones(1)) .* 4;
@@ -42,33 +41,33 @@ function [masks, metrics] = zoneROI(metrics, masks)
     
       zoneMasks(z, :, :) = rectMask(rows, columns, [], [], c1, c2);
     
-      for l = 1:lengthBands
-        r1 = lengthMetrics.Steps(l)+1;
-        r2 = lengthMetrics.Steps(l+1);
-        
-        i = ((l-1)*zoneBands) + z;
-        zoneBandMasks(i, :, :) = rectMask(rows, columns, r1, r2, c1, c2);
-    
-      end
+      % for l = 1:lengthBands
+      %   r1 = lengthMetrics.Steps(l)+1;
+      %   r2 = lengthMetrics.Steps(l+1);
+      %
+      %   i = ((l-1)*zoneBands) + z;
+      %   zoneBandMasks(i, :, :) = rectMask(rows, columns, r1, r2, c1, c2);
+      %
+      % end
 
   end
   
-  zonesBandsAroundMasks = zeros(lengthBands, rows, columns);
+  % zonesBandsAroundMasks = zeros(lengthBands, rows, columns);
   
-  for l = 1:lengthBands
-    r1 = lengthMetrics.Steps(l)+1;
-    r2 = lengthMetrics.Steps(l+1);
-    
-    zonesBandsAroundMasks(l, :, :) = rectMask(rows, columns, r1, r2, [], []);
-  end
+  % for l = 1:lengthBands
+  %   r1 = lengthMetrics.Steps(l)+1;
+  %   r2 = lengthMetrics.Steps(l+1);
+  %
+  %   zonesBandsAroundMasks(l, :, :) = rectMask(rows, columns, r1, r2, [], []);
+  % end
   
   masks.zones           = zoneMasks;
   masks.zonesAround     = ones(1, rows, columns);
   masks.zonesAcross     = zoneMasks;
   
-  masks.zoneBands       = zoneBandMasks;
-  masks.zoneBandsAround = zonesBandsAroundMasks;
-  masks.zoneBandsAcross = zoneMasks;
+  % masks.zoneBands       = zoneBandMasks;
+  % masks.zoneBandsAround = zonesBandsAroundMasks;
+  % masks.zoneBandsAcross = zoneMasks;
   
   return;
     

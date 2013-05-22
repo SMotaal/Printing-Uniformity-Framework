@@ -37,6 +37,9 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
   
   methods
     function obj = PlotDataSource(varargin)
+      % initializer = true; try initializer = ~isequal(evalin('caller', 'initializer'), true); end
+      % disp([mfilename ' initializer: ' num2str(nargout) '<' num2str(initializer)]);      
+      
       obj                       = obj@PrintUniformityBeta.Data.DataSource(varargin{:});
       obj                       = obj@PrintUniformityBeta.Data.PlotDataEventHandler();
       obj                       = obj@PrintUniformityBeta.Data.OverlayDataEventHandler();
@@ -209,12 +212,16 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
   methods
     
     function processCaseData(obj, recursive)
+      if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
+      
       obj.processCaseData@PrintUniformityBeta.Data.DataSource(false);     % non-recursive
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSetData(); end
     end
     
     function processSetData(obj, recursive)
+      if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
+      
       obj.processSetData@PrintUniformityBeta.Data.DataSource(false);      % non-recursive
       
       obj.resetAxesLimits();
@@ -224,12 +231,16 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
     end
     
     function processSheetData(obj, recursive)
+      if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
+      
       obj.processSheetData@PrintUniformityBeta.Data.DataSource(false);    % non-recursive
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processVariableData(); end
     end    
     
     function processVariableData(obj, recursive)
+      if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
+      
       obj.processVariableData@PrintUniformityBeta.Data.DataSource(false); % non-recursive
       
       obj.updatePlotData();

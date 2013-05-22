@@ -35,9 +35,9 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     %   )
   end
   
-  properties (AbortSet, SetObservable, GetObservable)
-    State                       = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
-  end
+%   properties (AbortSet, SetObservable, GetObservable)
+%     State                       = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
+%   end
   
   properties (Access=protected)
     parameterSetTimer;                            % Threaded parameter Set timer
@@ -58,9 +58,14 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
   
   methods
     function obj = DataSource(varargin)
+      % initializer = true; try initializer = ~isequal(evalin('caller', 'initializer'), true); end
+      % disp([mfilename ' initializer: ' num2str(nargout) '<' num2str(initializer)]);      
+      
       obj                       = obj@PrintUniformityBeta.Data.DataSourceModel();
       obj                       = obj@GrasppeAlpha.Data.Source(varargin{:});
       obj                       = obj@PrintUniformityBeta.Data.DataEventHandler();
+      
+      disp(obj.State);
       
       obj.attachSelfPropertyListeners('DataEventHandlers', { ...
         'CaseID', 'SetID', 'SheetID', 'VariableID', ...
@@ -70,6 +75,9 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
         });
       
       obj.State                 = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
+      obj.updateState;
+      
+      disp(obj.State);
       
       if ~isempty(obj.CaseID), obj.OnCaseIDChange(); end
     end
@@ -142,20 +150,28 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     
     function OnCaseIDChange(obj, source, event)
       % consumed                  = false;
+      
+      if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
+      
       obj.states.GetCase        = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.Reader.CaseID         = obj.CaseID;
+      obj.setID                 = [];
       try disp(event); end
       obj.processCaseData();
     end
     
     function OnSetIDChange(obj, source, event)
       % consumed                  = false;
+      if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
+      
       obj.states.GetSet         = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.Reader.SetID          = obj.SetID;
+      obj.sheetID               = [];
       obj.processSetData();
     end
     
     function OnSheetIDChange(obj, source, event)
+      if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
       % consumed                  = false;
       obj.states.GetSheet       = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.Reader.SheetID        = obj.SheetID;
@@ -163,6 +179,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     end
     
     function OnVariableIDChange(obj, source, event)
+      if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
       % consumed                  = false;
       obj.states.GetVariable    = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.processVariableData();
@@ -171,25 +188,38 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     %% CaseData, SetData, SheetData, VariableData Processing (on ID change)
     
     function processCaseData(obj, recursive)
-      obj.caseID                = obj.Reader.CaseID;          % skip ID change event
-      obj.CaseData              = obj.Reader.getCaseData();   % fire Data change event
-      obj.CaseName              = obj.Reader.GetCaseTag();    % fire Name change event %obj.Reader.CaseName;
       
-      if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSetData(); end      % obj.processSheetData(obj); obj.processVariableData(obj);
+      if ~isequal(obj.caseID, obj.Reader.CaseID) || isempty(obj.CaseData) || isempty(obj.CaseName)
+        % obj.SetData             = [];
+        % obj.SheetData           = [];
+        
+        obj.caseID              = obj.Reader.CaseID;          % skip ID change event
+        obj.CaseData            = obj.Reader.getCaseData();   % fire Data change event
+        obj.CaseName            = obj.Reader.GetCaseTag();    % fire Name change event %obj.Reader.CaseName;
+        
+        if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSetData(); end      % obj.processSheetData(obj); obj.processVariableData(obj);
+      end
+      
     end
     
     function processSetData(obj, recursive)
-      obj.setID                 = obj.Reader.SetID;           % skip ID change event
-      obj.SetData               = obj.Reader.getSetData();    % fire Data change event
-      obj.SetName               = obj.Reader.SetName;         % fire Name change event
-      
-      if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSheetData(); end
+      if ~isequal(obj.setID, obj.Reader.SetID) || isempty(obj.SetData) || isempty(obj.SetName)
+        % obj.SheetData           = [];
+                
+        obj.setID               = obj.Reader.SetID;           % skip ID change event
+        obj.SetData             = obj.Reader.getSetData();    % fire Data change event
+        obj.SetName             = obj.Reader.SetName;         % fire Name change event
+        
+        if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSheetData(); end
+      end
     end
     
     function processSheetData(obj, recursive)
+      % if ~isequal(obj.sheetID, obj.Reader.SheetID) || isempty(obj.SheetData) || isempty(obj.SheetName)
       obj.sheetID               = obj.Reader.SheetID;         % skip ID change event
       obj.SheetData             = obj.Reader.getSheetData();  % fire Data change event
       obj.SheetName             = obj.Reader.SheetName;       % fire Name change event
+      % end
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processVariableData(); end
     end
@@ -225,10 +255,6 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       obj.notify('DataChange', event);
     end
     
-    function set.State(obj, state)
-      obj.State                 = state;
-      %disp(state);
-    end
     
     function set.states(obj, states)
       obj.states                = states;
@@ -236,6 +262,9 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     end    
     
     function updateState(obj)
+      
+      if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
+      
       statesFields              = {'GetCase', 'GetSet', 'GetSheet', 'GetVariable'};
       
       currentState              = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;

@@ -20,7 +20,9 @@ classdef RegionPlotDataSource < PrintUniformityBeta.Data.PlotDataSource & PrintU
   methods
     
     function obj = RegionPlotDataSource(varargin)
-      %obj                       = obj@PrintUniformityBeta.Data.UniformityMetricsDataSource();
+      % initializer = true; try initializer = ~isequal(evalin('caller', 'initializer'), true); end
+      % disp([mfilename ' initializer: ' num2str(nargout) '<' num2str(initializer)]);
+      
       obj                       = obj@PrintUniformityBeta.Data.PlotDataSource(varargin{:});
     end
     

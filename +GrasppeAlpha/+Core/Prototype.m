@@ -26,10 +26,6 @@ classdef Prototype < handle & dynamicprops %& hgsetget
       %       end
     end
     
-    function id = char(obj)
-      id = obj.ID;
-    end
-    
     function createMetaPropertyTable(obj)
       definedProperties = obj.getRecursiveProperty('Properties');
       

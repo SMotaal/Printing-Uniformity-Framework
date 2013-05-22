@@ -5,7 +5,7 @@ classdef Reader < GrasppeAlpha.Core.Component
   properties (GetAccess=public, SetAccess=protected)
     Data
     Parameters
-    State
+    % State
   end
       
   methods

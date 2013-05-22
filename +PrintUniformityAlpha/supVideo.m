@@ -43,7 +43,7 @@ function [ output_args ] = supVideo(sourceData, fview, fName, fSet, exportMovie 
   %% Determin Plot Dimensions
   try
     if exportMovie
-      sM = [500 500];
+      sM = [850 850];
       hFig = figure('Name', 'Spatial-Temporal Plot', 'units','pixels', ...
         'Color', 'w', 'Toolbar', 'none', 'MenuBar', 'none',  ...
         'Renderer', 'OpenGL', 'Visible', 'off','Position',[0 0 sM]);
@@ -122,7 +122,7 @@ function [ output_args ] = supVideo(sourceData, fview, fName, fSet, exportMovie 
   if exportMovie
     t=tic;
     statusUpdate(['Exporting ' filename ' movie... '], 1);
-    Video.writeVideo(aviName, M, sourceData.Data.sheetIndex);
+    PrintUniformityAlpha.Video.writeVideo(aviName, M, sourceData.Data.sheetIndex);
     toc(t);
   end
   

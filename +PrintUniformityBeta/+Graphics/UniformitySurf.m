@@ -1,5 +1,5 @@
 classdef UniformitySurf < GrasppeAlpha.Graphics.Surf & PrintUniformityBeta.Graphics.UniformityPlotComponent
-  %UNIFORMITYSURFACEPLOT Summary of this class goes here
+  %UNIFORMITYSURFACEPLOT R2013-01
   %   Detailed explanation goes here
   
   properties
@@ -68,7 +68,7 @@ classdef UniformitySurf < GrasppeAlpha.Graphics.Surf & PrintUniformityBeta.Graph
     function consumed = mouseWheel(obj, source, event)
       consumed = true;
       
-      try if ~obj.HasParentFigure || ~obj.HasParentAxes, return; end; end      
+      try if ~obj.HasParentFigure || ~obj.HasParentAxes, return; end; end
       try if event.Consumed, consumed = event.Consumed; return; end; end
       
       
@@ -90,16 +90,16 @@ classdef UniformitySurf < GrasppeAlpha.Graphics.Surf & PrintUniformityBeta.Graph
       %       else
       %         %disp(['Current object ' currentObject ' is the Active object.']);
       %       end
-%       
-%       if ~event.Scrolling.Momentum
-%         % disp(toString(event));
-%         % plotAxes = get(obj.handleGet('CurrentAxes'), 'UserData');
-%         if event.Scrolling.Vertical(1) > 0
-%           obj.setSheet('+1');
-%         elseif event.Scrolling.Vertical(1) < 0
-%           obj.setSheet('-1');
-%         end
-%       end
+      %
+      %       if ~event.Scrolling.Momentum
+      %         % disp(toString(event));
+      %         % plotAxes = get(obj.handleGet('CurrentAxes'), 'UserData');
+      %         if event.Scrolling.Vertical(1) > 0
+      %           obj.setSheet('+1');
+      %         elseif event.Scrolling.Vertical(1) < 0
+      %           obj.setSheet('-1');
+      %         end
+      %       end
     end
     
   end

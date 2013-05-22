@@ -729,7 +729,7 @@ classdef UniformityDataSource < GrasppeAlpha.Core.Component & GrasppeAlpha.Occam
         switch lower(sheet)
           case {'summary', 'sum'}
             nextSheet = lastSheet+1; %if isequal(obj.SampleSummary, true), nextSheet = 0; end
-          case {'PrintUniformityAlpha., 'first', '#1'}
+          case {'Alpha', 'first', '#1'}
             nextSheet = firstSheet;
           case {'omega', 'last'}
             nextSheet = lastSheet;

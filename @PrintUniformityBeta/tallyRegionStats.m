@@ -1,763 +1,527 @@
-cleardebug; cleardebug;
+%% tallyRegionStats4
 
-testing                         = false;
-
-dataSourceClass                 = 'PrintUniformityBeta.Data.RegionPlotDataSource';
-statsClass                      = 'GrasppeAlpha.Stats.TransientStats';
-
-emptySource                     = @()eval([dataSourceClass '.empty();']);
-emptyStats                      = @()eval([statsClass '.empty();']);
-
-caseIDs                         = { 'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01',  'rithp5501' };
-caseSymbols                     = { 'L1',         'L2',         'L3' ,        'X1',         'X2'        };
-caseFlip                        = [ false,        false,        false,        false,        false       ];
-
-setIDs                          = [100, 75, 50, 25, 0];
-
-varmeansq                       = @(x) sqrt(sum(x(:).^2)/numel(x));
-
-if testing
-  testIdx                       = [4 1];
-  setIDs                        = 100;
-  caseIDs                       = caseIDs(testIdx);
-  caseSymbols                   = caseSymbols(testIdx);
-  caseFlip                      = caseFlip(testIdx);
-end
-
-unitID                          = 'density';
-
-switch lower(unitID)
-  case {'v', 'density', 'iso visual density', 'd'}
-    unitID                      = 'ISO Visual Density';
-    standardValues              = [ 1.6779    0.92575   0.51709   0.24656   0.057405];
-    standardTolerances          = [ 0.1       0.1       0.1       0.1       0.05];
-  otherwise % case {'l', 'l*', 'cie-l', 'cie-l*', 'ciel', 'ciel*'}
-    unitID                      = 'CIE-L';
-    % standardValues             = [ 16    NaN   NaN   NaN   93  ];  % Black Backing (12647-2)
-    standardValues              = [ 16    41    62    80    95  ];  % White Backing Informative (Photoshop Fogra39 > Absolute Colorimetric > Lab)
-    standardTolerances          = [  4    4     4     4     3   ];   % Extrapolated from ISO 12647-2
-end
-
-caseCount                       = numel(caseIDs);
-setCount                        = numel(setIDs);
-
-dataSources                     = emptySource(); %feval([dataSourceClass '.empty'], 0, 5);
-
-tallyMasks                      = struct();
-
-%if ~exist('tallyData', 'var') || ~isstruct(tallyData) || ...
-%    size(tallyData,1)~= caseCount || size(tallyData,2) ~=setCount
-tallyData                       = struct(); %'sheet', {}, 'around', {}, 'across', {}, 'run', {});
-%  try
-%    tallyData                   = load(fullfile('Output', 'tallyData.mat'), 'Data');
-%  end
-%end
-
-tallyStats                      = struct();
-
-tallyMetadata.Date              = datevec(now);
-tallyMetadata.DataSourceClass 	= dataSourceClass;
-tallyMetadata.StatsClass        = statsClass;
-tallyMetadata.CaseIDs           = caseIDs;
-tallyMetadata.CaseSymbols       = caseSymbols;
-tallyMetadata.CaseFlip          = caseFlip;
-tallyMetadata.CaseMetadata      = cell(1, caseCount);
-tallyMetadata.SetIDs            = setIDs;
-tallyMetadata.SetNames          = cell(caseCount, setCount);
-tallyMetadata.SetData           = cell(caseCount, setCount);
-tallyMetadata.SetStats          = cell(caseCount, setCount);
-tallyMetadata.Standard          = standardValues;
-tallyMetadata.Tolerance         = standardTolerances;
-tallyMetadata.Unit              = unitID; %% 'ISO Visual Density'; % 'CIE-L'
-tallyMetadata.SumsMethod        = 'Square Root of the Mean of Variances';
-
-
-for m = 1:caseCount
+function tally = tallyRegionStats
   
-  sourceID                      = caseIDs{m};
+  cleardebug; cleardebug;
+  testing                         = false;
   
-  for n = 1:setCount
-    
-    setID                       = setIDs(n);
-    roiIDs                      = {'region', 'around', 'across'};
-    
-    %% Load data
-    if n ==1
-      dataSources(m)            = feval(dataSourceClass, 'CaseID', sourceID, 'SetID', setID);
-    else
-      dataSources(m).SetID      = setID;
-    end
-    
-    pause(5);
-    
-    dataSources(m).Wait;
-    
-    dispf('\t\tChangeSet: %s\tCaseID: %s\tSetID: %d\tSheetID: %d', ...
-      char(dataSources(m).Reader.State), dataSources(m).CaseID, dataSources(m).SetID, dataSources(m).SheetID);
-    
-    if n==1
-      tallyMetadata.CaseMetadata{m}             = dataSources(m).CaseData.metadata;
-    end
-    
-    stats                                       = dataSources(m).Stats;
-    
-    tallyMetadata.SetNames{m, n}                = [dataSources(m).CaseName ' ' dataSources(m).SetName];
-    % tallyMetadata.SetData{m, n}                 = dataSources(m).SetData;
-    % tallyMetadata.SetStats{m, n}                = stats;
-    
-    %if size(tallyData,1)< m || size(tallyData,2) < n
-    %% Tally run data
-    tallyData(m, n).run                         = stats.run;
-    tallyData(m, n).runData                     = stats.data;
-    tallyData(m, n).runCount                    = 1;
-    tallyData(m, n).runStats                    = tallyData(m, n).run.Stats; % .Sample!
-    
-    %% Tally sheet data
-    tallyData(m, n).sheetCount                  = size(tallyData(m, n).runData, 1);
-    tallyData(m, n).sheetSize                   = [size(tallyData(m, n).runData, 2) size(tallyData(m, n).runData, 3)];
-    
-    dataFilter                                  = stats.filter;
-    
-    tallyData(m, n).dataFilter                  = dataFilter;
-    
-    for s = 1:tallyData(m, n).sheetCount
-      sheetData                                 = tallyData(m, n).runData(s, ~dataFilter);
-      tallyData(m, n).sheetStats(1, s)          = feval(statsClass, sheetData);
-    end
-    
-    tallyData(m, n).patchIndex                  = find(~dataFilter);
-    tallyData(m, n).patchCount                  = numel(tallyData(m, n).patchIndex);
-    
-    for p = 1:tallyData(m, n).patchCount
-      patchIdx                                  = tallyData(m, n).patchIndex(p);
-      patchData                                 = tallyData(m, n).runData(:,patchIdx);
-      tallyData(m, n).patchStats(1,p)           = feval(statsClass, patchData(:));
-    end
-    
-    %% Tally region data
-    
-    tallyMasks(m).region                        = flipdim(stats.metadata.regions.sections, 3);
-    
-    tallyData(m, n).region                      = stats.sections;
-    tallyData(m, n).regionCount                 = size(tallyData(m, n).region, 1);
-    tallyData(m, n).regionStats                 = emptyStats();
-    
-    for s = 1:tallyData(m, n).regionCount
-      tallyData(m, n).regionStats(s, :)         = tallyData(m, n).region(s, :).Stats;
-      tallyData(m, n).regionSize                = size(tallyMasks(m).region(s));
-    end
-    
-    %% Tally around data
-    tallyMasks(m).around                        = flipdim(stats.metadata.regions.around, 3);
-    
-    tallyData(m, n).around                      = stats.around;
-    tallyData(m, n).aroundCount                 = size(tallyData(m, n).around, 1);
-    tallyData(m, n).aroundStats                 = emptyStats();
-    
-    for s = 1:tallyData(m, n).aroundCount
-      tallyData(m, n).aroundStats(s, :)         = tallyData(m, n).around(s, :).Stats;
-      tallyData(m, n).aroundSize                = size(tallyMasks(m).around(s));
-    end
-    
-    %% Tally across data
-    tallyMasks(m).across                        = flipdim(stats.metadata.regions.across, 3);
-    
-    tallyData(m, n).across                      = stats.across;
-    tallyData(m, n).acrossCount                 = size(tallyData(m, n).across, 1);
-    tallyData(m, n).acrossStats                 = emptyStats();
-    
-    for s = 1:size(tallyData(m, n).across, 1)
-      tallyData(m, n).acrossStats(s, :)         = tallyData(m, n).across(s, :).Stats;
-      tallyData(m, n).acrossSize                = size(tallyMasks(m).across(s));
-    end
-    
-    %% Tally Zone Data
-    if isfield(stats.metadata.regions, 'zones')
-      tallyMasks(m).zone                        = flipdim(stats.metadata.regions.zones, 3);
-      tallyData(m, n).zone                      = stats.zones;
-      tallyData(m, n).zoneCount                 = size(tallyData(m, n).zone, 1);
-      tallyData(m, n).zoneStats                 = emptyStats();
-      
-      for s = 1:size(tallyData(m, n).zone, 1)
-        tallyData(m, n).zoneStats(s, :)         = tallyData(m, n).zone(s, :).Stats;
-        tallyData(m, n).zoneSize                = size(tallyMasks(m).zone(s));
-      end
-      
-      roiIDs                                    = [roiIDs, 'zone'];
-    else
-      tallyData(m, n).zoneCount                 = 0;
-    end
-    
-    %% Standard & Tolerance
-    standardValue                               = standardValues(n);
-    standardTolerance                           = standardTolerances(n);
-    
-    runData                                     = tallyData(m, n).runData;
-    patchIndex                                  = tallyData(m, n).patchIndex;
-    
-    patchCount                                  = tallyData(m, n).patchCount;
-    sheetCount                                  = tallyData(m, n).sheetCount;
-    regionCount                                 = tallyData(m, n).regionCount;
-    aroundCount                                 = tallyData(m, n).aroundCount;
-    acrossCount                                 = tallyData(m, n).acrossCount;
-    zoneCount                                   = tallyData(m, n).zoneCount;
-    
-    %% Run Statistics
-    
-    % Run Mean (Run Accuracy vs. Standard)
-    % Mean of all patches across all sheets. Run accuracy has spatial and
-    % temporal components with a mean value takeb from samples across the
-    % patch (spatial) domain and the sheet (temporal) domain.
-    
-    % outlierIdx                                 = tallyData(m, n).run.Outliers;
-    samples                                     = runData(:, ~dataFilter);
-    
-    nanSamples                                  = isnan(samples(:));
-    
-    tallyStats(m, n).Run.Size                   = size(runData);
-    tallyStats(m, n).Run.Samples                = sum(~nanSamples);
-    tallyStats(m, n).Run.Outliers               = sum(nanSamples);
-    
-    tallyStats(m, n).Run.Mean                   = nanmean(samples(:));
-    tallyStats(m, n).Run.Sigma                  = nanstd(samples(:));
-    
-    tallyStats(m, n).Run.Accuracy               = tallyStats(m, n).Run.Mean - standardValue;
-    
-    referenceValue                              = tallyStats(m, n).Run.Mean;
-    
-    % Run Precision
-    % Spread between upper and lower bounds for all patches across all sheets.
-    
-    tallyStats(m, n).Run.Precision              = tallyStats(m, n).Run.Sigma; % *6;
-    
-    %% Patch Statistics
-    
-    % Patch Mean (Patch Accuracy ve. Run Mean)
-    % Mean of one patch across sheets. Patch is a spatial unit with
-    % a mean value taken from samples across the sheet (temporal) domain.
-    
-    % Patch Repeatability (Patch Precision)
-    % Spread between upper and lower bounds for one patch across sheets.
-    
-    patchMean                                   = NaN(1, patchCount);
-    patchAccuracy                               = NaN(1, patchCount);
-    patchSigma                                  = NaN(1, patchCount);
-    
-    for p=1:patchCount
-      
-      patchIdx                                  = tallyData(m, n).patchIndex(p);
-      patchData                                 = tallyData(m, n).runData(:,patchIdx);
-      
-      nanSamples                                = isnan(patchData(:));
-      
-      tallyStats(m, n).Patch(p).Size            = size(patchData);
-      tallyStats(m, n).Patch(p).Samples         = sum(~nanSamples);
-      tallyStats(m, n).Patch(p).Outliers        = sum(nanSamples);
-      
-      tallyStats(m, n).Patch(p).Mean            = tallyData(m, n).patchStats(1, p).Mean;
-      tallyStats(m, n).Patch(p).Sigma           = tallyData(m, n).patchStats(1, p).Sigma;
-      
-      %% Patch Mean (Sheet Accuracy vs. Run Mean)
-      % Mean of one patches in all sheets. Each patch is a spatial unit
-      % with a mean value taken from samples across the sheets (temporal) domain.
-      
-      tallyStats(m, n).Patch(p).Accuracy        = tallyStats(m, n).Patch(p).Mean - referenceValue;
-      
-      %% Patch Repeatability (Patch Precision)
-      % Spread between upper and lower bounds for one patch across sheets.
-      
-      tallyStats(m, n).Patch(p).Precision       = []; % tallyData(m, n).patchStats(1, p).Sigma*6;
-      
-      tallyStats(m, n).Patch(p).Repeatability   = tallyData(m, n).patchStats(1, p).Sigma; % *6;
-      
-      tallyStats(m, n).Patch(p).Precision       = tallyStats(m, n).Patch(p).Repeatability;
-      
-      
-      patchMean(p)                              = tallyStats(m, n).Patch(p).Mean;
-      patchAccuracy(p)                          = tallyStats(m, n).Patch(p).Accuracy;
-      patchSigma(p)                             = tallyStats(m, n).Patch(p).Sigma;
-      
-    end
-    
-    
-    %% Sheet Statistics
-    
-    sheetMean                                   = NaN(1, sheetCount);
-    sheetAccuracy                               = NaN(1, sheetCount);
-    sheetSigma                                  = NaN(1, sheetCount);
-    
-    for s=1:sheetCount
-      
-      sheetData                                 = runData(s, ~dataFilter);
-      nanSamples                                = isnan(sheetData(:));
-      
-      tallyStats(m, n).Sheet(s).Size            = size(sheetData);
-      tallyStats(m, n).Sheet(s).Samples         = sum(~nanSamples);
-      tallyStats(m, n).Sheet(s).Outliers        = sum(nanSamples);
-      
-      tallyStats(m, n).Sheet(s).Mean            = tallyData(m, n).sheetStats(1, s).Mean;
-      tallyStats(m, n).Sheet(s).Sigma           = tallyData(m, n).sheetStats(1, s).Sigma;
-      
-      %% Sheet Mean (Sheet Accuracy vs. Run Mean)
-      % Mean of all patches in one sheet. Each sheet is a temporal unit
-      % with a mean value taken from samples across the patch (spatial) domain.
-      
-      tallyStats(m, n).Sheet(s).Accuracy        = tallyStats(m, n).Sheet(s).Mean - referenceValue;
-      
-      %% Sheet Evenness (Sheet Precision)
-      % Spread between upper and lower bounds for one sheet across patches.
-      
-      tallyStats(m, n).Sheet(s).Precision       = [];
-      tallyStats(m, n).Sheet(s).Evenness        = tallyData(m, n).sheetStats(1, s).Sigma; %*6;
-      
-      tallyStats(m, n).Sheet(s).Precision       = tallyStats(m, n).Sheet(s).Evenness;
-      
-      sheetMean(s)                              = tallyStats(m, n).Sheet(s).Mean;
-      sheetAccuracy(s)                          = tallyStats(m, n).Sheet(s).Accuracy;
-      sheetSigma(s)                             = tallyStats(m, n).Sheet(s).Sigma;
-      
-    end
-    
-    %% Run Statistics (Precision)
-    
-    % Run Evenness
-    % Mean across all sheets of the spread between the upper and lower
-    % bounds of all the patches within each sheet. Run evenness is the mean
-    % of the sheet evenness across all sheets.
-    
-    varNums                                     = sheetSigma(:);
-    varNums                                     = varNums(~isnan(varNums));
-    tallyStats(m, n).Run.Evenness               = varmeansq(varNums); % *6;   % nanmean(sheetSigma(:).*6);
-    tallyStats(m, n).Run.EvennessN              = numel(varNums);
-    
-    % Run Repeatability
-    % Spread between the upper and lower bounds of the sheet mean
-    % across all sheets.
-    
-    varNums                                     = patchSigma(:);
-    varNums                                     = varNums(~isnan(varNums));
-    tallyStats(m, n).Run.Repeatability          = varmeansq(varNums); % *6;   % nanmean(patchSigma(:).*6);
-    tallyStats(m, n).Run.RepeatabilityN         = numel(varNums);    
-    
-    
-    
-    %% ROI Statistics
-    
-    for roiSet = roiIDs
-      
-      roiID                                     = char(roiSet);
-      roiCount                                  = tallyData(m, n).([roiID 'Count']);
-      roiStats                                  = tallyData(m, n).([roiID 'Stats']);
-      roiMasks                                  = tallyMasks(m).(roiID);
-      
-      roiSheetMean                              = NaN(roiCount, sheetCount);
-      roiSheetSigma                             = NaN(roiCount, sheetCount);
-      roiSheetAccuracy                          = NaN(roiCount, sheetCount);
-      
-      roiData                                   = cell(1, roiCount); %NaN(regionCount, sheetCount, regionSize
-      
-      roiTally                                  = struct();
-      
-      for r = 1:roiCount
-        roiMask                                 = roiMasks(r,:,:)==1;
-        roiMask                                 = squeeze(roiMask) & ~dataFilter;
-        
-        sampleData                              = runData(:, roiMask);
-        nanSamples                              = isnan(sampleData(:));
-        
-        roiTally(r).Size                        = size(sampleData);
-        roiTally(r).Samples                     = sum(~nanSamples);
-        roiTally(r).Outliers                    = sum(nanSamples);
-        
-        roiTally(r).Mean                        = [];
-        roiTally(r).Sigma                       = [];
-        
-        
-        for s=1:sheetCount
-          
-          roiData{r}(s,:)                       = runData(s, roiMask);
-          
-          sampleData                            = roiData{r}(s,:);
-          nanSamples                            = isnan(sampleData(:));
-          
-          roiTally(r).Sheet(s).Size             = size(sampleData);
-          roiTally(r).Sheet(s).Samples          = sum(~nanSamples);
-          roiTally(r).Sheet(s).Outliers         = sum(nanSamples);
-          
-          
-          % ROI Mean
-          % Mean of region means in a set of regions in one sheet.
-          
-          roiTally(r).Sheet(s).Mean             = nanmean(roiData{r}(s,:)); % roiStats(p, s).Mean;
-          roiTally(r).Sheet(s).Sigma            = nanstd(roiData{r}(s,:)); % roiStats(p, s).Sigma;
-          
-          roiTally(r).Sheet(s).Accuracy         = roiTally(r).Sheet(s).Mean - referenceValue;
-          
-          roiSheetMean(r, s)                    = roiTally(r).Sheet(s).Mean;
-          roiSheetSigma(r, s)                   = roiTally(r).Sheet(s).Sigma;
-          roiSheetAccuracy(r, s)                = roiTally(r).Sheet(s).Accuracy;
-          % roiSheetSamples(r, s)                 = roiTally(r).Sheet(s).Samples;
-          % roiSheetOutliers(r, s)                = roiTally(r).Sheet(s).Outliers;
-        end
-        
-        
-        for p=1:size(roiData{r},2) % tallyStats(m, n).Region(r).Count
-          patchData                             = roiData{r}(:,p);
-          
-          nanSamples                            = isnan(patchData(:));
-          
-          roiTally(r).Patch(p).Size             = size(patchData);
-          roiTally(r).Patch(p).Samples          = sum(~nanSamples);
-          roiTally(r).Patch(p).Outliers         = sum(nanSamples);
-          
-          
-          roiTally(r).Patch(p).Mean             = nanmean(patchData(:));% tallyData(m, n).regionStats(p, s).Mean;
-          roiTally(r).Patch(p).Sigma            = nanstd(patchData(:));% tallyData(m, n).regionStats(p, s).Sigma;
-          
-          roiTally(r).Patch(p).Accuracy         = roiTally(r).Patch(p).Mean  - referenceValue;
-          
-          roiPatchMean(r, p)                    = roiTally(r).Patch(p).Mean;
-          roiPatchSigma(r, p)                   = roiTally(r).Patch(p).Sigma;
-          roiPatchAccuracy(r, p)                = roiTally(r).Patch(p).Accuracy;
-          % roiPatchSamples(r, s)                 = roiTally(r).Patch(p).Samples;
-          % roiPatchOutliers(r, s)                = roiTally(r).Patch(p).Outliers;          
-        end
-        
-        
-        roiTally(r).Mean                        = nanmean(roiData{r}(:));
-        roiTally(r).Sigma                       = nanstd(roiData{r}(:));
-        
-        % ROI Norm (Band Accuracy)
-        % Mean of region means in a set of regions across all sheets.
-        
-        roiTally(r).Norm                        = roiTally(r).Mean;
-        roiTally(r).Accuracy                    = roiTally(r).Norm  - referenceValue;
-        
-        
-        % ROI Precision
-        % Spread between upper and lower bounds for all the patches in a set of
-        % regions across all sheets.
-        
-        roiTally(r).Precision                   = roiTally(r).Sigma; % *6;
-        
-        % ROI Evenness
-        % Mean across all sheets of the spread between the upper and lower
-        % bounds of all the patches in a set of regions within each sheet.
-        
-        varNums                                 = roiSheetSigma(r,:);
-        varNums                                 = varNums(~isnan(varNums));
-        roiTally(r).Evenness                    = varmeansq(varNums); % *6;   % varmeansq(roiSheetSigma(r,:)); % nanmean(roiSheetSigma(r,:).*6);
-        roiTally(r).EvennessN                   = numel(varNums);     % numel(roiSheetSigma(r,:));
-        
-
-        % ROI Repeatability
-        
-        varNums                                 = roiPatchSigma(r,:);
-        varNums                                 = varNums(~isnan(varNums));
-        roiTally(r).Repeatability               = varmeansq(varNums); % *6;   % varmeansq(roiPatchSigma(r,:)); % nanmean(roiSheetSigma(r,:).*6);
-        roiTally(r).RepeatabilityN              = numel(varNums);     % numel(roiPatchSigma(r,:));
-        
-        
-        rmfield(roiTally(r), {'Patch', 'Sheet'});
-      end
-      
-      roiID = [upper(roiID(1)) roiID(2:end)];
-      
-      tallyStats(m, n).(roiID)                  = roiTally;
-    end
-    
-    
-    %     %% Region Statistics
-    %
-    %     regionSheetMean                                       = NaN(regionCount, sheetCount);
-    %     regionSheetSigma                                      = NaN(regionCount, sheetCount);
-    %     regionSheetAccuracy                                   = NaN(regionCount, sheetCount);
-    %
-    %     regionData                                            = cell(1, regionCount); %NaN(regionCount, sheetCount, regionSize
-    %
-    %     for r = 1:regionCount
-    %
-    %       regionMask                                          = tallyMasks(m).regions(r,:,:)==1;
-    %
-    %       regionMask                                          = squeeze(regionMask) & ~dataFilter;
-    %
-    %       sampleData                                          = runData(:, regionMask);
-    %       nanSample                                           = isnan(sampleData(:));
-    %
-    %       tallyStats(m, n).Region(r).Size                     = size(sampleData);
-    %       tallyStats(m, n).Region(r).Samples                  = sum(~nanSample);
-    %       tallyStats(m, n).Region(r).Outliers                 = sum(nanSample);
-    %
-    %       tallyStats(m, n).Region(r).Mean                     = [];
-    %       tallyStats(m, n).Region(r).Sigma                    = [];
-    %
-    %       for s=1:sheetCount
-    %
-    %         regionData{r}(s,:)                                = runData(s, regionMask);
-    %
-    %         % Region Mean
-    %         % Mean of all patches in one region in one sheet. Each region is a
-    %         % spatial unit with a mean value take from samples across the patch
-    %         % (spatial) domain.
-    %
-    %         sampleData                                        = regionData{r}(s,:);
-    %         nanSamples                                        = isnan(sampleData(:));
-    %
-    %         tallyStats(m, n).Region(r).Sheet(s).Size          = size(sampleData);
-    %         tallyStats(m, n).Region(r).Sheet(s).Samples   = sum(~nanSamples);
-    %         tallyStats(m, n).Region(r).Sheet(s).Outliers  = sum(nanSamples);
-    %
-    %
-    %         tallyStats(m, n).Region(r).Sheet(s).Mean          = nanmean(regionData{r}(s,:));% tallyData(m, n).regionStats(p, s).Mean;
-    %         tallyStats(m, n).Region(r).Sheet(s).Sigma         = nanstd(regionData{r}(s,:));% tallyData(m, n).regionStats(p, s).Sigma;
-    %
-    %         tallyStats(m, n).Region(r).Sheet(s).Accuracy  = tallyStats(m, n).Region(r).Sheet(s).Mean  - referenceValue;
-    %
-    %         regionSheetMean(r, s)                             = tallyStats(m, n).Region(r).Sheet(s).Mean;
-    %         regionSheetSigma(r, s)                            = tallyStats(m, n).Region(r).Sheet(s).Sigma;
-    %         regionSheetAccuracy(r, s)                         = tallyStats(m, n).Region(r).Sheet(s).Accuracy;
-    %       end
-    %
-    %       for p=1:size(regionData{r},2) % tallyStats(m, n).Region(r).Count
-    %         patchData                                         = regionData{r}(:,p);
-    %
-    %         nanSamples                                        = isnan(patchData(:));
-    %
-    %         tallyStats(m, n).Region(r).Patch(p).Size          = size(patchData);
-    %         tallyStats(m, n).Region(r).Patch(p).Samples   = sum(~nanSamples);
-    %         tallyStats(m, n).Region(r).Patch(p).Outliers  = sum(nanSamples);
-    %
-    %
-    %         tallyStats(m, n).Region(r).Patch(p).Mean          = nanmean(patchData(:));% tallyData(m, n).regionStats(p, s).Mean;
-    %         tallyStats(m, n).Region(r).Patch(p).Sigma         = nanstd(patchData(:));% tallyData(m, n).regionStats(p, s).Sigma;
-    %
-    %         tallyStats(m, n).Region(r).Patch(p).Accuracy  = tallyStats(m, n).Region(r).Patch(p).Mean  - referenceValue;
-    %
-    %         regionPatchMean(r, p)                             = tallyStats(m, n).Region(r).Patch(p).Mean;
-    %         regionPatchSigma(r, p)                            = tallyStats(m, n).Region(r).Patch(p).Sigma;
-    %         regionPatchAccuracy(r, p)                         = tallyStats(m, n).Region(r).Patch(p).Accuracy;
-    %
-    %       end
-    %
-    %
-    %       tallyStats(m, n).Region(r).Mean                     = nanmean(regionData{r}(:));
-    %       tallyStats(m, n).Region(r).Sigma                    = nanstd(regionData{r}(:));
-    %
-    %       % Region Norm (Region Accuracy)
-    %       % Mean of all the patches in one region across all sheets. Each region
-    %       % is a spatial unit with a norm value take from samples across both the
-    %       % patch (spatial) and sheet (temporal) domains. Norm is also the mean
-    %       % of all region means for one region across all sheets.
-    %
-    %       tallyStats(m, n).Region(r).Norm                     = tallyStats(m, n).Region(r).Mean;
-    %       tallyStats(m, n).Region(r).Accuracy                 = tallyStats(m, n).Region(r).Norm  - referenceValue;
-    %
-    %       % Region Precision
-    %       % Spread between upper and lower bounds for all patches in one region
-    %       % across all sheets.
-    %
-    %       tallyStats(m, n).Region(r).Precision                = tallyStats(m, n).Region(r).Sigma*6;
-    %
-    %       % Region Evenness
-    %       % Mean across all sheets of the spread between the upper and lower
-    %       % bounds of all the patches in one region within each sheet.
-    %
-    %       tallyStats(m, n).Region(r).Evenness                 = nanmean(regionSheetSigma(r,:)*6);
-    %
-    %       % Region Repeatability
-    %       % Spread between upper and lower bounds of region mean across all sheets.
-    %
-    %       tallyStats(m, n).Region(r).Repeatability            = nanmean(regionPatchSigma(r,:)*6); %nanstd(regionSheetMean(r,:))*6;
-    %
-    %     end
-    %
-    %     %% Band Statistics
-    %
-    %     for bandSet = {'around', 'across'}
-    %
-    %       band                                                  = char(bandSet);
-    %       bandCount                                             = tallyData(m, n).([band 'Count']);
-    %       bandStats                                             = tallyData(m, n).([band 'Stats']);
-    %       bandMasks                                             = tallyMasks(m).(band);
-    %
-    %       bandSheetMean                                         = NaN(bandCount, sheetCount);
-    %       bandSheetSigma                                        = NaN(bandCount, sheetCount);
-    %       bandSheetAccuracy                                     = NaN(bandCount, sheetCount);
-    %
-    %       bandData                                              = cell(1, bandCount); %NaN(regionCount, sheetCount, regionSize
-    %
-    %       bandTally                                             = struct();
-    %
-    %       for r = 1:bandCount
-    %         bandMask                                            = bandMasks(r,:,:)==1;
-    %         bandMask                                            = squeeze(bandMask) & ~dataFilter;
-    %
-    %         sampleData                                          = runData(:, bandMask);
-    %         nanSamples                                          = isnan(sampleData(:));
-    %
-    %         bandTally(r).Size                                   = size(sampleData);
-    %         bandTally(r).Samples                                = sum(~nanSample);
-    %         bandTally(r).Outliers                               = sum(nanSample);
-    %
-    %         bandTally(r).Mean                                   = [];
-    %         bandTally(r).Sigma                                  = [];
-    %
-    %
-    %         for s=1:sheetCount
-    %
-    %           bandData{r}(s,:)                                  = runData(s, bandMask);
-    %
-    %           sampleData                                        = bandData{r}(s,:);
-    %           nanSamples                                        = isnan(sampleData(:));
-    %
-    %           bandTally(r).Sheet(s).Size                        = size(sampleData);
-    %           bandTally(r).Sheet(s).Samples                     = sum(~nanSamples);
-    %           bandTally(r).Sheet(s).Outliers                    = sum(nanSamples);
-    %
-    %
-    %           % Band Mean
-    %           % Mean of region means in a set of regions in one sheet.
-    %
-    %           bandTally(r).Sheet(s).Mean                        = nanmean(bandData{r}(s,:)); % bandStats(p, s).Mean;
-    %           bandTally(r).Sheet(s).Sigma                       = nanstd(bandData{r}(s,:)); % bandStats(p, s).Sigma;
-    %
-    %           bandTally(r).Sheet(s).Accuracy                    = bandTally(r).Sheet(s).Mean - referenceValue;
-    %
-    %           bandSheetMean(r, s)                               = bandTally(r).Sheet(s).Mean;
-    %           bandSheetSigma(r, s)                              = bandTally(r).Sheet(s).Sigma;
-    %           bandSheetAccuracy(r, s)                           = bandTally(r).Sheet(s).Accuracy;
-    %         end
-    %
-    %
-    %         for p=1:size(bandData{r},2) % tallyStats(m, n).Region(r).Count
-    %           patchData                                         = bandData{r}(:,p);
-    %
-    %           nanSamples                                        = isnan(patchData(:));
-    %
-    %           bandTally(r).Patch(p).Size                        = size(patchData);
-    %           bandTally(r).Patch(p).Samples                     = sum(~nanSamples);
-    %           bandTally(r).Patch(p).Outliers                    = sum(nanSamples);
-    %
-    %
-    %           bandTally(r).Patch(p).Mean                        = nanmean(patchData(:));% tallyData(m, n).regionStats(p, s).Mean;
-    %           bandTally(r).Patch(p).Sigma                       = nanstd(patchData(:));% tallyData(m, n).regionStats(p, s).Sigma;
-    %
-    %           bandTally(r).Patch(p).Accuracy                    = bandTally(r).Patch(p).Mean  - referenceValue;
-    %
-    %           bandPatchMean(r, p)                               = bandTally(r).Patch(p).Mean;
-    %           bandPatchSigma(r, p)                              = bandTally(r).Patch(p).Sigma;
-    %           bandPatchAccuracy(r, p)                           = bandTally(r).Patch(p).Accuracy;
-    %
-    %         end
-    %
-    %
-    %         bandTally(r).Mean                                   = nanmean(bandData{r}(:));
-    %         bandTally(r).Sigma                                  = nanstd(bandData{r}(:));
-    %
-    %         % Band Norm (Band Accuracy)
-    %         % Mean of region means in a set of regions across all sheets.
-    %
-    %         bandTally(r).Norm                                   = bandTally(r).Mean;
-    %         bandTally(r).Accuracy                               = bandTally(r).Norm  - referenceValue;
-    %
-    %
-    %         % Band Precision
-    %         % Spread between upper and lower bounds for all the patches in a set of
-    %         % regions across all sheets.
-    %
-    %         bandTally(r).Precision                              = bandTally(r).Sigma*6;
-    %
-    %         % Band Evenness
-    %         % Mean across all sheets of the spread between the upper and lower
-    %         % bounds of all the patches in a set of regions within each sheet.
-    %
-    %         bandTally(r).Evenness                               = nanmean(bandSheetSigma(r,:).*6);
-    %
-    %         % Band Repeatability
-    %
-    %         bandTally(r).Repeatability                          = nanmean(bandPatchSigma(r,:).*6); % nanstd(bandSheetMean(r,:))*6;
-    %
-    %       end
-    %
-    %       band = [upper(band(1)) band(2:end)];
-    %
-    %       tallyStats(m, n).(band)                         = bandTally;
-    %     end
-    
+  %% Cases
+  
+  caseIDs                         = { 'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01',  'rithp5501' };
+  caseSymbols                     = { 'L1',         'L2',         'L3' ,        'X1',         'X2'        };
+  caseFlip                        = [ false,        false,        false,        false,        false       ];
+  
+  setIDs                          = [100, 75, 50, 25, 0];
+  
+  if testing
+    testIdx                       = 4; % [4    1];
+    setIDs                        = [100  0];
+    caseIDs                       = caseIDs(testIdx);
+    caseSymbols                   = caseSymbols(testIdx);
+    caseFlip                      = caseFlip(testIdx);
   end
   
+  caseCount                       = numel(caseIDs);
+  setCount                        = numel(setIDs);
+    
+  %% Units & Standards
+  
+  unitID                          = 'density';
+  
+  switch lower(unitID)
+    case {'v', 'density', 'iso visual density', 'd'}
+      unitID                      = 'ISO Visual Density';
+      standardValues              = [ 1.6779    0.92575   0.51709   0.24656   0.057405];
+      standardTolerances          = [ 0.1       0.1       0.1       0.1       0.05];
+    otherwise % case {'l', 'l*', 'cie-l', 'cie-l*', 'ciel', 'ciel*'}
+      unitID                      = 'CIE-L';
+      % standardValues             = [ 16    NaN   NaN   NaN   93  ];  % Black Backing (12647-2)
+      standardValues              = [ 16    41    62    80    95  ];  % White Backing Informative (Photoshop Fogra39 > Absolute Colorimetric > Lab)
+      standardTolerances          = [  4    4     4     4     3   ];   % Extrapolated from ISO 12647-2
+  end
+  
+  %% Class Initializations
+  
+  dataSourceClass                 = 'PrintUniformityBeta.Data.RegionPlotDataSource';
+  statsClass                      = 'GrasppeAlpha.Stats.TransientStats';
+  
+  regionIDs                       = {'region', 'around', 'across'};
+  
+  emptySource                     = @()eval([dataSourceClass '.empty();']);
+  emptyStats                      = @()eval([statsClass '.empty();']);
+  
+  dataSources                     = emptySource(); %feval([dataSourceClass '.empty'], 0, 5);
+  tallyMasks                      = struct();
+  tallyData                       = struct(); %'sheet', {}, 'around', {}, 'across', {}, 'run', {});
+  tallyStats                      = struct();
+  
+  %% Metadata
+  
+  tallyMetadata.Date              = datevec(now);
+  tallyMetadata.DataSourceClass 	= dataSourceClass;
+  tallyMetadata.StatsClass        = statsClass;
+  
+  tallyMetadata.Cases.IDs         = caseIDs;
+  tallyMetadata.Cases.Symbols     = caseSymbols;
+  
+  tallyMetadata.Cases.Names       = cell(1, caseCount); % tallyMetadata.CaseFlip          = caseFlip;
+  tallyMetadata.Cases.Metadata    = cell(1, caseCount);
+  tallyMetadata.Cases.Headers     = cell(1, caseCount); % indices, metrics, range, length
+  
+  tallyMetadata.Regions.IDs       = regionIDs;
+  
+  tallyMetadata.Sets.IDs          = setIDs;  
+  tallyMetadata.Sets.Names        = cell(caseCount, setCount);
+  
+  tallyMetadata.Sheets.Index      = cell(1, caseCount);
+
+  tallyMetadata.Standard          = standardValues;
+  tallyMetadata.Tolerance         = standardTolerances;
+  tallyMetadata.Unit              = unitID; %% 'ISO Visual Density'; % 'CIE-L'
+  tallyMetadata.SumsMethod        = 'Reverse ANOVA';
+  
+  tallyMetadata.Version           = 2.1;
+  tallyMetadata.Revision          = MX.stackRev;
+  
+  %% Prepare Output
+  outputSuffix                    = datestr(now, 'yymmdd');
+  outputPath                      = fullfile('Output', ['UniPrint-Stats-' outputSuffix]);
+  FS.mkDir(outputPath);
+  
+  %% Tally Cases
+  
+  for m = 1:caseCount
+    
+    sourceID                      = caseIDs{m};
+    
+    caseData                      = [];
+    
+    for n = 1:setCount
+      
+      setID                       = setIDs(n);
+      roiIDs                      = regionIDs; % {'region', 'around', 'across'};
+      
+      %% Load data
+      if n == 1
+        dataSources(m)            = feval(dataSourceClass, 'CaseID', sourceID, 'SetID', setID); % , 'PassiveProcessing', true);
+      else
+        dataSources(m).SetID      = setID;
+      end
+            
+      dispf('\t\tChangeSet: %s\tCaseID: %s\tSetID: %d\tSheetID: %d', ...
+        char(dataSources(m).Reader.State), dataSources(m).CaseID, dataSources(m).SetID, dataSources(m).SheetID);
+      
+      if n==1
+        caseData                            = dataSources(m).CaseData.DATA;
+        
+        tallyMetadata.Cases.Names{m}        = caseData.metadata.title; %dataSources(m).CaseName;
+        tallyMetadata.Cases.Metadata{m}     = caseData.metadata;
+        tallyMetadata.Cases.Headers         = struct( ...
+          'Index',    caseData.index, ...
+          'Metrics',  caseData.metrics, ...
+          'Range',    caseData.range, ...
+          'Length',   caseData.length ...
+          );
+        
+        tallyMetadata.Sheets.Index{m}       = caseData.index.Sheets;
+      end
+      
+      if isempty(dataSources(m).Statistics) || ~isstruct(dataSources(m).Statistics)
+        disp('Force-Processing Statistics...');
+        dataSources(m).processStatistics;
+      end
+      stats                                 = dataSources(m).Statistics;
+      
+      tallyMetadata.Sets.Names{m, n}        = [dataSources(m).CaseName ' ' dataSources(m).SetName];
+      
+      %% Tally data filter / MASKS
+      dataFilter                            = stats.filter;
+      tallyData(m, n).dataFilter            = dataFilter;
+      tallyMasks(m).region                  = flipdim(stats.metadata.regions.sections, 3);
+      tallyMasks(m).around                  = flipdim(stats.metadata.regions.around, 3);
+      tallyMasks(m).across                  = flipdim(stats.metadata.regions.across, 3);
+      
+      %% Tally run, sheet, patch, region counts
+      
+      tallyData(m, n).run                   = stats.run;
+      tallyData(m, n).runData               = stats.data;
+      tallyData(m, n).runCount              = 1;
+      tallyData(m, n).sheetCount            = size(tallyData(m, n).runData, 1);
+      tallyData(m, n).sheetSize             = [size(tallyData(m, n).runData, 2) size(tallyData(m, n).runData, 3)];
+      tallyData(m, n).patchIndex            = find(~dataFilter);
+      tallyData(m, n).patchCount            = numel(tallyData(m, n).patchIndex);
+      tallyData(m, n).region                = stats.sections;
+      tallyData(m, n).regionCount           = size(tallyData(m, n).region, 1);
+      tallyData(m, n).around                = stats.around;
+      tallyData(m, n).aroundCount           = size(tallyData(m, n).around, 1);
+      tallyData(m, n).across                = stats.across;
+      tallyData(m, n).acrossCount           = size(tallyData(m, n).across, 1);
+      tallyData(m, n).zoneCount             = 0;
+      
+      %% Tally zone data & masks optional
+      if isfield(stats.metadata.regions, 'zones')
+        tallyMasks(m).zone                  = flipdim(stats.metadata.regions.zones, 3);
+        tallyData(m, n).zone                = stats.zones;
+        tallyData(m, n).zoneCount           = size(tallyData(m, n).zone, 1);
+        roiIDs                              = [roiIDs, 'zone'];
+      end
+      
+      %% Standard & Tolerance Values
+      standardValue                         = standardValues(n);
+      standardTolerance                     = standardTolerances(n);
+      
+      %% Run Statistics
+      
+      runData                               = tallyData(m, n).runData;
+      patchIndex                            = tallyData(m, n).patchIndex;
+      patchCount                            = tallyData(m, n).patchCount;
+      sheetCount                            = tallyData(m, n).sheetCount;
+      
+      runMask                               = ~dataFilter;
+      runSamples                            = runData(:, runMask);
+      runTally                              = newTally(runData, runSamples);
+      referenceValue                        = runTally.Mean;
+      
+      %% Run Inaccuracy & Imprecision
+      runTally.Inaccuracy                   = calculateInaccuracy(runData, standardValue, standardTolerance);
+      runTally.Imprecision                  = calculateImprecision(runData, standardTolerance);
+      
+      %% Patch Statistics
+      
+      patches                               = struct();
+      patches.Count                         = patchCount;
+      patches.Mean                          = NaN(1, patchCount);
+      patches.Sigma                         = NaN(1, patchCount);
+      
+      for p=1:patchCount
+        tallyStats(m, n).Patch(p)           = tallyPatch(runData, patchIndex(p), referenceValue, standardTolerance);
+        patches.Mean(p)                     = tallyStats(m, n).Patch(p).Mean;
+        patches.Sigma(p)                    = tallyStats(m, n).Patch(p).Sigma;
+      end
+      
+      %% Sheet Statistics
+      
+      sheets                                = struct();
+      sheets.Count                          = sheetCount;
+      sheets.Mean                           = NaN(1, sheetCount);
+      sheets.Sigma                          = NaN(1, sheetCount);
+      
+      for s=1:sheetCount
+        tallyStats(m, n).Sheet(s)           = tallySheet(runData, s, ~dataFilter, referenceValue, standardTolerance);
+        sheets.Mean(s)                      = tallyStats(m, n).Sheet(s).Mean;
+        sheets.Sigma(s)                     = tallyStats(m, n).Sheet(s).Sigma;
+      end
+      
+      %% Run Factors
+      runTally.Factors                      = calculateFactors(patches.Sigma, sheets.Sigma);
+      
+      %% ROI Statistics
+      tallyMetadata.Regions.IDs             = unique([tallyMetadata.Regions.IDs roiIDs], 'stable');
+      
+      for roiSet = roiIDs
+        
+        roiID                               = char(roiSet);
+        roiCount                            = tallyData(m, n).([roiID 'Count']);
+        roiMasks                            = tallyMasks(m).(roiID);
+        roiSheets.Mean                      = NaN(roiCount, sheetCount);
+        roiSheets.Sigma                     = NaN(roiCount, sheetCount);
+        roiPatches.Mean                     = NaN(roiCount, patchCount);
+        roiPatches.Sigma                    = NaN(roiCount, patchCount);
+        roiInaccuracyValues                 = NaN(roiCount, 1);
+        roiImprecisionValues                = NaN(roiCount, 1);
+        roiUnevennessValues                 = NaN(roiCount, 1);
+        roiUnrepeatabilityValues            = NaN(roiCount, 1);        
+        roiData                             = cell(1, roiCount); %NaN(regionCount, sheetCount, regionSize
+        roiTally                            = struct( ...
+          'Size',[],'Samples',[],'Outliers',[], ...
+          'Mean',[],'Sigma',[], ...
+          'Sheet',struct(),'Patch', struct(), ...
+          'Name', {}, 'Position', struct('Row',{},'Column',{}),  ...
+          'Inaccuracy',struct(),'Imprecision',struct(),'Factors',struct(),'Proportions', struct() ...
+          );
+        
+        %% Figure out ROI positions and Names
+        % roiGrid(:,:)                        = roiMasks(1, :, :);
+        for r = 1:roiCount
+          roiMask                           = squeeze(roiMasks(r,:,:)==1);
+          roiColumns                        = sum(roiMask, 1);
+          roiRows                           = sum(roiMask, 2);
+          columnCount                       = numel(roiColumns);
+          rowCount                          = numel(roiRows);
+          
+          roiPosition.Row                   = [ ...
+            max(1,            find(roiRows>0, 1,'first')) ...
+            min(rowCount,     find(roiRows>0, 1,'last'))  ];
+          
+          roiPosition.Column                = [ ...          
+            max(1,            find(roiColumns>0, 1,'first')) ...
+            min(columnCount,  find(roiColumns>0, 1,'last'))  ];
+          
+          roiTally(r).Position              = roiPosition;
+            
+          try cell2mat(struct2cell(roiTally(r).Position)), end;
+
+        end
+        
+        roiID                               = [upper(roiID(1)) roiID(2:end)];
+        
+        for r = 1:roiCount
+          roiMask                           = roiMasks(r,:,:)==1;
+          roiMask                           = squeeze(roiMask) & ~dataFilter;
+          
+          sampleData                        = runData(:, roiMask);
+          nanSamples                        = isnan(sampleData(:));
+          
+          roiTally(r).Size                  = size(sampleData);
+          roiTally(r).Samples               = sum(~nanSamples);
+          roiTally(r).Outliers              = sum(nanSamples);
+          
+          for s=1:sheetCount % tally = sheetTally(data, sheet, mask, reference, tolerance)
+            roiData{r}(s,:)                 = runData(s, roiMask);
+            if s==1
+              roiTally(r).Sheet             = tallySheet(roiData{r}, s, [], referenceValue, standardTolerance);
+            else
+              roiTally(r).Sheet(s)          = tallySheet(roiData{r}, s, [], referenceValue, standardTolerance);
+            end
+            roiSheets.Mean(r, s)            = roiTally(r).Sheet(s).Mean;
+            roiSheets.Sigma(r, s)           = roiTally(r).Sheet(s).Sigma;
+          end
+          
+          
+          for p=1:size(roiData{r},2) % tally = patchTally(data, mask, reference, tolerance)
+            if p==1
+              roiTally(r).Patch             = tallyPatch(roiData{r}, p, referenceValue, standardTolerance);
+            else
+              roiTally(r).Patch(p)          = tallyPatch(roiData{r}, p, referenceValue, standardTolerance);
+            end
+            roiPatches.Mean(r, p)           = roiTally(r).Patch(p).Mean;
+            roiPatches.Sigma(r, p)          = roiTally(r).Patch(p).Sigma;
+          end
+          
+          roiTally(r).Mean                  = nanmean(roiData{r}(:));
+          roiTally(r).Sigma                 = nanstd(roiData{r}(:));
+          
+          roiTally(r).Inaccuracy            = calculateInaccuracy(roiData{r}(:), referenceValue, standardTolerance);
+          roiTally(r).Imprecision           = calculateImprecision(roiData{r}(:), standardTolerance);
+          roiTally(r).Factors               = calculateFactors(roiPatches.Sigma(r,:), roiSheets.Sigma(r,:));
+          
+          roiInaccuracyValues(r)            = roiTally(r).Inaccuracy.Value;
+          roiImprecisionValues(r)           = roiTally(r).Imprecision.Value;
+          roiUnevennessValues(r)            = roiTally(r).Factors.Unevenness.Value;
+          roiUnrepeatabilityValues(r)       = roiTally(r).Factors.Unrepeatability.Value;
+          
+        end
+        
+        inaccuracyProportions               = @(x) (abs(x)) ./  sumabs(x(:));
+        imprecisionProportions              = @(x) (x.^2)   ./  sumsqr(x(:));
+        
+        roiInaccuracyProportions            = inaccuracyProportions(roiInaccuracyValues(:)); %(roiInaccuracyValues(:)     ) ./  sum(roiInaccuracyValues(:));
+        roiImprecisionProportions           = imprecisionProportions(roiImprecisionValues(:)); % (roiImprecisionValues(:).^2 ) ./  sumsqr(roiImprecisionValues(:));
+        
+        [V, I]                              = sort(abs(roiInaccuracyValues));
+        roiInaccuracyRanks                  = I;
+        [V, I]                              = sort(roiImprecisionValues);
+        roiImprecisionRanks                 = I;        
+        [V, I]                              = sort(roiUnevennessValues);
+        roiUnevennessRanks                  = I;        
+        [V, I]                              = sort(roiUnrepeatabilityValues);
+        roiUnrepeatabilityRanks             = I;                
+        
+        
+        [V, I]                              = sort(roiInaccuracyValues);
+        roiInaccuracySequences              = I;
+        
+        %% ROI Proportions
+        for r = 1:roiCount
+          roiTally(r).Proportions.Inaccuracy  = roiInaccuracyProportions(r);
+          roiTally(r).Proportions.Imprecision = roiImprecisionProportions(r);
+          
+          roiTally(r).Ranks.Inaccuracy      = find(roiInaccuracyRanks==r,1,'first');
+          roiTally(r).Ranks.Imprecision     = find(roiImprecisionRanks==r,1,'first');
+          roiTally(r).Ranks.Unevenness      = find(roiUnevennessRanks==r,1,'first');
+          roiTally(r).Ranks.Unrepeatability = find(roiUnrepeatabilityRanks==r,1,'first');
+          
+          roiTally(r).Sequences.Inaccuracy  = find(roiInaccuracySequences==r,1,'first');
+        end
+        
+        roiIndex                            = struct();
+        roiIndex.Ranks.Inaccuracy           = roiInaccuracyRanks;
+        roiIndex.Ranks.Imprecision          = roiImprecisionRanks;
+        roiIndex.Ranks.Unevenness           = roiUnevennessRanks;
+        roiIndex.Ranks.Unrepeatability      = roiUnrepeatabilityRanks;
+        roiIndex.Sequences.Inaccuracy       = roiInaccuracySequences;
+        roiIndex.Sequences.Imprecision      = roiImprecisionRanks;
+        roiIndex.Sequences.Unevenness       = roiUnevennessRanks;
+        roiIndex.Sequences.Unrepeatability  = roiUnrepeatabilityRanks;        
+        runTally.Index.(roiID)              = roiIndex;
+        
+        switch lower(roiID)
+          case 'region'
+            regionInaccuracyValues          = roiInaccuracyValues(:);
+            % regionImprecisionValues       = roiImprecisionValues(:);
+          case 'around'
+            aroundInaccuracyValues          = roiInaccuracyValues(:);
+            aroundImprecisionValues         = roiImprecisionValues(:);
+          case 'across'
+            acrossInaccuracyValues          = roiInaccuracyValues(:);
+            acrossImprecisionValues         = roiImprecisionValues(:);
+        end
+        
+        tallyStats(m, n).(roiID)            = roiTally;
+        % tallyStats(m, n).(roiID)            = rmfield(roiTally, {'Sheet', 'Patch'});
+      end
+      
+      %% Run Directionality
+      inaccuracyDirectionality              = @(x,r) (max(x)-min(x))  / (max(r)-min(r));
+      imprecisionDirectionality             = @(x,y) (meansqr(x)      / (meansqr(x)+meansqr(y)));
+      
+      runTally.Directionality.Inaccuracy.Around   = inaccuracyDirectionality(aroundInaccuracyValues,    regionInaccuracyValues);
+      runTally.Directionality.Inaccuracy.Across   = inaccuracyDirectionality(acrossInaccuracyValues,    regionInaccuracyValues);
+      
+      runTally.Directionality.Imprecision.Around  = imprecisionDirectionality(aroundImprecisionValues,  acrossImprecisionValues);
+      runTally.Directionality.Imprecision.Across  = imprecisionDirectionality(acrossImprecisionValues,  aroundImprecisionValues);
+      
+      tallyStats(m, n).Run                = runTally;
+      
+      % setTally                          = struct();
+      % setTally.Data                     = tallyData(m, n);
+      % setTally.Masks                    = tallyMasks(m, n);
+      % setTally.Stats                    = tallyStats(m, n);
+      
+      % save(fullfile(outputPath, ['Case-' sourceID '-TV' int2str(setID) '-Data.mat']),  '-struct', 'setTally', 'Data');
+      % save(fullfile(outputPath, ['Case-' sourceID '-TV' int2str(setID) '-Masks.mat']), '-struct', 'setTally', 'Masks');
+      % save(fullfile(outputPath, ['Case-' sourceID '-TV' int2str(setID) '-Stats.mat']), '-struct', 'setTally', 'Stats');
+      
+      setStats                            = tallyStats(m, n);
+      statFields                          = fieldnames(setStats);
+      for p = 1:numel(statFields)
+        save(fullfile(outputPath, [sourceID '-' int2str(setID) '-' statFields{p}  '.mat']), '-struct', 'setStats', statFields{p});
+      end  
+      
+      for roiSet = roiIDs
+        roiID                             = char(roiSet);
+        roiID                             = [upper(roiID(1)) roiID(2:end)];
+        tallyStats(m, n).(roiID)          = rmfield(tallyStats(m, n).(roiID), {'Sheet', 'Patch'});
+      end
+      
+      
+    end
+    
+    caseTally                         = struct();
+    caseTally.Masks                   = tallyMasks(m);
+    save(fullfile(outputPath, [sourceID '-Masks.mat']), '-struct', 'caseTally', 'Masks');
+    
+    % if ~testing || all(ismember(setIDs,[100, 75, 50, 25, 0]));
+    %   caseTally.Data                    = tallyData(m, :);
+    %   caseTally.Masks                   = tallyMasks(m, :);
+    %   caseTally.Stats                   = tallyStats(m, :);
+    %
+    %   save(fullfile(outputPath, ['Case-' sourceID '-Data.mat']),  '-struct', 'caseTally', 'Data');
+    %   save(fullfile(outputPath, ['Case-' sourceID '-Masks.mat']), '-struct', 'caseTally', 'Masks');
+    %   save(fullfile(outputPath, ['Case-' sourceID '-Stats.mat']), '-struct', 'caseTally', 'Stats');
+    % end
+    
+      
+  end
+  
+  for m = 1:numel(tallyMetadata.Regions.IDs)
+    roiID                               = char(tallyMetadata.Regions.IDs{m});
+    roiID                               = [upper(roiID(1)) roiID(2:end)];
+    tallyMetadata.Regions.IDs{m}        = roiID;
+  end
+  
+  tally.Metadata                        = tallyMetadata;
+  tally.Data                            = tallyData;
+  tally.Stats                           = tallyStats;
+  tally.Masks                           = tallyMasks;
+  
+  if ~testing
+    save(fullfile(outputPath, 'Metadata.mat'), '-struct', 'tally', 'Metadata');
+  end
+  
+  save(fullfile('Output', ['tallyStats-'  outputSuffix  '.mat']), '-struct', 'tally', 'Metadata', 'Stats', 'Masks'); %, 'tallyStats', 'tallyData', 'tallyMasks');
+  save(fullfile('Output', ['tallyData-'   outputSuffix  '.mat']), '-struct', 'tally', 'Data'); %, 'tallyStats', 'tallyData', 'tallyMasks');
+  
 end
 
-tally.Metadata  = tallyMetadata;
-tally.Data          = tallyData;
-tally.Stats         = tallyStats;
-tally.Masks         = tallyMasks;
+function tally = newTally(data, samples)
+  nanSamples                            = isnan(samples(:));
+  tally.Size                            = size(data);
+  tally.Samples                         = sum(~nanSamples);
+  tally.Outliers                        = sum(nanSamples);
+  tally.Mean                            = nanmean(samples(:));
+  tally.Sigma                           = nanstd(samples(:));
+end
 
-save(fullfile('Output', 'tallyStats.mat'), '-struct', 'tally', 'Metadata', 'Stats', 'Masks'); %, 'tallyStats', 'tallyData', 'tallyMasks');
-save(fullfile('Output', 'tallyData.mat'), '-struct', 'tally', 'Data'); %, 'tallyStats', 'tallyData', 'tallyMasks');
+function tally = tallyPatch(data, mask, reference, tolerance)
+  if ~isempty(mask)
+    samples                             = data(:, mask);
+  else
+    samples                             = data(:);
+  end
+  tally                                 = newTally(data, samples);
+  tally.Inaccuracy                      = calculateInaccuracy(samples, reference, tolerance);
+  tally.Imprecision                     = calculateImprecision(samples, tolerance);
+  tally.Factors.Unrepeatability.Samples = tally.Samples;
+  tally.Factors.Unrepeatability.Value   = factorValue(tally.Sigma(:), tally.Samples);
+  tally.Factors.Unrepeatability.Factor  = 1.0;
+end
 
+function tally = tallySheet(data, sheet, mask, reference, tolerance)
+  if ~isempty(mask)
+    samples                             = data(sheet, mask);
+  else
+    samples                             = data(sheet, :);
+  end
+  tally                                 = newTally(data, samples);
+  tally.Inaccuracy                      = calculateInaccuracy(samples, reference, tolerance);
+  tally.Imprecision                     = calculateImprecision(samples, tolerance);
+  tally.Factors.Unevenness.Samples      = tally.Samples;
+  tally.Factors.Unevenness.Value        = factorValue(tally.Sigma(:), tally.Samples);
+  tally.Factors.Unevenness.Factor       = 1.0;
+end
 
+%% Spatial-Temporal Factors
 
-%
-%     %% Sheet Evenness
-%     % Sheet evenness is calculated from the varaibility between the summary of
-%     % the patches across all sheets. Spatial accuracy is the spread of the
-%     % cross-sheet means across all patches. Spatial precision is the spread
-%     % of the cross-sheet spread across all patches. The mean and spread is
-%     % first detemined for every single patch by taking the values across
-%     % all sheets for each patch.
-%     tallyStats(m, n).sheet.spatial.Mean        = feval(statsClass, tallyStats(m, n).spatial.Mean);
-%     tallyStats(m, n).sheet.spatial.Sigma   = feval(statsClass, tallyStats(m, n).spatial.Sigma);
-%
-%     %% Sheet Repeatability
-%     % Sheet repeatability is calculated from the variability between the
-%     % summary of the sheets across all patches. Temporal accruacy is the
-%     % spread of the cross-patch means across all sheets. Temporal precision
-%     % is the spread of the cross-patch spread across all sheets.. The mean and
-%     % spread is first determined for every single sheet by taking the
-%     % values across all the patches for each sheet.
-%     tallyStats(m, n).sheet.temporal.Mean        = feval(statsClass, tallyStats(m, n).temporal.Mean);
-%     tallyStats(m, n).sheet.temporal.Sigma   = feval(statsClass, tallyStats(m, n).temporal.Sigma);
-%
-%     %% Region Evenness
-%     % Region evenness is calculated from the varaibility between the summary of
-%     % the patches within a given region across all sheets. Spatial region
-%     % accuracy is the spread of the cross-sheet means across all patches
-%     % within the region. Spatial region precision is the spread of the
-%     % cross-sheet spread across all patches within the region. The mean and
-%     % spread is first detemined for every single patch within the region by
-%     % taking the values across all sheets for each patch.
-%
-%
-%     %     for p = 1:tallyData(m, n).aroundCount
-%     %       %tallyStats(m, n).around(p).spatial.Data  = tallyData(m, n).acrossStats(p, :);
-%     %       tallyStats(m, n).around(p).spatial.Mean  = feval(statsClass, tallyStats(m, n).spatial.Mean);
-%     %       tallyStats(m, n).around(p).spatial.Sigma = feval(statsClass, tallyStats(m, n).spatial.Sigma);
-%     %     end
-%
-%
-%     %% Region Repeatability
-%     % Region repeatability is calculated from the variability between the
-%     % summary of the sheets across all patches within a given region.
-%     % Temporal region accruacy is the spread of the cross-patch means
-%     % across all sheets for the patches in the region. Temporal precision
-%     % is the spread of the cross-patch spread across all sheets for the
-%     % patches in the region. The mean and spread is first determined for
-%     % every single sheet by taking the values across all the patches within
-%     % the reagion for each sheet.
-%
-%     %% Directional Evenness
-%     % Directional evenness is the variability between the band evenness values
-%     % of the all the bands in a given direction (axial or circumferential).
-%     % Spatial directional accruacy is the spread of the means across bands.
-%     % Spatial directional precision is the spread of the spread across bands.
-%
-%     %     tallyStats(m, n).axial.spatial.Mean        = feval(statsClass, tallyData(m, n).aroundStats);
-%     %     tallyStats(m, n).axial.spatial.Sigma   = feval(statsClass, tallyStats(m, n).spatial.Sigma);
-%
-%     %% Directional Repeatability
-%     % Directional repeatability is the variability between the band
-%     % repeatability values of the all the bands in a given direction (axial
-%     % or circumferential). Temporal direction accruacy is the spread of the
-%     % means across bands. Temporal precision is the spread of the spread
-%     % across the bands.
+function factors = calculateFactors(temporalSigmas, spatialSigmas)
+  temporalSigmas                        = temporalSigmas(~isnan(temporalSigmas(:)));
+  temporalCount                         = numel(temporalSigmas);
+  
+  spatialSigmas                         = spatialSigmas(~isnan(spatialSigmas(:)));
+  spatialCount                          = numel(spatialSigmas);
+      
+  unrepeatabilityValue                  = factorValue(temporalSigmas, temporalCount);
+  unevennessValue                       = factorValue(spatialSigmas,  spatialCount);
+  
+  squaredFactor                         = @(x, y) (x^2)/sumsqr([x y]);
+  
+  % totalValue                            = sum(unrepeatabilityValue^2, unevennessValue^2);
+  unrepeatabilityFactor                 = squaredFactor(unevennessValue,      unrepeatabilityValue); % sqrt(unrepeatabilityValue^2 / totalValue);
+  unevennessFactor                      = squaredFactor(unrepeatabilityValue, unevennessValue);      % sqrt(unevennessValue^2      / totalValue);
+  
+  factors.Unrepeatability.Samples       = temporalCount;
+  factors.Unrepeatability.Value         = unrepeatabilityValue;
+  factors.Unrepeatability.Factor        = unrepeatabilityFactor;
+  
+  factors.Unevenness.Samples            = spatialCount;
+  factors.Unevenness.Value              = unevennessValue;
+  factors.Unevenness.Factor             = unevennessFactor;
+end
+
+function value = factorValue(sigmas, count)
+  value                                 = sqrt(sumsqr(sigmas(:)) / (count-1));
+end
+
+%% Inaccuracy & Imprecision Metrics
+function result = calculateInaccuracy(data, reference, tolerance)
+  result.Reference                      = reference;
+  result.Tolerance                      = tolerance;
+  result.Value                          = nanmean(data(:))-reference;
+  result.Score                          = result.Value/(tolerance/2);
+end
+
+function result = calculateImprecision(data, tolerance)
+  result.Tolerance                      = tolerance;
+  result.Value                          = nanstd(data(:))*6;
+  result.Score                          = result.Value/(tolerance);
+end

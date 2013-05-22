@@ -4,21 +4,22 @@ function exportVideos( forced, sources, fValues, fViews, fSets )
   
   default forced false;
   default sources '';
-  default fValues [100 75 50 25 0];
+  default fValues [100]; %  75 50 25 0];
   default fViews [1 2];
   default fSets '';
   
   cleanupFcn = onCleanup(@cleanUp);
   
-  DS.PersistentSources('load', 'UniPrintAlpha);
+  DS.PersistentSources('load', 'UniPrintAlpha');
   DS.PersistentSources('readonly');
   
   if isempty(sources)
-    sources = {'ritsm74001', 'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01', 'rithp5501'};
+    sources       = { 'ritsm7402a', 'ritsm7402b', 'ritsm7402c', 'rithp7k01',  'rithp5501' }; % 'ritsm74001', 
+    sourceLabels  = { 'L1',         'L2',         'L3',         'X1',         'X2'        };
   end
   
   if isempty(fSets)
-    fSets = {'u2','u3','u4','u'};
+    fSets = {'u', 'u2'}; % {'u2','u3','u4','u'};
   end
   
   allData = PrintUniformityAlpha.InterpData(forced);

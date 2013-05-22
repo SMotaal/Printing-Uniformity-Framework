@@ -33,9 +33,10 @@ function [ mVideoWriter ] = writeVideo( file, frames, frameindex )
   end
      
   if (ismac)
-    tEncodeMOV = timer('Tag', ['EncodeMOV:' mVideoWriter.Filename], ...
-      'StartDelay', 1, 'TimerFcn', {@exportMOV, mVideoWriter});
-    start(tEncodeMOV);
+    exportMOV([], [], mVideoWriter);
+    % tEncodeMOV = timer('Tag', ['EncodeMOV:' mVideoWriter.Filename], ...
+    %   'StartDelay', 1, 'TimerFcn', {@exportMOV, mVideoWriter});
+    % start(tEncodeMOV);
   end
 
 end
@@ -43,7 +44,7 @@ end
 function exportMOV(source, event, mVideoWriter)
   if (ismac)
     avifile = fullfile(mVideoWriter.Path, mVideoWriter.Filename);
-    if (Video.encodeMov(avifile)==0)
+    if (PrintUniformityAlpha.Video.encodeMov(avifile)==0)
       trashpath=fullfile(getenv('HOME'),'.Trash');
       movefile(avifile,[trashpath filesep]);
     end

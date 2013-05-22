@@ -1071,7 +1071,7 @@ if (exportVideo)
 %   
 %   runlog(repmat('\b',1,numel(fstring)));
 
-  mVideoWriter = Video.writeVideo(exporting.file, M);
+  mVideoWriter = PrintUniformityAlpha.Video.writeVideo(exporting.file, M);
   
   runlog([int2str(nSheets) ' sheets / ' int2str(numel(M)) ' frames to ' exporting.name ' ']);
   
@@ -1081,7 +1081,7 @@ if (exportVideo)
   if (ismac)
     stepTimer = tic; runlog([TABS 'Encoding QuickTime Movie ...']);
     avifile = fullfile(mVideoWriter.Path, mVideoWriter.Filename);
-    if (Video.encodeMov(avifile)==0)
+    if (PrintUniformityAlpha.Video.encodeMov(avifile)==0)
       trashpath=fullfile(getenv('HOME'),'.Trash');
       movefile(avifile,[trashpath filesep]);
     end

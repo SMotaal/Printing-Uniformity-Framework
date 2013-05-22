@@ -61,11 +61,11 @@ classdef Surf < GrasppeAlpha.Graphics.PlotComponent % & GrasppeAlpha.Core.Decora
         
     function value = get.AData(obj)
       try debugStamp(obj.ID); catch, debugStamp(); end;
-      value = obj.dataGet('PrintUniformityAlpha.ata');
+      value = obj.dataGet('AData');
     end
     function set.AData(obj, value)
       try debugStamp(obj.ID); catch, debugStamp(); end;
-      obj.dataSet('PrintUniformityAlpha.ata', value);
+      obj.dataSet('AData', value);
     end
     
     function value = get.CData(obj)

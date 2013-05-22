@@ -6,6 +6,9 @@ classdef CaseData < GrasppeAlpha.Data.Models.SimpleDataModel
   end
   
   methods
+    function obj = CaseData(varargin)
+      obj                   = obj@GrasppeAlpha.Data.Models.SimpleDataModel(varargin{:});
+    end    
   end
   
 end

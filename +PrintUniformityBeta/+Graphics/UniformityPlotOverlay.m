@@ -377,7 +377,7 @@ classdef UniformityPlotOverlay < GrasppeAlpha.Core.Component
         setMax      = max(setData(:));
         setRange    = setMax-setMin;
         
-        reflect     = @(x1, x2) [x1, fliplr(x2)];
+        %reflect     = @(x1, x2) [x1, fliplr(x2)];
         lace        = @(x, n) reshape(repmat(x, n, 1), size(x,1), []);
         
         parentAxes  = obj.PlotObject.ParentAxes.Handle;
@@ -394,59 +394,65 @@ classdef UniformityPlotOverlay < GrasppeAlpha.Core.Component
           xOffset       = 0;
           xScale        = 1;
           
-          xSteps        = linspace(min(xExtent), max(xExtent), sheetCount);
-          xInterp       = linspace(min(xExtent), max(xExtent), sheetCount+1);
-          xInterp       = [xInterp(1) lace(xInterp(2:end-1), 3) xInterp(end)];
+          xSteps        = 1:sheetCount;
+          xRect         = [xSteps-1; xSteps-1; xSteps; xSteps; xSteps-1;]/sheetCount;
           
-          xData         = reflect(xInterp, xInterp);
-          
-          xMarker       = [xSteps(1) xSteps(1)];
-          try xMarker   = [xSteps(markerIndex) xSteps(markerIndex)]; end
-               
-          yLength       = zoneArea(2)*2/4; 
+          xData         = zonePosition(1) - xLength/2 - 1 + xRect*(xLength+1);
+
+          yLength       = zoneArea(2)*2/4;
           yExtent       = zonePosition(2) + [0 0] + [-yLength yLength]/2;
           yOffset       = -zoneArea(2)*1.5/4;
           yScale        = 20; %2/8;
           
-          yInterp       = @(y) spline(xSteps, y, xInterp);
-          
-          yFx           = @(y) lace(y/6 * yLength * yScale, 3);
-          yCenter       = min(yExtent) + yLength/2 + yOffset;
+          %yInterp       = spline(xSteps, y, xInterp);
           
           zoneData      = (setData(:,m)   - setMin)';
           meanData      = (sheetMeans(:)  - setMin)';
           
-          yZoneData     = yFx(zoneData);
-          yZoneData     = yZoneData(1:end-1);
-          yZoneData(3:3:end) = 0;
-          yZoneData     = yCenter + reflect(yZoneData, -yZoneData);
+          yRect         = [zoneData*0; zoneData; zoneData; zoneData*0; zoneData*0;]; %reshape([ 0*zoneData; zoneData; zoneData ], 1, []);
           
-          yMeanData     = yFx(meanData);
-          yMeanData     = yMeanData(1:end-1);
+          yData         = zonePosition(2) - yLength - 1 + yRect*yScale;
           
-          yMeanLines    = yMeanData;
-          yMeanLines(3:3:end) = NaN;          
-          
-          yMeanData     = yCenter + reflect(yMeanData, -yMeanData);        
-          yMeanLines    = yCenter + reflect(yMeanLines, -yMeanLines);
+          %
+          %           yInterp       = @(y) spline(xSteps, y, xInterp);
+          %
+          %           yFx           = @(y) lace(y/6 * yLength * yScale, 3);
+          %           yCenter       = min(yExtent) + yLength/2 + yOffset;
+          %
+          %           zoneData      = (setData(:,m)   - setMin)';
+          %           meanData      = (sheetMeans(:)  - setMin)';
+          %
+          %           yZoneData     = yFx(zoneData);
+          %           yZoneData     = yZoneData(1:end-1);
+          %           yZoneData(3:3:end) = 0;
+          %           yZoneData     = yCenter + yZoneData; % reflect(yZoneData, -yZoneData);
+          %
+          %           yMeanData     = yFx(meanData);
+          %           yMeanData     = yMeanData(1:end-1);
+          %
+          %           yMeanLines    = yMeanData;
+          %           yMeanLines(3:3:end) = NaN;
+          %
+          %           yMeanData     = yCenter + yMeanData; % reflect(yMeanData, -yMeanData);
+          %           yMeanLines    = yCenter + yMeanLines; %reflect(yMeanLines, -yMeanLines);
           
           zDataFcn      = @(z) ones(z) * 200;
           zData         = zDataFcn(size(xData));
           
           if zoneArea(1)>7 && zoneArea(2)>7
             
-            %% Sheet Marker
-            try delete(obj.SubPlotMarkers{m}); end
-            
-            hold(parentAxes, 'on');
-            marker  = line( ...
-              xMarker-0.5, yExtent + [1 -1], zDataFcn(2) + 4, parentOpt{:}, ...
-              'Color', [1 0.5 0.5], 'LineWidth', 2, 'LineStyle', '-', ...
-              'Tag', '@Screen', 'Visible', 'on', 'HitTest', 'off');
-            
-            obj.SubPlotMarkers{m} = handle(marker);
-            
-            uistack(obj.SubPlotMarkers{m}, 'top');
+            %             %% Sheet Marker
+            %             try delete(obj.SubPlotMarkers{m}); end
+            %
+            %             hold(parentAxes, 'on');
+            %             marker  = line( ...
+            %               xMarker-0.5, yExtent + [1 -1], zDataFcn(2) + 4, parentOpt{:}, ...
+            %               'Color', [1 0.5 0.5], 'LineWidth', 2, 'LineStyle', '-', ...
+            %               'Tag', '@Screen', 'Visible', 'on', 'HitTest', 'off');
+            %
+            %             obj.SubPlotMarkers{m} = handle(marker);
+            %
+            %             uistack(obj.SubPlotMarkers{m}, 'top');
                         
             %% Zone Data
             %try delete(obj.SubPlotObjects{m, 1}); end
@@ -460,51 +466,51 @@ classdef UniformityPlotOverlay < GrasppeAlpha.Core.Component
             
             hold(parentAxes, 'on');
             subPlot1 = fill3( ...
-              xData-0.5, yZoneData, zData + 1.5, zonePlotFace, parentOpt{:}, ...
+              xData, yData, zData + 1.5, zonePlotFace, parentOpt{:}, ...
               'EdgeAlpha', 0.5', 'EdgeColor', zonePlotEdge, 'LineWidth', 0.125, ...
-              'LineStyle', '-', 'FaceAlpha', 1, 'HitTest', 'off'); % [0.75 0.0 0.0]
+              'LineStyle', '-', 'FaceAlpha', 0.5, 'HitTest', 'off'); % [0.75 0.0 0.0]
             
             obj.SubPlotObjects{m, 1} = handle(subPlot1);
             
             uistack(obj.SubPlotObjects{m, 1}, 'top');
             
-            %% Mean Data Underlay
-            %try delete(obj.SubPlotObjects{m, 3}); end%
+            %             %% Mean Data Underlay
+            %             %try delete(obj.SubPlotObjects{m, 3}); end%
+            %
+            %             hold(parentAxes, 'on');
+            %             subPlot3 = fill3( ...
+            %               xData-0.5, yMeanData, zData + 1.25, meanPlotFace, parentOpt{:}, ...
+            %               'EdgeAlpha', 0.5', 'EdgeColor', meanPlotEdge, 'LineWidth', 0.125, ...
+            %               'LineStyle', 'none', 'FaceAlpha', 0.75, 'HitTest', 'off');
+            %
+            %             obj.SubPlotObjects{m, 3} = handle(subPlot3);
+            %
+            %             uistack(obj.SubPlotObjects{m, 3}, 'top');
             
-            hold(parentAxes, 'on');
-            subPlot3 = fill3( ...
-              xData-0.5, yMeanData, zData + 1.25, meanPlotFace, parentOpt{:}, ...
-              'EdgeAlpha', 0.5', 'EdgeColor', meanPlotEdge, 'LineWidth', 0.125, ...
-              'LineStyle', 'none', 'FaceAlpha', 0.75, 'HitTest', 'off');
+            %             %% Mean Data Overlay
+            %             %try delete(obj.SubPlotObjects{m, 2}); end
+            %
+            %             hold(parentAxes, 'on');
+            %             subPlot2 = line( ...
+            %               xData-0.5, yMeanLines, zData + 2, parentOpt{:}, ...
+            %               'Color', meanPlotLine, 'LineWidth', 0.125, 'LineStyle', '-', 'HitTest', 'off');
+            %
+            %             obj.SubPlotObjects{m, 2} = handle(subPlot2);
+            %
+            %             uistack(obj.SubPlotObjects{m, 2}, 'top');
             
-            obj.SubPlotObjects{m, 3} = handle(subPlot3);  
-            
-            uistack(obj.SubPlotObjects{m, 3}, 'top');
-            
-            %% Mean Data Overlay
-            %try delete(obj.SubPlotObjects{m, 2}); end
-            
-            hold(parentAxes, 'on');
-            subPlot2 = line( ...
-              xData-0.5, yMeanLines, zData + 2, parentOpt{:}, ...
-              'Color', meanPlotLine, 'LineWidth', 0.125, 'LineStyle', '-', 'HitTest', 'off');
-            
-            obj.SubPlotObjects{m, 2} = handle(subPlot2);
-            
-            uistack(obj.SubPlotObjects{m, 2}, 'top');
-            
-            %% Center Line
-            %try delete(obj.SubPlotMarkers{m}); end
-            
-            hold(parentAxes, 'on');
-            centerline  = line( ...
-              xExtent-0.5, [1 1] .* yCenter, zDataFcn(2) + 2.5, parentOpt{:}, ...
-              'color', [0.5 0.5 0.5], 'linewidth', 0.125, 'LineStyle', '-', ...
-              'Visible', 'on', 'HitTest', 'off'); %'Tag', '@Screen', 
-            
-            obj.SubPlotObjects{m, 4} = handle(centerline);
-            
-            uistack(obj.SubPlotObjects{m, 4}, 'top');
+            %             %% Center Line
+            %             %try delete(obj.SubPlotMarkers{m}); end
+            %
+            %             hold(parentAxes, 'on');
+            %             centerline  = line( ...
+            %               xExtent-0.5, [1 1] .* yCenter, zDataFcn(2) + 2.5, parentOpt{:}, ...
+            %               'color', [0.5 0.5 0.5], 'linewidth', 0.125, 'LineStyle', '-', ...
+            %               'Visible', 'on', 'HitTest', 'off'); %'Tag', '@Screen',
+            %
+            %             obj.SubPlotObjects{m, 4} = handle(centerline);
+            %
+            %             uistack(obj.SubPlotObjects{m, 4}, 'top');
             
           else
             plotstr = sprintf('Skipping SubPlot %d: %0.1f x %0.1f', m, zoneArea(1), zoneArea(2));
@@ -526,6 +532,179 @@ classdef UniformityPlotOverlay < GrasppeAlpha.Core.Component
       end
       
     end
+    
+    %     function updateSubPlots(obj)
+    %
+    %       try debugStamp(obj.ID, 3); catch, debugStamp(); end;
+    %
+    %       try
+    %         obj.deleteSubPlots;
+    %
+    %         data        = cell2mat(obj.SubPlotData');
+    %
+    %         markerIndex = obj.MarkerIndex;
+    %         if isempty(markerIndex), markerIndex = 1; end;
+    %
+    %         setData     = data;
+    %         sheetCount  = size(setData, 1); % obj.PlotObject.DataSource.getSheetCount; %size(yvs, 1);
+    %         zoneCount   = size(setData, 2);
+    %
+    %         sheetMeans  = mean(setData,2);
+    %
+    %         setMean     = mean(setData(:));
+    %         setMin      = min(setData(:));
+    %         setMax      = max(setData(:));
+    %         setRange    = setMax-setMin;
+    %
+    %         reflect     = @(x1, x2) [x1, fliplr(x2)];
+    %         lace        = @(x, n) reshape(repmat(x, n, 1), size(x,1), []);
+    %
+    %         parentAxes  = obj.PlotObject.ParentAxes.Handle;
+    %         parentOpt   = {'Parent', parentAxes};
+    %
+    %         for m = 1:zoneCount %numel(obj.LabelObjects)
+    %
+    %           zoneLabel     = obj.LabelObjects{m};
+    %           zoneArea      = obj.LabelAreas(m, :);
+    %           zonePosition  = obj.LabelPositions(m, :);
+    %
+    %           xLength       = zoneArea(1); %max(xExtent)-min(xExtent);
+    %           xExtent       = zonePosition(1) + [0 1] + [-xLength xLength] /2; % [-1 0]
+    %           xOffset       = 0;
+    %           xScale        = 1;
+    %
+    %           xSteps        = linspace(min(xExtent), max(xExtent), sheetCount);
+    %           xInterp       = linspace(min(xExtent), max(xExtent), sheetCount+1);
+    %           xInterp       = [xInterp(1) lace(xInterp(2:end-1), 3) xInterp(end)];
+    %
+    %           xData         = reflect(xInterp, xInterp);
+    %
+    %           xMarker       = [xSteps(1) xSteps(1)];
+    %           try xMarker   = [xSteps(markerIndex) xSteps(markerIndex)]; end
+    %
+    %           yLength       = zoneArea(2)*2/4;
+    %           yExtent       = zonePosition(2) + [0 0] + [-yLength yLength]/2;
+    %           yOffset       = -zoneArea(2)*1.5/4;
+    %           yScale        = 20; %2/8;
+    %
+    %           yInterp       = @(y) spline(xSteps, y, xInterp);
+    %
+    %           yFx           = @(y) lace(y/6 * yLength * yScale, 3);
+    %           yCenter       = min(yExtent) + yLength/2 + yOffset;
+    %
+    %           zoneData      = (setData(:,m)   - setMin)';
+    %           meanData      = (sheetMeans(:)  - setMin)';
+    %
+    %           yZoneData     = yFx(zoneData);
+    %           yZoneData     = yZoneData(1:end-1);
+    %           yZoneData(3:3:end) = 0;
+    %           yZoneData     = yCenter + reflect(yZoneData, -yZoneData);
+    %
+    %           yMeanData     = yFx(meanData);
+    %           yMeanData     = yMeanData(1:end-1);
+    %
+    %           yMeanLines    = yMeanData;
+    %           yMeanLines(3:3:end) = NaN;
+    %
+    %           yMeanData     = yCenter + reflect(yMeanData, -yMeanData);
+    %           yMeanLines    = yCenter + reflect(yMeanLines, -yMeanLines);
+    %
+    %           zDataFcn      = @(z) ones(z) * 200;
+    %           zData         = zDataFcn(size(xData));
+    %
+    %           if zoneArea(1)>7 && zoneArea(2)>7
+    %
+    %             %% Sheet Marker
+    %             try delete(obj.SubPlotMarkers{m}); end
+    %
+    %             hold(parentAxes, 'on');
+    %             marker  = line( ...
+    %               xMarker-0.5, yExtent + [1 -1], zDataFcn(2) + 4, parentOpt{:}, ...
+    %               'Color', [1 0.5 0.5], 'LineWidth', 2, 'LineStyle', '-', ...
+    %               'Tag', '@Screen', 'Visible', 'on', 'HitTest', 'off');
+    %
+    %             obj.SubPlotMarkers{m} = handle(marker);
+    %
+    %             uistack(obj.SubPlotMarkers{m}, 'top');
+    %
+    %             %% Zone Data
+    %             %try delete(obj.SubPlotObjects{m, 1}); end
+    %
+    %             zonePlotEdge = [1 1 1] * 1; %'none'; % [0 0 0]; % [1 0 0];
+    %             zonePlotFace = [1 1 1] * 0.75;
+    %             meanPlotEdge = 'none'; % [1 0 0];
+    %             meanPlotFace = [1 1 1] * 1; %[1 1 1];
+    %             meanPlotLine = [1 1 1] * 0;
+    %
+    %
+    %             hold(parentAxes, 'on');
+    %             subPlot1 = fill3( ...
+    %               xData-0.5, yZoneData, zData + 1.5, zonePlotFace, parentOpt{:}, ...
+    %               'EdgeAlpha', 0.5', 'EdgeColor', zonePlotEdge, 'LineWidth', 0.125, ...
+    %               'LineStyle', '-', 'FaceAlpha', 1, 'HitTest', 'off'); % [0.75 0.0 0.0]
+    %
+    %             obj.SubPlotObjects{m, 1} = handle(subPlot1);
+    %
+    %             uistack(obj.SubPlotObjects{m, 1}, 'top');
+    %
+    %             %% Mean Data Underlay
+    %             %try delete(obj.SubPlotObjects{m, 3}); end%
+    %
+    %             hold(parentAxes, 'on');
+    %             subPlot3 = fill3( ...
+    %               xData-0.5, yMeanData, zData + 1.25, meanPlotFace, parentOpt{:}, ...
+    %               'EdgeAlpha', 0.5', 'EdgeColor', meanPlotEdge, 'LineWidth', 0.125, ...
+    %               'LineStyle', 'none', 'FaceAlpha', 0.75, 'HitTest', 'off');
+    %
+    %             obj.SubPlotObjects{m, 3} = handle(subPlot3);
+    %
+    %             uistack(obj.SubPlotObjects{m, 3}, 'top');
+    %
+    %             %% Mean Data Overlay
+    %             %try delete(obj.SubPlotObjects{m, 2}); end
+    %
+    %             hold(parentAxes, 'on');
+    %             subPlot2 = line( ...
+    %               xData-0.5, yMeanLines, zData + 2, parentOpt{:}, ...
+    %               'Color', meanPlotLine, 'LineWidth', 0.125, 'LineStyle', '-', 'HitTest', 'off');
+    %
+    %             obj.SubPlotObjects{m, 2} = handle(subPlot2);
+    %
+    %             uistack(obj.SubPlotObjects{m, 2}, 'top');
+    %
+    %             %% Center Line
+    %             %try delete(obj.SubPlotMarkers{m}); end
+    %
+    %             hold(parentAxes, 'on');
+    %             centerline  = line( ...
+    %               xExtent-0.5, [1 1] .* yCenter, zDataFcn(2) + 2.5, parentOpt{:}, ...
+    %               'color', [0.5 0.5 0.5], 'linewidth', 0.125, 'LineStyle', '-', ...
+    %               'Visible', 'on', 'HitTest', 'off'); %'Tag', '@Screen',
+    %
+    %             obj.SubPlotObjects{m, 4} = handle(centerline);
+    %
+    %             uistack(obj.SubPlotObjects{m, 4}, 'top');
+    %
+    %           else
+    %             plotstr = sprintf('Skipping SubPlot %d: %0.1f x %0.1f', m, zoneArea(1), zoneArea(2));
+    %             %disp(plotstr);
+    %             debugStamp([obj.ID ':' plotstr], 5);
+    %           end
+    %
+    %           obj.MarkerPositions{m}   = xSteps;
+    %         end
+    %
+    %         plotstr = sprintf('\tSub Plots: %d\tMarkers: %d',numel(obj.SubPlotObjects), numel(obj.SubPlotMarkers));
+    %
+    %         debugStamp([obj.ID ':' plotstr], 4);
+    %
+    %         drawnow expose update;
+    %
+    %       catch err
+    %         debugStamp(err, 3);
+    %       end
+    %
+    %     end
     
     function updateLabels(obj)
       for m = 1:numel(obj.LabelObjects)
@@ -561,4 +740,19 @@ classdef UniformityPlotOverlay < GrasppeAlpha.Core.Component
   
   
 end
+
+
+          %xSteps        = linspace(min(xExtent), max(xExtent), sheetCount);
+          %xInterp       = reshape(repmat(linspace(min(xExtent), max(xExtent), sheetCount+1), 3, 1), 1, []);
+          
+          %xData         = xInterp;
+          
+          %           xInterp       = linspace(min(xExtent), max(xExtent), sheetCount+1);
+          %           xInterp       = [xInterp(1) lace(xInterp(2:end-1), 3) xInterp(end)];
+          %
+          %           xData         = xInterp; % reflect(xInterp, xInterp);
+          %
+          %           xMarker       = [xSteps(1) xSteps(1)];
+          %           try xMarker   = [xSteps(markerIndex) xSteps(markerIndex)]; end
+
 

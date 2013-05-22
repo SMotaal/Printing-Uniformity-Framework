@@ -1,4 +1,4 @@
-function [ caseData ] = getCaseData(obj, caseID) %, parameters)
+function [ caseData ] = getCaseData(obj, caseID, varargin) %, parameters)
   %GetCaseData Load and Get Case Data
   %   Detailed explanation goes here
   

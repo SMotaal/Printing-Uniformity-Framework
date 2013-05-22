@@ -6,6 +6,10 @@ function stats = ProcessSetStatistics( dataSource, dataSet, regions, progressUpd
   
   % import PrintUniformityBeta.Data.DataReader;
   
+  %% SimpleDataModel Compatibility
+  try dataSource            = dataSource.DATA;  end
+  try dataSet               = dataSet.DATA;     end
+  
   localProgress             = ~exist('progressUpdate', 'var');
   
 	stepString                = @(m, n)       sprintf('%d of %d', m, n);

@@ -1,4 +1,4 @@
-function [ setData ] = getSetData(obj, setID) % , newData, parameters, caseData)
+function [ setData ] = getSetData(obj, setID, varargin) % , newData, parameters, caseData)
   %GetSetData Load and Get Set Data
   %   Detailed explanation goes here
 

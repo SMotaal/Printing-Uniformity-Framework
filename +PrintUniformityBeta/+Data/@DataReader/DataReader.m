@@ -52,14 +52,14 @@ classdef DataReader < GrasppeAlpha.Data.Reader
   
   
   methods %(Access=protected)
-    [ caseData                ] = getCaseData     (obj, caseID);
-    [ setData                 ] = getSetData      (obj, setID);
-    [ sheetData               ] = getSheetData    (obj, sheetID);
+    [ caseData                ] = getCaseData     (obj, caseID,   varargin);
+    [ setData                 ] = getSetData      (obj, setID,    varargin);
+    [ sheetData               ] = getSheetData    (obj, sheetID,  varargin);
   end
   
   %% Prototype Methods
   methods
-    function obj = DataReader(varargin)   
+    function obj = DataReader(varargin)
       obj                       = obj@GrasppeAlpha.Data.Reader(varargin{:});
     end
     
@@ -68,10 +68,15 @@ classdef DataReader < GrasppeAlpha.Data.Reader
   methods (Access=protected)
     
     function createComponent(obj)
-      obj.CaseID                = '';
-      obj.SetID                 = [];
-      obj.SheetID               = [];      
+      if isempty(obj.CaseID),   obj.CaseID  = ''; end
+      if isempty(obj.SetID),    obj.SetID   = []; end
+      if isempty(obj.SheetID),  obj.SheetID	= []; end
       obj.createComponent@GrasppeAlpha.Data.Reader;
+      
+      if ~isempty(obj.CaseID)
+        if isempty(obj.SetID),    obj.SetID   = obj.DefaultValue('SetID'); end
+        if isempty(obj.SheetID),  obj.SheetID = obj.DefaultValue('SheetID'); end
+      end
     end
     
     function state = GetNamedState(obj, state)
@@ -91,7 +96,8 @@ classdef DataReader < GrasppeAlpha.Data.Reader
       try obj.Data.CaseData     = obj.getCaseData(caseID); end
       
       if isempty(obj.SetID)
-        obj.setSetID(100);
+        % obj.setSetID(100);
+        try obj.Data.SetData    = []; end
       else
         obj.setSetID(obj.SetID);
       end
@@ -105,7 +111,7 @@ classdef DataReader < GrasppeAlpha.Data.Reader
       try obj.Data.SetData      = obj.getSetData(setID); end
       
       if isempty(obj.SheetID)
-        obj.setSheetID(0);
+        try obj.Data.SheetData  = []; end
       else
         obj.setSheetID(obj.SheetID);
       end
@@ -115,7 +121,7 @@ classdef DataReader < GrasppeAlpha.Data.Reader
     function setSheetID(obj, sheetID)
       obj.Parameters.SheetID    = sheetID;
       
-      obj.SheetData             = [];      
+      obj.SheetData             = [];
       try obj.Data.SheetData    = obj.getSheetData(sheetID); end
       
     end
@@ -130,7 +136,7 @@ classdef DataReader < GrasppeAlpha.Data.Reader
       try if isequal(setID, obj.Parameters.SetID), return; end; end
       obj.setSetID(setID);
     end
-        
+    
     function set.SheetID(obj, sheetID)
       try if isequal(sheetID, obj.Parameters.SheetID), return; end; end
       obj.setSheetID(sheetID);
@@ -145,20 +151,44 @@ classdef DataReader < GrasppeAlpha.Data.Reader
       setID                     = [];
       try setID                 = obj.Parameters.SetID; end
     end
-        
+    
     function sheetID = get.SheetID(obj)
       sheetID                   = [];
       try sheetID               = obj.Parameters.SheetID; end
+    end
+    
+    function caseData = get.CaseData(obj)
+      caseData                  = obj.Data.CaseData;
+    end
+    
+    function setData = get.SetData(obj)
+      setData                   = obj.Data.SetData;
+    end
+    
+    function sheetData = get.SheetData(obj)
+      sheetData                 = obj.Data.SheetData;
+    end
+    
+    function set.CaseData(obj, caseData)
+      obj.Data.CaseData         = caseData;
+    end
+    
+    function set.SetData(obj, setData)
+      obj.Data.SetData          = setData;
+    end
+    
+    function set.SheetData(obj, sheetData)
+      obj.Data.SheetData        = sheetData;
     end
     
   end
   
   %% Getters / Setters Parameters CaseData, SetData, VariableData, SheetData
   methods
-        
+    
     %% CaseName, SetName, VariableName, SheetName
     function caseName = get.CaseName(obj)
-     caseName                   = obj.GetCaseName();
+      caseName                   = obj.GetCaseName();
     end
     
     function setName = get.SetName(obj)
@@ -167,11 +197,11 @@ classdef DataReader < GrasppeAlpha.Data.Reader
     
     function sheetName = get.SheetName(obj)
       sheetName                 = obj.GetSheetName();
-    end    
+    end
     
     function caseName = GetCaseName(obj, caseID)
       try if nargin<2, caseID   = obj.Parameters.CaseID; end; end
-
+      
       pressName                 = '';
       try pressName             = obj.CaseData.metadata.testrun.press.name; end
       
@@ -199,7 +229,6 @@ classdef DataReader < GrasppeAlpha.Data.Reader
       
     end
     
-    
     function setName = GetSetName(obj, setID)
       try if nargin<2, setID    = obj.Parameters.SetID; end; end
       
@@ -209,7 +238,7 @@ classdef DataReader < GrasppeAlpha.Data.Reader
     
     function sheetName  = GetSheetName(obj, sheetID)
       try if nargin<2, sheetID  = obj.Parameters.SheetID; end; end
-        
+      
       sheetName                 = '';
       
       if isequal(sheetID,0)
@@ -219,7 +248,7 @@ classdef DataReader < GrasppeAlpha.Data.Reader
       end
     end
     
-
+    
   end
   
   

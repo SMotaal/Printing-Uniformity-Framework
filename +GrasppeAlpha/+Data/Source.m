@@ -18,7 +18,7 @@ classdef Source  < GrasppeAlpha.Core.Component
   
   methods
     
-    function obj = Source(varargin)      
+    function obj = Source(varargin)
       obj = obj@GrasppeAlpha.Core.Component(varargin{:});
     end
         

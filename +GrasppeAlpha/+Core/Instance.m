@@ -17,6 +17,11 @@ classdef Instance < GrasppeAlpha.Core.Prototype
     function id = get.ID(obj)
       id = obj.InstanceID;
     end
+    
+    function id = char(obj)
+      id = obj.ID;
+    end    
+        
   end
   
   methods (Hidden)

@@ -12,7 +12,7 @@ function [ data SID MID ] = supDataBuffer( source )
   end    
   
   SRC   = upper(source);
-  MID   = [ SRC 'PrintUniformityAlpha. ];
+  MID   = [ SRC 'Alpha'];
   SID   = [ MID 'Data'  ];
   
   if isempty(data)

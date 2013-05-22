@@ -113,7 +113,7 @@ classdef Mediator < GrasppeAlpha.Core.Component % & GrasppeAlpha.Core.Component
       mediationID       = obj.SettingProperty;
       mediationProperty = obj.MediationProperties.(mediationID);
       try
-        if ~isequal(mediationProperty, value)
+        if ~isequal(mediationProperty.Value, value)
           mediationProperty.Value = value;
         end
         if ~isequal(obj.(mediationID), value)

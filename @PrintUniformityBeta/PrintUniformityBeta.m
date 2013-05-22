@@ -6,13 +6,13 @@ classdef PrintUniformityBeta
   end
   
   methods (Static)
-    % exportRegionPlots;
+    exportRegionPlots;
     % demoViewerRegions;
     % demoViewerMultiPlots;
     demoSurfs;
     demoRegions;
-    % tallyRegionStats;
-    % outputRegionStats(tally);
+    tally   = tallyRegionStats;
+    outputRegionStats(tally);
     % tallyRegionStats1;
   end
   

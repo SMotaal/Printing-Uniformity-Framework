@@ -1,4 +1,4 @@
-classdef SimpleDataModel  < GrasppeAlpha.Data.Models.DataModel
+classdef SimpleDataModel < GrasppeAlpha.Data.Models.DataModel
   %RAWDATAMODEL Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -6,56 +6,112 @@ classdef SimpleDataModel  < GrasppeAlpha.Data.Models.DataModel
     DATA = [];
   end
   
+  methods(Hidden)
+    function  preDataGet(obj)   end
+    function  postDataGet(obj)  end
+    function  preDataSet(obj)   end
+    function  postDataSet(obj)  end
+  end
+  
   methods
-    function b = subsref(a,s)
+    function obj = SimpleDataModel(data, varargin)
+      obj                   = obj@GrasppeAlpha.Data.Models.DataModel(varargin{:});
+      try obj.DATA          = data; end
+    end
+    
+    function data = get.DATA(obj)
+      obj.preDataGet();
+      data                  = obj.DATA;
+      obj.postDataGet();
+    end
+    
+    function set.DATA(obj, data)
+      obj.preDataSet();
+      obj.DATA              = data;
+      obj.postDataSet();
+    end
+    
+    function varargout = subsref(a,s)
+      n                     = 1:nargout;
+      if nargout
+        [varargout{n}]      = {};
+      else
+        varargout           = {};
+      end
       try
-        % a(s1,s2,...sn)
-        % B = subsref(A,S)
-        if numel(s)==1 && isequal(s(1).subs, 'DATA')
-          b = a.DATA;
-          %b = subsref@GrasppeAlpha.Data.Models.DataModel(a, s);
-        else
-          b = a.DATA;
-          for m = 1:numel(s)
-            S = s(m);
-            switch S.type
-              case '()'
-                b = b(S.subs{:});
-              case '{}'
-                b = b{S.subs{:}};
-              case '.'
-                b = b.(S.subs);
+        try
+          if nargout % isempty(n) % && numel(dbstack)>0
+            try
+              b             = builtin('subsref', a, s);
+              varargout     = {b};
+            catch err
+              builtin('subsref', a, s);
             end
+          else
+            [varargout{n}]  = builtin('subsref', a, s);
           end
-          %subref(a.DATA, s);
+        catch err
+          v                 = a;
+          vs                = substruct('.','DATA');          
+          while isa(v, 'GrasppeAlpha.Data.Models.SimpleDataModel'), v = builtin('subsref', v, vs); end
+          
+          a                 = v;
+          
+          if nargout % isempty(n)
+            try
+              b             = subsref(a, s); % builtin('subsref', a.DATA, s);
+              varargout     = {b};
+            catch err
+              subsref(a, s); % builtin('subsref', a.DATA, s);
+            end
+          else
+            [varargout{n}]  = subsref(a, s);
+          end
         end
       catch err
-        try debugStamp(err.message, 5); catch, debugStamp(); end;
-        %rethrow(err);
+        switch err.identifier
+          case 'MATLAB:assigningResultsIntoInitializedEmptyLHS'
+            try disp(subsref(a, s)); end
+          case 'MATLAB:nonExistentField'
+            % Ignore
+          otherwise
+            try debugStamp(err.message, 1); catch, debugStamp(); end; rethrow(err);
+        end
       end
     end
     
     function a = subsasgn(a,s,b)
       try
-        % a(s1,...,sn) = b
-        % A = subsasgn(A, S, B)
-        if numel(s)==1 && isequal(s(1).subs, 'DATA')
-          a.DATA = b;
-          return; %subsasgn@GrasppeAlpha.Data.Models.DataModel(a, s, d);
+        try
+          a = builtin('subsasgn', a, s, b);
+        catch err
+          
+          v                 = a;
+          vs                = substruct('.','DATA');
+          while isa(builtin('subsref', v, vs), 'GrasppeAlpha.Data.Models.SimpleDataModel'), v = builtin('subsref', v, vs); end
+          d                 = builtin('subsref', v, vs);
+          
+          if isstruct(d) && isequal(s(1).type, '.') && ischar(s(1).subs) && numel(s)==1
+            d.(s(1).subs)   = b;
+          else
+            d               = subsasgn(d, s, b);
+          end
+          
+          v.DATA            = d;                  % subsasgn(a.DATA, s, b);
         end
-        
-        %if isequal(s(1).type, '()') a.DATA(s(1).subs{:}) = 
-        
-        a.DATA = subsasgn(a.DATA, s, b);
-        
       catch err
-        try debugStamp(err.message, 1); catch, debugStamp(); end;
-        rethrow(err);
+        try debugStamp(err.message, 1); catch, debugStamp(); end; rethrow(err);
       end
     end
     
     function et = isempty(a)
       et = isempty(a.DATA);
+    end
+    
+    function tf = isfield(a, f)
+      tf                    = false;
+      try tf                = builtin('isfield', a, f); end
+      try tf                = tf || isfield(a.DATA, f);    end
     end
     
     function dbl = double(a)
@@ -84,14 +140,27 @@ classdef SimpleDataModel  < GrasppeAlpha.Data.Models.DataModel
       d = obj.DATA;
       c = class(obj);
       m = eval(NS.CLASS);
-      f = fieldnames(d);            
-      s = whos('d');      
       
       cref = '<a href="matlab: open %s">%s</a>';
       dispf(['\n\t' cref '\t' cref ''], c, c, m, m);
-      dispf('\tElements: %d\tFields: %d\tSize: %1.1f KB\n', numel(d), numel(f), s.bytes/2^10);
-      t = evalc('disp(d)');
-      dispf(regexprep(['\t\t' t],'\n','\\n\\t\\t'));
+      
+      n                     = 10;
+      while n>0 && isa(d, 'GrasppeAlpha.Data.Models.SimpleDataModel')
+        try d               = d.DATA; end
+        n                   = n-1;
+      end
+      
+      if isstruct(d)
+        f = fieldnames(d);
+        s = whos('d');
+        dispf('\tElements: %d\tFields: %d\tSize: %1.1f KB\n', numel(d), numel(f), s.bytes/2^10);
+      end
+      
+      disp(d);
+      dispf('\n\b');
+      % t = evalc('disp(d)');
+      
+      % dispf(regexprep(['\t\t' t],'([\n]*)','$1\\t\\t'));
     end
     
   end
@@ -107,4 +176,59 @@ classdef SimpleDataModel  < GrasppeAlpha.Data.Models.DataModel
     end
   end
 end
+
+%     function b = subsref(a,s)
+%       try
+%         % a(s1,s2,...sn)
+%         % B = subsref(A,S)
+%         if numel(s)==1 && isequal(s(1).subs, 'DATA')
+%           b   = builtin('subsref', a, s); %a.DATA;
+%           %b = subsref@GrasppeAlpha.Data.Models.DataModel(a, s);
+%         else
+%           try
+%             b   = builtin('subsref', a, s);
+%           catch err
+%             b   = subsref(a.DATA, s);
+%           end
+%           % b = a.DATA;
+%           % for m = 1:numel(s)
+%           %   S = s(m);
+%           %   switch S.type
+%           %     case '()'
+%           %       b = b(S.subs{:});
+%           %     case '{}'
+%           %       b = b{S.subs{:}};
+%           %     case '.'
+%           %       b = b.(S.subs);
+%           %   end
+%           % end
+%           %subref(a.DATA, s);
+%         end
+%       catch err
+%         try debugStamp(err.message, 5); catch, debugStamp(); end;
+%         rethrow(err);
+%       end
+%     end
+%
+%     function a = subsasgn(a,s,b)
+%       try
+%         % a(s1,...,sn) = b
+%         % A = subsasgn(A, S, B)
+%         if numel(s)==1 && isequal(s(1).subs, 'DATA')
+%           % a.DATA = b; % return; %subsasgn@GrasppeAlpha.Data.Models.DataModel(a, s, d);
+%           a = builtin('subsasgn', a, s, b);
+%         else
+%           try
+%             a = builtin('subsasgn', a, s, b);
+%           catch err
+%             a.DATA = subsasgn(a.DATA, s, b);
+%           end
+%         end
+%
+%       catch err
+%         try debugStamp(err.message, 1); catch, debugStamp(); end;
+%         rethrow(err);
+%       end
+%     end
+
 
