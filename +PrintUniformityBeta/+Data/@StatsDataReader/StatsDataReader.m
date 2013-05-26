@@ -402,7 +402,11 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
           for p = 1:numel(regionIDs)
             if ~isfield(regionStats, regionIDs{p})
               regionEntry       = regionSet.(regionIDs{p});
-              try regionStats.(regionIDs{p})  = regionEntry.Sheet; end
+              if isfield(regionEntry, 'Sheet')
+                regionStats.(regionIDs{p})  = reshape([regionEntry(:).Sheet], numel(regionEntry), []);
+              else
+                regionStats.(regionIDs{p})  = regionEntry;
+              end
             end
           end
         end
@@ -422,7 +426,7 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
         
         % Get Region Stats
         for p = 1:numel(regionIDs)
-          sheetEntries{m}.Stats.(regionIDs{p})  = regionStats.(regionIDs{p})(m);
+          sheetEntries{m}.Stats.(regionIDs{p})  = regionStats.(regionIDs{p})(:, m);
           %if ~isfield(regionStats, regionIDs{p})
           %  regionEntry       = regionSet.(regionIDs{p});
           %  regionStats.(regionIDs{p})  = regionEntry;

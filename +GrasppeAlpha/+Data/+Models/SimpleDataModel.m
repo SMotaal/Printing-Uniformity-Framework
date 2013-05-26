@@ -41,14 +41,15 @@ classdef SimpleDataModel < GrasppeAlpha.Data.Models.DataModel
       try
         try
           if nargout % isempty(n) % && numel(dbstack)>0
-            try
-              b             = builtin('subsref', a, s);
-              varargout     = {b};
-            catch err
-              builtin('subsref', a, s);
-            end
-          else
             [varargout{n}]  = builtin('subsref', a, s);
+            % try
+            %   b             = builtin('subsref', a, s);
+            %   varargout     = {b};
+            % catch err
+            %   builtin('subsref', a, s);
+            % end
+          else
+            varargout       = {builtin('subsref', a, s)};
           end
         catch err
           v                 = a;
@@ -131,9 +132,9 @@ classdef SimpleDataModel < GrasppeAlpha.Data.Models.DataModel
       end
     end
     
-    function sz = size(a)
-      sz = size(a.DATA);
-    end
+    % function sz = size(a)
+    %   sz = size(a.DATA);
+    % end
     
     function display(obj)
       

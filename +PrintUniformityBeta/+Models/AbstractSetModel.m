@@ -39,6 +39,15 @@ classdef AbstractSetModel < containers.Map
       obj                       = obj@containers.Map(options{:});
     end
     
+    function samples = get.Samples(obj)
+      samples                   = obj.values;
+      try samples               = [samples{:}]; end
+    end
+    
+    function sample = Sample(obj, index)
+      sample                    = [obj.values{index}];
+    end
+    
     %     function varargout = subsref(a,s)
     %       n                       = 1:nargout;
     %       try
