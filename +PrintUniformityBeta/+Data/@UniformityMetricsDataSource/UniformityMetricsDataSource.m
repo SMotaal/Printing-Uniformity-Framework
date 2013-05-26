@@ -18,6 +18,7 @@ classdef UniformityMetricsDataSource < PrintUniformityBeta.Data.DataSource
     %       'YLim',       'Y Axes Limits',      'Plot',     'limits',     '';   ...
     %       'ZLim',       'Z Axes Limits',      'Plot',     'limits',     '';   ...
     %       };
+    
   end
   
   properties (AbortSet, SetObservable, GetObservable)
@@ -90,13 +91,13 @@ classdef UniformityMetricsDataSource < PrintUniformityBeta.Data.DataSource
     
     function OnCaseIDChange(obj, varargin)
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
-      disp('CaseID Change');
+      if obj.DebuggingDataEvents, disp('CaseID Change'); end
       obj.OnCaseIDChange@PrintUniformityBeta.Data.DataSource(varargin{:});
     end
     
     function OnSetIDChange(obj, varargin)
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
-      disp('SetID Change');
+      if obj.DebuggingDataEvents, disp('SetID Change'); end
       
       obj.resetStatistics();
       obj.OnSetIDChange@PrintUniformityBeta.Data.DataSource(varargin{:});
@@ -104,7 +105,7 @@ classdef UniformityMetricsDataSource < PrintUniformityBeta.Data.DataSource
     
     function OnVariableIDChange(obj, varargin)
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
-      disp('VariableID Change');
+      if obj.DebuggingDataEvents, disp('VariableID Change'); end
       obj.sheetStatistics       = {};
       obj.OnVariableIDChange@PrintUniformityBeta.Data.DataSource(varargin{:});
     end
@@ -119,7 +120,7 @@ classdef UniformityMetricsDataSource < PrintUniformityBeta.Data.DataSource
         obj.Statistics          = [];
         obj.sheetStatistics     = {};
       else
-        disp('Not Resetting!');
+        if obj.DebuggingDataEvents, disp('Not Resetting!'); end
       end
     end
     

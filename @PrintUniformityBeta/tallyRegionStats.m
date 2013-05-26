@@ -2,6 +2,8 @@
 
 function tally = tallyRegionStats
   
+  t.Process                       = tic;
+  
   cleardebug; cleardebug;
   testing                         = false;
   
@@ -92,14 +94,23 @@ function tally = tallyRegionStats
   
   for m = 1:caseCount
     
+    t.Case                        = tic;
+    
     sourceID                      = caseIDs{m};
     
     caseData                      = [];
     
+    dispf('\t\tTallyCase %d of %d\t SourceID: %s...', m, caseCount, sourceID);
+    
+    
     for n = 1:setCount
+      
+      t.Set                       = tic;
       
       setID                       = setIDs(n);
       roiIDs                      = regionIDs; % {'region', 'around', 'across'};
+      
+      t.SetLoading                = tic;
       
       %% Load data
       if n == 1
@@ -108,8 +119,9 @@ function tally = tallyRegionStats
         dataSources(m).SetID      = setID;
       end
             
-      dispf('\t\tChangeSet: %s\tCaseID: %s\tSetID: %d\tSheetID: %d', ...
-        char(dataSources(m).Reader.State), dataSources(m).CaseID, dataSources(m).SetID, dataSources(m).SheetID);
+      dispf('\t\t\tSetChange %d of %d\t%s\tCaseID: %s\tSetID: %d\tSheetID: %d\tState: %s', ...
+        n, setCount, ...
+        dataSources(m).CaseID, dataSources(m).SetID, dataSources(m).SheetID, char(dataSources(m).Reader.State));
       
       if n==1
         caseData                            = dataSources(m).CaseData.DATA;
@@ -127,12 +139,19 @@ function tally = tallyRegionStats
       end
       
       if isempty(dataSources(m).Statistics) || ~isstruct(dataSources(m).Statistics)
-        disp('Force-Processing Statistics...');
+        dispf('\t\t\t\tForceProcessingStatistics %s %d...', ...
+          dataSources(m).CaseID, dataSources(m).SetID);
         dataSources(m).processStatistics;
       end
       stats                                 = dataSources(m).Statistics;
       
-      tallyMetadata.Sets.Names{m, n}        = [dataSources(m).CaseName ' ' dataSources(m).SetName];
+      
+      setName                               = [dataSources(m).CaseName ' ' dataSources(m).SetName];
+      tallyMetadata.Sets.Names{m, n}        = setName;
+      
+      dispf('\t\t\t\tSetLoading %s completed in %1.1f seconds', setName, toc(t.SetLoading));
+      
+      t.SetStatistics                       = tic;
       
       %% Tally data filter / MASKS
       dataFilter                            = stats.filter;
@@ -218,7 +237,12 @@ function tally = tallyRegionStats
       %% ROI Statistics
       tallyMetadata.Regions.IDs             = unique([tallyMetadata.Regions.IDs roiIDs], 'stable');
       
+      dispf('\t\t\t\tSetStatistics %s completed in %1.1f seconds', setName, toc(t.SetStatistics));
+      
       for roiSet = roiIDs
+        
+      
+        t.SetRegionsStatistics                = tic;
         
         roiID                               = char(roiSet);
         roiCount                            = tallyData(m, n).([roiID 'Count']);
@@ -259,7 +283,7 @@ function tally = tallyRegionStats
           
           roiTally(r).Position              = roiPosition;
             
-          try cell2mat(struct2cell(roiTally(r).Position)), end;
+          % try cell2mat(struct2cell(roiTally(r).Position)), end; % debug display
 
         end
         
@@ -369,6 +393,7 @@ function tally = tallyRegionStats
         
         tallyStats(m, n).(roiID)            = roiTally;
         % tallyStats(m, n).(roiID)            = rmfield(roiTally, {'Sheet', 'Patch'});
+        dispf('\t\t\t\tSetRegionsStatistics %s %s completed in %1.1f seconds', setName, roiID, toc(t.SetRegionsStatistics));
       end
       
       %% Run Directionality
@@ -392,11 +417,15 @@ function tally = tallyRegionStats
       % save(fullfile(outputPath, ['Case-' sourceID '-TV' int2str(setID) '-Masks.mat']), '-struct', 'setTally', 'Masks');
       % save(fullfile(outputPath, ['Case-' sourceID '-TV' int2str(setID) '-Stats.mat']), '-struct', 'setTally', 'Stats');
       
+      t.SetRegionsExport                  = tic;
+      
       setStats                            = tallyStats(m, n);
       statFields                          = fieldnames(setStats);
       for p = 1:numel(statFields)
         save(fullfile(outputPath, [sourceID '-' int2str(setID) '-' statFields{p}  '.mat']), '-struct', 'setStats', statFields{p});
-      end  
+      end
+      
+      dispf('\t\t\t\tSetRegionsExport %s completed in %1.1f seconds', setName, toc(t.SetRegionsExport));
       
       for roiSet = roiIDs
         roiID                             = char(roiSet);
@@ -404,12 +433,17 @@ function tally = tallyRegionStats
         tallyStats(m, n).(roiID)          = rmfield(tallyStats(m, n).(roiID), {'Sheet', 'Patch'});
       end
       
+      dispf('\t\t\tSet %s completed in %1.1f seconds', setName, toc(t.Set));
       
     end
+    
+    t.CaseExport                          = tic;
     
     caseTally                         = struct();
     caseTally.Masks                   = tallyMasks(m);
     save(fullfile(outputPath, [sourceID '-Masks.mat']), '-struct', 'caseTally', 'Masks');
+    
+    dispf('\t\t\tCaseExport %s completed in %1.1f seconds', sourceID, toc(t.CaseExport));
     
     % if ~testing || all(ismember(setIDs,[100, 75, 50, 25, 0]));
     %   caseTally.Data                    = tallyData(m, :);
@@ -420,9 +454,11 @@ function tally = tallyRegionStats
     %   save(fullfile(outputPath, ['Case-' sourceID '-Masks.mat']), '-struct', 'caseTally', 'Masks');
     %   save(fullfile(outputPath, ['Case-' sourceID '-Stats.mat']), '-struct', 'caseTally', 'Stats');
     % end
-    
+    dispf('\t\tCase %s completed in %1.1f seconds', sourceID, toc(t.Case));
       
   end
+  
+  t.TallyExport                         = tic;
   
   for m = 1:numel(tallyMetadata.Regions.IDs)
     roiID                               = char(tallyMetadata.Regions.IDs{m});
@@ -440,7 +476,16 @@ function tally = tallyRegionStats
   end
   
   save(fullfile('Output', ['tallyStats-'  outputSuffix  '.mat']), '-struct', 'tally', 'Metadata', 'Stats', 'Masks'); %, 'tallyStats', 'tallyData', 'tallyMasks');
+  
+  dispf('\tTallyExport completed in %1.1f seconds', toc(t.TallyExport));
+  
+  t.TallyDataExport                     = tic;
+  
   save(fullfile('Output', ['tallyData-'   outputSuffix  '.mat']), '-struct', 'tally', 'Data'); %, 'tallyStats', 'tallyData', 'tallyMasks');
+  
+  dispf('\tTallyDataExport completed in %1.1f seconds', toc(t.TallyDataExport));
+  
+  dispf('\tTallyRegionStats completed in %1.1f seconds', toc(t.Process));
   
 end
 

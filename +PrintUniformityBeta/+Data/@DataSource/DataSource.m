@@ -4,6 +4,9 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
   %   Detailed explanation goes here
   
   properties (Transient, Hidden)
+    %% Debugging
+    DebuggingDataEvents         = false;
+    
     %% HandleComponent
     HandleProperties            = {};
     HandleEvents                = {};
@@ -65,7 +68,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       obj                       = obj@GrasppeAlpha.Data.Source(varargin{:});
       obj                       = obj@PrintUniformityBeta.Data.DataEventHandler();
       
-      disp(obj.State);
+      if obj.DebuggingDataEvents, disp(obj.State); end
       
       obj.attachSelfPropertyListeners('DataEventHandlers', { ...
         'CaseID', 'SetID', 'SheetID', 'VariableID', ...
@@ -77,7 +80,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       obj.State                 = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
       obj.updateState;
       
-      disp(obj.State);
+      if obj.DebuggingDataEvents, disp(obj.State); end
       
       if ~isempty(obj.CaseID), obj.OnCaseIDChange(); end
     end
@@ -121,7 +124,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
         case {'sheetid', 'sheet'}
           name                  = 'SheetID';
           obj.states.GetSheet   = GrasppeAlpha.Core.Enumerations.TaskStates.Starting;
-          disp(value);
+          if obj.DebuggingDataEvents, disp(value); end
         case {'variableid', 'variable'}
           name                  = 'VariableID';
           obj.states.GetVariable  = GrasppeAlpha.Core.Enumerations.TaskStates.Starting;
@@ -156,7 +159,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       obj.states.GetCase        = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.Reader.CaseID         = obj.CaseID;
       obj.setID                 = [];
-      try disp(event); end
+      try if obj.DebuggingDataEvents, disp(event); end; end
       obj.processCaseData();
     end
     
