@@ -39,8 +39,11 @@ classdef Reader < GrasppeAlpha.Core.Component
         for m = 1:numel(parameters)
           property      = parameters{m};
           idx           = find( strcmpi(property, componentOptions), 1, 'last');
-          try obj.(property)            = componentOptions{ idx  + 1}; end
-          try obj.Parameters.(property) = componentOptions{ idx  + 1}; end
+          if isscalar(idx)
+            value       = componentOptions{ idx  + 1};
+            try if ~isequal(obj.(property),             value), obj.(property)            = value; end; end
+            try if ~isequal(obj.Parameters.(property),  value), obj.Parameters.(property) = value; end; end
+          end
         end
       end
       

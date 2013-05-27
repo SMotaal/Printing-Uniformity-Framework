@@ -30,7 +30,7 @@ function [ setData ] = getSetData(obj, setID, caseID, regionMode) %, parameters)
   
   regionSetData             = getRegionSetData(obj, regionKey, setKey);
   
-  setData.Regions.(regionMode)  = regionSetData;
+  setData.Regions.(regionMode)  = regionSetData; % @()obj.RegionSets(regionKey); %
   
   % patchSets.setPatchSet(caseID, setID, setData);
   

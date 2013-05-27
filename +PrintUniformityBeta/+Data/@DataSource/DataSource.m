@@ -7,6 +7,9 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     %% Debugging
     DebuggingDataEvents         = false;
     
+    %% Parameters
+    DelayedUpdate               = true;
+    
     %% HandleComponent
     HandleProperties            = {};
     HandleEvents                = {};
@@ -36,6 +39,8 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     %   'Data',       'PrintUniformityBeta.Models.UniformityData', ...
     %   'Parameters', 'PrintUniformityBeta.Models.DataParameters' ...
     %   )
+    
+    dataReaderClass             = 'PrintUniformityBeta.Data.DataReader';
   end
   
 %   properties (AbortSet, SetObservable, GetObservable)
@@ -133,7 +138,10 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
             'Could not reset parameter timer due to an invalid target.');
       end
       
-      if exist('immediate', 'var') && isequal(immediate, true), obj.(name) = value; return; end
+      if isequal(obj.DelayedUpdate, false) ||  exist('immediate', 'var') && isequal(immediate, true)
+          obj.(name)            = value;    % disp(value);
+        return;
+      end
       
       callback                  = @(src, evt) obj.setParameter(name, value, true);
       
@@ -157,10 +165,13 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
       
       obj.states.GetCase        = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
-      obj.Reader.CaseID         = obj.CaseID;
-      obj.setID                 = [];
-      try if obj.DebuggingDataEvents, disp(event); end; end
-      obj.processCaseData();
+      
+      if ~isequal(obj.Reader.CaseID, obj.CaseID)
+        obj.Reader.CaseID         = obj.CaseID;
+        obj.setID                 = [];
+        try if obj.DebuggingDataEvents, disp(event); end; end
+        obj.processCaseData();
+      end
     end
     
     function OnSetIDChange(obj, source, event)
@@ -168,9 +179,12 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
       
       obj.states.GetSet         = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
-      obj.Reader.SetID          = obj.SetID;
-      obj.sheetID               = [];
-      obj.processSetData();
+      
+      if ~isequal(obj.Reader.SetID, obj.SetID)
+        obj.Reader.SetID          = obj.SetID;
+        obj.sheetID               = [];
+        obj.processSetData();
+      end
     end
     
     function OnSheetIDChange(obj, source, event)
@@ -321,7 +335,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       % if ~isempty(dataSource.VariableID)
       %   options                 = [options,   'VariableID', dataSource.VariableID ]; end
       
-      reader                    = PrintUniformityBeta.Data.DataReader(options{:});
+      reader                    = feval(dataSource.dataReaderClass, options{:}); % PrintUniformityBeta.Data.DataReader
       
       if nargin>0 && isscalar(dataSource) && isa(dataSource, 'GrasppeAlpha.Data.Source')
         dataSource.attachReader(reader);

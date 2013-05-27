@@ -15,7 +15,7 @@ classdef Component < GrasppeAlpha.Core.Instance
   end
   
   properties (Access=protected, Hidden)
-    ComponentOptions
+    ComponentOptions            = {};
   end
   
   methods
@@ -36,8 +36,9 @@ classdef Component < GrasppeAlpha.Core.Instance
     end
     
     function setDefaultComponentOption(obj, key, value)
-      if ~any(strcmpi(obj.ComponentOptions, key))
-        obj.ComponentOptions  = [obj.ComponentOptions, key, value];
+      componentOptions        = obj.ComponentOptions;
+      if ~any(strcmpi(componentOptions, key))
+        obj.ComponentOptions  = [componentOptions, key, value];
       end
     end
     

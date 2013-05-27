@@ -83,8 +83,10 @@ classdef UniformityMetricsDataSource < PrintUniformityBeta.Data.DataSource
     function processCaseData(obj, recursive)
       if ~isequal(obj.caseID, obj.Reader.CaseID) || isempty(obj.CaseData) || isempty(obj.CaseName)
         obj.processCaseData@PrintUniformityBeta.Data.DataSource(false);     % non-recursive
-        obj.processRegionMetrics();
+        try obj.processRegionMetrics(); end
       end
+      
+      if ~isequal(obj.CaseData, obj.Reader.CaseData), obj.CaseData = obj.Reader.CaseData; end
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSetData(); end
     end
@@ -193,13 +195,13 @@ classdef UniformityMetricsDataSource < PrintUniformityBeta.Data.DataSource
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
       if ~isequal(obj.setID, obj.Reader.SetID) || isempty(obj.SetData) || isempty(obj.SetName)
         obj.processSetData@PrintUniformityBeta.Data.DataSource(false);      % non-recursive
-        
         if isequal(obj.PassiveProcessing, false)
-          % obj.Statistics          = [];
           obj.processStatistics;
           drawnow expose update;
         end
       end
+      
+      if ~isequal(obj.SetData, obj.Reader.SetData), obj.CaseData = obj.Reader.SetData; end
       
 %       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSheetData(); end
     end
@@ -209,6 +211,8 @@ classdef UniformityMetricsDataSource < PrintUniformityBeta.Data.DataSource
       % if ~isequal(obj.sheetID, obj.Reader.SheetID) || isempty(obj.SheetData) || isempty(obj.SheetName)
       obj.processSheetData@PrintUniformityBeta.Data.DataSource(false);    % non-recursive
       % end
+      
+      if ~isequal(obj.SheetData, obj.Reader.SheetData), obj.SheetData = obj.Reader.SheetData; end
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processVariableData(); end
     end    

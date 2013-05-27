@@ -72,7 +72,7 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
   end
   
   properties (GetAccess=public, SetAccess=protected, Hidden)
-    sourcePath                  = fullfile('Output', 'UniPrint-Stats-130520');
+    sourcePath                  = fullfile('Output', 'UniPrint-Stats-130526');
     cases                       = [];
     patchSets                   = [];
     sheets                      = [];
@@ -137,19 +137,14 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       %     obj.ComponentOptions        = [obj.ComponentOptions, 'SheetID', 1];
       %   end
       
+      try obj.prepareSource(); end
+      
       obj.setDefaultComponentOption('SetID', 100);
       obj.setDefaultComponentOption('SheetID', 1);
       
       obj.createComponent@PrintUniformityBeta.Data.DataReader;
-      
-      % obj.prepareSource();
     end
     
-    % function state = GetNamedState(obj, state)
-    %   try state   = PrintUniformityBeta.Data.ReaderStates.(state);
-    %     return; end
-    %   state       = obj.GetNamedState@GrasppeAlpha.Data.Reader(state);
-    % end
   end
   
   %% Getters / Setters Parameters CaseID, SetID, VariableID, SheetID
@@ -158,37 +153,10 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
     prepareSource(obj, sourcePath);
     prepareCases(obj);    
     preparePatchSets(obj);
-    
-    function setCaseID(obj, caseID)
-      if isempty(obj.Cases), obj.prepareCases(); end
-      obj.setCaseID@PrintUniformityBeta.Data.DataReader(caseID);
-    end
-    
-    % function setSetID(obj, setID)
-    %   obj.Parameters.SetID      = setID;
-    %
-    %   obj.SetData               = [];
-    %   try obj.Data.SetData      = obj.getSetData(setID); end
-    %
-    %   if isempty(obj.SheetID)
-    %     obj.setSheetID(0);
-    %   else
-    %     obj.setSheetID(obj.SheetID);
-    %   end
-    %
-    % end
-    %
-    % function setSheetID(obj, sheetID)
-    %   obj.Parameters.SheetID    = sheetID;
-    %
-    %   obj.SheetData             = [];
-    %   try obj.Data.SheetData    = obj.getSheetData(sheetID); end
-    %
-    % end
-    
+        
     function set.SourcePath(obj, sourcePath)
       if ~isequal(sourcePath, obj.sourcePath) || isempty(sourcePath)
-        obj.clearSource
+        obj.clearSource;
         obj.prepareSource(sourcePath);
       end
     end
@@ -215,31 +183,31 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
     end
     
     function clearing = clearCaseData(obj)
-      clearing                    = false;
-      clearing                    = clearing || ~isempty(obj.caseData);
+      clearing                    = true;
+      try clearing                = ~isempty(obj.caseData); end
       
-      if ~isempty(obj.caseID), obj.caseID = []; end      
-      if clearing, obj.caseData   = []; end
+      if ~isempty(obj.CaseID), obj.CaseID = []; end      
+      if clearing, obj.Data.CaseData      = []; end
       
       clearing                    = clearing || obj.clearSetData();  
     end
     
     function clearing = clearSetData(obj)
-      clearing                    = false;
-      clearing                    = clearing || ~isempty(obj.setData);
+      clearing                    = true;
+      try clearing                = ~isempty(obj.setData); end
       
-      if ~isempty(obj.setID), obj.setID = []; end
-      if clearing, obj.setData    = []; end
+      if ~isempty(obj.SetID), obj.SetID = []; end
+      if clearing, obj.Data.SetData     = []; end
       
       clearing                    = clearing || obj.clearSheetData();
     end
     
     function clearing = clearSheetData(obj)
-      clearing                    = false;
-      clearing                    = clearing || ~isempty(obj.sheetData);
+      clearing                    = true;
+      try clearing                = ~isempty(obj.sheetData); end
       
-      if ~isempty(obj.sheetID), obj.sheetID = []; end     
-      if clearing, obj.sheetData  = []; end
+      if ~isempty(obj.SheetID), obj.SheetID = []; end     
+      if clearing, obj.Data.SheetData       = []; end
       
     end
         
@@ -369,12 +337,16 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       
       setData                   = obj.Data.SetData; % getSetData();
       
-      updatingSheetSet      = ...
+      updatingSheetSet          = isempty(setData) || ...
+        ~isa(setData, 'PrintUniformityBeta.Models.SetData') || ...
         ~isfield(setData, 'Sheets') || ...
-        ~isa(setData.Sheets, 'PrintUniformityBeta.Models.SheetSetModel') || ...
-        isempty(setData);
+        ~isa(setData.Sheets, 'PrintUniformityBeta.Models.SheetSetModel');
       
       if ~updatingSheetSet, return; end;
+      
+      if isempty(obj.sourceMetadata), obj.prepareSource(); end
+      
+      if isempty(obj.CaseData), return; end;
       
       setID                     = obj.SetID;
       caseID                    = obj.CaseID;
@@ -449,6 +421,8 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       % end
       
       setData.Sheets            = sheetSet;
+      
+      obj.PatchSets(setData.Key)  = setData;
       
       return;
       
@@ -617,6 +591,20 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       regionMode              = obj.regionMode;
     end
     
+    function set.RegionMode(obj, regionMode)
+      if ~isequal(regionMode, obj.regionMode)
+        obj.regionMode        = regionMode;
+        
+        setID                 = obj.SetID;
+        
+        obj.clearSetData(); % obj.Data.SetData      = [];
+        
+        obj.SetID             = setID;   % obj.getSetData();
+      end
+      
+    end
+    
+    
     % function regionID = get.RegionID(obj)
     %   regionID                = obj.regionID;
     % end
@@ -632,6 +620,55 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
     % end
     
     
+  end
+  
+  %% Getters / Setters Parameters CaseID, SetID, VariableID, SheetID
+  methods
+    
+    
+    
+    function setCaseID(obj, caseID)
+      
+      if isempty(obj.Cases), obj.prepareCases(); end
+      % obj.setCaseID@PrintUniformityBeta.Data.DataReader(caseID);
+      
+      obj.Parameters.CaseID     = caseID;
+
+      try obj.Data.CaseData     = obj.getCaseData(caseID); end
+      
+      if isempty(obj.SetID)
+        try obj.Data.SetData    = []; end
+      else
+        obj.setSetID(obj.SetID);
+      end
+      
+    end
+    
+    function setSetID(obj, setID)
+      % obj.setSetID@PrintUniformityBeta.Data.DataReader(setID);
+      
+      obj.Parameters.SetID      = setID;
+      
+      try obj.Data.SetData      = obj.getSetData(setID); end
+      
+      if isempty(obj.SheetID)
+        try obj.Data.SheetData  = []; end
+      else
+        obj.setSheetID(obj.SheetID);
+      end
+      
+    end
+    
+    function setSheetID(obj, sheetID)
+      % obj.setSheetID@PrintUniformityBeta.Data.DataReader(sheetID);
+      obj.Parameters.SheetID    = sheetID;
+      
+      try obj.Data.SheetData    = obj.getSheetData(sheetID); end
+    end
+  end  
+  
+  methods(Hidden)
+    results = testPerformance(obj);
   end
   
   

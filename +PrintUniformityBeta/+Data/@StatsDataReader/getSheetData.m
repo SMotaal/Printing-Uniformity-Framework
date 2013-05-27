@@ -19,6 +19,12 @@ function [ sheetData ] = getSheetData(obj, sheetID) %, newData, parameters, vari
   
   dataMap                       = obj.Sheets;
   
+  if isempty(dataMap) || ~isa(dataMap, 'PrintUniformityBeta.Models.SheetSetModel')
+    try delete(obj.SheetData); end
+    obj.SheetData               = [];
+    return;
+  end
+  
   sheetKey                      = num2str(sheetID, '#%d');
   
   if dataMap.isKey(sheetKey)

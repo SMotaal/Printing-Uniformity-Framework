@@ -2,6 +2,10 @@ classdef DataSourceModel < handle
   %DATASOURCEMODEL PrintUniformity Data Source Struct Model
   %   Detailed explanation goes here
   
+  properties (Transient, Hidden)  
+    indexField              = 'length';
+  end
+  
   properties (Dependent, SetObservable, GetObservable, AbortSet) % AbortSet
     CaseID,       CaseData,     CaseName;
     SetID,        SetData,      SetName;
@@ -19,7 +23,6 @@ classdef DataSourceModel < handle
     setID,        setData,      setName;
     sheetID,      sheetData,    sheetName;
     variableID,   variableData, variableName;
-    
   end
   
   methods
@@ -170,30 +173,30 @@ classdef DataSourceModel < handle
     
     %% SetCount, SheetCount, Rows, Columns, RegionCount, ZoneCount
     %
-    %         obj.SetCount            = obj.caseData.length.Sets;
-    %         obj.SheetCount          = obj.caseData.length.Sheets;
-    %         obj.RowCount            = obj.caseData.length.Rows;
-    %         obj.ColumnCount         = obj.caseData.length.Columns;
+    %         obj.SetCount            = obj.caseData.(obj.indexField).Sets;
+    %         obj.SheetCount          = obj.caseData.(obj.indexField).Sheets;
+    %         obj.RowCount            = obj.caseData.(obj.indexField).Rows;
+    %         obj.ColumnCount         = obj.caseData.(obj.indexField).Columns;
     %
     
     function sets = get.SetCount(obj)
       sets                      = 0;
-      try sets                  = obj.CaseData.length.Sets; end
+      try sets                  = obj.CaseData.(obj.indexField).Sets; end
     end
     
     function sheets = get.SheetCount(obj)
       sheets                    = 0;
-      try sheets                = obj.CaseData.length.Sheets; end
+      try sheets                = obj.CaseData.(obj.indexField).Sheets; end
     end
     
     function rows = get.RowCount(obj)
       rows                      = 0;
-      try rows                  = obj.CaseData.length.Rows; end
+      try rows                  = obj.CaseData.(obj.indexField).Rows; end
     end
     
     function columns = get.ColumnCount(obj)
       columns                   = 0;
-      try columns               = obj.CaseData.length.Columns; end
+      try columns               = obj.CaseData.(obj.indexField).Columns; end
     end
     
   end

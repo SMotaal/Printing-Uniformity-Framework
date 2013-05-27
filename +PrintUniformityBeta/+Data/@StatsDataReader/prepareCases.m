@@ -25,13 +25,52 @@ function prepareCases(obj)
         caseData.Metadata   = caseMetadata; ...
         caseData.Files      = getCaseFiles(caseData.ID, @obj.getSourceFile);
       
+      aroundBandIndex       = [];
+      acrossBandIndex       = [];
+      zoneIndex             = [];
+      
+      try
+        masksFile           = obj.getSourceFile(caseData.Files.Masks.name); %obj.getCaseFile(obj.CaseData.ID, setKey(3:end), regionID); % obj.getSourceFile(
+        dataStruct          = load(masksFile, 'Masks');
+        sourceMasks         = dataStruct.Masks;
+        maskFields          = fieldnames(sourceMasks);
+      end
+      
       regionIDs             = fieldnames(caseData.Files.Stats);
       setKeys               = fieldnames(caseData.Files.Stats.Run);
-      setIDs                = cellfun(@str2num, regexpi(setKeys, '\d+$', 'match', 'once'));
-      
+      setIDs                = cellfun(@str2num, regexpi(setKeys, '\d+$', 'match', 'once'));  
       sheetSequence         = sourceMetadata.Sheets.Index{m}; % caseData{m}.testdata.dimensions.samples.sequence;
       
-      caseData.Index        = struct('Regions', {regionIDs}, 'PatchSets', setIDs, 'Sheets', sheetSequence);
+      try
+        masks               = cell(2,numel(maskFields));
+        
+        for n = 1:numel(maskFields)
+          masks{1, n}       = regionIDs{strcmpi(maskFields{n}, regionIDs)}; % maskID;
+          masks{2, n}       = sourceMasks.(maskFields{n});
+        end
+        
+        masks               = struct(masks{:});
+                
+        try aroundBandIndex = 1:size(masks.Around,1); end
+        try acrossBandIndex = 1:size(masks.Across,1); end
+        try zoneIndex       = 1:size(masks.Zone,1);   end
+        
+        caseData.Masks      = masks;
+      end
+      
+      caseData.Index        = struct( ...
+        'Regions',      {regionIDs}, ...
+        'PatchSets',    setIDs, ...
+        'Sheets',       sheetSequence, ...
+        'Rows',         aroundBandIndex, ...
+        'Columns',      acrossBandIndex, ...
+        'Zones',        zoneIndex);
+      
+      caseData.Length       = caseData.Index;
+      lengthFields          = fieldnames(caseData.Length);
+      for n = 1:numel(lengthFields)
+        caseData.Length.(lengthFields{n}) = numel(caseData.Length.(lengthFields{n}));
+      end
       
       caseEntries{m}        = caseData;
       

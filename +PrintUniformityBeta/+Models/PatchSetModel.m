@@ -91,7 +91,11 @@ classdef PatchSetModel < PrintUniformityBeta.Models.AbstractSetModel
         patchSetKey         = sprintf('%s:%d', caseID, setID); % obj.getPatchSetKey(caseID, setID);
         patchSet            = cell2array(values(obj, {patchSetKey})); %subsref(values(obj, {patchSetKey}),substruct('{}', {1})); %cell2mat(values(obj, {patchSetKey})); %eval(['obj(''' patchSetKey ''')']);
       catch err
-        try debugStamp(err.message, 1); catch, debugStamp(); end; rethrow(err);
+        try
+          if ~isempty(setID) && ~isempty(caseID)
+            try debugStamp(err.message, 1); catch, debugStamp(); end; rethrow(err);
+          end
+        end
       end
       
       %       patchSets             = obj.PatchSets;

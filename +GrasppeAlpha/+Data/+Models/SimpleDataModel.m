@@ -73,10 +73,12 @@ classdef SimpleDataModel < GrasppeAlpha.Data.Models.DataModel
         switch err.identifier
           case 'MATLAB:assigningResultsIntoInitializedEmptyLHS'
             try disp(subsref(a, s)); end
-          case 'MATLAB:nonExistentField'
+          case {'MATLAB:nonExistentField', 'MATLAB:nonStrucReference', ''}
             % Ignore
+            rethrow(err);
           otherwise
-            try debugStamp(err.message, 1); catch, debugStamp(); end; rethrow(err);
+            %try debugStamp(err.message, 1); catch, debugStamp(); end;
+            rethrow(err);
         end
       end
     end

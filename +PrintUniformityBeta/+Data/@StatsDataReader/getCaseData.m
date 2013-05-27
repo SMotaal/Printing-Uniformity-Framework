@@ -1,5 +1,5 @@
 function [ caseData ] = getCaseData(obj, caseID) %, parameters)
-  caseData                  = obj.CaseData;
+  caseData                  = obj.Data.CaseData;
   
   if nargin<2, caseID       = obj.CaseID; end
   if (isempty(caseID) || ~ischar(caseID)), return; end
