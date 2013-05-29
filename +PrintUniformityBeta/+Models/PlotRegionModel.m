@@ -3,16 +3,24 @@ classdef PlotRegionModel < GrasppeAlpha.Data.Models.DataModel
   %   Detailed explanation goes here
   
   properties
-    Position        = evaluateStruct({'X1', []; 'X2', []; 'Y1', []; 'Y2', []});
     Value           = [];
+    Values          = [];
     Data            = [];
+    
     Text            = [];
     Subtext         = [];
-    VariableID      = [];
+    
+    Position        = evaluateStruct({'X1', []; 'X2', []; 'Y1', []; 'Y2', []});    
+    Row             = [];
+    Column          = [];
+    
+    CaseID          = [];
+    SetID           = [];
     SheetID         = [];
     RegionID        = [];
-    SetID           = [];
-    CaseID          = [];
+    VariableID      = [];
+    
+    
     Category        = [];
     Series          = [];
   end

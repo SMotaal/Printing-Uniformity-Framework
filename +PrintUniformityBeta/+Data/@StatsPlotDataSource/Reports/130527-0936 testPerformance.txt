@@ -1,0 +1,147 @@
+PrintUniformityBeta.Data.StatsPlotDataSource()	2013-05-27 9:36 AM
+
+    r.Total: 59.065
+
+	L1:	RITSM7402A
+		SetIDs: [0, 25, 50, 75, 100]
+		RegionIDs: {Sheet, Patch, Region, Across, Around, Zone}
+		Change Case:	L1 (1 of 5)
+			Change Set:	TV0 (1 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV25 (2 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV50 (3 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV75 (4 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV100 (5 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+
+             L1.Set:       6.4898
+                   L1.TV0: Set:         0.24683
+                           Total:       1.1052
+                  L1.TV25: Set:         0.24154
+                           Total:       1.1091
+                  L1.TV50: Set:         0.24113
+                           Total:       1.107
+                  L1.TV75: Set:         0.24152
+                           Total:       1.1254
+                 L1.TV100: Set:         0.25846
+                           Total:       1.1268
+             L1.Total:     12.075
+
+
+	L2:	RITSM7402B
+		SetIDs: [0, 25, 50, 75, 100]
+		RegionIDs: {Sheet, Patch, Region, Across, Around, Zone}
+		Change Case:	L2 (2 of 5)
+			Change Set:	TV0 (1 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV25 (2 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV50 (3 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV75 (4 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV100 (5 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+
+             L2.Set:       6.4623
+                   L2.TV0: Set:         0.24567
+                           Total:       1.1075
+                  L2.TV25: Set:         0.24691
+                           Total:       1.1178
+                  L2.TV50: Set:         0.26602
+                           Total:       1.1351
+                  L2.TV75: Set:         0.24822
+                           Total:       1.1186
+                 L2.TV100: Set:         0.24715
+                           Total:       1.1184
+             L2.Total:     12.069
+
+
+	L3:	RITSM7402C
+		SetIDs: [0, 25, 50, 75, 100]
+		RegionIDs: {Sheet, Patch, Region, Across, Around, Zone}
+		Change Case:	L3 (3 of 5)
+			Change Set:	TV0 (1 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV25 (2 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV50 (3 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV75 (4 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+			Change Set:	TV100 (5 of 5)
+				Change Sheet:	Sheet199 (57 of 57)
+
+             L3.Set:       6.5334
+                   L3.TV0: Set:         0.24769
+                           Total:       1.128
+                  L3.TV25: Set:         0.24846
+                           Total:       1.1317
+                  L3.TV50: Set:         0.24851
+                           Total:       1.1269
+                  L3.TV75: Set:         0.26952
+                           Total:       1.1494
+                 L3.TV100: Set:         0.26917
+                           Total:       1.1537
+             L3.Total:     12.232
+
+
+	X1:	RITHP7K01
+		SetIDs: [0, 25, 50, 75, 100]
+		RegionIDs: {Sheet, Patch, Region, Across, Around, Zone}
+		Change Case:	X1 (4 of 5)
+			Change Set:	TV0 (1 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+			Change Set:	TV25 (2 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+			Change Set:	TV50 (3 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+			Change Set:	TV75 (4 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+			Change Set:	TV100 (5 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+
+             X1.Set:       5.8515
+                   X1.TV0: Set:         0.46827
+                           Total:       1.4043
+                  X1.TV25: Set:         0.21468
+                           Total:       1.0674
+                  X1.TV50: Set:         0.2146
+                           Total:       1.0862
+                  X1.TV75: Set:         0.21531
+                           Total:       1.0724
+                 X1.TV100: Set:         0.23014
+                           Total:       1.0869
+             X1.Total:     11.578
+
+
+	X2:	RITHP5501
+		SetIDs: [0, 25, 50, 75, 100]
+		RegionIDs: {Sheet, Patch, Region, Across, Around, Zone}
+		Change Case:	X2 (5 of 5)
+			Change Set:	TV0 (1 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+			Change Set:	TV25 (2 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+			Change Set:	TV50 (3 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+			Change Set:	TV75 (4 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+			Change Set:	TV100 (5 of 5)
+				Change Sheet:	Sheet200 (56 of 56)
+
+             X2.Set:       5.5817
+                   X2.TV0: Set:         0.23086
+                           Total:       1.0965
+                  X2.TV25: Set:         0.21732
+                           Total:       1.101
+                  X2.TV50: Set:         0.23511
+                           Total:       1.1108
+                  X2.TV75: Set:         0.23219
+                           Total:       1.097
+                 X2.TV100: Set:         0.23234
+                           Total:       1.1122
+             X2.Total:     11.11

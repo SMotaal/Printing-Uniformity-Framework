@@ -24,7 +24,7 @@ function r = testPerformance( obj )
     
     caseData                = obj.Cases(caseID);
     
-    caseName                = ['Case' caseID];
+    caseName                = caseID;
     
     tCase.Set               = tic;
     obj.CaseID              = caseID;
@@ -46,7 +46,7 @@ function r = testPerformance( obj )
       obj.SetID             = setID;
       rSet.Set              = toc(tSet.Set);
       
-      for p = 1:regionModeCount
+      for p = 1 % :regionModeCount
         rMode               = struct();
         tMode               = struct();
         tMode.Total         = tic;        

@@ -1,4 +1,4 @@
-classdef StatsPlotDataSource < PrintUniformityBeta.Data.PlotDataSource %& PrintUniformityBeta.Data.PlotDataSource
+classdef StatsPlotDataSource < PrintUniformityBeta.Data.PlotDataSource & GrasppeAlpha.Occam.Process %& PrintUniformityBeta.Data.PlotDataSource
   %UNIFORMITYPLOTDATASOURCE Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -7,9 +7,14 @@ classdef StatsPlotDataSource < PrintUniformityBeta.Data.PlotDataSource %& PrintU
     % PlotValues                  = [];
     % PlotStrings                 = {};
     PlotRegions                   = PrintUniformityBeta.Models.PlotRegionModel.empty;
+    Tasks                         = struct;
   end
   
   methods
+    
+    %preparePlotRegions(obj);
+    setMetrics                  = getSetMetrics(obj, setData);
+    metrics                     = getRegionMetrics(obj, metricsTable, roiData, roiRows, roiColumns)
     
     function obj = StatsPlotDataSource(varargin)
       % initializer = true; try initializer = ~isequal(evalin('caller', 'initializer'), true); end
@@ -24,16 +29,22 @@ classdef StatsPlotDataSource < PrintUniformityBeta.Data.PlotDataSource %& PrintU
     function processCaseData(obj, recursive)
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
       
+      caseData                  = obj.caseData;
+      
       if ~isequal(obj.caseID, obj.Reader.CaseID) || isempty(obj.CaseData) || isempty(obj.CaseName)
         
         obj.caseID              = obj.Reader.CaseID;          % skip ID change event
         obj.CaseData            = obj.Reader.getCaseData();   % fire Data change event
         obj.CaseName            = obj.Reader.GetCaseTag();    % fire Name change event %obj.Reader.CaseName;
         
-        if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSetData(); end      % obj.processSheetData(obj); obj.processVariableData(obj);
+      else
+        if ~isequal(obj.caseData, obj.Reader.CaseData), obj.CaseData = obj.Reader.CaseData; end      
       end
       
-      if ~isequal(obj.CaseData, obj.Reader.CaseData), obj.CaseData = obj.Reader.CaseData; end      
+      if ~isequal(caseData, obj.caseData)
+        % notify
+        if obj.DebuggingDataProcessing, disp('processCaseData:caseDataChanged'); end
+      end      
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSetData(); end
     end
@@ -41,18 +52,42 @@ classdef StatsPlotDataSource < PrintUniformityBeta.Data.PlotDataSource %& PrintU
     function processSetData(obj, recursive)  
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
       
-      if ~isequal(obj.setID, obj.Reader.SetID) || isempty(obj.SetData) || isempty(obj.SetName)
+      setData                   = obj.setData;
+      
+      if isfield(setData, 'ID') && ~isequal(setData.ID, obj.setID), obj.setData = []; end
+      
+      if ~isequal(obj.setID, obj.Reader.SetID) || isempty(obj.setData) || isempty(obj.setName)
                 
         obj.setID               = obj.Reader.SetID;           % skip ID change event
-        obj.SetData             = obj.Reader.getSetData();    % fire Data change event
+        newData                 = obj.Reader.getSetData();
+        
+        try
+          try delete(obj.Tasks.ProcessMetrics); end
+          try obj.ProcessProgress.Tasks = obj.ProcessProgress.Tasks(isvalid(obj.ProcessProgress.Tasks)); end
+          
+          obj.Tasks.ProcessMetrics = obj.ProcessProgress.addAllocatedTask('Processing Metrics', 100, 14);
+          obj.ProcessProgress.activeTask(obj.Tasks.ProcessMetrics);
+        end
+        
+        newData.Metrics         = obj.getSetMetrics(newData);        % if ~isfield(newData, 'Metrics'),
+        
+        try obj.Tasks.ProcessMetrics.SEAL; end
+        
+        obj.setData             = newData;
+        
         obj.SetName             = obj.Reader.SetName;         % fire Name change event
         
-        if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSheetData(); end
+      else
+        
+        if ~isequal(obj.setData, obj.Reader.SetData), obj.SetData = obj.Reader.SetData; end
+        
       end
       
-      if ~isequal(obj.SetData, obj.Reader.SetData), obj.CaseData = obj.Reader.SetData; end      
-      
-      obj.notify('OverlayPlotsDataChange');
+      if ~isequal(setData, obj.setData)
+        if obj.DebuggingDataProcessing, disp('processSetData:setDataChanged'); end
+        % obj.preparePlotRegions();
+        obj.notify('OverlayPlotsDataChange');
+      end
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSheetData(); end
     end
@@ -60,13 +95,20 @@ classdef StatsPlotDataSource < PrintUniformityBeta.Data.PlotDataSource %& PrintU
     function processSheetData(obj, recursive)
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
       
+      sheetData                   = obj.sheetData;
+      
       if ~isequal(obj.sheetID, obj.Reader.SheetID) || isempty(obj.SheetData) || isempty(obj.SheetName)
         obj.sheetID               = obj.Reader.SheetID;         % skip ID change event
         obj.SheetData             = obj.Reader.getSheetData();  % fire Data change event
         obj.SheetName             = obj.Reader.SheetName;       % fire Name change event
+      else
+      	if ~isequal(obj.sheetData, obj.Reader.SheetData), obj.SheetData = obj.Reader.SheetData; end        
       end
       
-      if ~isequal(obj.SheetData, obj.Reader.SheetData), obj.SheetData = obj.Reader.SheetData; end
+      if ~isequal(sheetData, obj.sheetData)
+        if obj.DebuggingDataProcessing, disp('processSheetData:sheetDataChanged'); end
+        % notify
+      end      
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processVariableData(); end
     end
@@ -78,7 +120,7 @@ classdef StatsPlotDataSource < PrintUniformityBeta.Data.PlotDataSource %& PrintU
       
       % obj.updatePlotData();
       
-      obj.notify('OverlayLabelsDataChange');
+      % obj.notify('OverlayLabelsDataChange');
     end
     
     function processStatistics(obj)

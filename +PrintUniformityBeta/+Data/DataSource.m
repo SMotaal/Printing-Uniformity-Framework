@@ -6,6 +6,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
   properties (Transient, Hidden)
     %% Debugging
     DebuggingDataEvents         = false;
+    DebuggingDataProcessing     = false;
     
     %% Parameters
     DelayedUpdate               = true;
@@ -102,11 +103,11 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     
     %% Threaded Parameters Getters / Setters
     function setCaseID(obj, caseID)
-      obj.setParameter('case', caseID);
+      obj.setParameter('case', caseID, true);
     end
     
     function setSetID(obj, setID)
-      obj.setParameter('set', setID);
+      obj.setParameter('set', setID, true);
     end
     
     function setSheetID(obj, sheetID)
@@ -114,7 +115,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     end
     
     function setVariableID(obj, variableID)
-      obj.setParameter('variable', variableID);
+      obj.setParameter('variable', variableID, true);
     end
     
     function setParameter(obj, name, value, immediate)
@@ -181,8 +182,9 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       obj.states.GetSet         = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       
       if ~isequal(obj.Reader.SetID, obj.SetID)
-        obj.Reader.SetID          = obj.SetID;
-        obj.sheetID               = [];
+        obj.Reader.SetID        = obj.SetID;
+        % obj.Reader.getSetData();
+        obj.sheetID             = [];
         obj.processSetData();
       end
     end
@@ -321,20 +323,22 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
   methods (Static)
     function reader = GetNewReader(dataSource)
       
-      options                   = {}; %  ...
+      options                   = {};
       
-      if ~isempty(dataSource.CaseID)
-        options                 = [options,   'CaseID',     dataSource.CaseID     ]; end
+      try if ~isempty(dataSource.caseID),     options	= [options, 'CaseID',     dataSource.caseID     ]; end; end
+      try if ~isempty(dataSource.setID),      options = [options, 'SetID',      dataSource.setID      ]; end; end
+      try if ~isempty(dataSource.sheetID),    options	= [options, 'SheetID',    dataSource.sheetID    ]; end; end
+      % try if ~isempty(dataSource.variableID), options	= [options, 'VariableID', dataSource.variableID ]; end; end
+
+      initializing              = false;
+      try initializing          = isequal(dataSource.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing); end
       
-      if ~isempty(dataSource.SetID)
-        options                 = [options,   'SetID',      dataSource.SetID      ]; end
-      
-      if ~isempty(dataSource.SheetID)
-        options                 = [options,   'SheetID',    dataSource.SheetID    ]; end
-      
-      % if ~isempty(dataSource.VariableID)
-      %   options                 = [options,   'VariableID', dataSource.VariableID ]; end
-      
+      if initializing
+        componentOptions        = {};
+        try componentOptions    = dataSource.ComponentOptions; end
+        options                 = [options componentOptions];
+      end
+            
       reader                    = feval(dataSource.dataReaderClass, options{:}); % PrintUniformityBeta.Data.DataReader
       
       if nargin>0 && isscalar(dataSource) && isa(dataSource, 'GrasppeAlpha.Data.Source')

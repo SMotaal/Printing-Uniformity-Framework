@@ -1,0 +1,25 @@
+Performance Report:	StatsDataReader	2013-05-28 9:30 AM
+
+x = PrintUniformityBeta.Data.StatsDataReader(); r = x.testPerformance();
+
+	Total: 			22.779	3.9803
+
+	L1:	RITSM7402A
+             	L1.Set:       	4.7953	0.75658
+             	L1.Total:     	4.8033	0.76313
+
+	L2:	RITSM7402B
+             	L2.Set:       	4.8717	0.76925
+             	L2.Total:     	4.8783	0.7759
+
+	L3:	RITSM7402C
+             	L3.Set:       	4.906	0.84013
+             	L3.Total:     	4.9124	0.84664
+
+	X1:	RITHP7K01
+             	X1.Set:       	4.0811	0.79381
+             	X1.Total:     	4.0876	0.80027
+
+	X2:	RITHP5501
+             	X2.Set:       	4.0871	0.78682
+             	X2.Total:     	4.0935	0.79371
