@@ -130,9 +130,10 @@ classdef ProcessProgress < GrasppeAlpha.Core.Prototype
       
       if obj.isResetting;
         try
-          UI.setStatus('', h, []);
+          statusbar(0, '');
+          %UI.setStatus('', h, []);
         catch err
-          UI.setStatus();
+          %UI.setStatus();
         end
         return;
       end
@@ -260,13 +261,17 @@ classdef ProcessProgress < GrasppeAlpha.Core.Prototype
           
         end
         
+        obj.notify('ProgressChange');
+        
         h=obj.Window;
         if ~isscalar(h) || ~ishandle(h), h = 0; end
           
-        try UI.setStatus(s, h, overall);
-        catch err, UI.setStatus(s, 0); end
+        try statusbar(0, s); end
+        %try UI.setStatus(s, h, overall);
+        %catch err, UI.setStatus(s, 0); end
 
       end
+      
     end
   end
   

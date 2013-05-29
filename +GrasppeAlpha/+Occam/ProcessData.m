@@ -73,55 +73,55 @@ classdef ProcessData < handle
       S.Variables   = obj.Variables;
     end
     
-    function display(obj)
-      for m = 1:numel(obj)
-        item = obj(m);
-        
-        %% Type
-        type      = []; % class(item);
-
-        
-        try
-          type = item.Type;
-        end
-        
-        if isempty(type), type = class(item); end
-        
-        typeName  = type;
-        
-        try
-          typeName  = char(regexp(typeName, '(?=.)\w*$', 'match'));
-        end        
-        
-        %% Name
-        name = '';
-        
-        try 
-          name = item.Name;
-        end     
-        
-        if isempty(name), name = ['Unnamed' typeName]; end
-
-        dispf('%s [%s]:', name, type);
-        
-        try
-          disp(structTree(struct('Variables',obj(m).Variables),2,['\t' name]));
-        catch err
-          dispf(['\t' name '.Variables'])
-          disp(obj(m));
-        end        
-        
-        
-        try
-          disp(structTree(struct('Parameters',obj(m).Parameters),2,['\t' name]));
-        catch err
-          dispf(['\t' name '.Parameters'])
-          disp(obj(m));
-        end
-        
-        disp(' ');
-      end
-    end
+    %     function display(obj)
+    %       for m = 1:numel(obj)
+    %         item = obj(m);
+    %
+    %         %% Type
+    %         type      = []; % class(item);
+    %
+    %
+    %         try
+    %           type = item.Type;
+    %         end
+    %
+    %         if isempty(type), type = class(item); end
+    %
+    %         typeName  = type;
+    %
+    %         try
+    %           typeName  = char(regexp(typeName, '(?=.)\w*$', 'match'));
+    %         end
+    %
+    %         %% Name
+    %         name = '';
+    %
+    %         try
+    %           name = item.Name;
+    %         end
+    %
+    %         if isempty(name), name = ['Unnamed' typeName]; end
+    %
+    %         dispf('%s [%s]:', name, type);
+    %
+    %         try
+    %           disp(structTree(struct('Variables',obj(m).Variables),2,['\t' name]));
+    %         catch err
+    %           dispf(['\t' name '.Variables'])
+    %           disp(obj(m));
+    %         end
+    %
+    %
+    %         try
+    %           disp(structTree(struct('Parameters',obj(m).Parameters),2,['\t' name]));
+    %         catch err
+    %           dispf(['\t' name '.Parameters'])
+    %           disp(obj(m));
+    %         end
+    %
+    %         disp(' ');
+    %       end
+    %     end
     
     function obj = reload(obj,S)
       % Method used to assign values from struct to properties

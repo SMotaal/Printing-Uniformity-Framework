@@ -38,6 +38,7 @@ classdef Process < GrasppeAlpha.Occam.ProcessData & GrasppeAlpha.Core.Prototype 
     ExecutionStarted
     StatusChanged
     ParametersChanged
+    ProgrssChanged
   end
   
   %   methods (Abstract)
@@ -151,6 +152,7 @@ classdef Process < GrasppeAlpha.Occam.ProcessData & GrasppeAlpha.Core.Prototype 
         processListener = addlistener(obj, 'ExecutionStarted',  callback);
         processListener = addlistener(obj, 'StatusChanged',     callback);
         processListener = addlistener(obj, 'ParametersChanged', callback);
+        processListener = addlistener(obj, 'ProgressChanged',   callback);
         
         obj.Processes{end+1} = processListener;
       catch err

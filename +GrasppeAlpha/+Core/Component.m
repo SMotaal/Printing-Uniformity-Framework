@@ -37,9 +37,10 @@ classdef Component < GrasppeAlpha.Core.Instance
     
     function setDefaultComponentOption(obj, key, value)
       componentOptions        = obj.ComponentOptions;
-      if ~any(strcmpi(componentOptions, key))
-        obj.ComponentOptions  = [componentOptions, key, value];
-      end
+      
+      if ~iscell(componentOptions), componentOptions =  {}; end
+      
+      obj.ComponentOptions  = [key, value, componentOptions]; % if ~any(strcmpi(componentOptions, key))
     end
     
     function delete(obj)
