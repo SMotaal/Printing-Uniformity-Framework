@@ -103,7 +103,8 @@ classdef HandleComponent < GrasppeAlpha.Core.Component
       showComponent = isempty(obj.IsVisible) || isOn(obj.IsVisible);
       obj.IsVisible = false;
       if ishandle(obj.Handle)
-        try obj.handleSet('UserData', obj); end
+        try setappdata(obj.Handle, 'PrototypeHandle', obj); end
+        %try obj.handleSet('UserData', obj); end
         obj.HandleObject = handle(obj.Handle);
         obj.registerHandle(obj.Handle);
         obj.attachHandleProperties();
@@ -178,7 +179,7 @@ classdef HandleComponent < GrasppeAlpha.Core.Component
       try
         obj.handleSet(propertyName, objectValue);
       catch err
-        try debugStamp(err.message, 1); catch, debugStamp(); end;
+        try debugStamp(err.message, 1, obj); catch, debugStamp(); end;
       end
       
       try

@@ -33,7 +33,7 @@ classdef AbstractSetModel < containers.Map
           options               = varargin;
         end
       catch err
-        debugStamp(err);
+        debugStamp(err, 1);
       end
       
       obj                       = obj@containers.Map(options{:});

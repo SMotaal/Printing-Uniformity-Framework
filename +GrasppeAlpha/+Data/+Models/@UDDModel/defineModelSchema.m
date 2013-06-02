@@ -145,7 +145,7 @@ function propertySchema = defineProperty(classSchema, name, type, description, a
       end
     end
   catch err
-    debugStamp(err, 1);
+    debugStamp(err, 1, obj);
     beep;
   end
 end

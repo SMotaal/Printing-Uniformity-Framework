@@ -5,7 +5,7 @@ classdef ProcessData < handle
   properties
     Type
     Name
-    Parameters
+    ProcessParameters
     Variables = struct;
   end
   
@@ -21,13 +21,13 @@ classdef ProcessData < handle
       % elseif nargin==3
       try obj.Type        = type; end
       try obj.Name        = name; end
-      try obj.Parameters  = parameters; end
+      try obj.ProcessParameters  = parameters; end
       % elseif nargin > 0
       % end
     end
     
     function data = getProcessData(obj)
-      data = GrasppeAlpha.Occam.ProcessData(obj.Type, obj.Name, obj.Parameters);
+      data = GrasppeAlpha.Occam.ProcessData(obj.Type, obj.Name, obj.ProcessParameters);
     end
     
     function S = getDataStruct(obj)
@@ -57,7 +57,7 @@ classdef ProcessData < handle
           name = [typeName int2str(instanceNumber)];
         end
         
-        try S.(name) = item.Parameters; end
+        try S.(name) = item.ProcessParameters; end
         
       end
     end
@@ -69,7 +69,7 @@ classdef ProcessData < handle
       % Return struct for save function to write to MAT-file
       S.Type        = obj.Type;
       S.Name        = obj.Name;
-      S.Parameters  = obj.Parameters;
+      S.ProcessParameters  = obj.ProcessParameters;
       S.Variables   = obj.Variables;
     end
     
@@ -128,7 +128,7 @@ classdef ProcessData < handle
       % Called by loadobj and subclass
       obj.Type        = S.Type;
       obj.Name        = S.Name;
-      obj.Parameters  = S.Parameters;
+      obj.ProcessParameters  = S.ProcessParameters;
       obj.Variables   = S.Variables;
     end
   end

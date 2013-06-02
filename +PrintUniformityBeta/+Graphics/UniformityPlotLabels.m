@@ -479,10 +479,10 @@ classdef UniformityPlotLabels < GrasppeAlpha.Core.Component
         
         debugStamp([obj.ID ':' plotstr], 4);
         
-        drawnow expose update;
+        GrasppeKit.Utilities.DelayedCall(@(s, e)drawnow('update',  'expose'), 0.5,'start');
         
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       
     end

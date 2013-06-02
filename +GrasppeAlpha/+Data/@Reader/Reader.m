@@ -11,6 +11,7 @@ classdef Reader < GrasppeAlpha.Core.Component
   methods
     function obj = Reader(varargin)
       obj = obj@GrasppeAlpha.Core.Component(varargin{:});
+      obj.State                     = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
     end
   end
    

@@ -457,7 +457,7 @@ function symbolCode = metricSymbol(symbolID, symbolCase)
   end
   
   catch err
-    debugStamp(err);
+    debugStamp(err, 1);
   end
 
   

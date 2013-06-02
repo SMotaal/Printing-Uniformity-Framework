@@ -2,6 +2,8 @@ function prepareRegionSets(obj)
   %PREPAREREGIONSETS Summary of this function goes here
   %   Detailed explanation goes here
   
+  % if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end
+  
   if isempty(obj.cases), obj.prepareCases; end
   
   processModes                    = isequal(obj.ProcessRegionModes, true);

@@ -161,7 +161,25 @@ classdef PlotFigure < GrasppeAlpha.Graphics.Figure
       end
     end
     
+    function OnMouseClick(obj, source, event)
+
+      obj.bless;
+      
+      try obj.CurrentObject     = get(obj.Handle, 'CurrentObject'); end
+      
+      switch nargin
+        case 1
+          obj.OnMouseClick@GrasppeAlpha.Graphics.Figure();
+        case 2
+          obj.OnMouseClick@GrasppeAlpha.Graphics.Figure(source);
+        case 3
+          obj.OnMouseClick@GrasppeAlpha.Graphics.Figure(source, event);
+      end
+    end
+
+    
   end
+  
   
   methods
     
@@ -176,7 +194,7 @@ classdef PlotFigure < GrasppeAlpha.Graphics.Figure
       
       if ~event.Consumed
       
-        if commandKey
+        if commandKey && ~shiftKey
           switch event.Data.Key
             case 'w'
               obj.OnClose(source, event);

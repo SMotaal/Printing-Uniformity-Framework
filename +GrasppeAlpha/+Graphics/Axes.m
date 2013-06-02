@@ -245,6 +245,38 @@ classdef Axes < GrasppeAlpha.Graphics.InFigureComponent
   end
   
   methods (Hidden=true)
+    function OnMouseClick(obj, source, event)
+
+      obj.bless;
+      
+      try obj.ParentFigure.CurrentObject = get(obj.ParentFigure.Handle, 'CurrentObject'); end
+      
+      switch nargin
+        case 1
+          obj.ParentFigure.OnMouseClick();
+        case 2
+          obj.ParentFigure.OnMouseClick(source);
+        case 3
+          obj.ParentFigure.OnMouseClick(source, event);
+      end
+    end 
+    
+    function OnMouseDoubleClick(obj, source, event)
+
+      obj.bless;
+      
+      try obj.ParentFigure.CurrentObject = []; end
+      try obj.ParentFigure.CurrentObject = get(obj.ParentFigure.Handle, 'CurrentObject'); end
+      
+      switch nargin
+        case 1
+          obj.ParentFigure.OnMouseClick();
+        case 2
+          obj.ParentFigure.OnMouseClick(source);
+        case 3
+          obj.ParentFigure.OnMouseClick(source, event);
+      end
+    end     
   end
   
   methods (Access=protected)
@@ -256,7 +288,7 @@ classdef Axes < GrasppeAlpha.Graphics.InFigureComponent
     function decorateComponent(obj)
       % GrasppeAlpha.Graphics.Decorators.AxesViewDecorator(obj);
       GrasppeAlpha.Graphics.Decorators.FontDecorator(obj);
-    end
+    end    
     
   end
   
@@ -266,6 +298,8 @@ classdef Axes < GrasppeAlpha.Graphics.InFigureComponent
       GrasppeAlpha.Utilities.DeclareOptions;
     end
   end
+  
+  
   
 %   methods(Abstract, Static, Hidden)
 %     options  = DefaultOptions()

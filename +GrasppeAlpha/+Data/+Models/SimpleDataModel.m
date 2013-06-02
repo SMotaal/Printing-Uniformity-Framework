@@ -20,15 +20,15 @@ classdef SimpleDataModel < GrasppeAlpha.Data.Models.DataModel
     end
     
     function data = get.DATA(obj)
-      obj.preDataGet();
+      % obj.preDataGet();
       data                  = obj.DATA;
-      obj.postDataGet();
+      % obj.postDataGet();
     end
     
     function set.DATA(obj, data)
-      obj.preDataSet();
+      % obj.preDataSet();
       obj.DATA              = data;
-      obj.postDataSet();
+      % obj.postDataSet();
     end
     
     function varargout = subsref(a,s)
@@ -103,7 +103,7 @@ classdef SimpleDataModel < GrasppeAlpha.Data.Models.DataModel
           v.DATA            = d;                  % subsasgn(a.DATA, s, b);
         end
       catch err
-        try debugStamp(err.message, 1); catch, debugStamp(); end; rethrow(err);
+        try debugStamp(err.message, 1, obj); catch, debugStamp(); end; rethrow(err);
       end
     end
     

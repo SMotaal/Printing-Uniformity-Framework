@@ -37,7 +37,7 @@ classdef Process < GrasppeAlpha.Occam.ProcessData & GrasppeAlpha.Core.Prototype 
     ExecutionFailed
     ExecutionStarted
     StatusChanged
-    ParametersChanged
+    ProcessParametersChanged
     ProgrssChanged
   end
   
@@ -73,7 +73,7 @@ classdef Process < GrasppeAlpha.Occam.ProcessData & GrasppeAlpha.Core.Prototype 
     
     function output = Execute(obj, parameters, input)
       
-      try obj.Parameters = parameters; end; %if nargin > 1, try obj.Parameters = parameters; end; end
+      try obj.ProcessParameters = parameters; end; %if nargin > 1, try obj.Parameters = parameters; end; end
       
       if ~exist('input', 'var')
         if (isempty(obj.Input))
@@ -133,8 +133,8 @@ classdef Process < GrasppeAlpha.Occam.ProcessData & GrasppeAlpha.Core.Prototype 
       %try UI.setStatus('', h); end
     end
     
-    function parameters = getParameters(obj)
-      parameters = obj.Parameters;
+    function parameters = getProcessParameters(obj)
+      parameters = obj.ProcessParameters;
     end
     
     function addProcess(obj, process)
@@ -151,7 +151,7 @@ classdef Process < GrasppeAlpha.Occam.ProcessData & GrasppeAlpha.Core.Prototype 
         processListener = addlistener(obj, 'ExecutionFailed',   callback);
         processListener = addlistener(obj, 'ExecutionStarted',  callback);
         processListener = addlistener(obj, 'StatusChanged',     callback);
-        processListener = addlistener(obj, 'ParametersChanged', callback);
+        processListener = addlistener(obj, 'ProcessParametersChanged', callback);
         processListener = addlistener(obj, 'ProgressChanged',   callback);
         
         obj.Processes{end+1} = processListener;
@@ -178,7 +178,6 @@ classdef Process < GrasppeAlpha.Occam.ProcessData & GrasppeAlpha.Core.Prototype 
           otherwise
             string = sprintf('%s: %s@%s', class(obj), data.EventName, class(source));
         end
-        
         
         %UI.setStatus(string, h);
         

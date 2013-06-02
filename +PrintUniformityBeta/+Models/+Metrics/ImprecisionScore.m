@@ -11,6 +11,11 @@ classdef ImprecisionScore < PrintUniformityBeta.Models.Metrics.ScoreModel
     % suffixFunction              = @(m   ) ['%'];
     % shortFormatFunction         = @(m, v) num2str(abs(round(v*100)), ['-%d' m.Suffix]);
   end
+  
+  properties (Hidden)
+    limits                          = [-2 2];
+    unit                            = 'Percentage';    
+  end  
     
   
   methods

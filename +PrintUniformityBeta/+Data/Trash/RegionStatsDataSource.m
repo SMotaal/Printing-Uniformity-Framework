@@ -86,7 +86,7 @@ classdef RegionStatsDataSource < PrintUniformityBeta.Data.UniformityDataSource
         %toc(R);
         
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       
     end
@@ -229,7 +229,7 @@ classdef RegionStatsDataSource < PrintUniformityBeta.Data.UniformityDataSource
             regionStats(n)        = aroundStats(m);
           end
         catch err
-          debugStamp(err, 1);          
+          debugStamp(err, 1, obj);
         end
         
         try
@@ -250,7 +250,7 @@ classdef RegionStatsDataSource < PrintUniformityBeta.Data.UniformityDataSource
             regionStats(n)        = acrossStats(m);
           end
         catch err
-          debugStamp(err, 1);          
+          debugStamp(err, 1, obj);
         end
         
         try
@@ -267,7 +267,7 @@ classdef RegionStatsDataSource < PrintUniformityBeta.Data.UniformityDataSource
           regionMasks(n, :, :)  = xMask;
           regionStats(n)        = sampleStats;
         catch err
-          debugStamp(err, 1);          
+          debugStamp(err, 1, obj);
         end
         
         if size(newData, 2) > columns,  newData(1, :, rows + offsetRange)     = nan; end
@@ -294,17 +294,17 @@ classdef RegionStatsDataSource < PrintUniformityBeta.Data.UniformityDataSource
         try
           obj.SetStats{sheetID}   = regionStats;
         catch err
-          debugStamp(err, 1);
+          debugStamp(err, 1, obj);
         end
         
         try
           obj.SetStrings{sheetID} = regionLabels;
         catch err
-          debugStamp(err, 1);          
+          debugStamp(err, 1, obj);          
         end
         
       catch err
-        try debugStamp(err, 1); catch, debugStamp(); end;
+        debugStamp(err, 1, obj);
         % keyboard;
       end
       
@@ -454,7 +454,7 @@ classdef RegionStatsDataSource < PrintUniformityBeta.Data.UniformityDataSource
       end
       
 %       try obj.PlotLabels.updateLabels; catch err 
-%         try debugStamp(err, 1); catch, debugStamp(); end; end
+%         debugStamp(err, 1, obj); end
       
     end
     
@@ -498,7 +498,7 @@ classdef RegionStatsDataSource < PrintUniformityBeta.Data.UniformityDataSource
           obj.PlotLabels.updateSubPlots;
         end
       catch err
-        try debugStamp(err, 1); catch, debugStamp(); end;
+        debugStamp(err, 1, obj);
       end
       
       %try obj.optimizeSetLimits; end

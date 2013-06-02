@@ -123,7 +123,7 @@ classdef RegionPlotDataSource < PrintUniformityBeta.Data.PlotDataSource
         obj.PlotOverlay.createLabels;
         %try obj.optimizeSetLimits; end
       catch err
-        try debugStamp(err, 1); catch, debugStamp(); end;
+        debugStamp(err, 1, obj);
       end
       
 %       try obj.PlotOverlay.updateLabels; catch err 
@@ -265,7 +265,7 @@ classdef RegionPlotDataSource < PrintUniformityBeta.Data.PlotDataSource
             
           end
         catch err
-          debugStamp(err, 1);
+          debugStamp(err, 1, obj);
           rethrow(err);
         end
       end

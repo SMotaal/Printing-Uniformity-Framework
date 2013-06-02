@@ -2,6 +2,8 @@ function prepareCases(obj)
   %PREPARECASES Populate obj.Cases with CaseSetModel
   %   Detailed explanation goes here
   
+  % if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end
+  
   sourceMetadata            = obj.sourceMetadata;
   
   if isempty(obj.sourceMetadata), obj.prepareSource(); end

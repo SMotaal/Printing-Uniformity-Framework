@@ -24,30 +24,38 @@ classdef MouseEventHandler < GrasppeAlpha.Core.Prototype & GrasppeAlpha.Core.Eve
   
   methods % (Hidden)
     
-    function OnMouseDown(obj, source, event)
-    end
+  function OnMouseDown(obj, source, event)
+    %obj.notify('MouseDown', event);
+    obj.callEventHandlers('MouseEventHandlers', 'MouseDown', source, event);
+  end
 
-    function OnMouseUp(obj, source, event)
-    end
-    
-    function OnMouseMotion(obj, source, event)
-    end
-    
-    function OnMouseWheel(obj, source, event)
-    end
-    
-    
-    function OnMouseClick(obj, source, event)
-    end
-    
-    function OnMouseDoubleClick(obj, source, event)
-    end
-    
-    function OnMousePan(obj, source, event)
-    end
-    
-    function OnMouseScroll(obj, source, event)
-    end
+  function OnMouseUp(obj, source, event)
+    obj.callEventHandlers('MouseEventHandlers', 'MouseUp', source, event);
+  end
+
+  function OnMouseMotion(obj, source, event)
+    obj.callEventHandlers('MouseEventHandlers', 'MouseUp', source, event);
+  end
+
+  function OnMouseWheel(obj, source, event)
+    obj.callEventHandlers('MouseEventHandlers', 'MouseWheel', source, event);
+  end
+
+  function OnMouseClick(obj, source, event)
+    obj.callEventHandlers('MouseEventHandlers', 'MouseClick', source, event);
+  end
+
+  function OnMouseDoubleClick(obj, source, event)
+    obj.callEventHandlers('MouseEventHandlers', 'MouseDoubleClick', source, event);
+  end
+
+  function OnMousePan(obj, source, event)
+    obj.callEventHandlers('MouseEventHandlers', 'MousePan', source, event);
+  end
+
+  function OnMouseScroll(obj, source, event)
+    obj.callEventHandlers('MouseEventHandlers', 'MouseScroll', source, event);
+  end
     
 %     function OnMouse(obj, source, event)
 %     end
@@ -135,7 +143,8 @@ classdef MouseEventHandler < GrasppeAlpha.Core.Prototype & GrasppeAlpha.Core.Eve
         end
       end
       
-      try currentObject = get(lastMouseStateHandle, 'UserData'); end
+      try currentObject = getappdata(lastMouseStateHandle, 'PrototypeHandle'); end
+      %try currentObject = get(, 'UserData'); end
       
       switch lower(type)
         case 'mousedown'
@@ -164,9 +173,9 @@ classdef MouseEventHandler < GrasppeAlpha.Core.Prototype & GrasppeAlpha.Core.Eve
             if isobject(currentObject) && isequal(lastDownXY, lastUpXY)
               selectionType = figureObject.handleGet('SelectionType');
               if isequal(selectionType, 'normal')
-                event.Name = 'MouseClick';
+                try event.Name = 'MouseClick'; end
                 
-                clickFunction = {@GrasppeAlpha.Core.EventHandler.callbackEvent, obj, event.Name, currentObject, event};
+                clickFunction = {@GrasppeAlpha.Core.EventHandler.callbackEvent, obj, 'MouseClick', currentObject, event};
                 
                 if isempty(clickTimer) || ~isvalid(clickTimer)
                   clickTimer = timer('name', 'ClickTimer', 'Period', doubleClickRate, 'StartDelay', doubleClickRate, ...
@@ -180,14 +189,14 @@ classdef MouseEventHandler < GrasppeAlpha.Core.Prototype & GrasppeAlpha.Core.Eve
                 if ~isempty(clickTimer) && isvalid(clickTimer)
                   try stop(clickTimer); end
                 end
-                event.Name = 'MouseDoubleClick';
-                GrasppeAlpha.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+                try event.Name = 'MouseDoubleClick'; end
+                GrasppeAlpha.Core.EventHandler.callbackEvent(obj, event, currentObject, 'MouseDoubleClick');
               end
               
               
             end
           catch err
-            debugStamp(err, 1);
+            debugStamp(err, 1, obj);
           end
           
           
@@ -212,16 +221,16 @@ classdef MouseEventHandler < GrasppeAlpha.Core.Prototype & GrasppeAlpha.Core.Eve
             
             try
               if isobject(currentObject)
-                event.Name = 'MousePan';
-                GrasppeAlpha.Core.EventHandler.callbackEvent(currentObject, event, figureObject, event.Name);
-                GrasppeAlpha.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+                try event.Name = 'MousePan'; end
+                GrasppeAlpha.Core.EventHandler.callbackEvent(currentObject, event, figureObject, 'MousePan');
+                GrasppeAlpha.Core.EventHandler.callbackEvent(obj, event, currentObject, 'MousePan');
               end
             end
           else
             try
               if isobject(currentObject)
-                event.Name = 'MouseMotion';
-                GrasppeAlpha.Core.EventHandler.callbackEvent(obj, event, currentObject, event.Name);
+                try event.Name = 'MouseMotion'; end
+                GrasppeAlpha.Core.EventHandler.callbackEvent(obj, event, currentObject, 'MouseMotion');
               end
             end
           end
@@ -237,28 +246,29 @@ classdef MouseEventHandler < GrasppeAlpha.Core.Prototype & GrasppeAlpha.Core.Eve
             event.Data.Scrolling.Momentum      = lastScrollToc < scrollingThreshold; % && lastScrollToc>1;
             % disp(event);
           catch err
-            debugStamp(err, 1);
+            debugStamp(err, 1, obj);
             disp(event);
             % beep;
           end
-          
           
           hoverObject =[];
           
           h = hittest;
           
           switch get(h, 'Type')
-            case 'axes'
-              children = get(h, 'Children');
-              try hoverObject = get(children(1), 'UserData'); end
-            case {'surface'}
-              try hoverObject = get(h, 'UserData'); end
+            %case 'axes'
+              %children = get(h, 'Children');
+              %try hoverObject = get(children(1), 'UserData'); end
+            %case {'surface'}
+            otherwise
+              try hoverObject = getappdata(h, 'PrototypeHandle'); end
+              %try hoverObject = get(h, 'UserData'); end
           end
           
           try
             if isobject(hoverObject)
-              event.Name = 'MouseScroll';
-              GrasppeAlpha.Core.EventHandler.callbackEvent(obj, event, hoverObject, event.Name);
+              try event.Name = 'MouseScroll'; end
+              GrasppeAlpha.Core.EventHandler.callbackEvent(obj, event, hoverObject, 'MouseScroll');
             end
           end
           

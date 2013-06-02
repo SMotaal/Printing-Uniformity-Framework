@@ -154,7 +154,7 @@ function [mask rect] = rectMask (rows, columns, startRow, endRow, startColumn, e
       
       mask(rect(1):rect(2), rect(3):rect(4)) = 1;
     catch err
-      try debugStamp(err, 1); catch, debugStamp(); end;
+      debugStamp(err, 1);
     end
     
   end

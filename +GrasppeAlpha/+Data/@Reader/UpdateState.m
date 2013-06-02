@@ -31,7 +31,7 @@ function tf = UpdateState(obj, mode, targetState, abortOnFail)
         tf = testState(obj, true);
     end
   catch err
-    debugStamp(err,1);
+    debugStamp(err,1, obj);
   end
   
   if ~tf && exist('abortOnFail', 'var') && isequal(abortOnFail, true)

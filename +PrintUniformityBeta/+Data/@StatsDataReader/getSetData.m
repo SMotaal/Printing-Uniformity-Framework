@@ -2,7 +2,10 @@ function [ setData ] = getSetData(obj, setID, caseID, regionMode) %, parameters)
   
   persistent RegionSetData SourcePath;
   
-  setData                         = obj.SetData;
+  setData                         = [];
+  if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end
+  
+  setData                         = obj.SetData;  
   
   processModes                    = isequal(obj.ProcessRegionModes, true);
   
@@ -27,12 +30,15 @@ function [ setData ] = getSetData(obj, setID, caseID, regionMode) %, parameters)
   end
   
   if ~settingSetData, return; end
-  
+    
   sourcePath                      = obj.SourcePath;
   caseData                        = obj.getCaseData(caseID);
   
   %% PatchSet Data
   patchSets                       = obj.PatchSets;
+  
+  if isempty(patchSets), return; end
+  
   setData                         = patchSets.getPatchSet(caseID, setID);
   setKey                          = num2str(setID, 'TV%d');
   
@@ -74,7 +80,7 @@ function [ setData ] = getSetData(obj, setID, caseID, regionMode) %, parameters)
   %% Clear Sheet Data
   obj.SheetData                   = [];
   
-  obj.updateSheets();
+  obj.updateSheets(setData);
   
   % Get Sheet Data
   if nargout==0
@@ -87,6 +93,8 @@ end
 
 function regionSetData = getRegionSetData(obj, regionKey, setKey)
   
+  version                   = MX.stackRev;
+  
   % setKey                    = num2str(setKey, 'TV%d');
   regionIDs                 = ['Run', 'Sheet', obj.RegionSets(regionKey).RegionIDs];
   
@@ -94,39 +102,62 @@ function regionSetData = getRegionSetData(obj, regionKey, setKey)
   
   try regionSets            = obj.RegionSets(regionKey).Data; end
   
-  regionSetData             = struct();
-  try regionSetData         = regionSets.(setKey); end
+  regionSetData             = [];
   
-  for m = 1:numel(regionIDs)
+  sourceSpace               = regexprep(regexpi(obj.SourcePath, '[\w-]+$', 'match', 'once'), '\W', '');
+  sourceID                  = regexprep([regionKey 'RegionSets' setKey], '\W', '');
+  sourceStruct              = DS.dataSources(sourceID, sourceSpace);
+  try if isequal(version, sourceStruct.Version), regionSetData = sourceStruct.Data; end; end
+  
+  if isempty(regionSetData)
     
-    regionID                = regionIDs{m};
+    regionSetData             = struct();
+    try regionSetData         = regionSets.(setKey); end
     
-    if ~isfield(regionSets, regionID)
+    try
+      obj.Tasks.GetRegions   = obj.ProcessProgress.addAllocatedTask('Processing Regions', 100, numel(regionIDs));
+      TASK                   = obj.Tasks.GetRegions;
+      obj.ProcessProgress.activateTask(TASK);
+    end
+    
+    for m = 1:numel(regionIDs)
       
-      regionsFile           = obj.getCaseFile(obj.CaseData.ID, setKey(3:end), regionID); % obj.getSourceFile(
-      dataStruct            = load(regionsFile, regionID);
-      regionData            = dataStruct.(regionID);
+      regionID                = regionIDs{m};
       
-      if isfield(regionData, 'Position')
+      if ~isfield(regionSets, regionID)
         
-        regionPositions       = {regionData.Position};
-        regionRows            = cell2mat(cellfun(@(x)x.Row, regionPositions, 'UniformOutput', false)');
-        regionColumns         = cell2mat(cellfun(@(x)x.Column, regionPositions, 'UniformOutput', false)');
+        regionsFile           = obj.getCaseFile(obj.CaseData.ID, setKey(3:end), regionID); % obj.getSourceFile(
+        dataStruct            = load(regionsFile, regionID);
+        regionData            = dataStruct.(regionID);
         
-        aroundRange           = unique(regionRows(:,1));
-        acrossRange           = unique(regionColumns(:,1));
-        
-        for n = 1:numel(regionData)
-          regionData(n).Position.Around   = find(regionRows(n,1)    == aroundRange, 1, 'first');
-          regionData(n).Position.Across   = find(regionColumns(n,1) == acrossRange, 1, 'first');
+        if isfield(regionData, 'Position')
+          
+          regionPositions       = {regionData.Position};
+          regionRows            = cell2mat(cellfun(@(x)x.Row, regionPositions, 'UniformOutput', false)');
+          regionColumns         = cell2mat(cellfun(@(x)x.Column, regionPositions, 'UniformOutput', false)');
+          
+          aroundRange           = unique(regionRows(:,1));
+          acrossRange           = unique(regionColumns(:,1));
+          
+          for n = 1:numel(regionData)
+            regionData(n).Position.Around   = find(regionRows(n,1)    == aroundRange, 1, 'first');
+            regionData(n).Position.Across   = find(regionColumns(n,1) == acrossRange, 1, 'first');
+          end
         end
+        
+        regionSetData.(regionID)  = regionData;
+        
       end
       
-      regionSetData.(regionID)  = regionData;
+      try TASK.CHECK(); end                             % CHECK GetSheets n
       
     end
     
+    try DS.dataSources(sourceID, struct('Version', version, 'Data', regionSetData), false, sourceSpace); end
+    
   end
+  
+  try TASK.SEAL(); end                             % CHECK GetSheets n
   
   try regionSetData.Run.Sheet  = regionSetData.Sheet; end
   
@@ -136,4 +167,6 @@ function regionSetData = getRegionSetData(obj, regionKey, setKey)
   regionSet.Data            = regionSets;
   
   obj.RegionSets(regionKey) = regionSet;
+  
+  
 end

@@ -1,4 +1,4 @@
-classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
+classdef StatsDataReader < PrintUniformityBeta.Data.DataReader & GrasppeAlpha.Occam.Process
   %READER Printing Uniformity Data Reader
   %   Detailed explanation goes here
   
@@ -6,6 +6,7 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
     
     ProcessSheetRegions       = false;
     ProcessRegionModes        = false;
+    Tasks                     = struct;
     
     %% HandleComponent
     % HandleProperties = {};
@@ -106,9 +107,9 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       'Analysis.Fields.Unit'          'Unit'
       'Analysis.Fields.Method'        'SumsMethod'
       'Analysis.Fields.Version'       'Version'
-      'Analysis.Fields.Revision'      'Revision'    
-    });
-  
+      'Analysis.Fields.Revision'      'Revision'
+      });
+    
   end
   
   
@@ -122,6 +123,31 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
   methods
     function obj = StatsDataReader(varargin)
       obj                       = obj@PrintUniformityBeta.Data.DataReader(varargin{:});
+      
+      obj.ComponentOptions          = varargin;
+      
+      componentOptions              = ['SheetID', 0, 'CaseID', 'L1', 'SetID', 100, obj.ComponentOptions];
+      
+      obj.State                     = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
+      
+      [defaultNames defaultValues]  = obj.setOptions(obj.Defaults);
+      [initialNames initialValues]  = obj.setOptions(componentOptions{:});
+      
+      names   = unique([defaultNames, initialNames]);
+      if ~isempty(names)
+        options = obj.getOptions(names{:});
+        values  = options(2:2:end);
+      else
+        values  = names;
+      end
+      
+      obj.State                     = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
+      
+      obj.CaseData              = [];
+      obj.SetData               = [];
+      obj.SheetData             = [];
+      try if ~isempty(obj.SetID), obj.getSetData(obj.SetID); return; end; end
+      try if ~isempty(obj.CaseID), obj.getCaseData(obj.CaseID); return; end; end
     end
     
   end
@@ -143,10 +169,19 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       
       try obj.prepareSource(); end
       
-      obj.setDefaultComponentOption('SetID', 100);
-      obj.setDefaultComponentOption('SheetID', 1);
+      % obj.setDefaultComponentOption('SetID', 100);
+      % obj.setDefaultComponentOption('SheetID', 1);
       
-      obj.createComponent@PrintUniformityBeta.Data.DataReader;
+      %obj.createComponent@PrintUniformityBeta.Data.DataReader;
+    end
+    
+    function resetTasks(obj)
+      try delete(obj.Tasks.GetSource  ); end
+      try delete(obj.Tasks.GetCase    ); end
+      try delete(obj.Tasks.GetSet     ); end
+      try delete(obj.Tasks.GetRegions ); end
+      try delete(obj.Tasks.GetSheets  ); end
+      try obj.ProcessProgress.Tasks = obj.ProcessProgress.Tasks(isvalid(obj.ProcessProgress.Tasks)); end
     end
     
   end
@@ -155,9 +190,9 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
   methods
     
     prepareSource(obj, sourcePath);
-    prepareCases(obj);    
+    prepareCases(obj);
     preparePatchSets(obj);
-        
+    
     function set.SourcePath(obj, sourcePath)
       if ~isequal(sourcePath, obj.sourcePath) || isempty(sourcePath)
         obj.clearSource;
@@ -190,10 +225,10 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       clearing                    = true;
       try clearing                = ~isempty(obj.caseData); end
       
-      if ~isempty(obj.CaseID), obj.CaseID = []; end      
+      if ~isempty(obj.CaseID), obj.CaseID = []; end
       if clearing, obj.Data.CaseData      = []; end
       
-      clearing                    = clearing || obj.clearSetData();  
+      clearing                    = clearing || obj.clearSetData();
     end
     
     function clearing = clearSetData(obj)
@@ -210,11 +245,11 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       clearing                    = true;
       try clearing                = ~isempty(obj.sheetData); end
       
-      if ~isempty(obj.SheetID), obj.SheetID = []; end     
+      if ~isempty(obj.SheetID), obj.SheetID = []; end
       if clearing, obj.Data.SheetData       = []; end
       
     end
-        
+    
     function loading = loadSource(obj, sourcePath)
       
       loading                   = false;
@@ -237,114 +272,114 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
     end
     
     prepareRegionSets(obj);
-%       
-%       %% Construct proxy structres for region modes avialble for each case
-%       % 1. Define region modes rules
-%       % 2. Each case: figure out available regions by IDs
-%       % 3. Each case:
-%       
-%       if isempty(obj.cases), obj.prepareCases; end
-%       
-%       regionModeRules           = obj.regionModeRules;
-%       regionModeIDs             = regionModeRules(:,1);
-%       regionModeConstraints     = regionModeRules(:,2);
-%       regionModeNames           = regionModeRules(:,3);
-%       regionModeCount           = numel(regionModeIDs);
-%       
-%       cases                     = obj.cases;      
-%       caseIDs                   = cases.keys;
-%       caseCount                 = cases.length;
-%       
-%       %regionEntries             = cell(1, regionModeCount);
-%       
-%       regionStruct              = struct();
-%       regionNames               = {}; % cell(1, regionModeCount*caseCount);
-%       regionEntries             = {}; % cell(1, regionModeCount*caseCount);
-%       
-%       for m = 1:caseCount
-%         caseID                  = caseIDs{m};
-%         caseData                = cases(caseID);
-%         caseFiles               = caseData.Files;
-%         caseMasksFile           = caseFiles.Masks;
-%         caseStatsFiles          = caseFiles.Stats;
-%         caseRegionFields        = fieldnames(caseStatsFiles);
-%         
-%         caseRegionIDs           = caseData.Index.Regions;
-%         
-%         caseRegionModes         = {};
-%         caseRegionModeRegionIDs = {};
-%         caseRegionModeNames     = {};
-%         
-%         for n = 1:regionModeCount
-%           if stropt(regionModeRules{n,2}, caseRegionIDs)
-%             caseRegionModes         = [caseRegionModes regionModeRules{n,1}];
-%             caseRegionModeRegionIDs = [caseRegionModeRegionIDs {regionModeRules{n,2}}];
-%             caseRegionModeNames     = [caseRegionModeNames regionModeRules{n,3}];
-%           end
-%         end
-%         
-%         for n = 1:numel(caseRegionModes)
-%           regionMode            = caseRegionModes{n};
-%           regionIDs             = caseRegionModeRegionIDs{n};
-%           regionModeName        = caseRegionModeNames{n};
-%           
-%           entry                 = struct();
-%           
-%           entry.RegionMode      = regionMode;
-%           entry.RegionName      = regionModeName;
-%           entry.CaseID          = caseID;
-%           entry.Key             = [caseID ':' regionMode];
-%           entry.RegionIDs       = regionIDs;
-%           
-%           entry.Files           = struct(...
-%             'CaseID',   caseID,           'RegionMode',  regionMode, ...
-%             'Path',     caseFiles.Path,   'Masks',  caseMasksFile, ...
-%             'Stats',    rmfield(caseStatsFiles, setdiff(caseRegionFields, regionIDs)));
-%           
-%           regionStruct.(regionMode).(caseID) = entry;
-%           regionNames           = [regionNames, entry.Key];
-%           regionEntries         = [regionEntries, entry];
-%           
-%         end
-%         
-%       end
-%       
-%       regionSets                = PrintUniformityBeta.Models.RegionSetModel(regionStruct); % regionNames, regionEntries);
-%       
-%       obj.regionSets            = regionSets;
-%       
-%         % regionIDs                 = {};
-%         %
-%         % for m = 1:numel(obj.cases.values)
-%         %   caseData                = obj.cases{m};
-%         %   caseRegionIDs           = caseData.Index.RegionIDs;
-%         %   regionIDs               = unqiue(regionIDs, caseRegionIDs, 'stable');
-%         % end
-%         %
-%         % regionIDs                 = setdiff(unique(['Sheet'; regionIDs], 'Stable'), 'Run', 'Stable');
-%         %
-%         % %% Update source metadata (transient)
-%         % if ~isfield(obj.SourceMetadata, 'RegionIDs') || ~isequal(regionIDs, obj.SourceMetadata.RegionIDs)
-%         %   obj.SourceMetadata.RegionIDs  = regionIDs;
-%         % end
-%         %
-%         % obj.regionIDs             = regionIDs; %unqiue([regionIDs, {'Sheet'}], 'stable');
-% 
-%     end
+    %
+    %       %% Construct proxy structres for region modes avialble for each case
+    %       % 1. Define region modes rules
+    %       % 2. Each case: figure out available regions by IDs
+    %       % 3. Each case:
+    %
+    %       if isempty(obj.cases), obj.prepareCases; end
+    %
+    %       regionModeRules           = obj.regionModeRules;
+    %       regionModeIDs             = regionModeRules(:,1);
+    %       regionModeConstraints     = regionModeRules(:,2);
+    %       regionModeNames           = regionModeRules(:,3);
+    %       regionModeCount           = numel(regionModeIDs);
+    %
+    %       cases                     = obj.cases;
+    %       caseIDs                   = cases.keys;
+    %       caseCount                 = cases.length;
+    %
+    %       %regionEntries             = cell(1, regionModeCount);
+    %
+    %       regionStruct              = struct();
+    %       regionNames               = {}; % cell(1, regionModeCount*caseCount);
+    %       regionEntries             = {}; % cell(1, regionModeCount*caseCount);
+    %
+    %       for m = 1:caseCount
+    %         caseID                  = caseIDs{m};
+    %         caseData                = cases(caseID);
+    %         caseFiles               = caseData.Files;
+    %         caseMasksFile           = caseFiles.Masks;
+    %         caseStatsFiles          = caseFiles.Stats;
+    %         caseRegionFields        = fieldnames(caseStatsFiles);
+    %
+    %         caseRegionIDs           = caseData.Index.Regions;
+    %
+    %         caseRegionModes         = {};
+    %         caseRegionModeRegionIDs = {};
+    %         caseRegionModeNames     = {};
+    %
+    %         for n = 1:regionModeCount
+    %           if stropt(regionModeRules{n,2}, caseRegionIDs)
+    %             caseRegionModes         = [caseRegionModes regionModeRules{n,1}];
+    %             caseRegionModeRegionIDs = [caseRegionModeRegionIDs {regionModeRules{n,2}}];
+    %             caseRegionModeNames     = [caseRegionModeNames regionModeRules{n,3}];
+    %           end
+    %         end
+    %
+    %         for n = 1:numel(caseRegionModes)
+    %           regionMode            = caseRegionModes{n};
+    %           regionIDs             = caseRegionModeRegionIDs{n};
+    %           regionModeName        = caseRegionModeNames{n};
+    %
+    %           entry                 = struct();
+    %
+    %           entry.RegionMode      = regionMode;
+    %           entry.RegionName      = regionModeName;
+    %           entry.CaseID          = caseID;
+    %           entry.Key             = [caseID ':' regionMode];
+    %           entry.RegionIDs       = regionIDs;
+    %
+    %           entry.Files           = struct(...
+    %             'CaseID',   caseID,           'RegionMode',  regionMode, ...
+    %             'Path',     caseFiles.Path,   'Masks',  caseMasksFile, ...
+    %             'Stats',    rmfield(caseStatsFiles, setdiff(caseRegionFields, regionIDs)));
+    %
+    %           regionStruct.(regionMode).(caseID) = entry;
+    %           regionNames           = [regionNames, entry.Key];
+    %           regionEntries         = [regionEntries, entry];
+    %
+    %         end
+    %
+    %       end
+    %
+    %       regionSets                = PrintUniformityBeta.Models.RegionSetModel(regionStruct); % regionNames, regionEntries);
+    %
+    %       obj.regionSets            = regionSets;
+    %
+    %         % regionIDs                 = {};
+    %         %
+    %         % for m = 1:numel(obj.cases.values)
+    %         %   caseData                = obj.cases{m};
+    %         %   caseRegionIDs           = caseData.Index.RegionIDs;
+    %         %   regionIDs               = unqiue(regionIDs, caseRegionIDs, 'stable');
+    %         % end
+    %         %
+    %         % regionIDs                 = setdiff(unique(['Sheet'; regionIDs], 'Stable'), 'Run', 'Stable');
+    %         %
+    %         % %% Update source metadata (transient)
+    %         % if ~isfield(obj.SourceMetadata, 'RegionIDs') || ~isequal(regionIDs, obj.SourceMetadata.RegionIDs)
+    %         %   obj.SourceMetadata.RegionIDs  = regionIDs;
+    %         % end
+    %         %
+    %         % obj.regionIDs             = regionIDs; %unqiue([regionIDs, {'Sheet'}], 'stable');
+    %
+    %     end
     
-    function updateSheets(obj)
+    function updateSheets(obj, setData)
       %% Adding Sheets to SetData Struct
       
       % updatingSetData           = isstruct(obj.SetData)
       
       processModes                    = isequal(obj.ProcessRegionModes, true);
-      setData                         = obj.Data.SetData; % getSetData();      
+      % setData                         = obj.getSetData(); % Data.SetData; % getSetData();
       
       updatingSheetSet                = true;
-      updatingSheetSet                = isempty(setData) || ...
-        ~isa(setData, 'PrintUniformityBeta.Models.SetData') || ...
-        ~isfield(setData, 'Sheets') || ...
-        ~isa(setData.Sheets, 'PrintUniformityBeta.Models.SheetSetModel');
+      try updatingSheetSet            = ~isa(setData.Sheets, 'PrintUniformityBeta.Models.SheetSetModel'); end
+      % isempty(setData) || ...
+      % ~isa(setData, 'PrintUniformityBeta.Models.SetData') || ...
+      % ~isfield(setData, 'Sheets') || ...
       
       if ~updatingSheetSet, return; end;
       
@@ -352,33 +387,47 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       
       if isempty(obj.CaseData), return; end;
       
-      setID                           = obj.SetID;
+      try
+        obj.Tasks.GetSheets    = obj.ProcessProgress.addAllocatedTask('Processing Sheets', 100, 7);
+        TASK                   = obj.Tasks.GetSheets;
+        obj.ProcessProgress.activateTask(TASK);
+      end
+      
+      setID                           = setData.ID;
       caseID                          = obj.CaseID;
+      
+      assert(isequal(setData.CaseID, caseID), 'Grasppe:UpdateSheet:CaseMismatch', ...
+        'Failed to update sheets due to Case ID mismatch, expected %s but found %s.', ...
+        setData.CaseID, caseID);
+      
+      caseData                        = obj.Data.CaseData; % getCaseData();
       
       sheetIDs                        = [];
       sheetEntries                    = {};
       
-      sheetsFile                      = obj.getCaseFile(obj.CaseData.ID, setID, 'Sheet'); % obj.getSourceFile(
+      sheetsFile                      = obj.getCaseFile(caseData.ID, setID, 'Sheet'); % obj.getSourceFile(
       dataStruct                      = load(sheetsFile, 'Sheet');
       sheetsStats                     = dataStruct.Sheet;
+      
+      try TASK.CHECK(); end                             % CHECK GetSheets 1
       
       sheetIDs                        = 1:numel(sheetsStats);
       sheetEntries                    = cell(size(sheetIDs));
       
-      caseData                        = obj.Data.CaseData; % getCaseData();
+      try TASK.CHECK(); end                             % CHECK GetSheets 2
       
       if isequal(obj.ProcessSheetRegions, true)
         regionStats                   = struct();
-
+        
         if isfield(setData, 'Regions')
           if processModes % ~isfield(setData.Regions, 'Modes');
             regionModes               = fieldnames(setData.Regions);
           else
             regionModes               = {'Full'};
           end
-
+          
           for n = 1:numel(regionModes)
-            if processModes, 
+            if processModes,
               regionSet               = setData.Regions.(regionModes{n});
             else
               regionSet               = setData.Regions;
@@ -396,19 +445,22 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
               end
             end
           end
-
+          
         end
-
+        
         regionIDs                     = fieldnames(regionStats);
       end
+      
+      try TASK.CHECK(); end                             % CHECK GetSheets 3
+      
       
       for m = sheetIDs
         sheetEntries{m}.ID            = m;
         sheetEntries{m}.Sequence      = caseData.Index.Sheets(m);
-        sheetEntries{m}.Name          = num2str(sheetEntries{m}.Sequence, '#%d');    
+        sheetEntries{m}.Name          = num2str(sheetEntries{m}.Sequence, '#%d');
         sheetEntries{m}.SetID         = setID;
         sheetEntries{m}.CaseID        = caseID;
-        % sheetEntries{m}.RegionID  = 'Sheet';        
+        % sheetEntries{m}.RegionID  = 'Sheet';
         sheetEntries{m}.Stats.Sheet   = sheetsStats(m);
         
         % Get Region Stats
@@ -422,7 +474,9 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
           end
         end
         % sheetEntries{m}.Regions   = struct();
-      end      
+      end
+      
+      try TASK.CHECK(); end                             % CHECK GetSheets 4
       
       if isempty(sheetIDs)
         sheetSet                = PrintUniformityBeta.Models.SheetSetModel();
@@ -430,16 +484,26 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
         sheetSet                = PrintUniformityBeta.Models.SheetSetModel(sheetIDs, sheetEntries);
       end
       
-      try delete(obj.sheets);   end;
+      try TASK.CHECK(); end                             % CHECK GetSheets 5
+      
+      % try delete(obj.sheets);   end;
       try obj.sheets            = sheetSet; end
-
+      
       % if isfield(setData, 'Sheets') && isobject(setData.Sheets)
       try delete(setData.Sheets);   end
       % end
       
+      try TASK.CHECK(); end                             % CHECK GetSheets 6
+      
       setData.Sheets            = sheetSet;
       
-      obj.PatchSets(setData.Key)  = setData;
+      % obj.PatchSets(setData.Key)  = setData;
+      
+      try TASK.CHECK(); end                             % CHECK GetSheets 7
+      
+      TASK.SEAL();
+      
+      try obj.resetTasks(); end
       
       return;
       
@@ -517,7 +581,7 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
         try if ~isempty(regionID),  sourceFile  = [sourceFile, '-', regionID]; end; end
         
         sourceFile              = obj.getSourceFile(sourceFile);
-      end      
+      end
     end
     
     function sourceFile = getSourceFile(obj, filename)
@@ -542,8 +606,8 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
           try runCode               = sprintf('#%s', char(regexpi(runCode, '[0-9]{2}[a-z]?$', 'match'))); end
           
           caseName                  = '';
-          try 
-            caseName                = strtrim([pressName ' ' runCode]); 
+          try
+            caseName                = strtrim([pressName ' ' runCode]);
             obj.CaseData.Name       = caseName;
           end
         else
@@ -568,6 +632,7 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
     end
     
     function sheetName  = GetSheetName(obj, sheetID)
+      sheetID                   = [];
       try if nargin<2, sheetID  = obj.Parameters.SheetID; end; end
       
       sheetName                 = '';
@@ -650,7 +715,7 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       % obj.setCaseID@PrintUniformityBeta.Data.DataReader(caseID);
       
       obj.Parameters.CaseID     = caseID;
-
+      
       try obj.Data.CaseData     = obj.getCaseData(caseID); end
       
       if isempty(obj.SetID)
@@ -682,7 +747,7 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader
       
       try obj.Data.SheetData    = obj.getSheetData(sheetID); end
     end
-  end  
+  end
   
   methods(Hidden)
     results = testPerformance(obj);
@@ -713,77 +778,77 @@ end
 
 
 
-    
-    % function [ setData ] = getSetData(obj, setID, caseID, regionMode) %, parameters)
-    %   setData                   = obj.SetData;
-    %
-    %   if nargin<2, setID        = obj.SetID;    end
-    %   if nargin<3, caseID       = obj.CaseID;   end
-    %   if nargin<4, regionID     = obj.RegionMode; end
-    %
-    %   if (isempty(caseID) || ~ischar(caseID)) || ...
-    %       (~isscalar(setID) && ~isnumeric(setID)) || ...
-    %       (isempty(regionID) || ~ischar(regionID)), return; end
-    %
-    %   settingSetData            = ...
-    %     isempty(setData) || ( ...
-    %     ( isfield(setData, 'CaseID') &&  strcmpi(setData.CaseID, caseID)) && ...
-    %     ( isfield(setData, 'ID') &&  strcmpi(setData.ID, setID)) ...
-    %     );
-    %
-    %   if ~settingSetData, return; end
-    %
-    %   caseData                  = obj.getCaseData(caseID);
-    %
-    %   %% Setting Set Data
-    %
-    %   setData                   = obj.PatchSets.getPatchSet(caseID, setID);
-    %   obj.SetData               = setData; % if nargin<2, obj.SetData  = setData; end
-    %
-    %   %% Clear Sheet Data
-    %   obj.SheetData             = [];
-    %
-    %   obj.updateSheets();
-    %
-    %   % Get Sheet Data
-    %   if nargout==0
-    %     obj.getSheetData();
-    %   else
-    %     setData                 = obj.PatchSets.getPatchSet(caseID, setID);
-    %   end
-    % end
-    
-    % function [ caseData ] = getCaseData(obj, caseID) %, parameters)
-    %   caseData                  = obj.CaseData;
-    %
-    %   if nargin<2, caseID       = obj.CaseID; end
-    %   if (isempty(caseID) || ~ischar(caseID)), return; end
-    %
-    %   settingCaseData           = ...
-    %     isempty(caseData) || ...
-    %     ( isfield(caseData, 'ID') &&  strcmpi(caseData.ID, caseID)) || ...
-    %     ( isfield(caseData, 'Symbol') &&  strcmpi(caseData.Symbol, caseID));
-    %
-    %   if ~settingCaseData, return; end
-    %
-    %   caseData                  = obj.cases(caseID);
-    %
-    %   obj.CaseData              = caseData; % if nargin<2, obj.CaseData = caseData; end
-    %
-    %   %% Update IDs
-    %   longID                    = caseData.ID;
-    %   regionIDs                 = obj.CaseData.Index.Regions;
-    %   setIDs                    = obj.CaseData.Index.PatchSets;
-    %
-    %   try obj.regionIDs         = setdiff(unique(['Sheet'; regionIDs], 'Stable'), 'Run', 'Stable'); end
-    %   try obj.setIDs            = sort(setIDs); end
-    %
-    %   dispf('\t%s:\t%s\n\t\tSetIDs: [%s]\n\t\tRegionIDs: {%s}', caseID, upper(longID),  toString(obj.setIDs), toString(obj.regionIDs{:}));
-    %
-    %   %% Clear Set & Sheet Data
-    %   obj.SheetData             = [];
-    %   obj.SetData               = [];
-    %
-    %   % Get Set Data
-    %   if nargout==0, obj.getSetData(); end
-    % end
+
+% function [ setData ] = getSetData(obj, setID, caseID, regionMode) %, parameters)
+%   setData                   = obj.SetData;
+%
+%   if nargin<2, setID        = obj.SetID;    end
+%   if nargin<3, caseID       = obj.CaseID;   end
+%   if nargin<4, regionID     = obj.RegionMode; end
+%
+%   if (isempty(caseID) || ~ischar(caseID)) || ...
+%       (~isscalar(setID) && ~isnumeric(setID)) || ...
+%       (isempty(regionID) || ~ischar(regionID)), return; end
+%
+%   settingSetData            = ...
+%     isempty(setData) || ( ...
+%     ( isfield(setData, 'CaseID') &&  strcmpi(setData.CaseID, caseID)) && ...
+%     ( isfield(setData, 'ID') &&  strcmpi(setData.ID, setID)) ...
+%     );
+%
+%   if ~settingSetData, return; end
+%
+%   caseData                  = obj.getCaseData(caseID);
+%
+%   %% Setting Set Data
+%
+%   setData                   = obj.PatchSets.getPatchSet(caseID, setID);
+%   obj.SetData               = setData; % if nargin<2, obj.SetData  = setData; end
+%
+%   %% Clear Sheet Data
+%   obj.SheetData             = [];
+%
+%   obj.updateSheets();
+%
+%   % Get Sheet Data
+%   if nargout==0
+%     obj.getSheetData();
+%   else
+%     setData                 = obj.PatchSets.getPatchSet(caseID, setID);
+%   end
+% end
+
+% function [ caseData ] = getCaseData(obj, caseID) %, parameters)
+%   caseData                  = obj.CaseData;
+%
+%   if nargin<2, caseID       = obj.CaseID; end
+%   if (isempty(caseID) || ~ischar(caseID)), return; end
+%
+%   settingCaseData           = ...
+%     isempty(caseData) || ...
+%     ( isfield(caseData, 'ID') &&  strcmpi(caseData.ID, caseID)) || ...
+%     ( isfield(caseData, 'Symbol') &&  strcmpi(caseData.Symbol, caseID));
+%
+%   if ~settingCaseData, return; end
+%
+%   caseData                  = obj.cases(caseID);
+%
+%   obj.CaseData              = caseData; % if nargin<2, obj.CaseData = caseData; end
+%
+%   %% Update IDs
+%   longID                    = caseData.ID;
+%   regionIDs                 = obj.CaseData.Index.Regions;
+%   setIDs                    = obj.CaseData.Index.PatchSets;
+%
+%   try obj.regionIDs         = setdiff(unique(['Sheet'; regionIDs], 'Stable'), 'Run', 'Stable'); end
+%   try obj.setIDs            = sort(setIDs); end
+%
+%   dispf('\t%s:\t%s\n\t\tSetIDs: [%s]\n\t\tRegionIDs: {%s}', caseID, upper(longID),  toString(obj.setIDs), toString(obj.regionIDs{:}));
+%
+%   %% Clear Set & Sheet Data
+%   obj.SheetData             = [];
+%   obj.SetData               = [];
+%
+%   % Get Set Data
+%   if nargout==0, obj.getSetData(); end
+% end

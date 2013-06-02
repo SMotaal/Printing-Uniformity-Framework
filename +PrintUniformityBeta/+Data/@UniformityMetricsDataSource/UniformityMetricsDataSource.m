@@ -182,7 +182,7 @@ classdef UniformityMetricsDataSource < PrintUniformityBeta.Data.DataSource
         end
         
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
         rethrow(err);
       end
       

@@ -4,6 +4,8 @@ function [ sheetData ] = getSheetData(obj, sheetID) %, newData, parameters, vari
   
   sheetData                     = [];
   
+  if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end
+  
   if nargin<2, sheetID          = obj.SheetID; end
   
   if isempty(sheetID), return; end
@@ -14,13 +16,13 @@ function [ sheetData ] = getSheetData(obj, sheetID) %, newData, parameters, vari
   setData                       = obj.getSetData();
   
   if isempty(obj.Sheets)
-    obj.updateSheets();
+    obj.updateSheets(setData);
   end
   
   dataMap                       = obj.Sheets;
   
   if isempty(dataMap) || ~isa(dataMap, 'PrintUniformityBeta.Models.SheetSetModel')
-    try delete(obj.SheetData); end
+    %try delete(obj.SheetData); end
     obj.SheetData               = [];
     return;
   end

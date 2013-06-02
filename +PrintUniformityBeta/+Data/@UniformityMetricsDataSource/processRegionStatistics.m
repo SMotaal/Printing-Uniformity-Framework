@@ -186,7 +186,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
         
       end
     catch err
-      debugStamp(err, 1);
+      debugStamp(err, 1, obj);
     end
     
     %% Axial Stats
@@ -207,7 +207,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
         regionStats(n)          = acrossStats(m);
       end
     catch err
-      debugStamp(err, 1);
+      debugStamp(err, 1, obj);
     end
     
     %% Summary Stats
@@ -223,7 +223,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
       regionStats(n)            = sampleStats;
       
     catch err
-      debugStamp(err, 1);
+      debugStamp(err, 1, obj);
     end
     
     if size(newData, 2) > columns,  newData(1, :, rows + offsetRange)     = nan; end
@@ -253,7 +253,7 @@ function [sheetStats] = getSheetStatistics(obj, sheetID, variableID)
     obj.sheetStatistics{sheetID}   = sheetStats;
     
   catch err
-    debugStamp(err, 1);
+    debugStamp(err, 1, obj);
   end
   
 end

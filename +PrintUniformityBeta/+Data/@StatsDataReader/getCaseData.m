@@ -1,6 +1,11 @@
 function [ caseData ] = getCaseData(obj, caseID) %, parameters)
-  caseData                  = obj.Data.CaseData;
   
+  caseData                  = [];
+  
+  if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end
+    
+  caseData                  = obj.Data.CaseData;
+    
   if nargin<2, caseID       = obj.CaseID; end
   if (isempty(caseID) || ~ischar(caseID)), return; end
   
@@ -10,7 +15,9 @@ function [ caseData ] = getCaseData(obj, caseID) %, parameters)
   
   if ~settingCaseData, return; end
   
-  caseData                  = obj.cases(caseID);
+  if isempty(obj.cases), return; end  
+  
+  caseData              = obj.cases(caseID);
   
   obj.Data.CaseData         = caseData; % if nargin<2, obj.CaseData = caseData; end
   

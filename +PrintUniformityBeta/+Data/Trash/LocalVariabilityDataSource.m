@@ -73,7 +73,7 @@ classdef LocalVariabilityDataSource < PrintUniformityBeta.Data.UniformityDataSou
     end
     
     function setPlotData(obj, XData, YData, ZData)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       obj.XData = XData;
       obj.YData = YData;
       %obj.ZData = ZData;

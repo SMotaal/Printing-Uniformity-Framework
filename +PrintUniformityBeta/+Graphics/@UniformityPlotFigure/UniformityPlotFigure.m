@@ -4,7 +4,13 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
   
   properties
     PlotMediator
-    DataSources
+    DataSources           = {};
+    Animate               = false;
+    AnimationTimer        = [];
+  end
+  
+  events
+    LayoutUpdate
   end
   
   methods
@@ -13,10 +19,70 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
       refresh(obj.Handle);
     end
     
+    function set.Animate(obj, animate)
+      t                   = obj.AnimationTimer;
+      
+      interval            = 1;
+      try interval        = t.Period; end
+      
+      running             = false;
+      try running         = strcmpi(t.Running, 'on'); end
+      
+      switch lower(animate)
+        case {'off'} % false,
+          running         = false;
+        case {'on'} % true,
+          running         = true;
+        case 'toggle'
+          % if isequal(running, 'off'), running = on; else running = 'off'; end
+          running         = ~running;
+        otherwise
+          if isnumeric(animate)
+            interval      = animate;
+          end
+      end
+      
+      if ~isa(t, 'timer') || ~isvalid(t)
+        t                 = timer('Period', interval, ... % 'Running', running
+          'StartDelay', 1, 'ExecutionMode', 'fixedDelay', 'ObjectVisibility', 'off', ...
+          'TimerFcn', @(s, e)obj.nextSheet, 'UserData', obj);
+      end
+      
+      % try if ~isequal(running, t.Running), t.Running = running; end; end
+      
+      if running && ~strcmpi(t.Running, 'on')
+        try
+          start(t);
+          obj.Animate         = 'on';
+        end
+      elseif ~running && ~strcmpi(t.Running, 'off')
+        try stop(t); end
+        obj.Animate         = 'off';
+      end
+      obj.AnimationTimer  = t;
+    end
+    
+    function nextSheet(obj)
+      drawnow;
+      obj.setSheet('+1', true);
+      % drawnow;
+    end
+    
+    function animate = get.Animate(obj)
+      animate             = false;
+      try
+        t                 = obj.AnimationTimer;
+        animate           = isa(t, 'timer') && isvalid(t) && isequal(t.Running, 'on');
+      end
+      
+      if animate, animate = 'on'; else animate = 'off'; end
+    end
+    
+    
     Export(obj);
-
+    
     function prepareMediator(obj, dataProperties, axesProperties)
-      if isempty(obj.PlotMediator) || ~isa(obj, 'PrintUniformityBeta.UI.PlotMediator')
+      if isempty(obj.PlotMediator) || ~isa(obj.PlotMediator, 'PrintUniformityBeta.UI.PlotMediator')
         obj.PlotMediator  = PrintUniformityBeta.UI.PlotMediator;
       end
       
@@ -38,51 +104,215 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
       syncSheets = false;
       
       if ~event.Consumed
-      
+        
         if commandKey
           if shiftKey
             switch event.Data.Key
-              case 'h'
+              case 'a'
+                try obj.Animate   = 'toggle'; end
+                event.Consumed  = true;
+              case 'r'
+                try obj.Animate   = 'off'; end
                 try obj.DataSources{1}.setSheet('sum'); syncSheets = true; end
-                event.Consumed = true;
+                event.Consumed  = true;
               case 'e'
                 try obj.Export; end
-                event.Consumed = true;
+                event.Consumed  = true;
+              case 'h' % toggle hidden axes
+                % hiddenFigure    = obj.HiddenFigure;
+                %
+                % plotAxes        = [];
+                % isHidden        = false;
+                %
+                % %% Show
+                % try
+                %   plotAxes      = findobj(hiddenFigure, 'Type', 'axes');
+                %   isHidden      = isscalar(plotAxes);
+                % end
+              case 'd' % duplicate plot axes
+                try obj.Pointer  = 'watch'; drawnow(); end
+                activePlotAxes          = obj.ActivePlotAxes;
+                
+                dataSourceClass         = 'PrintUniformityBeta.Data.StatsPlotDataSource';
+                plotComponentClass      = 'PrintUniformityBeta.Graphics.UniformityRegions';
+                
+                dataSourceOptions       = {};
+                plotComponentOptions    = {};
+                
+                try
+                  activePlotComponent   = getappdata(obj.ActivePlotAxes, 'PlotComponent');
+                  activePlotDataSource  = activePlotComponent.DataSource;
+                
+                  dataSourceClass       = class(activePlotDataSource);
+                  plotComponentClass    = class(activePlotComponent);
+                                    
+                  newOptions            = {};
+                  %sourceOptions         = activePlotDataSource.ComponentOptions;
+                  % for m = 1:2:numel(sourceOptions)
+                  %   try newOptions      = [newOptions sourceOptions(m:m+1)]; end
+                  % end
+                  
+                  dataSourceOptions     = activePlotDataSource.ComponentOptions;
+                  dataSourceOptions     = [dataSourceOptions, ...
+                    'CaseID',     activePlotDataSource.CaseID, ...
+                    'SetID',      activePlotDataSource.SetID, ...
+                    'SheetID',    activePlotDataSource.SheetID, ...
+                    'VariableID', activePlotDataSource.VariableID];
+                  
+                  newOptions            = {};
+                  sourceOptions         = activePlotComponent.ComponentOptions;
+                  for m = 1:2:numel(sourceOptions)
+                    if ~strcmpi(sourceOptions{m}, 'ParentAxes')
+                      try newOptions    = [newOptions sourceOptions(m:m+1)]; end
+                    end
+                  end
+                  plotComponentOptions  = newOptions;                  
+                  
+                catch err
+                  debugStamp(err, 1, obj);
+                end
+                
+                try
+                  newDataSource           = feval(dataSourceClass, dataSourceOptions{:});                  
+                  newPlotAxes             = obj.newPlotAxes();
+                  newPlotAxes.IsVisible   = false;
+                  newPlotComponent        = feval(plotComponentClass, newPlotAxes, newDataSource, plotComponentOptions{:});
+                  newPlotAxes.IsVisible   = true;
+                  obj.formatPlotAxes;
+                  obj.layoutPlotAxes;
+                catch err
+                  debugStamp(err, 1, obj);
+                end
+                
+                for m = 1:numel(obj.DataSources)
+                  try obj.DataSources{m}.notify('OverlayPlotsDataChange'); end
+                end
+                try obj.Pointer  = 'arrow'; end
+              case 'backspace'
+                try obj.Pointer  = 'watch'; drawnow(); end
+                activePlotAxes          = obj.ActivePlotAxes;  
+                activePlotComponent     = getappdata(obj.ActivePlotAxes, 'PlotComponent');
+                activePlotDataSource    = activePlotComponent.DataSource;
+                
+                try
+                  delete(activePlotComponent); 
+                  delete(activePlotDataSource);
+                  delete(activePlotAxes);
+                  try 
+                    obj.PlotAxes        = obj.PlotAxes(~cellfun(@(c)isequal(c, activePlotAxes) || isempty(c), obj.PlotAxes));
+                    obj.PlotAxesLength  = numel(obj.PlotAxes);
+                    obj.PlotAxesTargets = obj.PlotAxesTargets(~cellfun(@(v)isequal(v, activePlotAxes),{obj.PlotAxesTargets.object}));
+                  end
+                  obj.layoutPlotAxes;
+                catch err
+                  debugStamp(err, 1, obj);
+                end
+                
+                for m = 1:numel(obj.DataSources)
+                  try obj.DataSources{m}.notify('OverlayPlotsDataChange'); end
+                end
+                try obj.Pointer  = 'arrow'; end
+              case 'u'
+                try obj.Pointer  = 'watch'; drawnow(); end
+                obj.notify('LayoutUpdate');
+                obj.OnResize();
+                % childObjects    = get(get(obj.Handle, 'Children'), 'UserData');
+                % childObjects    = childObjects(cellfun(@(c)isa(c, 'GrasppeAlpha.Graphics.PlotAxes'), childObjects));
+                for m = 1:numel(obj.DataSources)
+                  try obj.DataSources{m}.notify('OverlayPlotsDataChange'); end
+                end
+                try obj.Pointer  = 'arrow'; end
               case 'uparrow'
-                try obj.DataSources{1}.setSheet('+1'); syncSheets = true; end
-                event.Consumed = true;
+                try obj.Animate   = 'off'; end
+                obj.setSheet('+1'); % try obj.DataSources{1}.setSheet('+1'); syncSheets = true; end
+                event.Consumed  = true;
               case 'downarrow'
-                try obj.DataSources{1}.setSheet('-1'); syncSheets = true; end
-                event.Consumed = true;
+                try obj.Animate   = 'off'; end
+                obj.setSheet('-1'); % try obj.DataSources{1}.setSheet('-1'); syncSheets = true; end
+                event.Consumed  = true;
               otherwise
-                %disp(toString(event.Data.Key));
+                disp(toString(event.Data.Key));
             end
           else
             switch event.Data.Key
               case 'uparrow'
-                try obj.DataSources{1}.setSheet('+1', true); syncSheets = true; end
+                % try obj.DataSources{1}.setSheet('+1', true); syncSheets = true; end
+                try obj.Animate   = 'off'; end
+                obj.setSheet('+1', true);
                 event.Consumed = true;
               case 'downarrow'
-                try obj.DataSources{1}.setSheet('-1', true); syncSheets = true; end
-                event.Consumed = true;              
+                try obj.Animate   = 'off'; end
+                obj.setSheet('-1', true);
+                % try obj.DataSources{1}.setSheet('-1', true); syncSheets = true; end
+                event.Consumed = true;
             end
           end
         end
       end
       
-      if syncSheets
-        %if numel(obj.DataSources)>1
-        try obj.StatusText = obj.DataSources{1}.GetSheetName(obj.DataSources{1}.NextSheetID); end % int2str(obj.DataSource.NextSheetID)
-        drawnow expose update;
-          for m = 2:numel(obj.DataSources)
-            notify(obj.DataSources{m}, 'SheetChange');
-            %try obj.DataSources{m}.SheetID = obj.DataSources{1}.SheetID; end
-          end
-        %end
-      end
-      
       obj.OnKeyPress@GrasppeAlpha.Graphics.MultiPlotFigure(source, event);
     end
+    
+    function setSheet(obj, varargin)
+      
+      try
+        activePlotComponent     = getappdata(obj.ActivePlotAxes, 'PlotComponent');
+        activeDataSource        = activePlotComponent.DataSource;
+      catch
+        activeDataSource        = obj.DataSources{1};
+      end
+      
+      try activeDataSource.setSheet(varargin{:}); syncSheets = true; end
+      
+      if syncSheets
+        try obj.StatusText = activeDataSource.GetSheetName(activeDataSource.NextSheetID); end % int2str(obj.DataSource.NextSheetID)
+        
+        for m = 2:numel(obj.DataSources)
+          try notify(obj.DataSources{m}, 'SheetChange'); end
+        end
+      end
+      
+      drawnow expose update;
+    end
+    
+    function OnMouseDoubleClick(obj, source, event)
+      %beep();
+      obj.CurrentObject = [];
+      obj.CurrentObject = get(obj.Handle, 'CurrentObject');
+      % h = hittest(obj.Handle);
+      obj.OnMouseDoubleClick@GrasppeAlpha.Graphics.MultiPlotFigure(source, event);
+    end
+    
+    
+    
+    function set.DataSources(obj, dataSources)
+      if ~iscell(obj.DataSources), obj.DataSources  = {}; end
+      
+      if isobject(dataSources) && isscalar(dataSources) && isvalid(dataSources)
+        obj.DataSources   = {obj.DataSource, dataSources};
+      elseif iscell(dataSources)
+        obj.DataSources   = dataSources;
+      end
+      
+      dataSources         = obj.DataSources;
+      dataSources         = dataSources(cellfun(@(x) isobject(x) && isvalid(x), dataSources));
+      
+      % dataSourceIndex     = cellfun(@(x)cellfun(@(y)isequal(x,y),dataSources),dataSources, 'UniformOutput', false);
+      % dataSources       = unique(dataSources, 'stable');
+      obj.DataSources     = dataSources;
+      
+      % try dataSources.notify('OverlayPlotsDataChange'); end
+      
+      for m = 1:numel(obj.DataSources)
+        try obj.DataSources{m}.notify('OverlayPlotsDataChange'); end
+      end
+      
+    end
+    
+    function dataSources = get.DataSources(obj)
+      dataSources         = obj.DataSources;
+    end
+    
     
     
   end
@@ -92,7 +322,16 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
     function createComponent(obj)
       obj.createComponent@GrasppeAlpha.Graphics.MultiPlotFigure();
     end
-        
+    
+    function [plotAxes idx id] = createPlotAxes(obj, idx, id)
+      try
+        [plotAxes idx id] = obj.createPlotAxes@GrasppeAlpha.Graphics.MultiPlotFigure(idx, id);
+      catch err
+        debugStamp(err, 1, obj);
+        rethrow(err);
+      end
+    end
+    
     function attachMediations(obj, subjects, properties)
       
       plotMediator  = obj.PlotMediator;
@@ -111,7 +350,12 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
           else
             continue;
           end
-          plotMediator.attachMediatorProperty(subject, property, alias);
+          try
+            plotMediator.attachMediatorProperty(subject, property, alias);
+          catch err
+            debugStamp(err, 1, obj);
+            continue;
+          end
         end
       end
       
@@ -120,9 +364,9 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
     end
     
     
-%     function preparePlotAxes(obj)
-%       obj.preparePlotAxes@GrasppeAlpha.Graphics.MultiPlotFigure;
-%     end
+    %     function preparePlotAxes(obj)
+    %       obj.preparePlotAxes@GrasppeAlpha.Graphics.MultiPlotFigure;
+    %     end
   end
   
   %     methods (Static, Hidden)
@@ -145,7 +389,7 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
       
       
       GrasppeAlpha.Utilities.DeclareOptions;
-
+      
       %options = WorkspaceVariables(true);
     end
   end

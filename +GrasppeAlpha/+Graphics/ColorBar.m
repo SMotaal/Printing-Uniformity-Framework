@@ -93,31 +93,41 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
       patchct = 1:numel(patches);
       xData   = [patchct; 0 patchct(1:end-1); 0 patchct(1:end-1); patchct; patchct];
       yData   = repmat([0 0 1 1 0]',1,size(xData,2));
-      zData   = repmat(patches,5,1);
+      zData   = zeros(size(xData)); %repmat(patches,5,1);
+      cData   = repmat(patches,5,1);
       
       obj.ColorMap  = map;
       
       obj.XData = xData;
       obj.YData = yData;
-      obj.ZData = zData;
-      
-      try delete(obj.PatchHandle); end
-      
-      obj.PatchHandle = patch(xData, yData, zData, 'Parent', obj.Handle, ...
-        'EdgeColor', 'none', 'LineStyle', 'none');
-      
-      obj.registerHandle(obj.PatchHandle);
+      obj.ZData = cData;
+      %obj.CData = cData;
       
       obj.XTick = [];
       obj.YTick = [];
       obj.ZTick = [];
-      obj.Box   = 'on';
-      obj.handleSet('Clipping', 'on');
-      obj.handleSet('LineWidth', 1);
+      % obj.Box   = false;
+      obj.handleSet('Clipping', 'off');
+      obj.handleSet('Box', 'off');
+      obj.handleSet('Visible', 'off');
+      % obj.handleSet('LineWidth', 1);
       
       obj.CLim  = [1 size(map,1)];
-      obj.YLim  = [min(yData(:)) max(yData(:))];      
-      obj.XLim  = [min(xData(:)) max(xData(:))];
+      obj.YLim  = [min(yData(:))-0.25 max(yData(:))+0.25];      
+      obj.XLim  = [min(xData(:))-0.25 max(xData(:))+0.25];
+      
+      try delete(obj.PatchHandle); end
+      
+      obj.PatchHandle(1) = patch(xData, yData, zData, cData, 'Parent', obj.Handle, ...
+        'EdgeColor', 'none', 'LineStyle', '-');
+      
+      obj.PatchHandle(2) = patch(...
+        [0 1 1 0 0] * numel(patches), [0 0 1 1 0], [0 0 0 0 0], [NaN NaN NaN NaN NaN], 'Parent', obj.Handle, ...
+        'EdgeColor', 'k', 'LineStyle', '-', 'LineWidth', 0.5, 'LineSmoothing', 'on');
+      
+      obj.registerHandle(obj.PatchHandle(1));
+      obj.registerHandle(obj.PatchHandle(2));
+      
       
       return;
     end
@@ -173,7 +183,7 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
         end
         
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
     end
     
@@ -233,7 +243,7 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
         
         label.Text = string;
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       
     end
@@ -244,7 +254,7 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
       
       try
         label = obj.getLabel(index);
-        label.FontSize = 5.5; %obj.FontSize;
+        label.FontSize = 6.5; %obj.FontSize;
         %label.FontWeight = 'bold';
         label.HandleObject.HorizontalAlignment  = 'center';
         label.HandleObject.VerticalAlignment    = 'middle';
@@ -259,7 +269,7 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
         end
         
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       
     end
@@ -293,12 +303,12 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
           try
             delete(obj.LabelObjects{m});
           catch err
-            debugStamp(err, 1);
+            debugStamp(err, 1, obj);
           end
           obj.LabelObjects{m} = [];
         end
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       
       obj.LabelObjects = {};

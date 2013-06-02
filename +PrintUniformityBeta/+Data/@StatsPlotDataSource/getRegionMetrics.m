@@ -68,19 +68,51 @@ function metrics = getRegionMetrics(obj, metricsTable, roiData, roiRows, roiColu
       end
     end
     
-    metricValues                = {};
+    % metricValues                = {};
     
     %% Ignoring Sheets
-    if ~allSheetNaN, metricValues = cat(3,metricValues, sheetValues);   end
-    if isRegionData, metricValues = cat(3,metricValues, regionValues);  end
+    % if ~allSheetNaN, metricValues = cat(3,metricValues, sheetValues);   end
+    % if isRegionData, metricValues = cat(3,metricValues, regionValues);  end
     
     if ~isempty(metricModel)
-      metrics(metricID)         = feval(['PrintUniformityBeta.Models.Metrics.' metricModel],  metricValues);
+      metricClass               = ['PrintUniformityBeta.Models.Metrics.' metricModel];
     else
-      metricModel               = feval('PrintUniformityBeta.Models.Metrics.MetricModel',     metricValues);
-      metricModel.ID            = regexprep(metricID, '\s', '');
-      metricModel.Name          = metricID;      
-      metrics(metricID)         = metricModel;
+      metricClass               = 'PrintUniformityBeta.Models.Metrics.MetricModel';
+    end
+    
+    if ~allSheetNaN
+      sheetMetric               = feval(metricClass,  sheetValues);
+    else
+      sheetMetric               = feval(metricClass);
+    end
+    
+    if isRegionData
+      regionMetric              = feval(metricClass,  regionValues);
+    else
+      regionMetric              = feval(metricClass);
+    end
+    
+    regionMetric.Samples        = sheetMetric;
+    
+    %if isempty(metricModel)
+    sheetMetric.ID              = regexprep(metricID, '\s', '');
+    sheetMetric.Name            = metricID;
+    regionMetric.ID             = sheetMetric.ID;
+    regionMetric.Name           = sheetMetric.Name;
+    %end
+    
+    % metric                      = struct(   ...
+    %   'ID',             sheetMetric.ID,     ...
+    %   'Name',           sheetMetric.Name,   ...
+    %   'Samples',        sheetMetric,        ...
+    %   'Summary',        regionMetric        ...
+    %   );
+      
+    metrics(metricID)           = regionMetric;
+      
+      
+      % metrics(metricID)         = feval(['PrintUniformityBeta.Models.Metrics.' metricModel],  metricValues);
+      % metricModel               = feval('PrintUniformityBeta.Models.Metrics.MetricModel',     metricValues);
       
       % shortFormat               = {};
       % try shortFormat           = reshape(cellfun(@num2str, metricValues, 'UniformOutput', false), size(metricValues)); end
@@ -92,7 +124,7 @@ function metrics = getRegionMetrics(obj, metricsTable, roiData, roiRows, roiColu
       %   'Values',       {metricValues}, ...
       %   'ShortFormat',  {shortFormat}, ...
       %   'LongFormat',   {longFormat});
-    end
+    % end
     
   end
 

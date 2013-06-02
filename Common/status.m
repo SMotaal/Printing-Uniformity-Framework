@@ -6,7 +6,9 @@ function [ sb ] = status( text, h, varargin )
   
   if nargin<2 || isempty(h), h=0; end
   
-  sb = statusbar(h, text); drawnow update; %forcedraw();
+  sb = statusbar(h, text); %drawnow update; %forcedraw();
+  
+  GrasppeKit.Utilities.DelayedCall(@(s, e)drawnow('update',  'expose'), 0.5,'start');
   
   if numel(varargin)>=1
     pv = varargin{1};

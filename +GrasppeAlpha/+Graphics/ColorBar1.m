@@ -172,7 +172,7 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
         end
         
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
     end
     
@@ -231,7 +231,7 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
         
         label.Text = string;
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       
     end
@@ -265,7 +265,7 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
 %         end
         
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       
     end
@@ -299,12 +299,12 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
           try
             delete(obj.LabelObjects{m});
           catch err
-            debugStamp(err, 1);
+            debugStamp(err, 1, obj);
           end
           obj.LabelObjects{m} = [];
         end
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       
       obj.LabelObjects = {};

@@ -43,9 +43,7 @@ classdef PlotComponent < GrasppeAlpha.Graphics.InAxesComponent ...
         obj.handleSet(property, value);
         return;
       end
-      try debugStamp(obj.ID);
-        dispf('Could not set %s for %s', property, obj.ID);
-      end
+      if obj.VerboseDebuggingtry, try debugStamp(obj.ID); dispf('Could not set %s for %s', property, obj.ID); end; end
     end
     
     function value = dataGet(obj, property)

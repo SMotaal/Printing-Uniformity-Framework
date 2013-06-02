@@ -33,6 +33,8 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
     ColorMap
     
     NextSheetID
+    
+    PlotObjects                 = {};
   end
   
   methods
@@ -40,9 +42,29 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
       % initializer = true; try initializer = ~isequal(evalin('caller', 'initializer'), true); end
       % disp([mfilename ' initializer: ' num2str(nargout) '<' num2str(initializer)]);      
       
-      obj                       = obj@PrintUniformityBeta.Data.DataSource(varargin{:});
-      obj                       = obj@PrintUniformityBeta.Data.PlotDataEventHandler();
-      obj                       = obj@PrintUniformityBeta.Data.OverlayDataEventHandler();
+      obj                           = obj@PrintUniformityBeta.Data.DataSource(); % varargin{:});
+      obj                           = obj@PrintUniformityBeta.Data.PlotDataEventHandler();
+      obj                           = obj@PrintUniformityBeta.Data.OverlayDataEventHandler();
+      
+      obj.ComponentOptions          = varargin;
+      
+      componentOptions              = obj.ComponentOptions;
+      
+      obj.State                     = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
+            
+      [defaultNames defaultValues]  = obj.setOptions(obj.Defaults);
+      [initialNames initialValues]  = obj.setOptions(componentOptions{:});
+      
+      names   = unique([defaultNames, initialNames]);
+      if ~isempty(names)
+        options = obj.getOptions(names{:});
+        values  = options(2:2:end);
+      else
+        values  = names;
+      end
+      
+      obj.State                     = GrasppeAlpha.Core.Enumerations.TaskStates.Ready;
+      
       
     end
   end
@@ -66,6 +88,8 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
       try
         obj.resetPlotObjectOptions(plotObject);
         
+        try setappdata(plotObject.ParentAxes, 'PlotDataSource', obj); end
+        
         if isa(plotObject, 'PrintUniformityBeta.Data.PlotDataEventHandler')
           obj.registerEventHandler('PlotDataEventHandlers',     plotObject);
         end
@@ -73,6 +97,8 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
         if isa(plotObject, 'PrintUniformityBeta.Data.OverlayDataEventHandler')
           obj.registerEventHandler('OverlayDataEventHandlers',  plotObject);
         end
+        
+        try obj.PlotObjects = [obj.PlotObjects {plotObject}]; end
         
       catch err
         debugStamp(err, 1, obj);
@@ -98,6 +124,16 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
       try plotObject.ParentAxes.Box       = false;            end
       try plotObject.ParentAxes.handleSet('Clipping', 'off'); end
     end
+    
+    function OnCaseIDChange(obj, varargin)
+      % try cellfun(@(p)cla(p.ParentAxes.Handle, obj.PlotObjects)); drawnow update expose; end
+      obj.OnCaseIDChange@PrintUniformityBeta.Data.DataSource(varargin{:});
+    end
+    
+    function OnSetIDChange(obj, varargin)
+      % try cellfun(@(p)cla(p.ParentAxes.Handle), obj.PlotObjects); drawnow update expose; end
+      obj.OnSetIDChange@PrintUniformityBeta.Data.DataSource(varargin{:});
+    end    
     
     function sheet = setSheet (obj, sheet, wait)
       
@@ -134,6 +170,8 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
         else
           error('Invalid Sheet');
         end
+        
+        if isempty(nextSheet), nextSheet = 1; end
         
         obj.NextSheetID         = nextSheet;
         
@@ -214,6 +252,8 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
     function processCaseData(obj, recursive)
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
       
+      % try cellfun(@(p)cla(p.ParentAxes.Handle), obj.PlotObjects); drawnow update expose; end
+      
       obj.processCaseData@PrintUniformityBeta.Data.DataSource(false);     % non-recursive
       
       if ~exist('recursive', 'var') || ~isequal(recursive, false), obj.processSetData(); end
@@ -221,6 +261,8 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource & ...
     
     function processSetData(obj, recursive)
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
+      
+      % try cellfun(@(p)cla(p.ParentAxes.Handle), obj.PlotObjects); drawnow update expose; end
       
       obj.processSetData@PrintUniformityBeta.Data.DataSource(false);      % non-recursive
       

@@ -2,11 +2,12 @@ classdef Prototype < handle & dynamicprops %& hgsetget
   %GRASPPEPROTOTYPE Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (Hidden=true)
+  properties (Hidden)
     MetaProperties
     ClassName
     ClassPath
     MetaClass
+    VerboseDebugging      = false;
   end
   
   methods
@@ -149,6 +150,8 @@ classdef Prototype < handle & dynamicprops %& hgsetget
       persistent prototypes;
       
       % mlock;
+      % objects = [];
+      % return;
       
       if nargout==1
         objects = prototypes;

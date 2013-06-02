@@ -26,7 +26,7 @@ classdef PlotMediator < GrasppeAlpha.Core.Mediator
     PlotObjects = {};    
   end
   
-  methods
+  methods    
     function obj = PlotMediator()
       obj = obj@GrasppeAlpha.Core.Mediator;
     end
@@ -59,6 +59,12 @@ classdef PlotMediator < GrasppeAlpha.Core.Mediator
     function set.SHEETID(obj, value)
       try obj.SheetID = value; end
       % obj.updateControls;
+    end
+    
+    
+    function dataSources = get.DataSources(obj)
+      dataSources       = {};
+      try dataSources   = obj.PlotFigure.DataSources; end
     end
     
     
@@ -114,13 +120,13 @@ classdef PlotMediator < GrasppeAlpha.Core.Mediator
       selectedCase = [];
       try selectedCase = find(strcmpi(obj.CaseID, cases)); end
       jCaseMenu = obj.createDropDown(hFigure, cases, selectedCase, ...
-        @obj.selectCaseID, [], [], 150);
+        @obj.selectCase, [], [], 150);
       obj.CaseIDControl = jCaseMenu;
       
       selectedSet = [];
       try selectedSet = find(sets==obj.SetID); end
       jSetMenu = obj.createDropDown(hFigure, sets, selectedSet, ...
-        @obj.selectSetID, [], [], 75);
+        @obj.selectSet, [], [], 75);
       obj.SetIDControl = jSetMenu;
       
       jCommandPrompt = obj.createCommandPrompt(hFigure);
@@ -146,16 +152,16 @@ classdef PlotMediator < GrasppeAlpha.Core.Mediator
     end
     
     function ExportFigure(obj)
-      try obj.PlotFigure.Export; end
+      obj.PlotFigure.Export;
     end
     
-    function selectCaseID(obj, source, event)
+    function selectCase(obj, source, event)
       % disp(source); caseID = source.getSelectedItem;
       obj.CaseID = source.getSelectedItem;
       %figure(gcf);
     end
     
-    function selectSetID(obj, source, event)
+    function selectSet(obj, source, event)
       % disp(source); setID = source.getSelectedItem;
       obj.SetID = source.getSelectedItem;
       %figure(gcf);

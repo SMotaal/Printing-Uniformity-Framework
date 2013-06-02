@@ -1,4 +1,4 @@
-classdef ProportionModel < PrintUniformityBeta.Models.Metrics.MetricModel
+classdef DirectionalityModel < PrintUniformityBeta.Models.Metrics.MetricModel
   %FACTORMODEL Factor Metrics Descriptions
   %   Detailed explanation goes here
   
@@ -11,6 +11,8 @@ classdef ProportionModel < PrintUniformityBeta.Models.Metrics.MetricModel
     % SuffixFunction                = @(m   ) [''];
     % ShortFormatFunction           = @(m, v) [toString(v(1)) ':' toString(v(2))];
     % LongFormatFunction            = @(m, v) [m.Prefix m.getShortFormat(v) m.Suffix];
+
+    Components                      = {};
   end
   
   properties(Dependent)
@@ -31,12 +33,16 @@ classdef ProportionModel < PrintUniformityBeta.Models.Metrics.MetricModel
   end
   
   methods
-    function obj = ProportionModel(varargin)
+    function obj = DirectionalityModel(varargin)
       obj                       = obj@PrintUniformityBeta.Models.Metrics.MetricModel(varargin{:});
-      obj.SuffixFunction        = @(m   ) ['%'];
-      obj.ShortFormatFunction   = @(m, v) [num2str(abs(round(v*100)), '%d') m.Suffix];
+      obj.ShortFormatFunction   = @(m, v) [num2str(v(1)*100,'%1.0f') ':' num2str(v(2)*100,'%1.0f') m.Suffix];
+    end
+    
+    function components = get.Components(obj)
+      try obj.Components        = obj.components; end
+      components                = obj.Components;
     end
     
   end
-  
+    
 end

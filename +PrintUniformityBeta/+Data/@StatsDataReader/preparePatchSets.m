@@ -2,6 +2,8 @@ function preparePatchSets(obj)
   %PREPAREPATCHSETS Populate obj.PatchSets with PatchSetModel
   %   Detailed explanation goes here
   
+  % if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end
+  
   if isempty(obj.cases), obj.prepareCases; end
   
   setIDs                    = obj.sourceMetadata.Sets.IDs;

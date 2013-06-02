@@ -12,8 +12,11 @@ classdef Figure < GrasppeAlpha.Graphics.HandleGraphicsComponent ...
       };
     
     FigureHandleProperties = { ...
-      {'WindowTitle', 'Name'}, 'Renderer', {'Toolbar', 'ToolBar'}, {'Menubar', 'MenuBar'}, 'WindowStyle', ...
-      'Color', 'Units'};
+      {'WindowTitle', 'Name'}, 'Renderer', {'Toolbar', 'ToolBar'}, {'Menubar', 'MenuBar'}, ...
+      'WindowStyle', 'Color', 'Units', 'CurrentAxes', 'CurrentPoint', ... % 'CurrentCharacter', 
+      'Colormap', 'Alphamap', 'DockControls', 'FileName', 'Pointer', 'Position'};
+    
+    % 'CurrentObject'
     
     %FigureHandleFunctions  = {{'CloseFunction', 'CloseRequestFcn'}};
     
@@ -47,6 +50,16 @@ classdef Figure < GrasppeAlpha.Graphics.HandleGraphicsComponent ...
     WindowStyle
     Renderer
     Units
+    CurrentObject
+    CurrentAxes
+    CurrentPoint
+    % CurrentCharacter
+    Colormap
+    Alphamap
+    DockControls
+    FileName
+    Pointer
+    Position
   end
   
   methods
@@ -107,7 +120,7 @@ classdef Figure < GrasppeAlpha.Graphics.HandleGraphicsComponent ...
         
         drawnow expose update;
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
     end
     

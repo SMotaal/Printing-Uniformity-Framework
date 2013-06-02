@@ -184,7 +184,7 @@ end
 
 function forcedraw()
   pause(0.05);
-  drawnow();
+  GrasppeKit.Utilities.DelayedCall(@(s, e)drawnow(), 0.05,'start');%drawnow();
   pause(0.05);
 end
 

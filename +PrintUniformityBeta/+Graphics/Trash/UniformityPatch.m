@@ -60,7 +60,7 @@ classdef UniformityPatch < GrasppeAlpha.Graphics.Patch & PrintUniformityBeta.Gra
     end    
     
     function refreshPlotData(obj, source, event)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       try
         dataSource  = event.AffectedObject;
         dataField   = source.Name;
@@ -69,7 +69,7 @@ classdef UniformityPatch < GrasppeAlpha.Graphics.Patch & PrintUniformityBeta.Gra
         
         obj.handleSet(dataField, dataSource.(dataField));
       catch err
-        try debugStamp(obj.ID); end
+        if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
         try debugStamp(err, 1); catch, debugStamp(); end;
       end
     end

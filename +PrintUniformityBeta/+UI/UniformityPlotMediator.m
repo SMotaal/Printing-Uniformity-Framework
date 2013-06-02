@@ -4,7 +4,7 @@ classdef UniformityPlotMediator < PrintUniformityBeta.UI.PlotMediator
   
   properties (Access=private)
     PlotOptions     = {'CaseID', 'rithp5501'};
-    PlotTypes       = {'Regions'}; %'Surface', 'Regionsurfs', 'Slope'}; %, 'Slope'}; %, 'Regions', 'Slope'}; Regionsurfs
+    PlotTypes       = {'newregions'}; %'Surface', 'Regionsurfs', 'Slope'}; %, 'Slope'}; %, 'Regions', 'Slope'}; Regionsurfs
     DataProperties  = {'CaseID', 'SetID', 'SheetID'};    
     AxesProperties  = {'View', 'Projection', {'PlotColor', 'Color'}};
     FigureOptions;   %= {'PlotAxesLength', 1}; %3    

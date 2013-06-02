@@ -60,7 +60,9 @@ classdef HandleGraphicsComponent < GrasppeAlpha.Core.HandleComponent ...
         children = obj.handleGet('Children');
         for m = 1:numel(children)
           try
-            child = get(children(m), 'UserData');
+            child     = [];
+            try child = getappdata(children(m), 'PrototypeHandle'); end
+            %child = get(children(m), 'UserData');
             if isa(child, 'GrasppeAlpha.Graphics.HandleGraphicsComponent')
               try delete(child); end
             end

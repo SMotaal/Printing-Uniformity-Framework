@@ -81,7 +81,7 @@ classdef UniformityPlotComponent < PrintUniformityBeta.Data.PlotDataEventHandler
         obj.Overlay.createLabels;
 
       catch err
-        try debugStamp(err, 1); catch, debugStamp(); end;
+        debugStamp(err, 1, obj);
       end
       
     end
@@ -91,9 +91,14 @@ classdef UniformityPlotComponent < PrintUniformityBeta.Data.PlotDataEventHandler
   methods
     
     function attachDataSource(obj, dataSource)
+      
+      if nargin<2, return; end
+      
       try 
         obj.dataSource          = dataSource;
         dataSource.attachPlotObject(obj);
+        
+        try setappdata(obj, 'PlotDataSource', dataSource); end
         
         obj.OnPlotChange(dataSource);
         
@@ -165,7 +170,7 @@ classdef UniformityPlotComponent < PrintUniformityBeta.Data.PlotDataEventHandler
     function setSheet(obj, varargin)
       try obj.DataSource.setSheet(varargin{:}); end
       try obj.ParentFigure.StatusText = obj.DataSource.GetSheetName(obj.DataSource.NextSheetID); end % int2str(obj.DataSource.NextSheetID)
-      drawnow expose update;      
+      GrasppeKit.Utilities.DelayedCall(@(s, e)drawnow('update',  'expose'), 0.5,'start');
     end
     
   end
@@ -228,6 +233,11 @@ classdef UniformityPlotComponent < PrintUniformityBeta.Data.PlotDataEventHandler
       try plotAxes.CLim         = source.ZLim;        end
       try plotAxes.AspectRatio  = source.AspectRatio; end
       
+      setappdata(plotAxes.Handle, 'PlotComponent', obj);
+      setappdata(plotAxes, 'PlotComponent', obj);
+      
+      %setappdata(plotAxes.Handle, 'DataSource', obj.DataSource);
+      
       try 
         obj.ParentFigure.ColorBar.createPatches; obj.ParentFigure.ColorBar.createLabels;
       end
@@ -255,7 +265,7 @@ classdef UniformityPlotComponent < PrintUniformityBeta.Data.PlotDataEventHandler
         try obj.ParentFigure.StatusText = ''; end
       else
         try obj.ParentFigure.StatusText = obj.DataSource.GetSheetName(obj.DataSource.NextSheetID); end % int2str(obj.DataSource.NextSheetID)
-        drawnow expose update;
+        GrasppeKit.Utilities.DelayedCall(@(s, e)drawnow('update',  'expose'), 0.5,'start');
       end
       
     end

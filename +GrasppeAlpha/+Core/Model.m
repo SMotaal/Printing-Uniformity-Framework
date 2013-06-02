@@ -70,7 +70,7 @@ classdef Model < GrasppeAlpha.Core.Prototype & matlab.mixin.Copyable
         end
         
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       
     end    

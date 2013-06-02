@@ -9,7 +9,8 @@ classdef PlotAxes < GrasppeAlpha.Graphics.Axes
   end
   
   properties (SetObservable, GetObservable, AbortSet)
-    ViewLock = false;
+    ViewLock            = false;
+    IsHidden            = false;
   end
   
   methods

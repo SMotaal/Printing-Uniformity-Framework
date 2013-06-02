@@ -129,7 +129,7 @@ classdef EventHandler < GrasppeAlpha.Core.Prototype
     
     function registerEventHandler(obj, group, handler)
       handlers                  = obj.getEventsHandlers(group);   %if ~iscell(obj.getEventsHandlers(group)), obj.setEventHandlers(group)  = {}; end
-      if any(handlers==handler), return; end
+      try if cellfun(@(h)isequal(h,handler), handlers), return; end; end
       
       obj.setEventHandlers(group, [handlers {handler}]);
     end

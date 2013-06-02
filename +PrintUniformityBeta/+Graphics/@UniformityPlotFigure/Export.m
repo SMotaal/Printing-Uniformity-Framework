@@ -67,7 +67,7 @@ function Export(obj)
       
       switch clObject
         case {'axes'}
-          properties = {'XLim', 'YLim', 'ZLim', 'CLim'};
+          properties = {'XLim', 'YLim', 'ZLim', 'CLim', 'LooseInset'};
         otherwise
           %dispf('Not copying handle %d because %s objects are not supported.\t%s', floor(hdObject), clObject, hdInfo);
           hgObjects.Unsupported(end+1,:) = {clObject, hdObject, hgObject, hdInfo};
@@ -139,7 +139,11 @@ function Export(obj)
           %dispf('AX:\t[View: %d %d]', mod(ax.View,90));
           ax.Box  = 'on';
         end
-        ax.OuterPosition = ax.OuterPosition + [15 15 30 30];
+        
+        axPad               = [0 0 0 0];
+        try axPad           = ax.LooseInset; end
+        ax.OuterPosition    = ax.OuterPosition + ...
+          [15+axPad(1) 15-axPad(4) 30-axPad(1)-axPad(3) 30-axPad(2)-axPad(4)];
         
         clObject = 'PlotAxes';
         if isfield(hgObjects, clObject)
@@ -163,7 +167,7 @@ function Export(obj)
         end
         
         if ax.LineWidth==1, ax.LineWidth = 0.5; end
-        set(findobj(decendents, 'Type', 'text'), 'FontSize', 4, 'FontWeight', 'normal');
+        set(findobj(decendents, 'Type', 'text'), 'FontSize', 6, 'FontWeight', 'normal');
         
         continue;
       elseif isOverlay
@@ -277,6 +281,7 @@ function Export(obj)
     %       end
     
     %% Fix Surfs
+    if ~isfield(hgObjects, 'surface'), hgObjects.surface = []; end
     for hgSurf = hgObjects.('surface')
       if isa(hgSurf.Userdata, 'PrintUniformityBeta.Graphics.UniformityPlotComponent')
         objSurf   = hgSurf.Userdata(1);
@@ -361,6 +366,7 @@ function Export(obj)
     outerRect     = [];
     axesMaxArea   = [0 0];
     
+    if ~isfield(hgObjects, 'PlotAxes'), hgObjects.PlotAxes = []; end
     for ax = hgObjects.('PlotAxes')
       set(ax, 'Units', 'pixels');
       
@@ -414,10 +420,13 @@ function Export(obj)
     %outerRect(1:2)    = outerRect(1:2)+[-15 5];
     outerRect(3:4)    = outerRect(3:4)-outerRect(1:2);
     
+    outerRect         = outerRect + [-30 -20 +60 +160];
+    
     hax = axes('Parent', hdOutput, 'Units','pixels', 'Position', plotRect , ...
-      'Visible', 'off', 'Color', 'none', 'Box', 'on');
+      'Visible', 'on', 'Color', 'none', 'Box', 'off', 'XColor', 'w', 'YColor', 'w');
     hax2 = axes('Parent', hdOutput, 'Units','pixels', 'Position', outerRect , ...
-      'Visible', 'off', 'Color', 'none', 'Box', 'on');
+      'Visible', 'on', 'Color', 'none', 'Box', 'off', 'XColor', 'w', 'YColor', 'w');
+    
     
     %% Fix Text
     titleFont   = 8;
@@ -431,7 +440,7 @@ function Export(obj)
       
       hgText.FontUnits  = fontUnits;
       hgText.FontSize   = hgText.FontSize+adjustFont;
-      
+            
       if hgText.FontSize < smallFont
         hgText.FontSize   = smallFont;
       end
@@ -453,16 +462,39 @@ function Export(obj)
         end
         %disp(str);
         %disp(nstr);
-        hgText.String = nstr;
+        if iscell(nstr) && ~iscellstr(nstr)
+          hgText.String = [nstr{:}];
+        else
+          hgText.String = nstr;
+        end
       catch err
         debugStamp(err,1);
       end
+      
+      if ~strcmpi(hgText.BackgroundColor, 'none') && all(hgText.Extent(3:4)>0)
+        % hgRect            = rectangle('Position', hgText.Extent, ...
+        %   'FaceColor', hgText.BackgroundColor, 'Parent', hgText.Parent, ...
+        %   'EdgeColor', 'none');
+        
+        hgRect            = patch(...
+          [0 hgText.Extent(3)] + hgText.Extent(1), [0 hgText.Extent(4)] + hgText.Extent(2), [10 10], ... %'Position', hgText.Extent, ...
+          'FaceColor', hgText.BackgroundColor, 'Parent', hgText.Parent, ...
+          'EdgeColor', 'none'); % , 'FaceAlpha', 0.5);
+        
+        uistack(hgRect, 'top');
+        
+        hgText.BackgroundColor = 'none';
+      end
+      
+      uistack(hgText, 'top');      
+      
       %hgText.Margin = hgText.Margin + 2;
       %hgText.BackgroundColor = 'g';
     end
     
     
     %% Fix OverlayAxes
+    if ~isfield(hgObjects, 'OverlayAxes'), hgObjects.OverlayAxes = []; end
     for m = 1:numel(hgObjects.('OverlayAxes'))
       ax = hgObjects.('OverlayAxes')(m);
       if m==1
@@ -480,23 +512,28 @@ function Export(obj)
     end
     
     %% Fix ColorBarAxes
+    if ~isfield(hgObjects, 'ColorBarAxes'), hgObjects.ColorBarAxes = []; end
     for m = 1:numel(hgObjects.('ColorBarAxes'))
       ax = hgObjects.('ColorBarAxes')(m);
       if m==1
+        ax.ActivePositionProperty  = 'position';
         ax.Units        = 'pixels';
         axPosition      = ax.Position;
-        axPosition(3)   = max(min(250, plotRect(3)/4), 175);
-        axPosition(4)   = axPosition(3)/(max(ax.XLim)-min(ax.XLim));
+        axPosition(3)   = 350; %max(min(350, plotRect(3)/4), 500);
+        axPosition(4)   = axPosition(3)/(max(ax.XLim)-min(ax.XLim)-2);
+        ax.Clipping     = 'off';
         
         ax.Position = [ ...
-          plotRect(1)+plotRect(3)-axPosition(3) plotRect(2)+plotRect(4)+axPosition(4)/2 axPosition(3:4)];
-        ax.Visible  = 'on';
+          outerRect(1)+outerRect(3)-axPosition(3) plotRect(4)+plotRect(2)+axPosition(4) axPosition(3:4)]; % 
+        ax.Visible  = 'off';
       else
         try delete(ax); end
       end
     end
     
     %% Fix Appearances
+    uistack(hax2, 'bottom');
+    uistack(hax, 'bottom');    
     
     %% Fix Layout
     

@@ -6,11 +6,15 @@ classdef MetricModel < handle
     ID                            = '';
     Name                          = '';
     Symbol                        = '';
+    Unit                          = 'Numeric';
+    Limits                        = [];
     
     PrefixFunction                = @(m   ) [m.Symbol];
     SuffixFunction                = @(m   ) [''];
     ShortFormatFunction           = @(m, v) toString(v);
-    LongFormatFunction            = @(m, v) [m.Prefix ': ' m.getShortFormat(v)];
+    LongFormatFunction            = @(m, v) [m.Prefix ': ' toString(v) m.Suffix]; %[m.Prefix ': ' m.getShortFormat(v)];
+    
+    Samples
   end
   
   properties(Dependent)
@@ -69,6 +73,23 @@ classdef MetricModel < handle
       symbol                      = obj.Symbol;
     end
     
+    function unit = get.Unit(obj)
+      try obj.Unit                = obj.unit; end
+      unit                        = obj.Unit;
+    end    
+        
+    function limits = get.Limits(obj)
+      try obj.Limits              = obj.getLimits(); end
+      limits                      = obj.Limits;
+    end
+    
+    function limits = getLimits(obj)
+      limits                      = [];
+      try limits                  = obj.limits; end
+      
+      % Automatic Limits
+      try if isempty(limits), limits = [min([values{:}]) max([values{:}])]; end; end
+    end
     
     function prefixFunction = get.PrefixFunction(obj)
       try obj.PrefixFunction      = obj.prefixFunction; end
@@ -113,7 +134,7 @@ classdef MetricModel < handle
       longFormat                  = obj.longFormat;
       
       if ~isequal(size(obj.values), size(obj.longFormat))
-        longFormat                = obj.getLongFormat(obj.values);
+        longFormat                = strcat([obj.Prefix ': '], obj.ShortFormat); %obj.getLongFormat(obj.values);
         obj.longFormat            = longFormat;
       end
     end

@@ -78,7 +78,7 @@ classdef (ConstructOnLoad) UDDModel < GrasppeAlpha.Core.Model
           end
           initializeSchema    = false;
         catch err
-          debugStamp(err);
+          debugStamp(err, obj);
           % Grasppe.Kit.Utilities.DisplayError(obj, 1, err);
         end
       end
@@ -98,7 +98,7 @@ classdef (ConstructOnLoad) UDDModel < GrasppeAlpha.Core.Model
         % if numel(
         
       catch err
-        debugStamp(err);
+        debugStamp(err, obj);
         % Grasppe.Kit.Utilities.DisplayError(obj, 1, err);
         beep;
       end
@@ -137,7 +137,7 @@ classdef (ConstructOnLoad) UDDModel < GrasppeAlpha.Core.Model
           %             end
           %           end
         catch err
-          debugStamp(err);
+          debugStamp(err, obj);
           % Grasppe.Kit.Utilities.DisplayError(obj, 1, err);
         end
       end
@@ -189,7 +189,7 @@ classdef (ConstructOnLoad) UDDModel < GrasppeAlpha.Core.Model
       try
         obj = GrasppeAlpha.Data.Models.UDDModel.UDDModel2Struct(obj);
       catch err
-        debugStamp(err);
+        debugStamp(err, obj);
         % Grasppe.Kit.Utilities.DisplayError(obj, 1, err);end
       end
       return;

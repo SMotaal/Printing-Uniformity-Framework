@@ -192,7 +192,6 @@ classdef ProcessProgress < GrasppeAlpha.Core.Prototype
           
           s = sprintf('Processing - %d of %d', round([progress, load]));
           try
-            %s = sprintf('%s: %d of %d', active.Title, round([active.Progress, active.Load]));
             s = sprintf('%s - %d tasks remaining', active.Title, round([active.Load - active.Progress]));
           end
           
@@ -258,15 +257,26 @@ classdef ProcessProgress < GrasppeAlpha.Core.Prototype
             try debugStamp(err, 1, obj); catch, debugStamp(); end;
           end
           
-          
+          try if overall>=0 && overall<=100, s = sprintf('%s (%d%% complete)', s, round(overall)); end; end
         end
         
         obj.notify('ProgressChange');
         
         h=obj.Window;
-        if ~isscalar(h) || ~ishandle(h), h = 0; end
-          
-        try statusbar(0, s); end
+        if ~isscalar(h) || ~ishandle(h) || ~strcmpi(get(h,'Visible'), 'on'), h = 0; end
+        
+        try s = regexprep(s, '%*', '%%'); end % '(?=[^%])%(?=>[^%])', '%%');
+                
+        sb                = [];
+        try sb            = statusbar(h, s); end
+        if isempty(s)
+          try sb          = statusbar(obj.Window, s); end
+          try set(sb.ProgressBar, 'Visible','off', 'Minimum',0, 'Maximum',100, 'Value',overall); end
+        else
+          if ~isequal(h, 0)
+            try set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',overall); end
+          end
+        end
         %try UI.setStatus(s, h, overall);
         %catch err, UI.setStatus(s, 0); end
 

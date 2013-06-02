@@ -60,47 +60,47 @@ classdef Surf < GrasppeAlpha.Graphics.PlotComponent % & GrasppeAlpha.Core.Decora
     
         
     function value = get.AData(obj)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       value = obj.dataGet('AData');
     end
     function set.AData(obj, value)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       obj.dataSet('AData', value);
     end
     
     function value = get.CData(obj)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       value = obj.dataGet('CData');
     end
     function set.CData(obj, value)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       obj.dataSet('CData', value);
     end
     
     function value = get.XData(obj)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       value = obj.dataGet('XData');
     end
     function set.XData(obj, value)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       obj.dataSet('XData', value);
     end
     
     function value = get.YData(obj)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       value = obj.dataGet('YData');
     end
     function set.YData(obj, value)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       obj.dataSet('YData', value);
     end
     
     function value = get.ZData(obj)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       value = obj.dataGet('ZData');
     end
     function set.ZData(obj, value)
-      try debugStamp(obj.ID); catch, debugStamp(); end;
+      if obj.VerboseDebugging, try debugStamp(obj.ID); end; end
       obj.dataSet('ZData', value);
     end   
         

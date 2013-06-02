@@ -127,7 +127,7 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource
       try Value     = eventData.NewValue;   end
       if isequal(char(Parameter), 'SheetID')
         try obj.LinkedPlotObjects(1).ParentFigure.SampleTitle = obj.Reader.GetSheetName(obj.NextSheet); end
-        drawnow expose update;
+        % drawnow expose update;
         
         if isscalar(obj.NextSheet) && isnumeric(obj.NextSheet) && ~isequal(eventData.NewValue, obj.NextSheet)
           eventData.Abort('interrupt');
@@ -232,7 +232,7 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource
             Z = F(X, Y);
             Z(targetFilter) = NaN;
           catch err
-            debugStamp(err, 1);
+            debugStamp(err, 1, obj);
             rethrow(err);
           end
         end
@@ -439,7 +439,7 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource
       end
 
       obj.LinkedPlotObjects(1).ParentFigure.SampleTitle = obj.Reader.GetSheetName(nextSheet);
-      drawnow expose update;
+      % drawnow expose update;
       
       obj.NextSheet = nextSheet;
       obj.SheetID   = nextSheet;
@@ -519,7 +519,7 @@ classdef PlotDataSource < PrintUniformityBeta.Data.DataSource
           end
         end
       catch err
-        debugStamp(err, 1);
+        debugStamp(err, 1, obj);
       end
       obj.validatePlots();
       obj.updatePlots(plotObject.Handle);
