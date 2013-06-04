@@ -41,6 +41,7 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
       obj                         = obj@GrasppeAlpha.Graphics.InAxesComponent('ParentAxes', parentAxes);
       obj                         = obj@PrintUniformityBeta.Graphics.UniformityPlotComponent(dataSource, varargin{:});
       
+      obj.ParentAxes.HandleObject.BusyAction = 'cancel';
       %try obj.ParentAxes          = parentAxes; end
     end
     
@@ -139,10 +140,32 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
               
               if validHandle
                 set(hLine, 'XData', xLine(:), 'YData', yLine(:)); %, 'ZData', zLine);
-              else
-                hLine            = handle(fill(xLine(:), yLine(:), 'w', 'Parent', parent, ... % 'UserData', obj, ...
-                  'LineSmoothing', 'on', 'EdgeColor', [1 1 1] * 0.2, 'linewidth', 0.125, 'LineStyle', '-', ...
+              else                
+                yGridSteps        = unique(max(min(([0:0.5:4])/lineSpecs.yThreshold/lineSpecs.yFactor, 1),0));
+                yGridValues       = yGridSteps*lineSpecs.yThreshold*lineSpecs.yFactor;
+                yGridMinor        = yGridSteps                          * lineSpecs.height  + lineSpecs.top;
+                yGridMajor        = yGridSteps(mod(yGridValues, 1)==0)  * lineSpecs.height  + lineSpecs.top;
+                
+                yGridLines        = [yGridMinor(:) yGridMinor(:)];
+                xGridLines        = repmat([min(xLine) max(xLine)]', 1, numel(yGridSteps))';
+                
+                for m = 1:numel(yGridSteps)
+                  if any(yGridMajor==yGridMinor(m))
+                    line(xGridLines(m, :), yGridLines(m, :), 'Parent', parent, ...
+                      'LineSmoothing', 'off', 'LineWidth', 0.125, 'LineStyle', ':', 'Color', [1 1 1], ... 
+                      'HitTest', 'off'); % hLines(end+1)    = handle();
+                  else
+                    line(xGridLines(m, :), yGridLines(m, :), 'Parent', parent, ...
+                      'LineSmoothing', 'off', 'LineWidth', 0.125, 'LineStyle', ':', 'Color', [1 1 1] * 0.5, ... 
+                      'HitTest', 'off'); % hLines(end+1)    = handle();
+                  end
+                end
+                
+                hLine             = handle(fill(xLine(:), yLine(:), 'w', 'Parent', parent, ... % 'UserData', obj, ...
+                  'LineSmoothing', 'off', 'EdgeColor', [1 1 1] * 0.5, 'linewidth', 0.125, 'LineStyle', '-', ...
                   'HitTest', 'off'));
+                
+                
               end
               
               % if ~validHandle
@@ -255,11 +278,12 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
               'FaceColor', 'flat', 'EdgeColor', 'none', 'HitTest', 'off'));
           else
             hPatch              = handle(patch(x, y, z, 'Parent', parent, ... % ... 'UserData', obj, ...
-              'FaceColor', c, 'EdgeColor', 'none', 'HitTest', 'off'));
+              'FaceColor', c, 'EdgeColor', 'none', 'HitTest', 'off')); % , 'linesmoothing', 'on'));
           end
           
           hBorder             = handle(patch([x x(2)], [y y(2)], [z z(2)], 'Parent', parent, ...
-            'LineWidth', 1, 'EdgeColor', 'k', 'LineStyle', '-', 'HitTest', 'off', 'FaceColor', 'none'));
+            'LineWidth', 1, 'EdgeColor', 'k', 'LineStyle', '-', 'HitTest', 'off', 'FaceColor', 'none', 'Tag', 'BorderOverlay', 'linesmoothing', 'on'));
+          
           
           try setappdata(hPatch, 'RegionBorderPatch', hBorder); end
           
@@ -278,25 +302,19 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
     
     function updateLayout(obj)
       
-      % try uiwait(obj.ParentFigure.Handle, 3); catch, uiwait; end
-      
       try set(obj.ParentFigure.Handle, 'BusyAction', 'cancel'); end
-      
+      try set(obj.ParentFigure.Handle, 'RendererMode', 'manual'); end
       
       try
         
         
         try obj.PlotData            = obj.DataSource.PlotData; end
-        
         dataSource                  = obj.DataSource;
         caseData                    = dataSource.CaseData; %  getCaseData();
-        
         patchRows                   = size(caseData.Masks.Region, 2);
         patchColumns                = size(caseData.Masks.Region, 3);
-        
         regionRows                  = caseData.Length.Rows;     % size(caseData.Masks.Around, 1);
         regionColumns               = caseData.Length.Columns;  % size(caseData.Masks.Across, 1);
-        
         sheetCount                  = caseData.Length.Sheets;
         
         obj.PlotLayout              = evaluateStruct({
@@ -315,15 +333,11 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
         parent                  = obj.ParentAxes.Handle;
         
         %% Reset Parent Axes;
-        %try obj.ParentAxes.AspectRatio = [1 1 1 ]; end
         try
           set(parent, 'Clipping', 'off', 'DataAspectRatio', [1 1 1], 'Box', 'on', ...
             'XTick',        [],   'YTick',        [],   'ZTick',     [],  ...
             'Visible', 'on');
         end
-        %'XColor',   'none',   'YColor',   'none',   'ZColor', 'none'); end
-        
-        % try set(parent, 'XLim', dataSource.XLim, 'YLim', dataSource.YLim, 'ZLim', dataSource.ZLim); %, 'CLim', dataSource.CLim);
         
         %% Reset Plot Objects
         try delete(obj.PlotObjects);    end
@@ -359,7 +373,13 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
         set(parent, 'LooseInset', get(parent, 'TightInset') + [2 20 2 2]);
         
         setID                   = dataSource.SetID;
-        yThreshold              = max(log(setID)/log(100)*3, 0.25); %max(setID/100, 0.10);
+        
+        if setID==0
+          yThreshold            = 2;
+        else
+          yThreshold            = min(max(round(4*(log(([setID]*2+1)))/2)/4-0.75, 1.0), 2.5);
+                  % min(max(round(4*(log(([0 25 50 75 100]*2+1)))/2)/4-0.75, 1.0), 2.5)
+        end
         
         for r = 1:layout.Region.Rows+1
           for c = 1:layout.Region.Columns+1
@@ -384,15 +404,20 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
               labelObject         = handle(text(xCenter, yCenter + regionHeight/8, 1, sprintf('%d:%d', r, c), ...
                 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', ...
                 'Parent', parent, 'HitTest', 'off', 'Margin', 2, ... 'UserData', obj
-                'FontName', 'Helvetica', 'FontSize', 8, 'FontWeight', 'bold')); % 'Interpreter', 'tex'
+                'FontName', 'Gill Sans MT', 'FontSize', 8, 'FontWeight', 'bold')); % 'Interpreter', 'tex'
               
               overlayObjects      = [overlayObjects labelObject];
             end
             
-            try % Line Plots
-              yTrend              = zeros(1, sheetCount);
-              linePlot            = obj.updatePlotLine([], yTrend, x1, y1, regionWidth, regionHeight, yThreshold);
-              overlayObjects      = [overlayObjects linePlot];
+            
+            if isequal(obj.ParentFigure.LinePlotVisible, true)            
+              try % Line Plots
+                yTrend            = zeros(1, sheetCount);
+                linePlot          = obj.updatePlotLine([], yTrend, x1, y1, regionWidth, regionHeight, yThreshold);
+                overlayObjects    = [overlayObjects linePlot];
+              end
+            else
+              linePlot            = [];
             end
             
             plotRegionsClass    = 'PrintUniformityBeta.Models.Visualizer.StatsPlotRegionModel';
@@ -441,9 +466,11 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
       
       obj.updateData();
       
-      obj.ParentFigure.ColorBar.updateLimits;
-      obj.ParentFigure.ColorBar.createLabels;
-      obj.ParentFigure.ColorBar.createPatches;
+      % obj.ParentFigure.ColorBar.updateLimits;
+      % obj.ParentFigure.ColorBar.createLabels;
+      % obj.ParentFigure.ColorBar.createPatches;
+      
+      try set(obj.ParentFigure.Handle, 'RendererMode', 'auto'); end
       
       try set(obj.ParentFigure.Handle, 'BusyAction', 'queue'); end
       
@@ -454,6 +481,8 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
       % try uiwait(obj.ParentFigure.Handle, 3); catch, uiwait; end
       
       try set(obj.ParentFigure.Handle, 'BusyAction', 'cancel'); end
+      try set(obj.ParentFigure.Handle, 'RendererMode', 'manual'); end
+      
       
       try
         
@@ -523,9 +552,10 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
         debugStamp(err, 1, obj);
       end
       
-      % try uiresume(obj.ParentFigure.Handle); catch, uiresume; end
+      try set(obj.ParentFigure.Handle, 'RendererMode', 'auto'); end
       try set(obj.ParentFigure.Handle, 'BusyAction', 'queue'); end
       
+      refresh(obj.ParentFigure.Handle);
       % drawnow('update',  'expose')
       GrasppeKit.Utilities.DelayedCall(@(s, e)drawnow('update',  'expose'), 0.5,'start');
       
@@ -642,7 +672,8 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
               
               try
                 
-                region.PlotLabel.BackgroundColor = patchColor;
+                % region.PlotLabel.BackgroundColor = patchColor;
+                region.PlotLabel.BackgroundColor = 'none';
                 
                 patchLightness   =  1;
                 %try patchLightness = rgb2hsv(patchColor); patchLightness = patchLightness(3); end
@@ -650,19 +681,23 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
                 
                 if patchLightness < 0.75 %max(patchLightness) < 0.75 && mean(patchLightness)<0.75
                   region.PlotLabel.Color = 'w';
+                  try region.PlotLine.FaceColor = [1 1 1] * 0.5; end
+                  try region.PlotLine.EdgeColor = 'k'; end
                 else
                   region.PlotLabel.Color = 'k';
+                  try region.PlotLine.FaceColor = 'w'; end
+                  try region.PlotLine.EdgeColor = [1 1 1] * 0.5; end
                 end
                 
               catch err
                 try region.PlotLabel.BackgroundColor = 'none'; end
               end
             catch err
-              debugStamp(err, 1, obj);
+              % debugStamp(err, 1, obj);
             end
             % regionSheetValues         = roiData.Value.Samples(r, c, :);
           catch err
-            debugStamp(err, 1, obj);
+            % debugStamp(err, 1, obj);
           end
           
           %try uistack(region.PlotLine,'bottom'); end
@@ -690,24 +725,31 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
       try setName   = obj.DataSource.SetName;   end
       try if nargin<2 || isempty(sheetName), sheetName = obj.DataSource.SheetName; end; end
       
-      try
-        if ~isequal(obj.DataSource.NextSheetID, obj.DataSource.SheetID)
-          state   = obj.DataSource.GetSheetName(obj.DataSource.NextSheetID);
-        end
+      %try
+      if ~exist('state', 'var'), state = []; end
+      
+      if isempty(state) && ~isequal(obj.DataSource.NextSheetID, obj.DataSource.SheetID)
+        state   = obj.DataSource.GetSheetName(obj.DataSource.NextSheetID);
       end
+      %end
       
       try nextIndex   = state; end %int2str(obj.DataSource.NextSheetID); end
       try sheetIndex  = sheetName; end % int2str(obj.DataSource.SheetID); end
+            
+      titleStar     = '';
+      try if obj.ParentFigure.ActivePlotAxes == obj.ParentAxes, titleStar = ' *'; end; end
       
-      try obj.ParentFigure.BaseTitle    = [caseName ' ' setName]; end;
-      try obj.ParentFigure.SampleTitle  = ''; end;
-      
-      if exist('state', 'var') && ischar(state)
-        try title(obj.ParentAxes.Handle, [caseName ' ' setName ' ' sheetName ' (' state ')'], 'FontSize', 9, 'FontUnit', 'point'); end
-        try obj.ParentFigure.WindowTitle = ['Printing Uniformity (' nextIndex ')']; end;
+      if ischar(state)
+        try title(obj.ParentAxes.Handle, [caseName ' ' setName ' ' sheetName ' (' state ')' titleStar], 'FontSize', 9, 'FontUnit', 'point', 'FontName', 'Gill Sans MT', 'FontWeight', 'Bold'); end
+        try obj.ParentFigure.SampleTitle = sheetIndex; end;
+        try obj.ParentFigure.WindowTitle = ['Printing Uniformity - ' caseName ':' sheetIndex ' - ' nextIndex]; end;
+        refresh(obj.ParentFigure.Handle);
+        % beep();
       else
-        try title(obj.ParentAxes.Handle, [caseName ' ' setName ' ' sheetName], 'FontSize', 9, 'FontUnit', 'point'); end
-        try obj.ParentFigure.WindowTitle = ['Printing Uniformity (' sheetIndex ')']; end;
+        try title(obj.ParentAxes.Handle, [caseName ' ' setName ' ' sheetName titleStar], 'FontSize', 9, 'FontUnit', 'point', 'FontName', 'Gill Sans MT', 'FontWeight', 'Bold'); end        
+        try obj.ParentFigure.BaseTitle    = [caseName ' ' setName]; end;
+        try obj.ParentFigure.SampleTitle  = sheetIndex; end;
+        try obj.ParentFigure.WindowTitle = ['Printing Uniformity - ' sheetIndex '']; end;
       end
       
       % drawnow update;
@@ -731,36 +773,41 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
     
     function OnOverlayPlotsDataChange(obj, source, event)        % Plot data has changed (need to refresh plot)
       obj.updateLayout();
+      
+      try obj.ParentFigure.ColorBar.updateLimits; end
+      try obj.ParentFigure.ColorBar.createLabels; end
+      try obj.ParentFigure.ColorBar.createPatches; end      
       %obj.updateData();
     end
     
-    function OnMouseDown(obj, source, event)
-    end
-    
-    function OnMouseUp(obj, source, event)
-    end
-    
-    function OnMouseMotion(obj, source, event)
-    end
-    
-    function OnMouseWheel(obj, source, event)
-    end
-    
-    function OnMouseClick(obj, source, event)
-    end
-    
-    function OnMouseDoubleClick(obj, source, event)
-      disp(event);
-    end
-    
-    function OnMousePan(obj, source, event)
-      % disp(event.Data);
-    end
-    
-    function OnMouseScroll(obj, source, event)
-      % disp(event.Data);
-      % disp(event.Data.Scrolling.Vertical);
-    end
+    % function OnMouseDown(obj, source, event)
+    % end
+    %
+    % function OnMouseUp(obj, source, event)
+    % end
+    %
+    % function OnMouseMotion(obj, source, event)
+    % end
+    %
+    % function OnMouseWheel(obj, source, event)
+    % end
+    %
+    % function OnMouseClick(obj, source, event)
+    %   beep();
+    % end
+    %
+    % function OnMouseDoubleClick(obj, source, event)
+    %   disp(event);
+    % end
+    %
+    % function OnMousePan(obj, source, event)
+    %   % disp(event.Data);
+    % end
+    %
+    % function OnMouseScroll(obj, source, event)
+    %   % disp(event.Data);
+    %   % disp(event.Data.Scrolling.Vertical);
+    % end
   end
   
   methods (Access=protected)

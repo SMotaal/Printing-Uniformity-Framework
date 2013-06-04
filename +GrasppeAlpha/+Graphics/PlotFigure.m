@@ -134,7 +134,7 @@ classdef PlotFigure < GrasppeAlpha.Graphics.Figure
       %   obj.Title = [obj.BaseTitle ' (' obj.SampleTitle ')'];
       % end
       try statusbar(obj.Handle, ''); end
-      try refresh(obj.Handle); end
+      % try refresh(obj.Handle); end
     end
     
     

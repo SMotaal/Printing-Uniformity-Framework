@@ -42,7 +42,7 @@ classdef MediatedProperty < GrasppeAlpha.Core.Prototype & GrasppeAlpha.Core.Prop
         description       = propertyMeta.Description;
         
         obj.MetaProperty  = GrasppeAlpha.Core.MetaProperty.Declare( ...
-          alias, class(obj), displayName, category, mode, description);
+          alias, obj, class(obj), displayName, category, mode, description);
         
         if ~isequal(obj.Value, propertyValue)
           obj.Value         = propertyValue;

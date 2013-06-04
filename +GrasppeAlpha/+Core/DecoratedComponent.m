@@ -52,13 +52,17 @@ classdef DecoratedComponent < GrasppeAlpha.Core.Prototype % & GrasppeAlpha.Core.
     
     function attachDecoratorProperty(obj, decorator, decoration)
       %% Attach a property by meta class
-      componentProperties = obj.MetaClass.PropertyList;
+      % componentProperties = obj.MetaClass.PropertyList;
       
-      if ~stropt(decoration, {componentProperties.Name})
-        obj.addprop(decoration);
-      end
+      % if ~isprop(obj, decoration) %isempty(findprop(obj, decoration)) %~stropt(decoration, {componentProperties.Name})
+      %   obj.addprop(decoration);
+      % end
       
       propertyMeta = obj.findprop(decoration);
+      
+      if isempty(propertyMeta)
+        propertyMeta = obj.addprop(decoration);
+      end
       
       propertyMeta.GetObservable = true;
       propertyMeta.SetObservable = true;

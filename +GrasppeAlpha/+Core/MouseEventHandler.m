@@ -196,7 +196,7 @@ classdef MouseEventHandler < GrasppeAlpha.Core.Prototype & GrasppeAlpha.Core.Eve
               
             end
           catch err
-            debugStamp(err, 1, obj);
+            %debugStamp(err, 1, obj);
           end
           
           
@@ -246,7 +246,7 @@ classdef MouseEventHandler < GrasppeAlpha.Core.Prototype & GrasppeAlpha.Core.Eve
             event.Data.Scrolling.Momentum      = lastScrollToc < scrollingThreshold; % && lastScrollToc>1;
             % disp(event);
           catch err
-            debugStamp(err, 1, obj);
+            %debugStamp(err, 1, obj);
             disp(event);
             % beep;
           end

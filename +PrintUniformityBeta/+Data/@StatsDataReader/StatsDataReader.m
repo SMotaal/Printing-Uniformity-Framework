@@ -632,10 +632,12 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader & GrasppeAlpha.Oc
     end
     
     function sheetName  = GetSheetName(obj, sheetID)
-      sheetID                   = [];
+      % sheetID                   = [];
       try if nargin<2, sheetID  = obj.Parameters.SheetID; end; end
       
-      sheetName                 = '';
+      sheetName                 = '#';
+      
+      if ~exist('sheetID', 'var'), return; end
       
       if isequal(sheetID,0)
         sheetName               = 'Run';

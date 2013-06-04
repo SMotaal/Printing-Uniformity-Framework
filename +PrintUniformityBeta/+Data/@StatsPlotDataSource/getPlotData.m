@@ -40,13 +40,15 @@ function plotData = getPlotData(obj, setData)
           metricIDs.Region.Ratio    = 'Imprecision Directionality';
           metricIDs.Region.Factors  = 'Imprecision Factors';      
         otherwise
-          plotData                 = feval([plotDataClass '.empty()']);
+          %plotData                  = feval([plotDataClass '.empty()']);
           return;
       end
       
       %% Prepare PlotModel
       
-      if ~isa(obj.PlotDataMap, 'containers.Map'), obj.PlotDataMap = containers.Map(); end
+      if ~isa(obj.PlotDataMap, 'containers.Map') || ~isvalid(obj.PlotDataMap)
+        obj.PlotDataMap = containers.Map();
+      end
       
       plotData               = feval(plotDataClass);
       
@@ -87,11 +89,34 @@ function plotData = getPlotData(obj, setData)
               runSeries               = reshape([runSamples{:}    ],  size(runSamples   )); % NaN(size(runSamples));
               regionSeries            = reshape([regionSamples{:} ],  size(regionSamples));
               aroundSeries            = reshape([aroundSamples{:} ],  size(aroundSamples));
-              acrossSeries            = reshape([acrossSamples{:} ],  size(acrossSamples));              
-              runData.(fieldID)       = runSeries; % -min(runSeries(:));
-              regionData.(fieldID)    = regionSeries-repmat(runSeries, size(regionSeries, 1), size(regionSeries, 2));
-              aroundData.(fieldID)    = aroundSeries-repmat(runSeries, size(aroundSeries, 1), size(aroundSeries, 2));
-              acrossData.(fieldID)    = acrossSeries-repmat(runSeries, size(acrossSeries, 1), size(acrossSeries, 2));
+              acrossSeries            = reshape([acrossSamples{:} ],  size(acrossSamples));  
+              
+              
+              switch lower(obj.variableID)
+                % case 'inaccuracy'
+                %   runData.(fieldID)       = runSeries; % -min(runSeries(:));
+                %   regionData.(fieldID)    = regionSeries-repmat(runSeries, size(regionSeries, 1), size(regionSeries, 2));
+                %   aroundData.(fieldID)    = aroundSeries-repmat(runSeries, size(aroundSeries, 1), size(aroundSeries, 2));
+                %   acrossData.(fieldID)    = acrossSeries-repmat(runSeries, size(acrossSeries, 1), size(acrossSeries, 2));
+                case {'inaccuracy'}
+                  seriesBase              = floor(min(abs([runSeries(:)' regionSeries(:)' aroundSeries(:)' acrossSeries(:)']))*2)/2;
+                  runData.(fieldID)       = abs(runSeries   ) - seriesBase; % -min(runSeries(:));
+                  regionData.(fieldID)    = abs(regionSeries) - seriesBase; % -repmat(runSeries, size(regionSeries, 1), size(regionSeries, 2));
+                  aroundData.(fieldID)    = abs(aroundSeries) - seriesBase; %-repmat(runSeries, size(aroundSeries, 1), size(aroundSeries, 2));
+                  acrossData.(fieldID)    = abs(acrossSeries) - seriesBase; %-repmat(runSeries, size(acrossSeries, 1), size(acrossSeries, 2));
+                case {'imprecision'}
+                  seriesBase              = floor(min([runSeries(:)' regionSeries(:)' aroundSeries(:)' acrossSeries(:)'])*2)/2;
+                  runData.(fieldID)       = runSeries     - seriesBase; % -min(runSeries(:));
+                  regionData.(fieldID)    = regionSeries  - seriesBase; % -repmat(runSeries, size(regionSeries, 1), size(regionSeries, 2));
+                  aroundData.(fieldID)    = aroundSeries  - seriesBase; %-repmat(runSeries, size(aroundSeries, 1), size(aroundSeries, 2));
+                  acrossData.(fieldID)    = acrossSeries  - seriesBase; %-repmat(runSeries, size(acrossSeries, 1), size(acrossSeries, 2));                                  
+                otherwise
+                  runData.(fieldID)       = runSeries; % -min(runSeries(:));
+                  regionData.(fieldID)    = regionSeries; % -repmat(runSeries, size(regionSeries, 1), size(regionSeries, 2));
+                  aroundData.(fieldID)    = aroundSeries; %-repmat(runSeries, size(aroundSeries, 1), size(aroundSeries, 2));
+                  acrossData.(fieldID)    = acrossSeries; %-repmat(runSeries, size(acrossSeries, 1), size(acrossSeries, 2));
+              end
+                
             end
           catch err
             % switch err.identifier

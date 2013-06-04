@@ -1,4 +1,4 @@
-classdef PrintUniformityBeta
+classdef PrintUniformityBetaApp
   %UPBETA Printing Uniformity Research (Beta)
   %   Using GrasppeAlpha.Core.Prototypes
   
@@ -7,6 +7,7 @@ classdef PrintUniformityBeta
   
   methods (Static)
     exportRegionPlots;
+    exportStatsPlots;
     % demoViewerRegions;
     % demoViewerMultiPlots;
     demoSurfs;

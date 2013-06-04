@@ -18,7 +18,11 @@ function Export(obj)
     
     %% Options
     pageScale   = 150;
-    pageSize    = [11 8.5] .* 150;
+    pageSize    = [11 8.5]; %  .* 150;
+    
+    if ~obj.IsVisible
+      obj.Position = [obj.Position(1:2) [800 600]];
+    end
     
     screenPPI   = get(0, 'ScreenPixelsPerInch');
     
@@ -401,7 +405,7 @@ function Export(obj)
       axesMaxArea = max([axesMaxArea; axPosition(3:4)]);
       
       %% Outer Rect
-      inset         = ax.TightInset;
+      inset         = ax.LooseInset;
       exBottomLeft  = axBottomLeft - inset(1:2) - 10;
       exTopRight    = axTopRight   + inset(3:4) + 10; %+ inset(1:2);
       
@@ -420,7 +424,8 @@ function Export(obj)
     %outerRect(1:2)    = outerRect(1:2)+[-15 5];
     outerRect(3:4)    = outerRect(3:4)-outerRect(1:2);
     
-    outerRect         = outerRect + [-30 -20 +60 +160];
+    %outerRect         = outerRect + [-30 -20 +60 +160];
+    outerRect         = plotRect  + [-300 -300 +600 +700];
     
     hax = axes('Parent', hdOutput, 'Units','pixels', 'Position', plotRect , ...
       'Visible', 'on', 'Color', 'none', 'Box', 'off', 'XColor', 'w', 'YColor', 'w');
@@ -472,14 +477,14 @@ function Export(obj)
       end
       
       if ~strcmpi(hgText.BackgroundColor, 'none') && all(hgText.Extent(3:4)>0)
-        % hgRect            = rectangle('Position', hgText.Extent, ...
-        %   'FaceColor', hgText.BackgroundColor, 'Parent', hgText.Parent, ...
-        %   'EdgeColor', 'none');
-        
-        hgRect            = patch(...
-          [0 hgText.Extent(3)] + hgText.Extent(1), [0 hgText.Extent(4)] + hgText.Extent(2), [10 10], ... %'Position', hgText.Extent, ...
+        hgRect            = rectangle('Position', hgText.Extent, ...
           'FaceColor', hgText.BackgroundColor, 'Parent', hgText.Parent, ...
-          'EdgeColor', 'none'); % , 'FaceAlpha', 0.5);
+          'EdgeColor', 'none');
+        
+        % hgRect            = patch(...
+        %   [0 hgText.Extent(3)] + hgText.Extent(1), [0 hgText.Extent(4)] + hgText.Extent(2), [10 10], ... %'Position', hgText.Extent, ...
+        %   'FaceColor', hgText.BackgroundColor, 'Parent', hgText.Parent, ...
+        %   'EdgeColor', 'none'); % , 'FaceAlpha', 0.5);
         
         uistack(hgRect, 'top');
         
@@ -523,8 +528,10 @@ function Export(obj)
         axPosition(4)   = axPosition(3)/(max(ax.XLim)-min(ax.XLim)-2);
         ax.Clipping     = 'off';
         
-        ax.Position = [ ...
-          outerRect(1)+outerRect(3)-axPosition(3) plotRect(4)+plotRect(2)+axPosition(4) axPosition(3:4)]; % 
+        ax.Position     = [outerRect(1)+outerRect(3)-axPosition(3)-1 outerRect(2)+outerRect(4)-100-axPosition(4)-20 axPosition(3:4)];
+        
+        % ax.Position = [ ...
+        %   outerRect(1)+outerRect(3)-axPosition(3) plotRect(4)+plotRect(2)+axPosition(4) axPosition(3:4)]; %
         ax.Visible  = 'off';
       else
         try delete(ax); end
@@ -536,6 +543,19 @@ function Export(obj)
     uistack(hax, 'bottom');    
     
     %% Fix Layout
+    
+    try
+      hdOverlays        = unique(findall(hdOutput, 'tag', 'BorderOverlay')); 
+      
+      for p = 1:numel(hdOverlays)
+        uistack(hdOverlays(p), 'top');
+      end
+    end
+    
+    try
+      hdGillSans        = unique(findall(hdOutput, 'FontName', 'Gill Sans MT'));
+      set(hdGillSans, 'FontName', 'Helvetica');
+    end
     
     %% Output Results
     assignin('base', 'hgObjects', hgObjects);

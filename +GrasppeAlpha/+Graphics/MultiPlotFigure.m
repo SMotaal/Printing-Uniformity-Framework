@@ -53,6 +53,7 @@ classdef MultiPlotFigure < GrasppeAlpha.Graphics.PlotFigure
       if isa(activePlotAxesComponent, 'GrasppeAlpha.Graphics.PlotAxes') && ...
           isvalid(activePlotAxesComponent)
         try axes(activePlotAxesComponent.Handle); end
+        try activePlotAxesComponent.updatePlotTitle; end
       end
       
     end
@@ -207,14 +208,14 @@ classdef MultiPlotFigure < GrasppeAlpha.Graphics.PlotFigure
       plotArea      = obj.PlotArea;
       if ~isnumeric(plotArea) || numel(plotArea)~=4, return; end
       
-      plotInset     = [0 0 0 0];
+      plotInset     = [5 5 5 5];
       try plotInset = obj.PlotAxes{1}.handleGet('LooseInset') + 5; end
       
       try
-        obj.TitleText.handleSet('Units', 'pixels');
+        set(obj.TitleText.Handle, 'Units', 'pixels');
         
-        titlePosition = obj.TitleText.handleGet('Position');
-        titleExtent   = obj.TitleText.handleGet('Extent');
+        titlePosition = get(obj.TitleText.Handle, 'Position');
+        titleExtent   = get(obj.TitleText.Handle, 'Extent');
         
         % titlePosition = [plotArea(1) + plotArea(3)/2 ... %-titleExtent(3))/2  ...
         %   plotArea(2)+plotArea(4)-(1*titleExtent(4))  ...
@@ -230,30 +231,32 @@ classdef MultiPlotFigure < GrasppeAlpha.Graphics.PlotFigure
       end
       
       try
-        obj.TitleText.handleSet('Position', titlePosition);
-        obj.TitleText.handleSet('HorizontalAlignment', 'left');
-        obj.TitleText.handleSet('VerticalAlignment', 'bottom');
+        set(obj.TitleText.Handle, 'Position', titlePosition, ...
+          'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom');
+        % obj.TitleText.handleSet('Position', titlePosition);
+        % obj.TitleText.handleSet('HorizontalAlignment', 'left');
+        % obj.TitleText.handleSet('VerticalAlignment', 'bottom');
       catch err
         debugStamp(err, 1, obj);
       end
       
       try
         colorBar = obj.ColorBar;
-        colorBar.handleSet('Units', 'pixels');
+        set(colorBar.Handle, 'Units', 'pixels');
         colorBarPosition  = colorBar.handleGet('Position');
         colorBarWidth     = 350;
         colorBarHeight    = 35;
-        colorBarOffset    = 5; % (titleExtent(4) - colorBarHeight)/2; %(20-colorBarHeight)
+        colorBarOffset    = -5; % (titleExtent(4) - colorBarHeight)/2; %(20-colorBarHeight)
         colorBarPosition = [...
           plotArea(1)+plotArea(3)-colorBarWidth ...
           plotArea(2)+plotArea(4)-colorBarOffset ...
           colorBarWidth colorBarHeight];
-        colorBarPosition = colorBarPosition + [0 plotInset(2)+plotInset(4) 0 0];
+        colorBarPosition = colorBarPosition + [+plotInset(1) +plotInset(2) 0 0];
       catch err
         debugStamp(err, 1, obj);
       end
       
-      try obj.ColorBar.handleSet('Position', colorBarPosition); end
+      try set(obj.ColorBar.Handle, 'Position', colorBarPosition); end
       
       try
         % obj.ColorBar.updateLimits;
@@ -274,11 +277,19 @@ classdef MultiPlotFigure < GrasppeAlpha.Graphics.PlotFigure
       else
         plotAxes  = obj.PlotAxes;
       end
-      
-      for m = 1:numel(plotAxes)
-        plotAxes{m}.FontSize = 6;
-        plotAxes{m}.handleSet('LooseInset', [0,0,0,0]);
+            
+      try
+        hAxes       = cellfun(@(c)c.Handle, plotAxes);
+        set(hAxes, 'FontSize', 6, 'LooseInset', [0,0,0,0]);
+      catch err
+        debugStamp(err, 1, obj);
       end
+      
+      % for m = 1:numel(plotAxes)
+        % plotAxes{m}.FontSize = 6;
+        % plotAxes{m}.handleSet('LooseInset', [0,0,0,0]);
+        % set(plotAxes{m}.Handle, 'FontSize', 6, 'LooseInset', [0,0,0,0]);
+      % end
       
     end
     
@@ -341,12 +352,13 @@ classdef MultiPlotFigure < GrasppeAlpha.Graphics.PlotFigure
         columns = 0; rows = 0; maxU = 0;
         
         for w = minCellWidth:plottingWidth
-          h  = w/cellWidthRatio;
+          h           = w/cellWidthRatio;
+          u           = (w*h*cells)/(plottingWidth*plottingHeight);
           for c = minColumns:maxColumns
-            r = ceil(cells/c);
-            wT = c*w;
-            hT = r*h;
-            u = (w*h*cells)/(plottingWidth*plottingHeight);
+            r         = ceil(cells/c);
+            wT        = c*w;
+            hT        = r*h;
+            %u = (w*h*cells)/(plottingWidth*plottingHeight);
             if (u>maxU) && (u<=1) && wT<=plottingWidth && hT<=plottingHeight
               columns     = c;
               rows        = r;
@@ -419,14 +431,17 @@ classdef MultiPlotFigure < GrasppeAlpha.Graphics.PlotFigure
           
           try
             if plotBottom < (plottingHeight)
-              thisAxes.handleSet('Parent', obj.Handle); %obj.PlotAxes{m}.
+              set(thisAxes.Handle, 'Parent', obj.Handle); %obj.PlotAxes{m}.
               if ~isempty(thisAxes) && ishandle(thisAxes.Handle)
-                thisAxes.handleSet('ActivePositionProperty', 'OuterPosition');
-                thisAxes.handleSet('Units', 'pixels');
-                thisAxes.handleSet('Position', plotPosition(m, :));
+                set(thisAxes.Handle, 'ActivePositionProperty', 'OuterPosition', ...
+                  'Units', 'pixels', 'Position', plotPosition(m, :));
+                %thisAxes.handleSet('ActivePositionProperty', 'OuterPosition');
+                %thisAxes.handleSet('Units', 'pixels');
+                %thisAxes.handleSet('Position', plotPosition(m, :));
               end
             else
-              thisAxes.handleSet('Parent', obj.HiddenFigure);
+              set(thisAxes.Handle, 'Parent', obj.HiddenFigure);
+              %thisAxes.handleSet('Parent', obj.HiddenFigure);
             end
           catch err
             if obj.VerboseDebugging, try debugStamp(obj.ID); end; end

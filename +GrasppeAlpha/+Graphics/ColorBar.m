@@ -254,7 +254,9 @@ classdef ColorBar < GrasppeAlpha.Graphics.Axes
       
       try
         label = obj.getLabel(index);
-        label.FontSize = 6.5; %obj.FontSize;
+        label.FontSize    = 6.5; %obj.FontSize;
+        label.FontName    = 'Gill Sans MT';
+        label.FontWeight    = 'Bold';
         %label.FontWeight = 'bold';
         label.HandleObject.HorizontalAlignment  = 'center';
         label.HandleObject.VerticalAlignment    = 'middle';

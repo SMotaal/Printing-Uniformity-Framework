@@ -47,7 +47,7 @@ classdef Prototype < handle & dynamicprops %& hgsetget
             metaData    = definedProperties{m}(n,2:5);
             
             metaProperties.(property) = GrasppeAlpha.Core.MetaProperty.Declare( ...
-              property, definingClass, metaData{:});
+              property, obj, definingClass, metaData{:});
           end
         end
         obj.MetaProperties = metaProperties;
@@ -76,17 +76,31 @@ classdef Prototype < handle & dynamicprops %& hgsetget
       propertyTable = {};
       try
         tree        = vertcat(class(obj), superclasses(obj));
-        properties  = regexp(strcat(tree, suffix),'(?<=\.)\w+$','match');
+        properties  = regexp(strcat(tree, suffix), '(?<=\.)\w+$', 'match');
+        %properties  = regexp(strcat(tree, suffix),'[A-Z][^\.]*$', 'match');
         properties  = horzcat(properties{:});
         
-        for m = 1:numel(properties)         
-          try
-            classProperties         = obj.(properties{m}); 
-            propertyTable{1, end+1} = classProperties;
-            propertyTable{2, end}   = tree{m};
-          end
-          
-        end
+        idx = cellfun(@(c)isprop(obj, c),properties);
+        
+        if ~any(idx), return; end
+        
+        propertyTable   = cellfun(@(c)obj.(c), properties(idx), 'UniformOutput', false)';
+        propertyTable   = [propertyTable tree(idx)]';
+        
+        %propertyTable = [cellfun(@(c)obj.(c), properties(idx), 'UniformOutput', false)' tree{idx};];
+        
+        %propertyTable{1, :} = cellfun(@(c)obj.(c), properties(idx), 'UniformOutput', false);
+        %propertyTable{2, :} = tree{idx};%cellfun(@(c)obj.(c), properties(idx), 'UniformOutput', false);
+        %properties  = properties(idx);
+        
+        % for m = 1:numel(properties)
+        %   try
+        %     classProperties         = s.(properties{m});
+        %     propertyTable{1, end+1} = classProperties;
+        %     propertyTable{2, end}   = tree{m};
+        %   end
+        %
+        % end
       end
     end
     
@@ -174,7 +188,7 @@ classdef Prototype < handle & dynamicprops %& hgsetget
         if ~iscell(prototypes)
           prototypes = {};
         end
-        prototypes = {prototypes{:}, obj};
+        prototypes = [prototypes {obj}];
       end
     end
     

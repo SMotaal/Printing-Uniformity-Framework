@@ -11,6 +11,7 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
     ActiveSource    = [];
     CurrentObjectListener = [];
     SelectingSource = false;
+    SettingValue    = false;
   end
   
   properties (GetObservable, SetObservable)
@@ -24,7 +25,7 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
   
   methods
     
-    function obj = StatsPlotMediator(plotTypes, plotOptions)
+    function obj = StatsPlotMediator(plotTypes, plotOptions, varargin)
       obj = obj@PrintUniformityBeta.UI.PlotMediator;
       
       if exist('plotTypes', 'var') && ~isempty(plotTypes), ...
@@ -32,8 +33,9 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
       if exist('plotOptions', 'var') && ~isempty(plotOptions), ...
           obj.PlotOptions = plotOptions; end
       
-      obj.FigureOptions =  {'PlotAxesLength', numel(obj.PlotTypes)};
+      plotOptions = [{obj.PlotOptions} varargin];
       
+      obj.FigureOptions =  {'PlotAxesLength', numel(plotOptions)};
       obj.createFigure(obj.FigureOptions{:}, 'IsVisible', false, 'Renderer', 'opengl');
       
       obj.PlotFigure.PlotMediator = obj;
@@ -46,13 +48,13 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
       
       plotTypes   = obj.PlotTypes;
       plotAxes    = obj.PlotFigure.PlotAxes;
-      plotOptions = obj.PlotOptions;
-      for m = 1:numel(plotTypes)
-        obj.createPlot(plotTypes{m}, plotAxes{m}, [], plotOptions{:});
+      %for m = 1:numel(plotTypes)
+      for n = 1:numel(plotOptions)
+        obj.createPlot(plotTypes{1}, plotAxes{n}, [], plotOptions{n}{:});
       end
+      %end
       
       obj.attachMediations;
-      
       obj.updateControls;
       
     end
@@ -115,17 +117,20 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
     
     function activeSource = get.ActiveSource(obj)
       activeSource            = [];
+      settingSource           = obj.SelectingSource;
+      obj.SelectingSource     = true;
       if ~isscalar(obj.ActiveSource) || ...
           ~isvalid(obj.ActiveSource) || ...
           ~isa(obj.ActiveSource, 'PrintUniformityBeta.Data.DataSource')
         try obj.ActiveSource  = obj.DataSources{1}; end
       end
       activeSource            = obj.ActiveSource;
+      obj.SelectingSource     = settingSource;
     end
     
     function updateControls(obj)
       
-      disp('Updating Controls');
+      %disp('Updating Controls');
       if ~isempty(obj.CaseIDControl)
         try
           selectedCase = find(strcmpi(obj.ActiveSource.CaseID, obj.Cases));
@@ -181,16 +186,27 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
               try currentObject       = currentObject.ParentAxes; end
             end
             
+            try 
+              if isa(currentObject, 'GrasppeAlpha.Graphics.Axes') && ~isequal(obj.PlotFigure.ActivePlotAxes, currentObject)
+                obj.PlotFigure.ActivePlotAxes   = currentObject;
+              end
+            end
+            
             try
               activeSource            = getappdata(currentObject, 'PlotDataSource');
             end
           end
           
+          oldSource                   = obj.ActiveSource.PlotObjects{1};
+          try activeSource.PlotObjects{1}.updatePlotTitle; end
+          
           obj.ActiveSource            = activeSource;
+          try oldSource.updatePlotTitle; end          
           obj.updateControls();
         end
       end
       obj.SelectingSource = false;
+      try obj.PlotFigure.Pointer  = 'arrow'; end
     end
     
     function modifier = getCurrentModifier(obj)
@@ -204,8 +220,8 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
       
       %GrasppeKit.Utilities.DelayedCall(@(s, e)obj.updateCase(source.getSelectedItem), 0.5,'start');
       if obj.SelectingSource, return; end
-      try obj.PlotFigure.Pointer  = 'watch'; end
       try obj.updateCase(source.getSelectedItem, obj.getCurrentModifier()); end
+      
       try obj.PlotFigure.Pointer  = 'arrow'; end
       %try if source.hasFocus, obj.updateCase(source.getSelectedItem, obj.getCurrentModifier()); end; end
     end
@@ -217,16 +233,19 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
       try animate = obj.PlotFigure.Animate; obj.PlotFigure.Animate = 'off'; end
       try
         if ~isempty(modifier) &&  all(strcmpi(modifier, 'command'))
-          % try cellfun(@(p)cla(p.Handle), obj.PlotFigure.PlotAxes); drawnow update expose; end
+          try obj.PlotFigure.Pointer  = 'watch'; end
           for m = 1:numel(obj.DataSources);
-            % try if ~strcmpi(obj.DataSources{m}.CaseID, id), obj.DataSources{m}.CaseID = id; end; end
               try if ~isequal(obj.DataSources{m}.CaseID, id) obj.DataSources{m}.CaseID = id; end; end
           end
-          %try cellfun(@(p)p.updateLayout, obj.PlotFigure.PlotAxes); end; % drawnow update expose; end
           try obj.PlotFigure.layoutPlotAxes(); end;  try obj.PlotFigure.layoutOverlay(); end
           try cellfun(@(p)p.updateLayout, obj.PlotFigure.PlotAxes); drawnow update expose; end
+          try obj.PlotFigure.Pointer  = 'arrow'; end
         else
-          activePlotComponent.DataSource.CaseID  = id;
+          if ~isequal(activePlotComponent.DataSource.CaseID, id)
+            try obj.PlotFigure.Pointer  = 'watch'; end
+            try activePlotComponent.DataSource.CaseID  = id; end
+            try obj.PlotFigure.Pointer  = 'arrow'; end
+          end
         end
       end
       drawnow;
@@ -236,10 +255,11 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
     function selectSet(obj, source, event)
       % GrasppeKit.Utilities.DelayedCall(@(s, e)obj.updateSet(source.getSelectedItem), 0.5,'start');
       if obj.SelectingSource, return; end
-      try obj.PlotFigure.Pointer  = 'watch'; end
+      % try obj.PlotFigure.Pointer  = 'watch'; end
       try obj.updateSet(source.getSelectedItem, obj.getCurrentModifier()); end
-      try obj.PlotFigure.Pointer  = 'arrow'; end
+      % try obj.PlotFigure.Pointer  = 'arrow'; end
       %try if source.hasFocus, obj.updateSet(source.getSelectedItem, obj.getCurrentModifier()); end; end;
+      try obj.PlotFigure.Pointer  = 'arrow'; end
     end
     
     function updateSet(obj, id, modifier, varargin)
@@ -249,17 +269,21 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
       try animate = obj.PlotFigure.Animate; obj.PlotFigure.Animate = 'off'; end
       try
         if ~isempty(modifier) &&  all(strcmpi(modifier, 'command'))
-          % try cellfun(@(p)cla(p.Handle), obj.PlotFigure.PlotAxes); drawnow update expose; end
+          try obj.PlotFigure.Pointer  = 'watch'; end
           for m = 1:numel(obj.DataSources);
             try if ~isequal(obj.DataSources{m}.SetID, id) obj.DataSources{m}.SetID = id; end; end
           end
-          %try cellfun(@(p)p.updateLayout, obj.PlotFigure.PlotAxes); end; % drawnow update expose; end
           try cellfun(@(p)p.updateLayout, obj.PlotFigure.PlotAxes); end
           try obj.PlotFigure.layoutPlotAxes(); end;  try obj.PlotFigure.layoutOverlay(); end
           drawnow update expose;
+          try obj.PlotFigure.Pointer  = 'arrow'; end
         else
-          activePlotComponent.DataSource.SetID  = id;
-          try obj.PlotFigure.layoutPlotAxes(); end;  try obj.PlotFigure.layoutOverlay(); end
+          if ~isequal(activePlotComponent.DataSource.SetID, id)
+            try obj.PlotFigure.Pointer  = 'watch'; end
+            try activePlotComponent.DataSource.SetID  = id; end
+            try obj.PlotFigure.layoutPlotAxes(); end;  try obj.PlotFigure.layoutOverlay(); end
+            try obj.PlotFigure.Pointer  = 'arrow'; end
+          end         
         end
       end
       drawnow;
@@ -270,10 +294,11 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
     function selectVariable(obj, source, event)
       % GrasppeKit.Utilities.DelayedCall(@(s, e)obj.updateVariable(source.getSelectedItem), 0.5,'start');
       if obj.SelectingSource, return; end
-      try obj.PlotFigure.Pointer  = 'watch'; end
+      % try obj.PlotFigure.Pointer  = 'watch'; end
       try obj.updateVariable(source.getSelectedItem, obj.getCurrentModifier()); end
-      try obj.PlotFigure.Pointer  = 'arrow'; end
+      % try obj.PlotFigure.Pointer  = 'arrow'; end
       %try if source.hasFocus, obj.updateVariable(source.getSelectedItem, obj.getCurrentModifier()); end; end
+      try obj.PlotFigure.Pointer  = 'arrow'; end
     end
     
     function updateVariable(obj, id, modifier, varargin)
@@ -283,16 +308,19 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
       try animate = obj.PlotFigure.Animate; obj.PlotFigure.Animate = 'off'; end
       try
         if ~isempty(modifier) &&  all(strcmpi(modifier, 'command'))
-          % try cellfun(@(p)cla(p.Handle), obj.PlotFigure.PlotAxes); drawnow update expose; end
+          try obj.PlotFigure.Pointer  = 'watch'; end
           for m = 1:numel(obj.DataSources);
             try if ~isequal(obj.DataSources{m}.VariableID, id) obj.DataSources{m}.VariableID = id; end; end
-            % try obj.DataSources{m}.VariableID = id; end
           end
-          %try cellfun(@(p)p.updateLayout, obj.PlotFigure.PlotAxes); end; % drawnow update expose; end
           try obj.PlotFigure.layoutPlotAxes(); end;  try obj.PlotFigure.layoutOverlay(); end
           try cellfun(@(p)p.updateLayout, obj.PlotFigure.PlotAxes); drawnow update expose; end
+          try obj.PlotFigure.Pointer  = 'arrow'; end
         else
-          activePlotComponent.DataSource.VariableID  = id;
+          if ~isequal(activePlotComponent.DataSource.VariableID, id)
+            try obj.PlotFigure.Pointer  = 'watch'; end
+            try activePlotComponent.DataSource.VariableID  = id; end
+            try obj.PlotFigure.Pointer  = 'arrow'; end
+          end
         end
       end
       % try cellfun(@(p)p.updateLayout, obj.PlotFigure.PlotAxes); end; % drawnow update expose; end
@@ -304,7 +332,12 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
     
     
     function showFigure(obj)
+      try cellfun(@(p)p.updateLayout, obj.PlotFigure.PlotAxes); end
+      try obj.PlotFigure.ColorBar.createPatches; end
+      try obj.PlotFigure.ColorBar.createLabels; end
       obj.PlotFigure.present; % show;
+      try obj.PlotFigure.Pointer  = 'arrow'; end
+      %try obj.PlotFigure.layoutPlotAxes(); end;  try obj.PlotFigure.layoutOverlay(); end      
       
       % for m = 1:numel(obj.DataSources);
       %   dataSource = obj.DataSources{m};
@@ -356,7 +389,8 @@ classdef StatsPlotMediator < PrintUniformityBeta.UI.PlotMediator
     function attachMediations(obj)
       % try
       % obj.PlotFigure.PlotMediator = obj;
-      obj.PlotFigure.prepareMediator(obj.DataProperties, obj.AxesProperties);
+      % obj.PlotFigure.prepareMediator(obj.DataProperties, obj.AxesProperties);
+      obj.createControls(obj.PlotFigure);
       % end
     end
   end

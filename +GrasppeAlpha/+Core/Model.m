@@ -131,7 +131,7 @@ classdef Model < GrasppeAlpha.Core.Prototype & matlab.mixin.Copyable
           catch err
             if ~strcontains(err.identifier, 'noSetMethod')
               try debugStamp(obj.ID, 5); end
-              disp(['Could not set ' names{i} ' for ' class(obj) '. ' err.message]);
+              % disp(['Could not set ' names{i} ' for ' class(obj) '. ' err.message]);
             end
           end
         end

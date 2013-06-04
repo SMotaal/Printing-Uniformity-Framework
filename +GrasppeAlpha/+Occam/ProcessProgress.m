@@ -267,8 +267,19 @@ classdef ProcessProgress < GrasppeAlpha.Core.Prototype
         
         try s = regexprep(s, '%*', '%%'); end % '(?=[^%])%(?=>[^%])', '%%');
                 
+
+        
+          
+
         sb                = [];
-        try sb            = statusbar(h, s); end
+        
+        if isequal(h, 0) || isequal(obj.Window, 0)
+          statusbar(0, s);
+          return;
+        else
+          sb = statusbar(h, s);
+        end
+        
         if isempty(s)
           try sb          = statusbar(obj.Window, s); end
           try set(sb.ProgressBar, 'Visible','off', 'Minimum',0, 'Maximum',100, 'Value',overall); end

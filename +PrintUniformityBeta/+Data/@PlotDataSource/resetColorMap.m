@@ -27,4 +27,9 @@ function resetColorMap(obj, cmap)
     
     obj.notify('PlotMapChange');
   end
+  
+  % try obj.PlotObjects{1}.ParentFigure.ColorBar.updateLimits; end
+  % try obj.PlotObjects{1}.ParentFigure.ColorBar.createLabels; end
+  % try obj.PlotObjects{1}.ParentFigure.ColorBar.createPatches; end
+
 end

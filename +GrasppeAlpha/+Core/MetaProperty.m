@@ -30,9 +30,13 @@ classdef MetaProperty < GrasppeAlpha.Core.Prototype
       properties = GrasppeAlpha.Core.MetaProperty.MetaPropertiesRecord(grouping, varargin{:});
     end
     
-    function propertyMeta = Declare(name, definingClass, displayName, category, mode, description)
+    function propertyMeta = Declare(name, object, definingClass, displayName, category, mode, description)
       
-      nativeMeta    = metaProperty( definingClass, name );
+      if isobject(object)
+        nativeMeta  = findprop(object, name);
+      else
+        nativeMeta  = metaProperty( definingClass, name );
+      end
       if ~isempty(nativeMeta)
         editable  = isequal(nativeMeta.SetAccess, 'public') && ~nativeMeta.Constant && ~nativeMeta.Abstract;
       else

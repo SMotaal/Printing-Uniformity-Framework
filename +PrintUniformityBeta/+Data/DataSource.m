@@ -50,7 +50,7 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
   
   properties (Access=protected)
     parameterSetTimer;                            % Threaded parameter Set timer
-    parameterSetDelay           = 0.25;           % Threaded parameter Set delay
+    parameterSetDelay           = 0.5;           % Threaded parameter Set delay
     
     %caseState                   = ;
     %setState                    = GrasppeAlpha.Core.Enumerations.TaskStates.Initializing;
@@ -142,6 +142,12 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       if isequal(obj.DelayedUpdate, false) ||  exist('immediate', 'var') && isequal(immediate, true)
           obj.(name)            = value;    % disp(value);
         return;
+      else
+        if strcmpi(name, 'SheetID')
+          currentSheetName      = obj.SheetName; %  GetSheetName(obj.SheetID);
+          nextSheetName         = obj.GetSheetName(value);
+          obj.PlotObjects{1}.updatePlotTitle([], currentSheetName, nextSheetName);
+        end
       end
       
       callback                  = @(src, evt) obj.setParameter(name, value, true);
@@ -191,7 +197,9 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
     
     function OnSheetIDChange(obj, source, event)
       if isequal(obj.State, GrasppeAlpha.Core.Enumerations.TaskStates.Initializing), return; end;
-      % consumed                  = false;
+      
+      if ~isequal(obj.Reader.SheetID, obj.SheetID), obj.PlotObjects{1}.ParentFigure.notifySourceSheetChanged(obj, obj.SheetID); end
+      
       obj.states.GetSheet       = GrasppeAlpha.Core.Enumerations.TaskStates.Running;
       obj.Reader.SheetID        = obj.SheetID;
       obj.processSheetData();

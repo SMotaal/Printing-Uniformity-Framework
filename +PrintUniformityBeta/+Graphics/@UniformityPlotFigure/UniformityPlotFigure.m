@@ -7,6 +7,8 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
     DataSources           = {};
     Animate               = false;
     AnimationTimer        = [];
+    LatestSheetSet        = 0;
+    LinePlotVisible       = true;
   end
   
   events
@@ -16,13 +18,14 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
   methods
     function obj = UniformityPlotFigure(varargin)
       obj = obj@GrasppeAlpha.Graphics.MultiPlotFigure(varargin{:});
+      obj.HandleObject.BusyAction = 'cancel';
       refresh(obj.Handle);
     end
     
     function set.Animate(obj, animate)
       t                   = obj.AnimationTimer;
       
-      interval            = 1;
+      interval            = 0.5;
       try interval        = t.Period; end
       
       running             = false;
@@ -129,6 +132,13 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
                 %   plotAxes      = findobj(hiddenFigure, 'Type', 'axes');
                 %   isHidden      = isscalar(plotAxes);
                 % end
+              case 'b'
+                obj.LinePlotVisible     = ~isequal(obj.LinePlotVisible, true);
+                obj.notify('LayoutUpdate');
+                for m = 1:numel(obj.DataSources)
+                  try obj.DataSources{m}.notify('OverlayPlotsDataChange'); end
+                end
+                
               case 'd' % duplicate plot axes
                 try obj.Pointer  = 'watch'; drawnow(); end
                 activePlotAxes          = obj.ActivePlotAxes;
@@ -184,9 +194,14 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
                   debugStamp(err, 1, obj);
                 end
                 
+                obj.ParentFigure.ColorBar.updateLimits;
+                obj.ParentFigure.ColorBar.createLabels;
+                obj.ParentFigure.ColorBar.createPatches;                
+                
                 for m = 1:numel(obj.DataSources)
                   try obj.DataSources{m}.notify('OverlayPlotsDataChange'); end
                 end
+                
                 try obj.Pointer  = 'arrow'; end
               case 'backspace'
                 try obj.Pointer  = 'watch'; drawnow(); end
@@ -208,30 +223,39 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
                   debugStamp(err, 1, obj);
                 end
                 
+                obj.ParentFigure.ColorBar.updateLimits;
+                obj.ParentFigure.ColorBar.createLabels;
+                obj.ParentFigure.ColorBar.createPatches;                
+                
                 for m = 1:numel(obj.DataSources)
                   try obj.DataSources{m}.notify('OverlayPlotsDataChange'); end
                 end
                 try obj.Pointer  = 'arrow'; end
               case 'u'
+                try animate = obj.Animate; obj.Animate = 'off'; end
                 try obj.Pointer  = 'watch'; drawnow(); end
                 obj.notify('LayoutUpdate');
                 obj.OnResize();
                 % childObjects    = get(get(obj.Handle, 'Children'), 'UserData');
                 % childObjects    = childObjects(cellfun(@(c)isa(c, 'GrasppeAlpha.Graphics.PlotAxes'), childObjects));
+                obj.ColorBar.updateLimits;
+                obj.ColorBar.createLabels;
+                obj.ColorBar.createPatches;                
                 for m = 1:numel(obj.DataSources)
                   try obj.DataSources{m}.notify('OverlayPlotsDataChange'); end
                 end
                 try obj.Pointer  = 'arrow'; end
+                try obj.Animate       = animate; end
               case 'uparrow'
                 try obj.Animate   = 'off'; end
-                obj.setSheet('+1'); % try obj.DataSources{1}.setSheet('+1'); syncSheets = true; end
+                obj.setSheet('+1', false); % try obj.DataSources{1}.setSheet('+1'); syncSheets = true; end
                 event.Consumed  = true;
               case 'downarrow'
                 try obj.Animate   = 'off'; end
-                obj.setSheet('-1'); % try obj.DataSources{1}.setSheet('-1'); syncSheets = true; end
+                obj.setSheet('-1', false); % try obj.DataSources{1}.setSheet('-1'); syncSheets = true; end
                 event.Consumed  = true;
               otherwise
-                disp(toString(event.Data.Key));
+                % disp(toString(event.Data.Key));
             end
           else
             switch event.Data.Key
@@ -259,20 +283,34 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
         activePlotComponent     = getappdata(obj.ActivePlotAxes, 'PlotComponent');
         activeDataSource        = activePlotComponent.DataSource;
       catch
-        activeDataSource        = obj.DataSources{1};
-      end
-      
-      try activeDataSource.setSheet(varargin{:}); syncSheets = true; end
-      
-      if syncSheets
-        try obj.StatusText = activeDataSource.GetSheetName(activeDataSource.NextSheetID); end % int2str(obj.DataSource.NextSheetID)
-        
-        for m = 2:numel(obj.DataSources)
-          try notify(obj.DataSources{m}, 'SheetChange'); end
+        try 
+          obj.ActivePlotAxes    = obj.DataSources{1}.PlotObjects(1);
+          activeDataSource      = obj.DataSources{1};
+        catch err
+          return;
         end
       end
       
-      drawnow expose update;
+      if numel(varargin)>1 && isequal(varargin{2}, true)
+        if ~isequal(obj.Animate, true) || ... 
+            ~isscalar(obj.LatestSheetSet) || obj.LatestSheetSet+0.25<cputime
+          obj.LatestSheetSet        = cputime;
+          try activeDataSource.setSheet(varargin{:}); syncSheets = true; end
+          obj.LatestSheetSet        = cputime;
+        end
+      else
+        try activeDataSource.setSheet(varargin{:}); syncSheets = true; end
+        obj.LatestSheetSet        = cputime;
+      end
+    end
+    
+    function notifySourceSheetChanged(obj, source, sheetID)
+      for m = 1:numel(obj.DataSources)
+        if ~isequal(source, obj.DataSources{m})
+          try obj.DataSources{m}.setSheet(sheetID, true); end
+        end
+        try notify(obj.DataSources{m}, 'SheetChange'); end
+      end
     end
     
     function OnMouseDoubleClick(obj, source, event)

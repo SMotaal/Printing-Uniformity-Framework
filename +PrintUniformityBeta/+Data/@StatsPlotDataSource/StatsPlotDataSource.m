@@ -63,8 +63,8 @@ classdef StatsPlotDataSource < PrintUniformityBeta.Data.PlotDataSource & Grasppe
     
     function setSheet(obj, varargin)
       try obj.setSheet@PrintUniformityBeta.Data.PlotDataSource(varargin{:}); end
-      try obj.ParentFigure.StatusText = obj.GetSheetName(obj.NextSheetID); end % int2str(obj.DataSource.NextSheetID)
-      obj.notify('PlotTitleChange');
+      % try obj.ParentFigure.StatusText = obj.GetSheetName(obj.NextSheetID); end % int2str(obj.DataSource.NextSheetID)
+      % obj.notify('PlotTitleChange');
       %obj.updatePlotTitle([], [], obj.DataSource.GetSheetName(obj.DataSource.NextSheetID));
       % drawnow expose update;      
     end    
