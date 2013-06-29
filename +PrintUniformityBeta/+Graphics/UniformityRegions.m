@@ -740,13 +740,13 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
       try if obj.ParentFigure.ActivePlotAxes == obj.ParentAxes, titleStar = ' *'; end; end
       
       if ischar(state)
-        try title(obj.ParentAxes.Handle, [caseName ' ' setName ' ' sheetName ' (' state ')' titleStar], 'FontSize', 9, 'FontUnit', 'point', 'FontName', 'Gill Sans MT', 'FontWeight', 'Bold'); end
+        try title(obj.ParentAxes.Handle, [caseName ' ' setName ' ' sheetName ' (' state ')' titleStar], obj.ParentFigure.TitlesFormat{:}, 'HitTest', 'off'); end
         try obj.ParentFigure.SampleTitle = sheetIndex; end;
         try obj.ParentFigure.WindowTitle = ['Printing Uniformity - ' caseName ':' sheetIndex ' - ' nextIndex]; end;
         refresh(obj.ParentFigure.Handle);
         % beep();
       else
-        try title(obj.ParentAxes.Handle, [caseName ' ' setName ' ' sheetName titleStar], 'FontSize', 9, 'FontUnit', 'point', 'FontName', 'Gill Sans MT', 'FontWeight', 'Bold'); end        
+        try title(obj.ParentAxes.Handle, [caseName ' ' setName ' ' sheetName titleStar], obj.ParentFigure.TitlesFormat{:}, 'HitTest', 'off'); end        
         try obj.ParentFigure.BaseTitle    = [caseName ' ' setName]; end;
         try obj.ParentFigure.SampleTitle  = sheetIndex; end;
         try obj.ParentFigure.WindowTitle = ['Printing Uniformity - ' sheetIndex '']; end;

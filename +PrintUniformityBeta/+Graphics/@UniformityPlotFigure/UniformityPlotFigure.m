@@ -9,6 +9,7 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
     AnimationTimer        = [];
     LatestSheetSet        = 0;
     LinePlotVisible       = true;
+    TitlesFormat          = {'FontSize', 9, 'FontUnit', 'point', 'FontName', 'Gill Sans MT', 'FontWeight', 'Bold'};
   end
   
   events

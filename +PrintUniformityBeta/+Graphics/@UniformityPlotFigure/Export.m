@@ -93,13 +93,6 @@ function Export(obj)
         end
       end
       
-      %         switch clObject
-      %           case {'axes'}
-      %             for n = 1:numel(properties)
-      %               set(hdCopy, properties{n}, get(hdObject(properties{n})));
-      %             end
-      %         end
-      
       if isfield(hgObjects, clObject)
         hgObjects.(clObject)(end+1) = hgCopy;
       else

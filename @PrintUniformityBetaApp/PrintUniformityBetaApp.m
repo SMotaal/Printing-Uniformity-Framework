@@ -15,6 +15,7 @@ classdef PrintUniformityBetaApp
     tally   = tallyRegionStats;
     outputRegionStats(tally);
     % tallyRegionStats1;
+    icDemoPreloader
   end
   
 end
