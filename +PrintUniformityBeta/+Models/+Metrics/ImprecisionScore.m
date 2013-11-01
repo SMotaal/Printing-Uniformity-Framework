@@ -9,11 +9,11 @@ classdef ImprecisionScore < PrintUniformityBeta.Models.Metrics.ScoreModel
     
     % prefixFunction              = @(m   ) [m.Symbol];
     % suffixFunction              = @(m   ) ['%'];
-    % shortFormatFunction         = @(m, v) num2str(abs(round(v*100)), ['-%d' m.Suffix]);
+    % shortFormatFunction         = @(m, v) num2str(abs(round(v*100)), ['%d' m.Suffix]);
   end
   
   properties (Hidden)
-    limits                          = [-2 2];
+    limits                          = [-2.0 2.0];
     unit                            = 'Percentage';    
   end  
     
@@ -21,6 +21,8 @@ classdef ImprecisionScore < PrintUniformityBeta.Models.Metrics.ScoreModel
   methods
     function obj = ImprecisionScore(varargin)
       obj                       = obj@PrintUniformityBeta.Models.Metrics.ScoreModel(varargin{:});
+      % obj.SuffixFunction        = @(m   ) ['%'];
+      obj.ShortFormatFunction   = @(m, v) [num2str(abs(round(v*100)), ['%d']) m.Suffix];  
     end
      
   end

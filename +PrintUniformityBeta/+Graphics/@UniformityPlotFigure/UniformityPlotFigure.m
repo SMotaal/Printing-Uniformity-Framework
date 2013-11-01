@@ -83,7 +83,7 @@ classdef UniformityPlotFigure < GrasppeAlpha.Graphics.MultiPlotFigure
     end
     
     
-    Export(obj);
+    filepath = Export(obj, filepath);
     
     function prepareMediator(obj, dataProperties, axesProperties)
       if isempty(obj.PlotMediator) || ~isa(obj.PlotMediator, 'PrintUniformityBeta.UI.PlotMediator')

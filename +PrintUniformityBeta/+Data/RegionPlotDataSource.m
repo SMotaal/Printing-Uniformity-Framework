@@ -83,6 +83,21 @@ classdef RegionPlotDataSource < PrintUniformityBeta.Data.PlotDataSource & PrintU
       
     end
     
+    function OnCaseIDChange(obj, varargin)
+      % try cellfun(@(p)cla(p.ParentAxes.Handle, obj.PlotObjects)); drawnow update expose; end
+      obj.OnCaseIDChange@PrintUniformityBeta.Data.PlotDataSource(varargin{:});
+      obj.OnCaseIDChange@PrintUniformityBeta.Data.UniformityMetricsDataSource(varargin{:});
+      obj.processCaseData;
+    end
+    
+    function OnSetIDChange(obj, varargin)
+      % try cellfun(@(p)cla(p.ParentAxes.Handle), obj.PlotObjects); drawnow update expose; end
+      obj.OnSetIDChange@PrintUniformityBeta.Data.PlotDataSource(varargin{:});
+      obj.OnSetIDChange@PrintUniformityBeta.Data.UniformityMetricsDataSource(varargin{:});
+      obj.processSetData;
+    end    
+    
+    
   end
   
   methods (Access=protected)

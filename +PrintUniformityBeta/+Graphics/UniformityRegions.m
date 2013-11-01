@@ -600,17 +600,29 @@ classdef UniformityRegions < PrintUniformityBeta.Graphics.UniformityPlotComponen
         %   end
         % end
         try
-          if ~isempty(roiData.Ratio.Values) && ~any(isnan([roiData.Ratio.Values{:}]))
-            sheetStrings          = strcat(roiData.Ratio.ShortFormat, {' \newline '}, sheetStrings);
+          if ~isempty(roiData.Ratio.Values) && ~any(isnan([roiData.Ratio.Values{:}])) % && ~all(isnan([roiData.Ratio.Values{:}]))
+            %roiData.Ratio.Values  = cellfun(@(x) round(x/10), roiData.Ratio.Values, 'UniformOutput', false);
+            shortStrings          = cellfun(@(v) [num2str(v(1)*10,'%1.0f') ':' num2str(v(2)*10,'%1.0f')], roiData.Ratio.Values, 'UniformOutput', false);
+            sheetStrings          = strcat(shortStrings, {' \newline '}, sheetStrings);
             % sheetStrings          = strcat('{\fontsize{8}', roiData.Ratio.ShortFormat, '}', {' \newline '}, sheetStrings);
           end
-        end
+        end        
+        
         try
           if ~isempty(roiData.Factors.Values) && ~any(isnan([roiData.Factors.Values{:}]))
-            sheetStrings          = strcat(sheetStrings, {' \newline '}, roiData.Factors.ShortFormat);
+            sheetStrings          = strcat(sheetStrings, {' \newline '}, '[',roiData.Factors.ShortFormat, ']');
             %sheetStrings          = strcat(sheetStrings, {' \newline '}, '{\fontsize{8}', roiData.Factors.ShortFormat, '}');
           end
         end
+        
+        try
+          maxRank                 = max([roiData.Rank.Values{:}]);
+          if ~isempty(roiData.Rank.Values) && ~any(isnan([roiData.Rank.Values{:}]))
+            % sheetStrings          = strcat('# ', roiData.Rank.ShortFormat, '/', int2str(maxRank) , {' \newline '}, sheetStrings);
+            sheetStrings          = strcat('#', roiData.Rank.ShortFormat , {' \newline '}, sheetStrings);
+            % sheetStrings          = strcat('{\fontsize{8}', roiData.Ratio.ShortFormat, '}', {' \newline '}, sheetStrings);
+          end
+        end        
         %end
       end
       

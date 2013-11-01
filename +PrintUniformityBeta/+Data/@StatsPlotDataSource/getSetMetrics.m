@@ -96,7 +96,7 @@ function setMetrics = getSetMetrics(obj, setData)
         'Ranks.Inaccuracy',                   'Inaccuracy Rank',            [];
         'Sequences.Inaccuracy',               'Inaccuracy Sequence',        [];
         {'Directionality.Inaccuracy.Around', ...
-        'Directionality.Inaccuracy.Across'},  'Inaccuracy Directionality',  'DirectionalityModel';
+        'Directionality.Inaccuracy.Across'},  'Inaccuracy Directionality',  'InaccuracyDirectionality';
         
         'Imprecision.Score',                  'Imprecision Score',          'ImprecisionScore';
         'Imprecision.Value',                  'Imprecision Value',          [];
@@ -104,7 +104,7 @@ function setMetrics = getSetMetrics(obj, setData)
         'Ranks.Imprecision',                  'Imprecision Rank',           [];
         'Ranks.Imprecision',                  'Imprecision Sequence',       [];
         {'Directionality.Imprecision.Around', ...
-        'Directionality.Imprecision.Across'}, 'Imprecision Directionality',  'DirectionalityModel';
+        'Directionality.Imprecision.Across'}, 'Imprecision Directionality',  'ImprecisionDirectionality';
         {'Factors.Unevenness.Factor', ...
         'Factors.Unrepeatability.Factor'},    'Imprecision Factors',        'ImprecisionFactors';
         

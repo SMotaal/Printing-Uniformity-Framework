@@ -27,6 +27,7 @@ classdef ProcessProgress < GrasppeAlpha.Core.Prototype
     ProgressChange
     ProcessCompleted
     ProcessCancelled
+    TaskCompleted
   end
   
   methods

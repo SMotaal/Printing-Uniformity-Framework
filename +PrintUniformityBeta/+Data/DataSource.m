@@ -140,7 +140,13 @@ classdef DataSource < GrasppeAlpha.Data.Source & ...
       end
       
       if isequal(obj.DelayedUpdate, false) ||  exist('immediate', 'var') && isequal(immediate, true)
-          obj.(name)            = value;    % disp(value);
+        % try
+          dispf('Object: %s\tName: %s\tValue: %s', obj.ID, name, toString(value));
+          if isprop(obj, name) || isfield(obj, name), obj.(name) = value;    end
+        % catch err
+        %   debugStamp(err);
+        %   beep;
+        % end
         return;
       else
         if strcmpi(name, 'SheetID')

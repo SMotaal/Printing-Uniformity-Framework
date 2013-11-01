@@ -1,4 +1,4 @@
-function Export(obj)
+function filepath = Export(obj, filename)
   
   obj.bless;
   
@@ -554,7 +554,30 @@ function Export(obj)
     assignin('base', 'hgObjects', hgObjects);
     
     %% Export Document
-    export_fig(fullfile('Output','export.pdf'), '-painters', hdOutput);
+    
+    if ~exist('filename', 'var') || ~ischar(filename)
+    
+      exportNumber        = 0;
+    
+      while exist(fullfile('Output', sprintf('export %03d.pdf',exportNumber)), 'file')>0
+        exportNumber      = exportNumber + 1;
+      end
+      
+      exportFilename      = sprintf('export %03d.pdf',exportNumber);
+    else
+      exportFilename      = filename; %regexprep(filepath, '^([^\.]+[\.]\w{2,3})(?=>[\.]\w{2,3})$
+      % exportExtension     = regexpi(exportFilename, '[\.]\w{2,3}$', 'match', 'once');
+    end
+    
+    exportFilename        = regexprep(exportFilename, '[\.][A-Za-z]{2,3}$', '${lower($0)}');    
+    
+    if isempty(regexpi(exportFilename, '[\.][A-Za-z]{2,3}$', 'match', 'once'))
+      exportFilename      = [exportFilename '.pdf'];
+    end
+    
+    filepath              = fullfile('Output', exportFilename);
+    
+    export_fig(filepath, '-painters', hdOutput);
     
     %% Delete Figure
     %try deleteHandle(obj.OutputFigure); end

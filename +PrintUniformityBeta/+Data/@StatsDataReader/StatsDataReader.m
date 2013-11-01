@@ -122,7 +122,38 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader & GrasppeAlpha.Oc
   %% Prototype Methods
   methods
     function obj = StatsDataReader(varargin)
-      obj                       = obj@PrintUniformityBeta.Data.DataReader(varargin{:});
+      
+      % persistent dirName
+      % folderPrefix                  = 'UniPrint-Stats';
+      % parentPath                    = 'Output';
+      
+      obj                           = obj@PrintUniformityBeta.Data.DataReader(varargin{:});
+      
+      % sourcePath                    = obj.sourcePath;
+      %
+      % if isempty(sourcePath) || exist(sourcePath, 'dir')~=7
+      %   sourcePath                  = [];
+      %   if ~isempty(dirName) && exist(fullfile(parentPath, dirName))==7
+      %     sourcePath                = fullfile(parentPath, dirName);
+      %   else
+      %     try
+      %       dirs                    = dir(fullfile(parentPath, [folderPrefix '*']));
+      %       dirNames                = {dirs([dirs.isdir] & cellfun(@(x)isequal(x,1), regexpi({dirs.name}, ['^' folderPrefix '($|\-\d{6}$)']))).name};
+      %       dirDates                = cellfun(@(x) ['' cell2mat(x)], regexpi(dirNames, '\d{6}$', 'match'), 'UniformOutput', false);
+      %       [dateSort dateIdx]      = sort(dirDates);
+      %       if isequal(dateSort{1}, '')
+      %         dirName               = dirNames{dateIdx(1)};
+      %       else
+      %         dirName               = dirNames{dateIdx(end)};
+      %       end
+      %       sourcePath              = fullfile(parentPath, dirName);
+      %     end
+      %   end
+      % end
+      %
+      % assert(~isempty(sourcePath) && exist(sourcePath, 'dir')==7, ...
+      %   'Grasppe:UniformPrintingStatsDataReader:MissingStatsFolder', ...
+      %   'StatsDataReader could not locate a precompiled UniPrint-Stats folder in the Output directory.');
       
       obj.ComponentOptions          = varargin;
       
@@ -252,13 +283,42 @@ classdef StatsDataReader < PrintUniformityBeta.Data.DataReader & GrasppeAlpha.Oc
     
     function loading = loadSource(obj, sourcePath)
       
-      loading                   = false;
+      persistent dirName
+      folderPrefix                  = 'UniPrint-Stats';
+      parentPath                    = 'Output';
+      
+      
+      loading                       = false;
       
       if nargin==1
-        sourcePath              = obj.sourcePath;
+        sourcePath                  = obj.sourcePath;
       end
       
-      if isempty(sourcePath), return; end
+      if isempty(sourcePath) || exist(sourcePath, 'dir')~=7
+        sourcePath                  = [];
+        if ~isempty(dirName) && exist(fullfile(parentPath, dirName))==7
+          sourcePath                = fullfile(parentPath, dirName);
+        else
+          try
+            dirs                    = dir(fullfile(parentPath, [folderPrefix '*']));
+            dirNames                = {dirs([dirs.isdir] & cellfun(@(x)isequal(x,1), regexpi({dirs.name}, ['^' folderPrefix '($|\-\d{6}$)']))).name};
+            dirDates                = cellfun(@(x) ['' cell2mat(x)], regexpi(dirNames, '\d{6}$', 'match'), 'UniformOutput', false);
+            [dateSort dateIdx]      = sort(dirDates);
+            if isequal(dateSort{1}, '')
+              dirName               = dirNames{dateIdx(1)};
+            else
+              dirName               = dirNames{dateIdx(end)};
+            end
+            sourcePath              = fullfile(parentPath, dirName);
+          end
+        end
+      end
+      
+      assert(~isempty(sourcePath) && exist(sourcePath, 'dir')==7, ...
+        'Grasppe:UniformPrintingStatsDataReader:MissingStatsFolder', ...
+        'StatsDataReader could not locate a precompiled UniPrint-Stats folder in the Output directory.');
+      
+      % if isempty(sourcePath), return; end
       
       metadataPath              = fullfile(sourcePath, obj.statics.Metadata.File.Name);
       

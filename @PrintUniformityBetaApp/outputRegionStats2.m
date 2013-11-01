@@ -1,4 +1,4 @@
-function outputRegionStats(tally) % Version 3 with Histograms
+function outputRegionStats(tally)
   
   statsLabel  = 'Summary';  statGroups  = {'Run', 'Around', 'Across', 'Region', 'Sheet', 'Zone'};
   % statsLabel  = 'Sheets';   statGroups  = {'Run', 'Sheet'};
@@ -21,7 +21,6 @@ function outputRegionStats(tally) % Version 3 with Histograms
     
     caseFolder            = fullfile(outputFolder, caseID);
     masksFolder           = fullfile(caseFolder, 'Masks');
-    histsFolder           = fullfile(caseFolder, 'Histograms');
     
     caseMasks             = tally.Masks(m);
     caseFlip              = false; %tally.Metadata.CaseFlip(m);
@@ -34,91 +33,6 @@ function outputRegionStats(tally) % Version 3 with Histograms
     %
     % %% Flip Orientation
     % % Trail-Edge-Up / Operator-Side-Left
-    
-    %% Output Histograms
-    sheetIndex              = tally.Metadata.Sheets.Index{m};
-    FS.mkDir(histsFolder);
-    
-    for n = 1:size(tally.Stats, 2)
-      
-      setID               = tally.Metadata.Sets.IDs(n);
-      setName             = tally.Metadata.Sets.Names{m, n};
-      setFile             = [caseID '-' num2str(setID, '%03.0f')];
-      % setPath             = fullfile(caseFolder, setFile);
-      
-      stats               = tally.Stats(m, n);
-      
-      groupTables         = {1, numel(statGroups)};
-      
-      try
-        
-        for p = 1:numel(statGroups)
-          
-          statGroup         = statGroups{p};
-          if ~isfield(stats, statGroup), continue; end
-          groupStats        = stats.(statGroup);
-          if isempty(groupStats), continue; end
-          
-          groupHists        = [groupStats().Histogram];
-          groupBins         = groupHists(:, 1:2:end);
-          groupElements     = groupHists(:, 2:2:end);
-          
-          isSameBins        = ~any(any(groupBins(:, 2:end) - repmat(groupBins(:,1), 1, size(groupBins,2)-1)));
-          
-          assert(isSameBins, ...
-            'Grasppe:UniformPrinting:OutputHistogramsBinsDontMatch', ...
-            'Output of %s for %s histograms failed. Histograms with mismatching bins are yet unsupported.', ...
-            statGroup, setID);
-          
-          groupLabels       = cell(1, numel(groupStats));
-          
-          for q = 1:numel(groupStats)
-            if strcmpi(statGroup, 'sheet')
-              groupLabels{q}  = [statGroup '-' int2str(sheetIndex(q))]; %rowNumber     = int2str(sheetIndex(q));
-            elseif strcmpi(statGroup, 'run')
-              groupLabels{q}  = [statGroup];
-            else
-              groupLabels{q}  = [statGroup '-' int2str(q)]; % rowNumber     = int2str(q);
-            end
-            
-          end
-          
-          groupHeader       = [setName, groupLabels];
-          groupTable        = [groupHeader; num2cell([groupBins(:,1) groupElements])];
-          groupTables{p}    = groupTable;
-          
-          % cell2csv(fullfile(histsFolder, [setFile '-' statGroup '-Histograms.csv']), groupTable); %, '\');
-          
-          % xlHeader          = [setID 1:numel(groupStats)];
-          % xlTable           = [xlHeader; [groupBins(:,1) groupElements]];
-          %
-          % [xlStatus,xlMsg]  = xlswrite(fullfile(histsFolder, [setFile '-Histograms.xlsx']), xlTable, statGroup);
-          
-        end
-        
-      catch err
-        debugStamp(err, 1);
-      end
-      
-      combinedTable         = [groupTables{1}(:,1)];
-      for p = 1:numel(groupTables)
-        try        
-          isSameBins        = all(all(isequal(groupTables{1}(:,1), groupTables{p}(:,1))));
-          assert(isSameBins, ...
-            'Grasppe:UniformPrinting:OutputHistogramsBinsDontMatch', ...
-            'Output of %s for %s histograms cannot be combined. Histograms with mismatching bins are yet unsupported.', ...
-            statGroup, setID);
-          if ~isSameBins, continue; end
-          combinedTable     = horzcat(combinedTable, groupTables{p}(:,2:end));
-        catch err
-          debugStamp(err, 1);
-        end
-      end
-      
-      cell2csv(fullfile(histsFolder, [setFile '-Histograms.csv']), combinedTable);
-      
-      % error('Must implement histogram output');
-    end
     
     %% Output Region Mask Images
     FS.mkDir(masksFolder);
@@ -134,7 +48,7 @@ function outputRegionStats(tally) % Version 3 with Histograms
       maskStruct.run      = struct( ...
         'ID', 'run', 'Path', maskPath, 'Filename', maskFilename, 'Image', mask);
       maskStruct.sheet    = struct( ...
-        'ID', 'sheet', 'Path', maskPath, 'Filename', maskFilename, 'Image', mask);
+        'ID', 'sheet', 'Path', maskPath, 'Filename', maskFilename, 'Image', mask);      
       
       [maskImage maskAlpha] = renderMask(mask);
       imwrite(maskImage, maskPath, 'png', 'Alpha', maskAlpha );
@@ -149,7 +63,7 @@ function outputRegionStats(tally) % Version 3 with Histograms
         for u = 1:maskCount
           maskID          = [caseID '-' maskGroup '-' int2str(u)];
           mask            = squeeze(masks(u, :, :)); %fliplr
-          
+                    
           maskFilename    = [maskID '.png'];
           maskPath        = fullfile(masksFolder, maskFilename);
           
@@ -161,7 +75,7 @@ function outputRegionStats(tally) % Version 3 with Histograms
             % beep;
             rethrow(err);
           end
-          
+
           [maskImage maskAlpha] = renderMask(mask);
           imwrite(maskImage, maskPath, 'png', 'Alpha', maskAlpha );
         end
@@ -198,13 +112,13 @@ function outputRegionStats(tally) % Version 3 with Histograms
         '<meta charset="UTF-16" />'
         '<style>'
         '   body    {font-family: Sans-Serif; font-size: 12px;}'
-        '   img     {height: 20px; border: #000 1px none;}'
+        '   img     {height: 20px; border: #000 1px none;}'        
         '   th      {font-weight: normal; background-color: #000; color: #fff; text-align: center; white-space: nowrap; border: none;}'
-        '   tr      {border-top: 1pt solid #ccc;}'
-        '   td      {min-width: 25px; font-size: smaller; text-align: center; white-space: nowrap; border: none;}'
+        '   tr      {border-top: 1pt solid #ccc;}'        
+        '   td      {min-width: 25px; font-size: smaller; text-align: center; white-space: nowrap; border: none;}'        
         '   td:nth-of-type(even)                        {background-color: #f6f6f6;} '
         '   tr:nth-of-type(odd)                         {background-color: #e6e6e6;} '
-        '   tr:nth-of-type(odd)   td:nth-of-type(even)  {background-color: #d6d6d6;} '
+        '   tr:nth-of-type(odd)   td:nth-of-type(even)  {background-color: #d6d6d6;} '        
         '   tr:nth-of-type(odd)   td:nth-of-type(2)     {background-color: #e6e6e6;} '
         '   tr:nth-of-type(even)  td:nth-of-type(2)     {background-color: #ffffff;} '
         '   caption {font-family: Sans-Serif; font-size: 18px; font-weight: bold; padding: 5px;}'
@@ -246,7 +160,7 @@ function outputRegionStats(tally) % Version 3 with Histograms
           debugStamp(err, 1);
         end
         
-        
+
         
         
         for q = 1:numel(groupStats)
@@ -264,7 +178,7 @@ function outputRegionStats(tally) % Version 3 with Histograms
             
             maskPath                = '';
             
-            try
+            try 
               if numel(groupMasks)>1
                 maskPath          = fullfile('Masks', groupMasks(q).Filename);
               else
@@ -325,50 +239,50 @@ end
 
 function [row tr] = getSummaryRow(id, stat, maskPath)
   
-  %   headers           = { ...
-  %     'ID',                         'Mask',  ...
-  %     'Inaccuracy Score',           'Imprecision Score', ...
-  %     'Inaccuracy Proportion',...
-  %     'Imprecision Proportion', ...
-  %     'Unevenness Factor',          'Unrepeatability Factor', ...
-  %     'Mean',                       'Sigma', ...
-  %     'Reference',                  'Tolerance', ...
-  %     'Inaccuracy Value',           'Imprecision Value', ...
-  %     'Unevenness Value',           'Unrepeatability Value', ...
-  %     'Unevenness Samples',         'Unrepeatability Samples', ...
-  %     'Samples',                    'Outliers', ...
-  %     'Size' };
-  %
+%   headers           = { ...
+%     'ID',                         'Mask',  ...
+%     'Inaccuracy Score',           'Imprecision Score', ...
+%     'Inaccuracy Proportion',...
+%     'Imprecision Proportion', ...    
+%     'Unevenness Factor',          'Unrepeatability Factor', ...    
+%     'Mean',                       'Sigma', ...
+%     'Reference',                  'Tolerance', ...
+%     'Inaccuracy Value',           'Imprecision Value', ...
+%     'Unevenness Value',           'Unrepeatability Value', ...
+%     'Unevenness Samples',         'Unrepeatability Samples', ...
+%     'Samples',                    'Outliers', ...    
+%     'Size' };
+%   
   headers           = { ...
     'ID',                         'Mask',  ...
     'Inaccuracy Score',           'Imprecision Score', ...
     'Inaccuracy Around',...
-    'Imprecision Around', ...
-    'Unevenness',          'Unrepeatability', ...
+    'Imprecision Around', ...    
+    'Unevenness',          'Unrepeatability', ...    
     'Mean',                       'Sigma', ...
     'Reference',                  'Tolerance', ...
     'Inaccuracy Value',           'Imprecision Value', ...
     'Unevenness Value',           'Unrepeatability Value', ...
     'Inaccuracy Rank',            'Imprecision Rank', ...
     'Unevenness Rank',            'Unrepeatability Rank', ...
-    'Unevenness Samples',         'Unrepeatability Samples', ...
-    'Samples',                    'Outliers', ...
+    'Unevenness Samples',         'Unrepeatability Samples', ...    
+    'Samples',                    'Outliers', ...    
     'Size' };
-  
+
   symbols           = { ...
     '#',                          'idx',  ...
     'Inaccuracy.Score',           'Imprecision.Score', ...
     'Inaccuracy.Around',...
-    'Imprecision.Around', ...
-    'Unevenness.Factor',          'Unrepeatability.Factor', ...
+    'Imprecision.Around', ...    
+    'Unevenness.Factor',          'Unrepeatability.Factor', ...    
     {'Mean.Symbol', 2},            {'Sigma.Symbol', 2}, ...
     'Reference.Symbol',           'Tolerance.Symbol', ...
     'Inaccuracy.Value',           'Imprecision.Value', ...
     'Unevenness.Value',           'Unrepeatability.Value', ...
-    'Inaccuracy.Rank',            'Imprecision.Rank', ...
+    'Inaccuracy.Rank',            'Imprecision.Rank', ...    
     'Unevenness.Rank',            'Unrepeatability.Rank', ...
     'Unevenness.Samples',         'Unrepeatability.Samples', ...
-    'Samples.Symbol',             'Outliers.Symbol', ...
+    'Samples.Symbol',             'Outliers.Symbol', ...    
     'dim' };
   
   fields            = { ...
@@ -377,12 +291,12 @@ function [row tr] = getSummaryRow(id, stat, maskPath)
     {'Proportions.Inaccuracy',    'Directionality.Inaccuracy.Around'}, ...
     {'Proportions.Imprecision',   'Directionality.Imprecision.Around'}, ...
     'Factors.Unevenness.Factor',  'Factors.Unrepeatability.Factor', ...
-    'Mean',                       'Sigma', ...
-    'Inaccuracy.Reference',       'Imprecision.Tolerance', ...
+    'Mean',                       'Sigma', ...    
+    'Inaccuracy.Reference',       'Imprecision.Tolerance', ...    
     'Inaccuracy.Value',           'Imprecision.Value', ...
-    'Factors.Unevenness.Value',   'Factors.Unrepeatability.Value', ...
+    'Factors.Unevenness.Value',   'Factors.Unrepeatability.Value', ...    
     'Ranks.Inaccuracy',           'Ranks.Imprecision', ...
-    'Ranks.Unevenness',           'Ranks.Unrepeatability', ...
+    'Ranks.Unevenness',           'Ranks.Unrepeatability', ...    
     'Factors.Unevenness.Samples', 'Factors.Unrepeatability.Samples', ...
     'Samples',                    'Outliers', ...
     'Size' };
@@ -405,11 +319,11 @@ function [row tr] = getSummaryRow(id, stat, maskPath)
     end
     
     tr              = [tr '</tr>'];
-    
+
     return;
-    
+
   end
-  
+    
   row               = cell(1, numel(headers));
   row{1}            = id;
   
@@ -419,14 +333,14 @@ function [row tr] = getSummaryRow(id, stat, maskPath)
   
   
   tr                = '<tr>';
-  tr                = [tr '<td>' row{1} '</td>'];
+  tr                = [tr '<td>' row{1} '</td>'];  
   
   if ~isempty(row{2})
-    tr              = [tr '<td><img src="' row{2} '" /></td>'];
+    tr              = [tr '<td><img src="' row{2} '" /></td>'];  
   else
-    tr              = [tr '<td>&nbsp;</td>'];
-  end
-  
+    tr              = [tr '<td>&nbsp;</td>'];  
+  end  
+
   %tr                = [tr '<td>' row{2} '</td>'];
   
   for f = 3:numel(headers)-1
@@ -484,7 +398,7 @@ end
 
 
 function [maskImage maskAlpha] = renderMask(mask)
-  
+           
   maskGap                       = 8;
   padValue                      = 0;
   
@@ -518,34 +432,34 @@ function symbolCode = metricSymbol(symbolID, symbolCase)
   persistent symbolTable;
   
   try
+  
+  if isempty(symbolTable)
+    symbolFile              = fullfile('.', 'resources', 'MetricsTable.txt');
     
-    if isempty(symbolTable)
-      symbolFile              = fullfile('.', 'resources', 'MetricsTable.txt');
-      
-      fileID                  = fopen(symbolFile,'r','n','UTF-8');
-      symbolPage              = fscanf(fileID,'%c');
-      fclose(fileID);
-      
-      symbolRows              = textscan(symbolPage,'%[^\n\r]');
-      symbolRows              = cellfun(@(x)textscan(x,'%[^\t]'),symbolRows{1});
-      
-      rowCount                = size(symbolRows,1);
-      
-      symbolTable             = cell(rowCount, 3);
-      
-      for m=2:rowCount
-        rowCells              = symbolRows{m};
-        for n=1:numel(rowCells)
-          symbolTable(m,n)    = rowCells(n);
-        end
+    fileID                  = fopen(symbolFile,'r','n','UTF-8');
+    symbolPage              = fscanf(fileID,'%c');
+    fclose(fileID);
+    
+    symbolRows              = textscan(symbolPage,'%[^\n\r]');
+    symbolRows              = cellfun(@(x)textscan(x,'%[^\t]'),symbolRows{1});
+    
+    rowCount                = size(symbolRows,1);
+    
+    symbolTable             = cell(rowCount, 3);
+    
+    for m=2:rowCount
+      rowCells              = symbolRows{m};
+      for n=1:numel(rowCells)
+        symbolTable(m,n)    = rowCells(n);
       end
-      
     end
     
+  end
+  
   catch err
     debugStamp(err, 1);
   end
-  
+
   
   symbolIndex               = find(strcmpi(symbolID, symbolTable(:,1)),1,'First');
   

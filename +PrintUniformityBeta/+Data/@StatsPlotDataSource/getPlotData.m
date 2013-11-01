@@ -23,8 +23,8 @@ function plotData = getPlotData(obj, setData)
           metricIDs.Region.Value    = 'Inaccuracy Score';
           metricIDs.Region.Series   = 'Inaccuracy Score';
           metricIDs.Region.Rank     = 'Inaccuracy Rank';
-          metricIDs.Region.Ratio    = 'Inaccuracy Directionality';
-          metricIDs.Region.Factors  = '';
+          metricIDs.Region.Ratio    = '';
+          metricIDs.Region.Factors  = 'Inaccuracy Proportion';
         case 'imprecision'
           obj.variableID            = 'Imprecision';
           

@@ -5,8 +5,12 @@ try evalin('base', 'GrasppeAlpha.Core.Prototype.ClearPrototypes'); end
 global debugmode; debugmode=false;
 
 testing                     = false;
-exportPath                  = fullfile('Output');
-exportFilePath              = fullfile(exportPath,'export.pdf');
+%exportPath                  = fullfile('Output');
+exportFileName              = 'export.pdf';
+%exportFilePath              = fullfile('Output','export.pdf');
+
+outputFolder                = fullfile('Output', ['Stats-' datestr(now, 'yymmdd')]);
+FS.mkDir(outputFolder);
 
 RT                          = tic;
 
@@ -82,11 +86,20 @@ for c = 1:numel(caseIDs);
             
       drawnow;
       
-      f.Export;
+
+      caseFolder            = fullfile(outputFolder, d.CaseData.ID);
       
-      fileName              = sprintf('Stats Plot - %s - TV%03.0f - %s.pdf', caseID, setID, variableID);
+
+      plotsFolder           = fullfile(caseFolder, 'Plots');
+      FS.mkDir(plotsFolder);
       
-      movefile(exportFilePath, fullfile(exportPath, fileName));
+      fileName              = sprintf('Stats Plot - %s - TV%03.0f - %s.pdf', caseID, setID, variableID);      
+      
+      % if ~exist(exportPath ,'dir')>0,  mkdir(exportPath); end
+      
+      exportFilePath        = f.Export(exportFileName);
+      
+      movefile(exportFilePath, fullfile(plotsFolder, fileName));
       toc(T);
       nplots = nplots+1;
       

@@ -35,7 +35,7 @@ classdef DirectionalityModel < PrintUniformityBeta.Models.Metrics.MetricModel
   methods
     function obj = DirectionalityModel(varargin)
       obj                       = obj@PrintUniformityBeta.Models.Metrics.MetricModel(varargin{:});
-      obj.ShortFormatFunction   = @(m, v) [num2str(v(1)*100,'%1.0f') ':' num2str(v(2)*100,'%1.0f') m.Suffix];
+      obj.ShortFormatFunction   = @(m, v) [num2str(v(1)*10,'%1.0f') ':' num2str(v(2)*10,'%1.0f') m.Suffix];
     end
     
     function components = get.Components(obj)

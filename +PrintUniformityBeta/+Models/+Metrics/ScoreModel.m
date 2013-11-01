@@ -33,7 +33,6 @@ classdef ScoreModel < PrintUniformityBeta.Models.Metrics.MetricModel
     function obj = ScoreModel(varargin)
       obj                       = obj@PrintUniformityBeta.Models.Metrics.MetricModel(varargin{:});
       obj.SuffixFunction        = @(m   ) ['%'];
-      obj.ShortFormatFunction   = @(m, v) [num2str(abs(round(v*100)), ['%d']) m.Suffix];
     end
     
   end

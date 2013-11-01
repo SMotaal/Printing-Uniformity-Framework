@@ -8,7 +8,7 @@ classdef InaccuracyScore < PrintUniformityBeta.Models.Metrics.ScoreModel
     symbol                      = 's(a)'; %sprintf('%s', 955);  % Small-Case Lambda
     
     % prefixFunction              = @(m   ) [m.Symbol];
-    % shortFormatFunction         = @(m, v) [num2str(abs(round(v*100)), '-%d' m.Suffix)];
+    % shortFormatFunction         = @(m, v) [num2str(round(v*100), ['%+d']) m.Suffix];
   end
   
   properties (Hidden)
@@ -20,6 +20,7 @@ classdef InaccuracyScore < PrintUniformityBeta.Models.Metrics.ScoreModel
   methods
     function obj = InaccuracyScore(varargin)
       obj                       = obj@PrintUniformityBeta.Models.Metrics.ScoreModel(varargin{:});
+      obj.ShortFormatFunction   = @(m, v) [num2str(round(v*100), ['%+d']) m.Suffix]; % [num2str(abs(round(v*100)), ['%d']) m.Suffix];      
     end
      
   end

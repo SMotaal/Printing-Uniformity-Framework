@@ -1,4 +1,4 @@
-%% tallyRegionStats5 (added Stats.Histogram and Metadata.Metrics)
+%% tallyRegionStats4
 
 function tally = tallyRegionStats
   
@@ -16,7 +16,7 @@ function tally = tallyRegionStats
   setIDs                          = [100, 75, 50, 25, 0];
   
   if testing
-    testIdx                       = [4    1];
+    testIdx                       = 4; % [4    1];
     setIDs                        = [100  0];
     caseIDs                       = caseIDs(testIdx);
     caseSymbols                   = caseSymbols(testIdx);
@@ -81,12 +81,6 @@ function tally = tallyRegionStats
   tallyMetadata.Tolerance         = standardTolerances;
   tallyMetadata.Unit              = unitID; %% 'ISO Visual Density'; % 'CIE-L'
   tallyMetadata.SumsMethod        = 'Reverse ANOVA';
-  tallyMetadata.Metrics           = {...
-    'Outliers', 'Samples', 'Mean', 'Sigma', 'Histogram', ...
-    'Inaccuracy Score', 'Inaccuracy Proportion', 'Inaccuracy Directionality', ...
-    'Imprecision Score', 'Imprecision Proportion', 'Imprecision Directionality', ...
-    'Unevenness Value', 'Unevenness Factor', 'Unrepeatability Value', 'Unrepeatability Factor', ...
-    'Rank', 'Sequence', 'Index'};
   
   tallyMetadata.Version           = 2.1;
   tallyMetadata.Revision          = MX.stackRev;
@@ -124,8 +118,6 @@ function tally = tallyRegionStats
       else
         dataSources(m).SetID      = setID;
       end
-      
-      dataSources(m).processSetData;
             
       dispf('\t\t\tSetChange %d of %d\t%s\tCaseID: %s\tSetID: %d\tSheetID: %d\tState: %s', ...
         n, setCount, ...
@@ -265,7 +257,7 @@ function tally = tallyRegionStats
         roiUnrepeatabilityValues            = NaN(roiCount, 1);        
         roiData                             = cell(1, roiCount); %NaN(regionCount, sheetCount, regionSize
         roiTally                            = struct( ...
-          'Size',[],'Samples',[],'Outliers',[], 'Histogram', [], ...
+          'Size',[],'Samples',[],'Outliers',[], ...
           'Mean',[],'Sigma',[], ...
           'Sheet',struct(),'Patch', struct(), ...
           'Name', {}, 'Position', struct('Row',{},'Column',{}),  ...
@@ -307,7 +299,6 @@ function tally = tallyRegionStats
           roiTally(r).Size                  = size(sampleData);
           roiTally(r).Samples               = sum(~nanSamples);
           roiTally(r).Outliers              = sum(nanSamples);
-          roiTally(r).Histogram             = generateHistogram(sampleData, referenceValue);
           
           for s=1:sheetCount % tally = sheetTally(data, sheet, mask, reference, tolerance)
             roiData{r}(s,:)                 = runData(s, roiMask);
@@ -498,46 +489,13 @@ function tally = tallyRegionStats
   
 end
 
-function tally = newTally(data, samples, reference)  
+function tally = newTally(data, samples)
   nanSamples                            = isnan(samples(:));
   tally.Size                            = size(data);
   tally.Samples                         = sum(~nanSamples);
   tally.Outliers                        = sum(nanSamples);
   tally.Mean                            = nanmean(samples(:));
   tally.Sigma                           = nanstd(samples(:));
-  
-  if ~exist('reference', 'var'), reference = tally.Mean; end
-  
-  tally.Histogram                       = generateHistogram(samples, reference);
-end
-
-function data = generateHistogram(samples, reference)
-  
-  % Quick histgram recipie:
-  %   bins=0:10;
-  %   values=round(rand(numel(bins),1)*max(bins));
-  %   elements=histc(values, bins);
-  %   [numel(bins) elements' sum(elements)]
-  
-  persistent Reference Bins;
-  
-  binFactor                             = 100*2; % Round to the nearest 0.5%
-  binCount                              = 100;
-  
-  if ~isempty(Bins) && ~isempty(Reference) && isequal(reference, Reference)
-    bins                                = Bins;    
-  else
-    binMean                             = round(reference*binFactor)/binFactor;
-    binMin                              = binMean - binCount/binFactor/2;
-    binMax                              = binMean + binCount/binFactor/2;
-    bins                                = binMin:1/binFactor:binMax;
-    Reference                           = reference;
-    Bins                                = bins;
-  end
-  
-  %values                                = samples(:); %round(samples(~isnan(samples))*binFactor)/binFactor;
-  elements                              = histc(samples(:), bins);
-  data                                  = [bins(:) elements(:)];
 end
 
 function tally = tallyPatch(data, mask, reference, tolerance)
@@ -546,7 +504,7 @@ function tally = tallyPatch(data, mask, reference, tolerance)
   else
     samples                             = data(:);
   end
-  tally                                 = newTally(data, samples, reference);
+  tally                                 = newTally(data, samples);
   tally.Inaccuracy                      = calculateInaccuracy(samples, reference, tolerance);
   tally.Imprecision                     = calculateImprecision(samples, tolerance);
   tally.Factors.Unrepeatability.Samples = tally.Samples;
@@ -560,7 +518,7 @@ function tally = tallySheet(data, sheet, mask, reference, tolerance)
   else
     samples                             = data(sheet, :);
   end
-  tally                                 = newTally(data, samples, reference);
+  tally                                 = newTally(data, samples);
   tally.Inaccuracy                      = calculateInaccuracy(samples, reference, tolerance);
   tally.Imprecision                     = calculateImprecision(samples, tolerance);
   tally.Factors.Unevenness.Samples      = tally.Samples;
